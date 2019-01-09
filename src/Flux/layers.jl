@@ -21,12 +21,12 @@ Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;kwargs..
   if n === nothing
     result = DiffResults.GradientResult(_p)
     ForwardDiff.gradient!(result, _f, _p)
-    DiffResults.value(result),Δ -> (Δ .* DiffResults.gradient(result),nothing,nothing,nothing,map(_ -> nothing, args)...)
+    DiffResults.value(result),Δ -> (Δ .* DiffResults.gradient(result), ntuple(_->nothing, 3+length(args))...)
   else
     y = zeros(n)
     result = DiffResults.JacobianResult(y,_p)
     ForwardDiff.jacobian!(result, _f, _p)
-    DiffResults.value(result),Δ -> (DiffResults.jacobian(result)' * Δ,nothing,nothing,nothing,map(_ -> nothing, args)...)
+    DiffResults.value(result),Δ -> (DiffResults.jacobian(result)' * Δ, ntuple(_->nothing, 3+length(args))...)
   end
 end
 
@@ -44,7 +44,7 @@ Flux.Tracker.@grad function diffeq_adjoint(p::TrackedVector,f,df,t,prob,args...;
   _prob = remake(prob,p=p.data)
   sol = solve(_prob,args...;kwargs...)
   f(sol), Δ -> begin
-    grad = adjoint_sensitivities(sol,args...,df,t;sensealg=SensitivityAlg(autojacvec=false),kwargs...)
+    grad = adjoint_sensitivities(sol,args...,df,t;kwargs...)
     (Δ .* grad', ntuple(_->nothing, 4+length(args))...)
   end
 end
