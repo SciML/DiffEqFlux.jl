@@ -9,11 +9,16 @@ function lotka_volterra(du,u,p,t)
 end
 prob = ODEProblem(lotka_volterra,[1.0,1.0],(0.0,10.0))
 
+# len = length(range(0.0,stop=10.0,step=0.1)) = 101
+
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
-predict() = diffeq_fd(p,vec,prob,Tsit5(),saveat=0.1)
+function predict()
+  diffeq_fd(p,vec,101,prob,Tsit5(),saveat=0.1)
+end
 loss() = sum(abs2,x-1 for x in predict())
 loss()
+
 grads = Tracker.gradient(loss, params, nest=true)
 grads[p]
 
