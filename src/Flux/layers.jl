@@ -32,21 +32,22 @@ end
 
 ## Reverse-Mode using Adjoint Sensitivity Analysis
 
-function diffeq_adjoint(p,prob,f,df,t,args...;kwargs...)
-  _prob = remake(prob,p=p)
-  sol = Array(solve(_prob,args...;kwargs...))
-  f(sol)
+function diffeq_adjoint(p,prob,args...;kwargs...)
+  _prob = remake(prob,p=p.data)
+  Array(solve(_prob,args...;kwargs...))
 end
 
 diffeq_adjoint(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_adjoint, p, args...; kwargs...)
 # Example: https://github.com/JuliaDiffEq/DiffEqSensitivity.jl/blob/master/test/adjoint.jl
 # How to provide the cost function here? Is this fine?
-Flux.Tracker.@grad function diffeq_adjoint(p::TrackedVector,f,df,t,prob,args...;kwargs...)
-  _prob = remake(prob,p=p.data)
+Flux.Tracker.@grad function diffeq_adjoint(p::TrackedVector,prob,args...;kwargs...)
+  _prob = remake(prob,p=Flux.data(p))
   sol = solve(_prob,args...;kwargs...)
-  f(Array(sol)), Δ -> begin
-    grad = adjoint_sensitivities(sol,args...,df,t;kwargs...)
-    @show Δ
-    (Δ .* grad', ntuple(_->nothing, 4+length(args))...)
+  Array(sol), Δ -> begin
+    Δ = Flux.data(Δ)
+    ts = sol.t
+    df(out, u, p, t, i) = @. out = - @view Δ[:, i]
+    grad = adjoint_sensitivities(sol,args...,df,ts;kwargs...)
+    (grad', ntuple(_->nothing, 4+length(args))...)
   end
 end

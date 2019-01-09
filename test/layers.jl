@@ -89,16 +89,12 @@ cb()
 Flux.train!(loss_fd2, params, data, opt, cb = cb)
 
 # Adjoint sensitivity
-ts = range(0.0,stop=10.0,step=0.1)
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
-loss_reduction′(out,u,p,t,i) = (@. out = 2*(1.0-u))
 function predict_adjoint()
-    diffeq_adjoint(p,sol->begin
-                       @show sum(exp.(sol))
-    end,loss_reduction′,ts,prob,Tsit5())
+    diffeq_adjoint(p,prob,Tsit5())
 end
-loss_adjoint() = predict_adjoint()
+loss_adjoint() = loss_reduction(predict_adjoint())
 loss_adjoint()
 
 grads = Tracker.gradient(loss_adjoint, params, nest=true)
