@@ -1,4 +1,4 @@
-using DiffEqML, Flux, OrdinaryDiffEq
+using DiffEqML, Flux, OrdinaryDiffEq, Test
 #using Plots
 
 function lotka_volterra(du,u,p,t)
@@ -8,28 +8,58 @@ function lotka_volterra(du,u,p,t)
   du[2] = dy = (δ*x - γ)y
 end
 prob = ODEProblem(lotka_volterra,[1.0,1.0],(0.0,10.0))
+const len = length(range(0.0,stop=10.0,step=0.1)) # 101
 
-# len = length(range(0.0,stop=10.0,step=0.1)) = 101
+# Reverse-mode loss
 
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
-function predict()
-  diffeq_fd(p,vec,101,prob,Tsit5(),saveat=0.1)
+function predict_rd()
+  diffeq_rd(p,vec,prob,Tsit5(),saveat=0.1)
 end
-loss() = sum(abs2,x-1 for x in predict())
-loss()
+loss_rd() = sum(abs2,x-1 for x in predict_rd())
+loss_rd()
 
-grads = Tracker.gradient(loss, params, nest=true)
+grads = Tracker.gradient(loss_rd, params, nest=true)
 grads[p]
 
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
-  display(loss())
+  display(loss_rd())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
 cb()
 
-Flux.train!(loss, params, data, opt, cb = cb)
+Flux.train!(loss_rd, params, data, opt, cb = cb)
+
+# Forward-mode loss
+
+p = param([2.2, 1.0, 2.0, 0.4])
+params = Flux.Params([p])
+function predict_fd()
+  diffeq_fd(p,vec,2*len,prob,Tsit5(),saveat=0.1) # 2 times for 2 output variables
+end
+loss_fd() = sum(abs2,x-1 for x in predict_fd())
+loss_fd()
+
+@test_broken begin
+  grads = Tracker.gradient(loss_fd, params, nest=true)
+  grads[p]
+end
+
+data = Iterators.repeated((), 100)
+opt = ADAM(0.1)
+cb = function ()
+  display(loss_fd())
+  #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+end
+
+# Display the ODE with the current parameter values.
+cb()
+
+@test_broken Flux.train!(loss_fd, params, data, opt, cb = cb)
+
+# Adjoint sensitivity
