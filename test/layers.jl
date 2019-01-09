@@ -68,7 +68,7 @@ p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 function predict_fd2()
-  diffeq_fd(p,loss_reduction,nothing,prob,Tsit5(),saveat=0.1) # 2 times for 2 output variables
+  diffeq_fd(p,loss_reduction,nothing,prob,Tsit5(),saveat=0.1)
 end
 loss_fd2() = predict_fd2()
 loss_fd2()
@@ -79,7 +79,7 @@ grads[p]
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
-  display(loss_fd())
+  display(loss_fd2())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
@@ -89,3 +89,27 @@ cb()
 Flux.train!(loss_fd2, params, data, opt, cb = cb)
 
 # Adjoint sensitivity
+ts = range(0.0,stop=10.0,step=0.1)
+p = param([2.2, 1.0, 2.0, 0.4])
+params = Flux.Params([p])
+loss_reduction′(out,u,p,t,i) = (out.=1.0.-u)
+function predict_adjoint()
+  diffeq_adjoint(p,loss_reduction,loss_reduction′,ts,prob,Tsit5())
+end
+loss_adjoint() = predict_adjoint()
+loss_adjoint()
+
+grads = Tracker.gradient(loss_adjoint, params, nest=true)
+grads[p]
+
+data = Iterators.repeated((), 100)
+opt = ADAM(0.1)
+cb = function ()
+  display(loss_adjoint())
+  #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+end
+
+# Display the ODE with the current parameter values.
+cb()
+
+Flux.train!(loss_adjoint, params, data, opt, cb = cb)

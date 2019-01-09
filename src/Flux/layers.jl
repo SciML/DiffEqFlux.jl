@@ -37,10 +37,14 @@ function diffeq_adjoint(p,prob,f,df,t,args...;kwargs...)
   f(solve(_prob,args...;kwargs...))
 end
 
+diffeq_adjoint(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_adjoint, p, args...; kwargs...)
 # Example: https://github.com/JuliaDiffEq/DiffEqSensitivity.jl/blob/master/test/adjoint.jl
 # How to provide the cost function here? Is this fine?
-Flux.Tracker.@grad function diffeq_adjoint(prob,p,f,df,t,args...;kwargs...)
-  _prob = remake(prob,u0=convert.(eltype(p),prob.u0),p=p)
+Flux.Tracker.@grad function diffeq_adjoint(p::TrackedVector,f,df,t,prob,args...;kwargs...)
+  _prob = remake(prob,p=p.data)
   sol = solve(_prob,args...;kwargs...)
-  f(sol),Δ -> (Δ .* adjoint_sensitivities(sol,args...,df,t,kwargs...))
+  f(sol), Δ -> begin
+    grad = adjoint_sensitivities(sol,args...,df,t;sensealg=SensitivityAlg(autojacvec=false),kwargs...)
+    (Δ .* grad', ntuple(_->nothing, 4+length(args))...)
+  end
 end
