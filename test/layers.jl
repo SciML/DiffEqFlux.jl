@@ -10,7 +10,7 @@ end
 prob = ODEProblem(lotka_volterra,[1.0,1.0],(0.0,10.0))
 const len = length(range(0.0,stop=10.0,step=0.1)) # 101
 
-# Reverse-mode loss
+# Reverse-mode
 
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
@@ -35,7 +35,7 @@ cb()
 
 Flux.train!(loss_rd, params, data, opt, cb = cb)
 
-# Forward-mode loss
+# Forward-mode, R^n -> R^m layer
 
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
@@ -44,6 +44,34 @@ function predict_fd()
 end
 loss_fd() = sum(abs2,x-1 for x in predict_fd())
 loss_fd()
+
+@test_broken begin
+  grads = Tracker.gradient(loss_fd, params, nest=true)
+  grads[p]
+end
+
+data = Iterators.repeated((), 100)
+opt = ADAM(0.1)
+cb = function ()
+  display(loss_fd())
+  #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+end
+
+# Display the ODE with the current parameter values.
+cb()
+
+@test_broken Flux.train!(loss_fd, params, data, opt, cb = cb)
+
+# Forward-mode, R^n -> R loss
+
+p = param([2.2, 1.0, 2.0, 0.4])
+params = Flux.Params([p])
+loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
+function predict_fd2()
+  diffeq_fd(p,loss_reduction,nothing,prob,Tsit5(),saveat=0.1) # 2 times for 2 output variables
+end
+loss_fd2() = sum(abs2,x-1 for x in predict_fd2())
+loss_fd2()
 
 @test_broken begin
   grads = Tracker.gradient(loss_fd, params, nest=true)

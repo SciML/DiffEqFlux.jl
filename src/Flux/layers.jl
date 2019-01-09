@@ -1,6 +1,6 @@
-function diffeq_fd(p,f!,n,prob,args...;kwargs...)
+function diffeq_fd(p,f,n,prob,args...;kwargs...)
   _prob = remake(prob,u0=convert.(eltype(p),prob.u0),p=p)
-  f!(y,solve(_prob,args...;kwargs...))
+  f(solve(_prob,args...;kwargs...))
 end
 diffeq_fd(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_fd, p, args...; kwargs...)
 Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;kwargs...)
@@ -10,14 +10,14 @@ Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;kwargs..
   end
   _p = Flux.data(p)
   if n === nothing
-    result = DiffResults.GradientResult(y,_p)
+    result = DiffResults.GradientResult(_p)
     ForwardDiff.gradient!(result, _f, _p)
-    DiffResults.value(result),Δ -> (Δ .* DiffResults.gradient(result))
+    DiffResults.value(result),Δ -> (Δ .* DiffResults.gradient(result),)
   else
     y = zeros(n)
     result = DiffResults.JacobianResult(y,_p)
     ForwardDiff.jacobian!(result, _f, _p)
-    DiffResults.value(result),Δ -> (DiffResults.jacobian(result) * Δ)
+    DiffResults.value(result),Δ -> (DiffResults.jacobian(result) * Δ,)
   end
 end
 
@@ -25,6 +25,7 @@ function diffeq_adjoint(p,prob,args...;kwargs...)
   _prob = remake(prob,u0=convert.(eltype(p),prob.u0),p=p)
   f(solve(_prob,args...;kwargs...))
 end
+
 # Example: https://github.com/JuliaDiffEq/DiffEqSensitivity.jl/blob/master/test/adjoint.jl
 # How to provide the cost function here? Is this fine?
 Flux.Tracker.@grad function diffeq_adjoint(prob,p,dg,t,args...;kwargs...)
