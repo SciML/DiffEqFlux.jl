@@ -45,9 +45,11 @@ end
 loss_fd() = sum(abs2,x-1 for x in predict_fd())
 loss_fd()
 
+grads = Tracker.gradient(loss_fd, params, nest=true)
+grads[p]
+
 @test_broken begin
-  grads = Tracker.gradient(loss_fd, params, nest=true)
-  grads[p]
+
 end
 
 data = Iterators.repeated((), 100)
@@ -70,13 +72,11 @@ loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 function predict_fd2()
   diffeq_fd(p,loss_reduction,nothing,prob,Tsit5(),saveat=0.1) # 2 times for 2 output variables
 end
-loss_fd2() = sum(abs2,x-1 for x in predict_fd2())
+loss_fd2() = predict_fd2()
 loss_fd2()
 
-@test_broken begin
-  grads = Tracker.gradient(loss_fd, params, nest=true)
-  grads[p]
-end
+grads = Tracker.gradient(loss_fd2, params, nest=true)
+grads[p]
 
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
@@ -88,6 +88,6 @@ end
 # Display the ODE with the current parameter values.
 cb()
 
-@test_broken Flux.train!(loss_fd, params, data, opt, cb = cb)
+Flux.train!(loss_fd2, params, data, opt, cb = cb)
 
 # Adjoint sensitivity
