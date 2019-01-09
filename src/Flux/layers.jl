@@ -34,7 +34,8 @@ end
 
 function diffeq_adjoint(p,prob,f,df,t,args...;kwargs...)
   _prob = remake(prob,p=p)
-  f(solve(_prob,args...;kwargs...))
+  sol = Array(solve(_prob,args...;kwargs...))
+  f(sol)
 end
 
 diffeq_adjoint(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_adjoint, p, args...; kwargs...)
@@ -43,8 +44,9 @@ diffeq_adjoint(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_a
 Flux.Tracker.@grad function diffeq_adjoint(p::TrackedVector,f,df,t,prob,args...;kwargs...)
   _prob = remake(prob,p=p.data)
   sol = solve(_prob,args...;kwargs...)
-  f(sol), Δ -> begin
+  f(Array(sol)), Δ -> begin
     grad = adjoint_sensitivities(sol,args...,df,t;kwargs...)
+    @show Δ
     (Δ .* grad', ntuple(_->nothing, 4+length(args))...)
   end
 end

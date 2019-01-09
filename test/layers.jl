@@ -94,7 +94,9 @@ p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 loss_reduction′(out,u,p,t,i) = (@. out = 2*(1.0-u))
 function predict_adjoint()
-  diffeq_adjoint(p,loss_reduction,loss_reduction′,ts,prob,Tsit5())
+    diffeq_adjoint(p,sol->begin
+                       @show sum(exp.(sol))
+    end,loss_reduction′,ts,prob,Tsit5())
 end
 loss_adjoint() = predict_adjoint()
 loss_adjoint()
