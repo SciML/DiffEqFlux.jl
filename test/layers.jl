@@ -62,7 +62,7 @@ end
 # Display the ODE with the current parameter values.
 cb()
 
-@test_broken Flux.train!(loss_fd, params, data, opt, cb = cb)
+Flux.train!(loss_fd, params, data, opt, cb = cb)
 
 # Forward-mode, R^n -> R loss
 
