@@ -92,7 +92,7 @@ Flux.train!(loss_fd2, params, data, opt, cb = cb)
 ts = range(0.0,stop=10.0,step=0.1)
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
-loss_reduction′(out,u,p,t,i) = (out.=1.0.-u)
+loss_reduction′(out,u,p,t,i) = (@. out = 2*(1.0-u))
 function predict_adjoint()
   diffeq_adjoint(p,loss_reduction,loss_reduction′,ts,prob,Tsit5())
 end
