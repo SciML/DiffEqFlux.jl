@@ -17,7 +17,7 @@ Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;kwargs..
     y = zeros(n)
     result = DiffResults.JacobianResult(y,_p)
     ForwardDiff.jacobian!(result, _f, _p)
-    DiffResults.value(result),Δ -> (Δ * DiffResults.jacobian(result),nothing,nothing,nothing,map(_ -> nothing, args)...)
+    DiffResults.value(result),Δ -> (DiffResults.jacobian(result)' * Δ,nothing,nothing,nothing,map(_ -> nothing, args)...)
   end
 end
 
