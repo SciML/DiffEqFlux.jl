@@ -1,3 +1,12 @@
+## Reverse-Mode via Flux.jl
+
+function diffeq_rd(p,f,prob,args...;kwargs...)
+  _prob = remake(prob,u0=convert.(eltype(p),prob.u0),p=p)
+  f(solve(_prob,args...;kwargs...))
+end
+
+## Forward-Mode via ForwardDiff.jl
+
 function diffeq_fd(p,f,n,prob,args...;kwargs...)
   _prob = remake(prob,u0=convert.(eltype(p),prob.u0),p=p)
   f(solve(_prob,args...;kwargs...))
@@ -21,20 +30,17 @@ Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;kwargs..
   end
 end
 
-function diffeq_adjoint(p,prob,args...;kwargs...)
+## Reverse-Mode using Adjoint Sensitivity Analysis
+
+function diffeq_adjoint(p,prob,f,df,t,args...;kwargs...)
   _prob = remake(prob,u0=convert.(eltype(p),prob.u0),p=p)
   f(solve(_prob,args...;kwargs...))
 end
 
 # Example: https://github.com/JuliaDiffEq/DiffEqSensitivity.jl/blob/master/test/adjoint.jl
 # How to provide the cost function here? Is this fine?
-Flux.Tracker.@grad function diffeq_adjoint(prob,p,dg,t,args...;kwargs...)
+Flux.Tracker.@grad function diffeq_adjoint(prob,p,f,df,t,args...;kwargs...)
   _prob = remake(prob,u0=convert.(eltype(p),prob.u0),p=p)
   sol = solve(_prob,args...;kwargs...)
-  f(sol),Δ -> (Δ .* adjoint_sensitivities(sol,args...,dg,t,kwargs...))
-end
-
-function diffeq_rd(p,f,prob,args...;kwargs...)
-  _prob = remake(prob,u0=convert.(eltype(p),prob.u0),p=p)
-  f(solve(_prob,args...;kwargs...))
+  f(sol),Δ -> (Δ .* adjoint_sensitivities(sol,args...,df,t,kwargs...))
 end

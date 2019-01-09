@@ -45,11 +45,9 @@ end
 loss_fd() = sum(abs2,x-1 for x in predict_fd())
 loss_fd()
 
-grads = Tracker.gradient(loss_fd, params, nest=true)
-grads[p]
-
 @test_broken begin
-
+  grads = Tracker.gradient(loss_fd, params, nest=true)
+  grads[p]
 end
 
 data = Iterators.repeated((), 100)
