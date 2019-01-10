@@ -1,4 +1,4 @@
-module DiffEqML
+module DiffEqFlux
 
 using DiffEqBase, Flux, DiffResults, DiffEqSensitivity, ForwardDiff
 
