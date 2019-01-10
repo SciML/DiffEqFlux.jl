@@ -6,12 +6,6 @@ os:
 julia:
   - 1.0
   - nightly
-env:
-  - GROUP=Interface
-  - GROUP=Integrators
-  - GROUP=Regression
-  - GROUP=AlgConvergence_I
-  - GROUP=AlgConvergence_II
 matrix:
   allow_failures:
     - julia: nightly
@@ -19,6 +13,6 @@ notifications:
   email: false
 after_success:
   # push coverage results to Coveralls
-  - julia -e 'import Pkg; cd(Pkg.dir("OrdinaryDiffEq")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia -e 'import Pkg; cd(Pkg.dir("DiffEqFlux")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
-  - julia -e 'import Pkg; cd(Pkg.dir("OrdinaryDiffEq")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'import Pkg; cd(Pkg.dir("DiffEqFlux")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
