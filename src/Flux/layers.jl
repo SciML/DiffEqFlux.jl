@@ -80,11 +80,11 @@ Flux.Tracker.@grad function diffeq_backwardsolve_adjoint(p::TrackedVector, prob,
       uidx = 1:ulen
       plen = (length(z)-ulen)÷2
       λidx = ulen+1:ulen+1+pen
-      intλidx = ulen+1+pen:length(z)
+      #intλidx = ulen+1+pen:length(z)
+      #intλ = @view z[intλidx]
+      #@. intλ -= Δ[uidx+ulen, ii[]]
       λ = @view z[λidx]
-      intλ = @view z[intλidx]
       @. λ -= @view Δ[uidx, ii[]]
-      @. intλ -= Δ[uidx+ulen, ii[]]
       u_modified!(integrator,true)
       ii[] -= 1
       return nothing
