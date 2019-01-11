@@ -51,3 +51,57 @@ Flux.Tracker.@grad function diffeq_adjoint(p::TrackedVector,prob,args...;kwargs.
     (grad', ntuple(_->nothing, 4+length(args))...)
   end
 end
+
+function diffeq_backwardsolve_adjoint(p, prob, ulen, args...;kwargs...)
+  params = p.data
+  u = @view params[1:ulen]
+  p = @view params[ulen+1:end-2]
+  t0, t1 = parms[end-1], parms[end]
+  _prob = remake(prob, u0=u, p=p, tspan=(t0, t1))
+  Array(solve(_prob,args...;kwargs...))
+end
+
+Flux.Tracker.@grad function diffeq_backwardsolve_adjoint(p::TrackedVector, prob, ulen, args...; kwargs...)
+  params = p.data
+  u = @view params[1:ulen]
+  p = @view params[ulen+1:end-2]
+  t0, t1 = parms[end-1], parms[end]
+  _prob = remake(prob, u0=u, p=p, tspan=(t0, t1))
+  sol = solve(_prob,args...;kwargs...)
+  Array(sol), Δ -> begin
+    tspan=(t1, t0)
+    p = sol.prob.p
+    ts = sol.t
+    f = sol.prob.f
+    ii = Ref(size(Δ, 2))
+    time_choice(integrator) = ii[] > 0 ? ts[ii[]] : nothing
+    function affect!(integrator)
+      p, z = integrator.p, integrator.u
+      uidx = 1:ulen
+      plen = (length(z)-ulen)÷2
+      λidx = ulen+1:ulen+1+pen
+      intλidx = ulen+1+pen:length(z)
+      λ = @view z[λidx]
+      intλ = @view z[intλidx]
+      @. λ -= @view Δ[uidx, ii[]]
+      @. intλ -= Δ[uidx+ulen, ii[]]
+      u_modified!(integrator,true)
+      ii[] -= 1
+      return nothing
+    end
+    function aug_dynamics(dz, z, p, t) # z is [u; z; sens]
+      uidx = 1:ulen
+      plen = (length(z)-ulen)÷2
+      λidx = ulen+1:ulen+1+pen
+      @views du, u = dz[uidx], z[uidx]
+      f(du, u, p, t)
+      # vjp ???
+      return nothing
+    end
+    dLdt = @view(Δ[:, end])'f(...)
+    state0 = [sol[end]; f(); zeros(length(params) - ulen); ...]
+    cb = IterativeCallback(time_choice,affect!,eltype(tspan);initial_affect=true)
+    __prob = remake(prob, u0=u, p=p, tspan=(t0, t1))
+    sol = solve(__prob, args...;callback=cb, kwargs...)
+  end
+end
