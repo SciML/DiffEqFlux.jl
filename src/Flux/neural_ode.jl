@@ -1,5 +1,10 @@
 neural_ode_reduction(sol) = Array(sol)
-function neural_ode(x,model,tspan,ad_func,args...;kwargs...)
+neural_ode(x,model,tspan,args...;kwargs...) = neural_ode(x,model,tspan,
+                                                         diffeq_adjoint,
+                                                         args...;kwargs...)
+function neural_ode(x,model,tspan,
+                    ad_func::Function,
+                    args...;kwargs...)
   p = Flux.data(destructure(model))
   dudt_(du,u::TrackedArray,p,t) = du .= restructure(model,p)(u)
   dudt_(du,u::AbstractArray,p,t) = du .= Flux.data(restructure(model,p)(u))
