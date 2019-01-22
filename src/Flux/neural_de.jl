@@ -11,10 +11,10 @@ end
 neural_msde(x,model,mp,tspan,args...;kwargs...) = neural_msde(x,model,mp,tspan,
                                                          diffeq_fd,
                                                          args...;kwargs...)
-function neural_msde(x,model,mp,tspan,
+function neural_msde(model,x,mp,tspan,
                     ad_func::Function,
                     args...;kwargs...)
-  p = Tracker.data(destructure(model))
+  p = Flux.data(destructure(model))
   dudt_(du,u::TrackedArray,p,t) = du .= restructure(model,p)(u)
   dudt_(du,u::AbstractArray,p,t) = du .= Flux.data(restructure(model,p)(u))
   g(du,u,p,t) = du .= mp.*u
