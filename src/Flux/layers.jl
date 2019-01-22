@@ -1,3 +1,5 @@
+using Flux.Tracker: @grad
+
 ## Reverse-Mode via Flux.jl
 
 function diffeq_rd(p,f,prob,args...;u0=prob.u0,kwargs...)
@@ -39,14 +41,15 @@ function diffeq_adjoint(p,prob,args...;u0=prob.u0,kwargs...)
 end
 
 diffeq_adjoint(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_adjoint, p, args...; kwargs...)
-Flux.Tracker.@grad function diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...)
+@grad function diffeq_adjoint(p::TrackedVector,prob,args...;
+                              u0=prob.u0,sensealg=SensitivityAlg(backsolve=true),kwargs...)
   _prob = remake(prob,u0=u0,p=Flux.data(p))
   sol = solve(_prob,args...;kwargs...)
   Array(sol), Δ -> begin
     Δ = Flux.data(Δ)
     ts = sol.t
     df(out, u, p, t, i) = @. out = - @view Δ[:, i]
-    grad = adjoint_sensitivities(sol,args...,df,ts;kwargs...)
+    grad = adjoint_sensitivities(sol,args...,df,ts;sensealg=sensealg,kwargs...)
     (grad', ntuple(_->nothing, 4+length(args))...)
   end
 end
