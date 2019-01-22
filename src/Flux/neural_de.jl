@@ -14,7 +14,7 @@ neural_msde(x,model,mp,tspan,args...;kwargs...) = neural_msde(x,model,mp,tspan,
 function neural_msde(x,model,mp,tspan,
                     ad_func::Function,
                     args...;kwargs...)
-  p = Flux.data(destructure(model))
+  p = Tracker.data(destructure(model))
   dudt_(du,u::TrackedArray,p,t) = du .= restructure(model,p)(u)
   dudt_(du,u::AbstractArray,p,t) = du .= Flux.data(restructure(model,p)(u))
   g(du,u,p,t) = du .= mp.*u
@@ -23,8 +23,8 @@ function neural_msde(x,model,mp,tspan,
   if ad_func === diffeq_adjoint
     return ad_func(p,prob,args...;kwargs...)
   elseif ad_func === diffeq_fd
-    return ad_func(p,neural_ode_reduction,length(p),prob,args...;kwargs...)
+    return ad_func(p,Array,length(p),prob,args...;kwargs...)
   else
-    return ad_func(p,neural_ode_reduction,prob,args...;kwargs...)
+    return ad_func(p,Array,prob,args...;kwargs...)
   end
 end
