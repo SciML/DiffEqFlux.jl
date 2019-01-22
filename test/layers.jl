@@ -15,7 +15,7 @@ const len = length(range(0.0,stop=10.0,step=0.1)) # 101
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 function predict_rd()
-  diffeq_rd(p,vec,prob,Tsit5(),saveat=0.1)
+  vec(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
 end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()

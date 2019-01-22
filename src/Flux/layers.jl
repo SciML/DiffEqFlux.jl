@@ -2,9 +2,9 @@ using Flux.Tracker: @grad
 
 ## Reverse-Mode via Flux.jl
 
-function diffeq_rd(p,f,prob,args...;u0=prob.u0,kwargs...)
+function diffeq_rd(p,prob,args...;u0=prob.u0,kwargs...)
   _prob = remake(prob,u0=convert.(eltype(p),u0),p=p)
-  f(solve(_prob,args...;kwargs...))
+  solve(_prob,args...;kwargs...)
 end
 
 ## Forward-Mode via ForwardDiff.jl
