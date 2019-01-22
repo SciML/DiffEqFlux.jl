@@ -4,6 +4,6 @@ using DiffEqFlux, Test
 
 include("layers.jl")
 include("utils.jl")
-include("neural_ode.jl")
+include("neural_de.jl")
 
 end
