@@ -92,7 +92,7 @@ m = Chain(
   x -> maxpool(x, (2,2)),
   x -> reshape(x, :, size(x, 4)),
   # takes in the ODE parameters from the previous layer
-  p -> diffeq_rd(p,prob,Tsit5(),saveat=0.1),
+  p -> Array(diffeq_rd(p,prob,Tsit5(),saveat=0.1),
   Dense(288, 10), softmax) |> gpu
 ```
 
@@ -102,7 +102,7 @@ or
 m = Chain(
   Dense(28^2, 32, relu),
   # takes in the initial condition from the previous layer
-  x -> diffeq_rd(p,prob,Tsit5(),saveat=0.1,u0=x),
+  x -> Array(diffeq_rd(p,prob,Tsit5(),saveat=0.1,u0=x))),
   Dense(32, 10),
   softmax)
 ```
@@ -126,7 +126,7 @@ prob = DDEProblem(delay_lotka_volterra,[1.0,1.0],h,(0.0,10.0),constant_lags=[0.1
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 function predict_rd_dde()
-  diffeq_rd(p,prob,101,MethodOfSteps(Tsit5()),saveat=0.1)
+  Array(diffeq_rd(p,prob,101,MethodOfSteps(Tsit5()),saveat=0.1))
 end
 loss_rd_dde() = sum(abs2,x-1 for x in predict_rd_dde())
 loss_rd_dde()
@@ -279,8 +279,8 @@ x->neural_ode(gpu(x),gpu(dudt),tspan,BS3(),saveat=0.1)
 
 - `diffeq_rd(p,prob, args...;u0 = prob.u0, kwargs...)` uses Flux.jl's
   reverse-mode AD through the differential equation solver with parameters `p`
-  and initial condition `u0`.
-  The rest of the arguments are passed to the differential equation solver.
+  and initial condition `u0`. The rest of the arguments are passed to the
+  differential equation solver. The return is the DESolution.
 - `diffeq_fd(p,reduction,n,prob,args...;u0 = prob.u0, kwargs...)` uses
   ForwardDiff.jl's forward-mode AD through the differential equation solver
   with parameters `p` and initial condition `u0`. `n` is the output size
