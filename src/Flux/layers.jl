@@ -42,7 +42,7 @@ end
 
 diffeq_adjoint(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_adjoint, p, args...; kwargs...)
 @grad function diffeq_adjoint(p::TrackedVector,prob,args...;
-                              u0=prob.u0,backsolve=false,kwargs...)
+                              u0=prob.u0,backsolve=true,kwargs...)
   _prob = remake(prob,u0=u0,p=Flux.data(p))
   sol = solve(_prob,args...;kwargs...)
   Array(sol), Δ -> begin
