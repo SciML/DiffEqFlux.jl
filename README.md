@@ -247,6 +247,31 @@ cb()
 
 Flux.train!(loss_n_ode, params, data, opt, cb = cb)
 ```
+## Use with GPUs
+
+Note that the differential equation solvers will run on the GPU if the initial
+condition is a GPU array. Thus for example, we can define a neural ODE by hand
+that runs on the GPU:
+
+```julia
+u0 = [2.; 0.] |> gpu
+dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
+
+function ODEfunc(du,u,p,t)
+    du .= Flux.data(dudt(u))
+end
+prob = ODEProblem(ODEfunc, u0,tspan)
+
+# Runs on a GPU
+sol = solve(prob,BS3(),saveat=0.1)
+```
+
+and the `diffeq` layer functions can be used similarly. Or we can directly use
+the neural ODE layer function, like:
+
+```julia
+x->neural_ode(gpu(x),gpu(dudt),tspan,BS3(),saveat=0.1)
+```
 
 ## API Documentation
 
