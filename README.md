@@ -184,7 +184,7 @@ For example, this neural ODE would be defined as:
 
 ```julia
 tspan = (0.0f0,25.0f0)
-x->neural_ode(x,dudt,tspan,Tsit5(),saveat=0.1)
+x->neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
 ```
 
 where here we made it a layer that takes in the initial condition and spits
@@ -214,7 +214,7 @@ the layer:
 ```julia
 dudt = Chain(Dense(2,50,tanh),Dense(50,2))
 tspan = (0.0f0,10.0f0)
-n_ode = x->neural_ode(x,dudt,tspan,Tsit5(),saveat=0.1)
+n_ode = x->neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
 ```
 
 And build a neural network around it. We will use the L2 loss of the network's
@@ -269,7 +269,7 @@ and the `diffeq` layer functions can be used similarly. Or we can directly use
 the neural ODE layer function, like:
 
 ```julia
-x->neural_ode(gpu(x),gpu(dudt),tspan,BS3(),saveat=0.1)
+x->neural_ode(gpu(dudt),gpu(x),tspan,BS3(),saveat=0.1)
 ```
 
 ## API Documentation
