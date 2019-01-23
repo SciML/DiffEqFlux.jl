@@ -214,7 +214,7 @@ the layer:
 ```julia
 dudt = Chain(Dense(2,50,tanh),Dense(50,2))
 tspan = (0.0f0,10.0f0)
-n_ode = x->neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
+n_ode = x->neural_ode(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)
 ```
 
 And build a neural network around it. We will use the L2 loss of the network's
@@ -235,7 +235,7 @@ opt = ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_n_ode())
   # plot current prediction against data
-  cur_pred = predict_n_ode()
+  cur_pred = Flux.data(predict_n_ode())
   pl = scatter(0.0:0.1:10.0,ode_data[1,:],label="data")
   scatter!(pl,0.0:0.1:10.0,cur_pred[1,:],label="prediction")
   plot(pl)
