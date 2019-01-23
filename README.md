@@ -195,26 +195,27 @@ out an array for the time series saved at every 0.1 time steps.
 Let's get a time series array from the Lotka-Volterra equation as data:
 
 ```julia
-function lotka_volterra(du,u,p,t)
-  x, y = u
-  α, β, δ, γ = p
-  du[1] = dx = α*x - β*x*y
-  du[2] = dy = -δ*y + γ*x*y
+u0 = Float32[2.; 0.]
+datasize = 30
+tspan = (0.0f0,1.5f0)
+
+function trueODEfunc(du,u,p,t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u.^3)'true_A)'
 end
-u0 = [1.0,1.0]
-tspan = (0.0,10.0)
-p = [1.5,1.0,3.0,1.0]
-prob = ODEProblem(lotka_volterra,u0,tspan,p)
-ode_data = Array(solve(prob,Tsit5(),saveat=0.1))
+t = range(tspan[1],tspan[2],length=datasize)
+prob = ODEProblem(trueODEfunc,u0,tspan)
+ode_data = Array(solve(prob,Tsit5(),saveat=t))
 ```
 
 Now let's define a neural network with a `neural_ode` layer. First we define
 the layer:
 
 ```julia
-dudt = Chain(Dense(2,50,tanh),Dense(50,2))
-tspan = (0.0f0,10.0f0)
-n_ode = x->neural_ode(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)
+dudt = Chain(x -> x.^3,
+             Dense(2,50,tanh),
+             Dense(50,2))
+n_ode = x->neural_ode(dudt,x,tspan,Tsit5(),saveat=t,reltol=1e-7,abstol=1e-9)
 ```
 
 And build a neural network around it. We will use the L2 loss of the network's
@@ -230,7 +231,7 @@ loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
 and then train the neural network to learn the ODE:
 
 ```julia
-data = Iterators.repeated((), 100)
+data = Iterators.repeated((), 1000)
 opt = ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_n_ode())
