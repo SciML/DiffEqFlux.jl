@@ -37,7 +37,7 @@ plot(sol)
 
 ![LV Solution Plot](https://user-images.githubusercontent.com/1814174/51388169-9a07f300-1af6-11e9-8c6c-83c41e81d11c.png)
 
-Next we define a single layer neural network that uses the `diffeq_fd` layer
+Next we define a single layer neural network that uses the `diffeq_rd` layer
 function that takes the parameters and returns the solution of the `x(t)`
 variable. Instead of being a function of the parameters, we will wrap our
 parameters in `param` to be tracked by Flux:
@@ -47,9 +47,8 @@ using Flux, DiffEqFlux
 p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
 params = Flux.Params([p])
 
-reduction(sol) = sol[1,:]
 function predict_rd() # Our 1-layer neural network
-  diffeq_fd(p,reduction,prob,Tsit5(),saveat=0.1)
+  Array(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
 end
 ```
 
@@ -81,7 +80,7 @@ Flux.train!(loss_rd, params, data, opt, cb = cb)
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
 
-Note that by using anonymous functions, this `diffeq_fd` can be used as a
+Note that by using anonymous functions, this `diffeq_rd` can be used as a
 layer in a neural network `Chain`, for example like
 
 ```julia
@@ -126,7 +125,7 @@ prob = DDEProblem(delay_lotka_volterra,[1.0,1.0],h,(0.0,10.0),constant_lags=[0.1
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 function predict_rd_dde()
-  Array(diffeq_rd(p,prob,101,MethodOfSteps(Tsit5()),saveat=0.1))
+  Array(diffeq_rd(p,prob,MethodOfSteps(Tsit5()),saveat=0.1))
 end
 loss_rd_dde() = sum(abs2,x-1 for x in predict_rd_dde())
 loss_rd_dde()
