@@ -20,7 +20,7 @@ loss_fd_sde()
 Flux.back!(loss_fd_sde())
 
 function predict_rd_sde()
-  diffeq_rd(p,prob,SOSRI(),saveat=0.1)
+  Array(diffeq_rd(p,prob,SOSRI(),saveat=0.1))
 end
 loss_rd_sde() = sum(abs2,x-1 for x in predict_rd_sde())
 loss_rd_sde()
