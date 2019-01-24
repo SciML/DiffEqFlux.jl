@@ -6,5 +6,10 @@ dudt = Chain(Dense(2,50,tanh),Dense(50,2))
 
 neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)
 neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
+neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)
 
-neural_msde(dudt,x,[0.1,0.1],tspan,SOSRI(),saveat=0.1)
+Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
+Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)))
+
+@test_broken neural_dmsde(dudt,x,[0.1,0.1],tspan,SOSRI(),saveat=0.1)
+@test_broken back!(neural_msde(dudt,x,[0.1,0.1],tspan,SOSRI(),saveat=0.1))

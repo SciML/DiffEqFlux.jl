@@ -3,7 +3,13 @@ using Flux.Tracker: @grad
 ## Reverse-Mode via Flux.jl
 
 function diffeq_rd(p,prob,args...;u0=prob.u0,kwargs...)
-  _prob = remake(prob,u0=convert.(eltype(p),u0),p=p)
+  if DiffEqBase.isinplace(prob)
+    # use Array{TrackedReal} for mutation to work
+    _prob = remake(prob,u0=convert.(eltype(p),u0),p=p)
+  else
+    # use TrackedArray for efficiency of the tape
+    _prob = remake(prob,u0=convert(typeof(p),u0),p=p)
+  end
   solve(_prob,args...;kwargs...)
 end
 
@@ -13,6 +19,7 @@ function diffeq_fd(p,f,n,prob,args...;u0=prob.u0,kwargs...)
   _prob = remake(prob,u0=convert.(eltype(p),u0),p=p)
   f(solve(_prob,args...;kwargs...))
 end
+
 diffeq_fd(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_fd, p, args...; kwargs...)
 Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;u0=prob.u0,kwargs...)
   _f = function (p)
