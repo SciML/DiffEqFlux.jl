@@ -12,5 +12,5 @@ Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
 Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)))
 
 mp = Float32[0.1,0.1]
-@test_broken neural_dmsde(dudt,x,mp,tspan,SOSRI(),saveat=0.1)
-@test_broken back!(neural_msde(dudt,x,mp,tspan,SOSRI(),saveat=0.1))
+neural_dmsde(dudt,x,mp,tspan,SOSRI(),saveat=0.1)
+Flux.back!(sum(neural_dmsde(dudt,x,mp,tspan,SOSRI(),saveat=0.1)))
