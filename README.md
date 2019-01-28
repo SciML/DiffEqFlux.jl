@@ -302,7 +302,7 @@ x -> neural_ode(gpu(dudt),gpu(x),tspan,BS3(),saveat=0.1)
   `x` is the initial condition, `model` is a Flux.jl model, `tspan` is the
   time span to integrate, and the rest of the arguments are passed to the ODE
   solver. The parameters should be implicit in the `model`.
-- `neural_msde(x,model,mp,tspan,args...;kwargs)` defines a neural multiplicative
+- `neural_dmsde(x,model,mp,tspan,args...;kwargs)` defines a neural multiplicative
   SDE layer where `x` is the initial condition, `model` is a Flux.jl model,
   `tspan` is the time span to integrate, and the rest of the arguments are
   passed to the SDE solver. The noise is assumed to be diagonal multiplicative,
