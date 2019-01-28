@@ -174,7 +174,9 @@ the ODE function:
 ```julia
 model = Chain(Dense(2,50,tanh),Dense(50,2))
 # Define the ODE as the forward pass of the neural network with weights `p`
-dudt_(du,u,p,t) = du .= model(u)
+function dudt(du,u,p,t)
+    du .= model(u)
+end
 ```
 
 A convenience function which handles all of the details is `neural_ode`. To
@@ -184,7 +186,7 @@ For example, this neural ODE would be defined as:
 
 ```julia
 tspan = (0.0f0,25.0f0)
-x->neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
+x -> neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
 ```
 
 where here we made it a layer that takes in the initial condition and spits
@@ -215,7 +217,7 @@ the layer:
 dudt = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
-n_ode = x->neural_ode(dudt,x,tspan,Tsit5(),saveat=t,reltol=1e-7,abstol=1e-9)
+n_ode(x) = neural_ode(dudt,x,tspan,Tsit5(),saveat=t,reltol=1e-7,abstol=1e-9)
 ```
 
 And build a neural network around it. We will use the L2 loss of the network's
@@ -270,7 +272,7 @@ and the `diffeq` layer functions can be used similarly. Or we can directly use
 the neural ODE layer function, like:
 
 ```julia
-x->neural_ode(gpu(dudt),gpu(x),tspan,BS3(),saveat=0.1)
+x -> neural_ode(gpu(dudt),gpu(x),tspan,BS3(),saveat=0.1)
 ```
 
 ## API Documentation
@@ -292,7 +294,7 @@ x->neural_ode(gpu(dudt),gpu(x),tspan,BS3(),saveat=0.1)
   `p` and initial condition `u0`. The rest of the arguments are passed to the
   differential equation solver or handled by the adjoint sensitivity algorithm
   (for more details on sensitivity arguments, see
-  [the diffeq documentation](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Adjoint-Sensitivity-Analysis-1))
+  [the diffeq documentation](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Adjoint-Sensitivity-Analysis-1)).
 
 ### Neural DE Layer Functions
 
@@ -300,7 +302,7 @@ x->neural_ode(gpu(dudt),gpu(x),tspan,BS3(),saveat=0.1)
   `x` is the initial condition, `model` is a Flux.jl model, `tspan` is the
   time span to integrate, and the rest of the arguments are passed to the ODE
   solver. The parameters should be implicit in the `model`.
-- `nueral_msde(x,model,mp,tspan,args...;kwargs)` defines a neural multiplicative
+- `neural_msde(x,model,mp,tspan,args...;kwargs)` defines a neural multiplicative
   SDE layer where `x` is the initial condition, `model` is a Flux.jl model,
   `tspan` is the time span to integrate, and the rest of the arguments are
   passed to the SDE solver. The noise is assumed to be diagonal multiplicative,
