@@ -1,6 +1,5 @@
 function neural_ode(model,x,tspan,
                     args...;kwargs...)
-  Tracker.istracked(x) && error("u0 is not currently differentiable.")
   p = destructure(model)
   dudt_(du,u::TrackedArray,p,t) = du .= restructure(model,p)(u)
   dudt_(du,u::AbstractArray,p,t) = du .= Flux.data(restructure(model,p)(u))
