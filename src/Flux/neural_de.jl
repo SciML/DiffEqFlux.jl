@@ -9,12 +9,10 @@ end
 
 function neural_ode_rd(model,x,tspan,
                     args...;kwargs...)
-  Tracker.istracked(x) && error("u0 is not currently differentiable.")
   p = destructure(model)
-  dudt_(u::TrackedArray,p,t) = restructure(model,p)(u)
-  dudt_(u::AbstractArray,p,t) = Flux.data(restructure(model,p)(u))
-  prob = ODEProblem(dudt_,x,tspan,p)
-  return Flux.Tracker.collect(diffeq_rd(p,prob,args...;kwargs...))
+  dudt_(u,p,t) = model(u)
+  prob = ODEProblem(dudt_,x,tspan)
+  return Flux.Tracker.collect(diffeq_rd(nothing,prob,args...;kwargs...))
 end
 
 neural_msde(x,model,mp,tspan,args...;kwargs...) = neural_msde(x,model,mp,tspan,
