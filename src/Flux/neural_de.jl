@@ -8,13 +8,11 @@ function neural_ode(model,x,tspan,
 end
 
 function neural_ode_rd(model,x,tspan,
-                    args...;kwargs...)
-  Tracker.istracked(x) && error("u0 is not currently differentiable.")
-  p = destructure(model)
-  dudt_(u::TrackedArray,p,t) = restructure(model,p)(u)
-  dudt_(u::AbstractArray,p,t) = Flux.data(restructure(model,p)(u))
-  prob = ODEProblem(dudt_,x,tspan,p)
-  return Flux.Tracker.collect(diffeq_rd(p,prob,args...;kwargs...))
+                       args...;kwargs...)
+  dudt_(u,p,t) = model(u)
+  prob = ODEProblem(dudt_,param(x),tspan)
+  # TODO could probably use vcat rather than collect here
+  solve(prob, args...; kwargs...) |> Tracker.collect
 end
 
 neural_msde(x,model,mp,tspan,args...;kwargs...) = neural_msde(x,model,mp,tspan,
