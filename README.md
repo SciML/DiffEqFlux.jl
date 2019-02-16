@@ -11,12 +11,12 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 
 ## Example Usage
 
-For an overview of what this package is for, [see this blog post]().
+For an overview of what this package is for, [see this blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
 
 ### Optimizing parameters of an ODE
 
 First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
-more details, [see the DifferentialEquations.jl documentation]()
+more details, [see the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/latest/)
 
 ```julia
 using DifferentialEquations
