@@ -247,7 +247,8 @@ end
 # Display the ODE with the initial parameter values.
 cb()
 
-Flux.train!(loss_n_ode, params, data, opt, cb = cb)
+ps = Flux.params(dudt)
+Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
 ```
 ## Use with GPUs
 
