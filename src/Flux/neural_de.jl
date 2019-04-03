@@ -20,11 +20,9 @@ neural_msde(x,model,mp,tspan,args...;kwargs...) = neural_msde(x,model,mp,tspan,
                                                          args...;kwargs...)
 function neural_dmsde(model,x,mp,tspan,
                       args...;kwargs...)
-  Tracker.istracked(x) && error("u0 is not currently differentiable.")
-  p = destructure(model)
-  dudt_(u::TrackedArray,p,t) = restructure(model,p)(u)
-  dudt_(u::AbstractArray,p,t) = Flux.data(restructure(model,p)(u))
+  dudt_(u,p,t) = model(u)
   g(u,p,t) = mp.*u
   prob = SDEProblem(dudt_,g,x,tspan,p)
-  return Flux.Tracker.collect(diffeq_rd(p,prob,args...;kwargs...))
+  # TODO could probably use vcat rather than collect here
+  solve(prob, args...; kwargs...) |> Tracker.collect
 end
