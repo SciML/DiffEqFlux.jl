@@ -22,7 +22,7 @@ function neural_dmsde(model,x,mp,tspan,
                       args...;kwargs...)
   dudt_(u,p,t) = model(u)
   g(u,p,t) = mp.*u
-  prob = SDEProblem(dudt_,g,x,tspan,p)
+  prob = SDEProblem(dudt_,g,param(x),tspan,nothing)
   # TODO could probably use vcat rather than collect here
   solve(prob, args...; kwargs...) |> Tracker.collect
 end
