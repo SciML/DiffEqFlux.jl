@@ -9,30 +9,34 @@ neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
 neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)
 
 # Adjoint
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+@testset "adjoint mode" begin
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
+end;
 
 # RD
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+@testset "reverse mode" begin
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
+end;
 
 mp = Float32[0.1,0.1]
 Tracker.zero_grad!(dudt[1].W.grad)
@@ -51,28 +55,31 @@ neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
 neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)
 
 # Adjoint
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode(dudt,xs,tspan,Tsit5(),save_everystep=false,save_start=false)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+@testset "adjoint mode batches" begin
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode(dudt,xs,tspan,Tsit5(),save_everystep=false,save_start=false)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode(dudt,xs,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode(dudt,xs,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode(dudt,xs,tspan,Tsit5(),saveat=0.1)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode(dudt,xs,tspan,Tsit5(),saveat=0.1)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
+end;
 
 # RD
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),save_everystep=false,save_start=false)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+@testset "reverse mode batches" begin
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),save_everystep=false,save_start=false)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
-Tracker.zero_grad!(dudt[1].W.grad)
-Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),saveat=0.1)))
-@test ! iszero(Tracker.grad(dudt[1].W))
-
+    Tracker.zero_grad!(dudt[1].W.grad)
+    Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),saveat=0.1)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
+end;
