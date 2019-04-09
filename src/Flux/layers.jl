@@ -52,7 +52,8 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   Flux.Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
 
 @grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
-                              save_start=true,kwargs...)
+                              save_start=true,
+                              kwargs...)
   _prob = remake(prob,u0=Flux.data(u0),p=Flux.data(p))
 
   # Force save_start in the forward pass
@@ -62,13 +63,22 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   sol = solve(_prob,args...;save_start=true,kwargs...)
 
   # If didn't save start, take off first. If only wanted the end, return vector
-  out = save_start ? Array(sol) : (length(sol)==1 ? Array(sol[end]) : Array(sol[2:end]))
+  only_end = !save_start && length(sol)==2
+  out = save_start ? Array(sol) : (only_end ? sol[end] : Array(sol[2:end]))
   out, Δ -> begin
     Δ = Flux.data(Δ)
-    df(out, u, p, t, i) = @. out = - @view Δ[:, i]
+    function df(out, u, p, t, i)
+      if only_end
+        @. out = -Δ
+      else
+        @. out = - @view Δ[:, i]
+      end
+    end
+
+    ts = sol.t
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
                     sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
-                    save_start=save_start,kwargs...)
+                    kwargs...)
     (dp', du0, ntuple(_->nothing, 1+length(args))...)
   end
 end
