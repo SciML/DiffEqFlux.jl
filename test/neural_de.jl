@@ -89,7 +89,7 @@ end;
 tspan = (0.0f0,25.0f0)
 dudt = Chain(Dense(2,50,tanh),Dense(50,2))
 downsample = Dense(3,2)
-x0 = Float32.(hcat([0.; 0; 0.], [1.,1.,1.],[2.,2.,2.]))  
+x0 = Float32.(hcat([0.; 0; 0.], [1.,1.,1.],[2.,2.,2.]))
 u0 = downsample(x0)
 
 neural_ode(dudt,u0,tspan,Tsit5(),save_everystep=false,save_start=false)
@@ -100,21 +100,21 @@ neural_ode_rd(dudt,u0,tspan,Tsit5(),saveat=0.1)
 @testset "adjoint mode trackedu0" begin
     Tracker.zero_grad!(dudt[1].W.grad)
     Tracker.zero_grad!(downsample.W.grad)
-    @test_broken Flux.back!(sum(neural_ode(dudt,u0,tspan,Tsit5(),save_everystep=false,save_start=false)))
-    @test_broken ! iszero(Tracker.grad(dudt[1].W))
+    Flux.back!(sum(neural_ode(dudt,u0,tspan,Tsit5(),save_everystep=false,save_start=false)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
     @test_broken ! iszero(Tracker.grad(downsample.W))
 
     Tracker.zero_grad!(dudt[1].W.grad)
     Tracker.zero_grad!(downsample.W.grad)
-    @test_broken Flux.back!(sum(neural_ode(dudt,u0,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
-    @test_broken ! iszero(Tracker.grad(dudt[1].W))
+    Flux.back!(sum(neural_ode(dudt,u0,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
+    @test ! iszero(Tracker.grad(dudt[1].W))
     @test_broken ! iszero(Tracker.grad(downsample.W))
 
     Tracker.zero_grad!(dudt[1].W.grad)
     Tracker.zero_grad!(downsample.W.grad)
     @test_broken Flux.back!(sum(neural_ode(dudt,u0,tspan,Tsit5(),saveat=0.1)))
-    @test_broken ! iszero(Tracker.grad(dudt[1].W))
-    @test_broken ! iszero(Tracker.grad(downsample.W))
+    #@test ! iszero(Tracker.grad(dudt[1].W))
+    #@test ! iszero(Tracker.grad(downsample.W))
 end;
 
 # RD
