@@ -73,13 +73,13 @@ end;
 @testset "reverse mode batches" begin
     Tracker.zero_grad!(dudt[1].W.grad)
     @test_broken Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),save_everystep=false,save_start=false)))
-    @test_broken ! iszero(Tracker.grad(dudt[1].W))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
     Tracker.zero_grad!(dudt[1].W.grad)
     @test_broken Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
-    @test_broken ! iszero(Tracker.grad(dudt[1].W))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 
     Tracker.zero_grad!(dudt[1].W.grad)
     @test_broken Flux.back!(sum(neural_ode_rd(dudt,xs,tspan,Tsit5(),saveat=0.1)))
-    @test_broken ! iszero(Tracker.grad(dudt[1].W))
+    @test ! iszero(Tracker.grad(dudt[1].W))
 end;
