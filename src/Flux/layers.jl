@@ -7,10 +7,11 @@ function diffeq_rd(p,prob,args...;u0=prob.u0,kwargs...)
   if typeof(u0) <: AbstractArray
     if DiffEqBase.isinplace(prob)
       # use Array{TrackedReal} for mutation to work
-      _prob = remake(prob,u0=convert.(eltype(p),u0),p=p)
+      # Recurse to all Array{TrackedArray}
+      _prob = remake(prob,u0=convert.(recursive_bottom_eltype(p),u0),p=p)
     else
       # use TrackedArray for efficiency of the tape
-      _prob = remake(prob,u0=convert(typeof(p),u0),p=p)
+      _prob = remake(prob,u0=convert(recursive_bottom_eltype(p),u0),p=p)
     end
   else # u0 is functional, ignore the change
     _prob = remake(prob,p=p)

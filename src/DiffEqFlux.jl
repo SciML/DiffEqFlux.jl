@@ -1,6 +1,6 @@
 module DiffEqFlux
 
-using DiffEqBase, Flux, DiffResults, DiffEqSensitivity, ForwardDiff
+using DiffEqBase, Flux, DiffResults, DiffEqSensitivity, ForwardDiff, RecursiveArrayTools
 
 include("Flux/layers.jl")
 include("Flux/neural_de.jl")
