@@ -48,7 +48,7 @@ p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
 params = Flux.Params([p])
 
 function predict_rd() # Our 1-layer neural network
-  Array(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
+  Tracker.collect(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
 end
 ```
 
