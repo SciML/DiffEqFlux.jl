@@ -10,7 +10,8 @@ end
 function neural_ode_rd(model,x,tspan,
                        args...;kwargs...)
   dudt_(u,p,t) = model(u)
-  prob = ODEProblem(dudt_,param(x),tspan)
+  _x = x isa TrackedArray ? x : param(x)
+  prob = ODEProblem(dudt_,_x,tspan)
   # TODO could probably use vcat rather than collect here
   solve(prob, args...; kwargs...) |> Tracker.collect
 end
