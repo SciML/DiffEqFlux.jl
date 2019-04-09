@@ -4,7 +4,7 @@ using DiffEqSensitivity: adjoint_sensitivities_u0
 ## Reverse-Mode via Flux.jl
 
 function diffeq_rd(p,prob,args...;u0=prob.u0,kwargs...)
-  if typeof(u0) <: AbstractArray
+  if typeof(u0) <: AbstractArray && !(typeof(u0) <: TrackedArray)
     if DiffEqBase.isinplace(prob)
       # use Array{TrackedReal} for mutation to work
       # Recurse to all Array{TrackedArray}
@@ -14,7 +14,7 @@ function diffeq_rd(p,prob,args...;u0=prob.u0,kwargs...)
       _prob = remake(prob,u0=convert(recursive_bottom_eltype(p),u0),p=p)
     end
   else # u0 is functional, ignore the change
-    _prob = remake(prob,p=p)
+    _prob = remake(prob,u0=u0,p=p)
   end
   solve(_prob,args...;kwargs...)
 end
