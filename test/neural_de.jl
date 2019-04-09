@@ -92,12 +92,9 @@ downsample = Dense(3,2)
 x0 = Float32.(hcat([0.; 0; 0.], [1.,1.,1.],[2.,2.,2.]))
 u0 = downsample(x0)
 
-
 neural_ode(dudt,u0,tspan,Tsit5(),save_everystep=false,save_start=false)
 neural_ode(dudt,u0,tspan,Tsit5(),saveat=0.1)
 neural_ode_rd(dudt,u0,tspan,Tsit5(),saveat=0.1)
-
-m(save_everystep=false)(x0)
 
 # Adjoint
 @testset "adjoint mode trackedu0" begin
