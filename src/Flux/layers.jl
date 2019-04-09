@@ -59,6 +59,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
 @grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
                               save_start=true,
                               kwargs...)
+
   _prob = remake(prob,u0=Flux.data(u0),p=Flux.data(p))
 
   # Force save_start in the forward pass
@@ -84,6 +85,6 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
                     sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
                     kwargs...)
-    (dp', du0, ntuple(_->nothing, 1+length(args))...)
+    (dp', reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
   end
 end
