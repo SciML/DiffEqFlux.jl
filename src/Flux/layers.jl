@@ -69,7 +69,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
     Δ = Flux.data(Δ)
     function df(out, u, p, t, i)
       if only_end
-        @. out = -Δ
+        @. vec(out) = -vec(Δ)
       else
         @. out = - @view Δ[:, i]
       end
