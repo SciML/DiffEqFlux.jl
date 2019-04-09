@@ -59,10 +59,10 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   # This forces the solver to do the backsolve all the way back to u0
   # Since the start aliases _prob.u0, this doesn't actually use more memory
   # But it cleans up the implementation and makes save_start arg safe.
-
   sol = solve(_prob,args...;save_start=true,kwargs...)
-  out = save_start ? Array(sol) : Array(sol[2:end])
 
+  # If didn't save start, take off first. If only wanted the end, return vector
+  out = save_start ? Array(sol) : (length(sol)==1 ? Array(sol[end]) : Array(sol[2:end]))
   out, Δ -> begin
     Δ = Flux.data(Δ)
     df(out, u, p, t, i) = @. out = - @view Δ[:, i]
