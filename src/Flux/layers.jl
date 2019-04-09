@@ -51,14 +51,34 @@ end
 diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   Flux.Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
 
-@grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,kwargs...)
+@grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
+                              save_start=true,
+                              kwargs...)
   _prob = remake(prob,u0=Flux.data(u0),p=Flux.data(p))
-  sol = solve(_prob,args...;kwargs...)
-  Array(sol), Δ -> begin
+
+  # Force save_start in the forward pass
+  # This forces the solver to do the backsolve all the way back to u0
+  # Since the start aliases _prob.u0, this doesn't actually use more memory
+  # But it cleans up the implementation and makes save_start arg safe.
+  sol = solve(_prob,args...;save_start=true,kwargs...)
+
+  # If didn't save start, take off first. If only wanted the end, return vector
+  only_end = !save_start && length(sol)==2
+  out = save_start ? Array(sol) : (only_end ? sol[end] : Array(sol[2:end]))
+  out, Δ -> begin
     Δ = Flux.data(Δ)
+    function df(out, u, p, t, i)
+      if only_end
+        @. out = -Δ
+      else
+        @. out = - @view Δ[:, i]
+      end
+    end
+
     ts = sol.t
-    df(out, u, p, t, i) = @. out = - @view Δ[:, i]
-    du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;sensealg=SensitivityAlg(quad=false,backsolve=backsolve),kwargs...)
+    du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
+                    sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
+                    kwargs...)
     (dp', du0, ntuple(_->nothing, 1+length(args))...)
   end
 end
