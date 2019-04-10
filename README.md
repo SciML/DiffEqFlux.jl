@@ -11,12 +11,12 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 
 ## Example Usage
 
-For an overview of what this package is for, [see this blog post]().
+For an overview of what this package is for, [see this blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
 
 ### Optimizing parameters of an ODE
 
 First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
-more details, [see the DifferentialEquations.jl documentation]()
+more details, [see the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/latest/)
 
 ```julia
 using DifferentialEquations
@@ -48,7 +48,7 @@ p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
 params = Flux.Params([p])
 
 function predict_rd() # Our 1-layer neural network
-  Array(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
+  Tracker.collect(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
 end
 ```
 
@@ -247,7 +247,8 @@ end
 # Display the ODE with the initial parameter values.
 cb()
 
-Flux.train!(loss_n_ode, params, data, opt, cb = cb)
+ps = Flux.params(dudt)
+Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
 ```
 ## Use with GPUs
 

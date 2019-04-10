@@ -4,3 +4,4 @@ Flux
 DiffEqSensitivity
 DiffResults
 ForwardDiff
+RecursiveArrayTools
