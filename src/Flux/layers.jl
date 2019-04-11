@@ -36,12 +36,18 @@ Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;u0=prob.
   if n === nothing
     result = DiffResults.GradientResult(_p)
     ForwardDiff.gradient!(result, _f, _p)
-    DiffResults.value(result),Δ -> (Δ .* DiffResults.gradient(result), ntuple(_->nothing, 3+length(args))...)
+    DiffResults.value(result), function (Δ)
+      Base.@_noinline_meta
+      (Δ .* DiffResults.gradient(result), ntuple(_->nothing, 3+length(args))...)
+    end
   else
     y = zeros(n)
     result = DiffResults.JacobianResult(y,_p)
     ForwardDiff.jacobian!(result, _f, _p)
-    DiffResults.value(result),Δ -> (DiffResults.jacobian(result)' * Δ, ntuple(_->nothing, 3+length(args))...)
+    DiffResults.value(result), function (Δ)
+      Base.@_noinline_meta
+      (DiffResults.jacobian(result)' * Δ, ntuple(_->nothing, 3+length(args))...)
+    end
   end
 end
 
@@ -71,7 +77,8 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   # If didn't save start, take off first. If only wanted the end, return vector
   only_end = !save_start && length(sol)==2
   out = save_start ? Array(sol) : (only_end ? sol[end] : Array(sol[2:end]))
-  out, Δ -> begin
+  out, function (Δ)
+    Base.@_noinline_meta
     Δ = Flux.data(Δ)
     function df(out, u, p, t, i)
       if only_end
