@@ -6,3 +6,4 @@ DiffResults
 ForwardDiff
 RecursiveArrayTools
 Requires
+Adapt
