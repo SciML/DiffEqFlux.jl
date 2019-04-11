@@ -1,7 +1,7 @@
 module DiffEqFlux
 
 using DiffEqBase, Flux, DiffResults, DiffEqSensitivity, ForwardDiff,
-      Requires, RecursiveArrayTools
+      Requires, RecursiveArrayTools, Adapt
 
 gpu_or_cpu(x) = Array
 function __init__()
