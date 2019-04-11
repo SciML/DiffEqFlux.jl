@@ -1,6 +1,14 @@
 module DiffEqFlux
 
-using DiffEqBase, Flux, DiffResults, DiffEqSensitivity, ForwardDiff, RecursiveArrayTools
+using DiffEqBase, Flux, DiffResults, DiffEqSensitivity, ForwardDiff,
+      Requires, RecursiveArrayTools
+
+gpu_or_cpu(x) = Array
+function __init__()
+    @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin
+        gpu_or_cpu(x::CuArrays.CuArray) = CuArrays.CuArray
+    end
+end
 
 include("Flux/layers.jl")
 include("Flux/neural_de.jl")

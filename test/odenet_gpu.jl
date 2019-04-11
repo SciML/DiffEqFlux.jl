@@ -2,7 +2,7 @@ using DiffEqFlux, Flux, Test, OrdinaryDiffEq, CuArrays
 using Statistics
 #= using Plots =#
 
-## True Solution 
+## True Solution
 u0 = [2.; 0.] |> gpu
 datasize = 30
 tspan = (0.0,25.0)
@@ -13,12 +13,13 @@ function trueODEfunc(du,u,p,t)
 end
 
 true_prob = ODEProblem(trueODEfunc, u0,tspan)
+
 true_sol = solve(true_prob,BS3(),saveat=range(tspan[1],tspan[2],length=datasize))
 
 #= true_sol_plot = solve(true_prob,Tsit5()) =#
 #= plot(true_sol_plot) =#
 
-## Neural ODE 
+## Neural ODE
 dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
 
 function ODEfunc(du,u,p,t)
@@ -31,5 +32,3 @@ pred_sol = solve(pred_prob,BS3(),saveat=range(tspan[1],tspan[2],length=datasize)
 ## Loss
 l1_loss(pred,target) = mean(abs.(pred-target))
 l1_loss(pred_sol,true_sol)
-
-

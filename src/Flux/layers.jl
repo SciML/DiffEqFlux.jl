@@ -50,7 +50,8 @@ end
 
 function diffeq_adjoint(p,prob,args...;u0=prob.u0,kwargs...)
   _prob = remake(prob,u0=u0,p=p)
-  Array(solve(_prob,args...;kwargs...))
+  T = gpu_or_cpu(u0)
+  adapt(T, solve(_prob,args...;kwargs...))
 end
 
 diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
@@ -60,6 +61,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
                               save_start=true,
                               kwargs...)
 
+  T = gpu_or_cpu(u0)
   _prob = remake(prob,u0=Flux.data(u0),p=Flux.data(p))
 
   # Force save_start in the forward pass
@@ -70,7 +72,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
 
   # If didn't save start, take off first. If only wanted the end, return vector
   only_end = !save_start && length(sol)==2
-  out = save_start ? Array(sol) : (only_end ? sol[end] : Array(sol[2:end]))
+  out = save_start ? T(sol) : (only_end ? sol[end] : T(sol[2:end]))
   out, Δ -> begin
     Δ = Flux.data(Δ)
     function df(out, u, p, t, i)
