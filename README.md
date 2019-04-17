@@ -384,12 +384,12 @@ Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 
 ### Neural DE Layer Functions
 
-- `neural_ode(x,model,tspan,args...;kwargs...)` defines a neural ODE layer where
-  `x` is the initial condition, `model` is a Flux.jl model, `tspan` is the
+- `neural_ode(model,x,tspan,args...;kwargs...)` defines a neural ODE layer where
+  `model` is a Flux.jl model, `x` is the initial condition, `tspan` is the
   time span to integrate, and the rest of the arguments are passed to the ODE
   solver. The parameters should be implicit in the `model`.
-- `neural_dmsde(x,model,mp,tspan,args...;kwargs)` defines a neural multiplicative
-  SDE layer where `x` is the initial condition, `model` is a Flux.jl model,
+- `neural_dmsde(model,x,mp,tspan,args...;kwargs)` defines a neural multiplicative
+  SDE layer where `model` is a Flux.jl model, `x` is the initial condition, 
   `tspan` is the time span to integrate, and the rest of the arguments are
   passed to the SDE solver. The noise is assumed to be diagonal multiplicative,
   i.e. the Wiener term is `mp.*u.*dW` for some array of noise constants `mp`.
