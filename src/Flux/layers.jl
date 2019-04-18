@@ -59,6 +59,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
 
 @grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
                               save_start=true,
+                              sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
                               kwargs...)
 
   T = gpu_or_cpu(u0)
@@ -85,7 +86,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
 
     ts = sol.t
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
-                    sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
+                    sensealg=sensealg,
                     kwargs...)
     (dp', reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
   end
