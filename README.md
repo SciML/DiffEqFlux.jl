@@ -186,7 +186,7 @@ For example, this neural ODE would be defined as:
 
 ```julia
 tspan = (0.0f0,25.0f0)
-x -> neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
+x -> neural_ode(model,x,tspan,Tsit5(),saveat=0.1)
 ```
 
 where here we made it a layer that takes in the initial condition and spits
