@@ -5,7 +5,7 @@ function neural_ode(model,x,tspan,
   #= dudt_(u::TrackedArray,p,t) = restructure(model,p)(u) =#
   #= dudt_(u::AbstractArray,p,t) = Flux.data(restructure(model,p)(u)) =#
   prob = ODEProblem(dudt_,x,tspan,p)
-  return diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
+  return diffeq_adjoint(p,x,prob,args...;kwargs...)
 end
 
 #= function neural_ode_rd(model,x,tspan, =#
