@@ -14,7 +14,7 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 DiffEqFlux.jl is not just for neural ordinary differential equations. DiffEqFlux.jl is for neural differential equations.
 As such, it is the first package to support and demonstrate:
 
-- Stiff neural ordinary differential equations
+- Stiff neural ordinary differential equations (neural ODEs)
 - Neural stochastic differential equations (neural SDEs)
 - Neural delay differential equations (neural DDEs)
 - Neural partial differential equations (neural PDEs)
