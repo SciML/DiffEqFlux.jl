@@ -11,8 +11,8 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 
 ## Problem Domain
 
-DiffEqFlux.jl is not just for neural ordinary differential equations. DiffEqFlux.jl is the first package to support
-and demonstrate:
+DiffEqFlux.jl is not just for neural ordinary differential equations. DiffEqFlux.jl is for neural differential equations.
+As such, it is the first package to support and demonstrate:
 
 - Stiff neural ordinary differential equations
 - Neural stochastic differential equations (neural SDEs)
@@ -20,7 +20,9 @@ and demonstrate:
 - Neural partial differential equations (neural PDEs)
 - Neural jump stochastic differential equations (neural jump diffusions)
 
-with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc. methods.
+with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc. methods. For examples, please refer to
+[the release blog post](https://julialang.org/blog/2019/01/fluxdiffeq). Additional demonstrations, like neural
+PDEs and neural jump SDEs, can be found [at this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/) (among many others!).
 
 ## Citation
 
