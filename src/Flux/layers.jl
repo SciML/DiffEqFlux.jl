@@ -38,7 +38,7 @@ Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;u0=prob.
     ForwardDiff.gradient!(result, _f, _p)
     DiffResults.value(result),Δ -> (Δ .* DiffResults.gradient(result), ntuple(_->nothing, 3+length(args))...)
   else
-    y = zeros(n)
+    y = adapt(typeof(_p),zeros(n))
     result = DiffResults.JacobianResult(y,_p)
     ForwardDiff.jacobian!(result, _f, _p)
     DiffResults.value(result),Δ -> (DiffResults.jacobian(result)' * Δ, ntuple(_->nothing, 3+length(args))...)
