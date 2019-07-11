@@ -58,22 +58,34 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   Flux.Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
 
 @grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
-                              save_start=true,
+                              save_start=true,save_end=false,
                               sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
                               kwargs...)
-
   T = gpu_or_cpu(u0)
   _prob = remake(prob,u0=Flux.data(u0),p=Flux.data(p))
 
-  # Force save_start in the forward pass
-  # This forces the solver to do the backsolve all the way back to u0
-  # Since the start aliases _prob.u0, this doesn't actually use more memory
-  # But it cleans up the implementation and makes save_start arg safe.
-  sol = solve(_prob,args...;save_start=true,kwargs...)
+  # Force `save_start` and `save_end` in the forward pass This forces the
+  # solver to do the backsolve all the way back to `u0` Since the start aliases
+  # `_prob.u0`, this doesn't actually use more memory But it cleans up the
+  # implementation and makes `save_start` and `save_end` arg safe.
+  sol = solve(_prob,args...;save_start=true,save_end=true,kwargs...)
 
+  if haskey(kwargs, :saveat)
+    saveat = kwargs[:saveat]
+    tspan = _prob.tspan
+    saveat isa Number && (saveat = tspan[1]:saveat:tspan[2])
+    no_start = !save_start && saveat[1] != tspan[1]
+    no_end = !save_end && kwargs[:saveat][end] != tspan[end]
+  else
+    no_end = false
+    no_start = false
+  end
+  sol_idxs = 1:length(sol)
+  no_start && (sol_idxs = sol_idxs[2:end])
+  no_end && (sol_idxs = sol_idxs[1:end-1])
   # If didn't save start, take off first. If only wanted the end, return vector
-  only_end = !save_start && length(sol)==2
-  out = save_start ? T(sol) : (only_end ? sol[end] : T(sol[2:end]))
+  only_end = length(sol_idxs) == 1
+  out = only_end ? sol[end] : T(sol[sol_idxs])
   out, Δ -> begin
     Δ = Flux.data(Δ)
     function df(out, u, p, t, i)
@@ -84,7 +96,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
       end
     end
 
-    ts = sol.t
+    ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
                     sensealg=sensealg,
                     kwargs...)
