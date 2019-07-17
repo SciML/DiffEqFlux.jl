@@ -313,14 +313,14 @@ end
 prob = ODEProblem(ODEfunc, u0,tspan)
 
 # Runs on a GPU
-sol = solve(prob,BS3(),saveat=0.1)
+sol = solve(prob,Tsit5(),saveat=0.1)
 ```
 
 and the `diffeq` layer functions can be used similarly. Or we can directly use
 the neural ODE layer function, like:
 
 ```julia
-x -> neural_ode(gpu(dudt),gpu(x),tspan,BS3(),saveat=0.1)
+x -> neural_ode(gpu(dudt),gpu(x),tspan,Tsit5(),saveat=0.1)
 ```
 
 ## Mixed Neural DEs
