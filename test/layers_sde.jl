@@ -7,8 +7,8 @@ function lotka_volterra(du,u,p,t)
   du[2] = dy = -δ*y + γ*x*y
 end
 function lotka_volterra_noise(du,u,p,t)
-  du[1] = 0.1u[1]
-  du[2] = 0.1u[2]
+  du[1] = 0.01u[1]
+  du[2] = 0.01u[2]
 end
 prob = SDEProblem(lotka_volterra,lotka_volterra_noise,[1.0,1.0],(0.0,10.0))
 p = param([2.2, 1.0, 2.0, 0.4])
@@ -19,9 +19,9 @@ loss_fd_sde() = sum(abs2,x-1 for x in predict_fd_sde())
 loss_fd_sde()
 Flux.back!(loss_fd_sde())
 
-prob = SDEProblem(lotka_volterra,lotka_volterra_noise,[1.0,1.0],(0.0,2.0))
+prob = SDEProblem(lotka_volterra,lotka_volterra_noise,[1.0,1.0],(0.0,0.5))
 function predict_rd_sde()
-  Tracker.collect(diffeq_rd(p,prob,SOSRI(),saveat=0.0:0.1:2.0))
+  Tracker.collect(diffeq_rd(p,prob,SOSRI(),saveat=0.0:0.1:0.5))
 end
 loss_rd_sde() = sum(abs2,x-1 for x in predict_rd_sde())
 loss_rd_sde()
