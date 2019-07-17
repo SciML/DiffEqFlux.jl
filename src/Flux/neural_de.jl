@@ -16,9 +16,6 @@ function neural_ode_rd(model,x,tspan,
   solve(prob, args...; kwargs...) |> Tracker.collect
 end
 
-neural_msde(x,model,mp,tspan,args...;kwargs...) = neural_msde(x,model,mp,tspan,
-                                                         diffeq_fd,
-                                                         args...;kwargs...)
 function neural_dmsde(model,x,mp,tspan,
                       args...;kwargs...)
   dudt_(u,p,t) = model(u)

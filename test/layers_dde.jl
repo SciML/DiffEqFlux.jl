@@ -1,4 +1,4 @@
-using Flux, DiffEqFlux, DelayDiffEq, Plots
+using Flux, DiffEqFlux, DelayDiffEq, Test
 
 ## Setup DDE to optimize
 function delay_lotka_volterra(du,u,h,p,t)
@@ -11,7 +11,7 @@ h(p,t) = ones(eltype(p),2)
 prob = DDEProblem(delay_lotka_volterra,[1.0,1.0],h,(0.0,10.0),constant_lags=[0.1])
 p = param([2.2, 1.0, 2.0, 0.4])
 function predict_fd_dde()
-  diffeq_fd(p,sol->sol[1,:],101,prob,MethodOfSteps(Tsit5()),saveat=0.1)
+  diffeq_fd(p,sol->sol[1,:],101,prob,MethodOfSteps(Tsit5()),saveat=0.0:0.1:10.0)
 end
 loss_fd_dde() = sum(abs2,x-1 for x in predict_fd_dde())
 @test_broken loss_fd_dde()

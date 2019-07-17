@@ -1,4 +1,4 @@
-using Flux, DiffEqFlux, StochasticDiffEq, Plots
+using Flux, DiffEqFlux, StochasticDiffEq
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -19,9 +19,10 @@ loss_fd_sde() = sum(abs2,x-1 for x in predict_fd_sde())
 loss_fd_sde()
 Flux.back!(loss_fd_sde())
 
+prob = SDEProblem(lotka_volterra,lotka_volterra_noise,[1.0,1.0],(0.0,2.0))
 function predict_rd_sde()
-  Array(diffeq_rd(p,prob,SOSRI(),saveat=0.1))
+  Tracker.collect(diffeq_rd(p,prob,SOSRI(),saveat=0.0:0.1:2.0))
 end
 loss_rd_sde() = sum(abs2,x-1 for x in predict_rd_sde())
 loss_rd_sde()
-@test_broken Flux.back!(loss_rd_sde())
+Flux.back!(loss_rd_sde())

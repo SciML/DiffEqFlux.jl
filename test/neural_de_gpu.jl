@@ -145,4 +145,4 @@ end;
     @test_broken Flux.back!(sum(neural_ode_rd(dudt,u0,tspan,Tsit5(),saveat=0.1)))
     #@test ! iszero(Tracker.grad(dudt[1].W)) =#
     #@test ! iszero(Tracker.grad(downsample.W)) =#
-end; =#
+end;

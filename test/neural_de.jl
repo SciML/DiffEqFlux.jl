@@ -40,10 +40,9 @@ end;
 
 mp = Float32[0.1,0.1]
 Tracker.zero_grad!(dudt[1].W.grad)
-neural_dmsde(dudt,x,mp,tspan,SOSRI(),saveat=0.1)
-Flux.back!(sum(neural_dmsde(dudt,x,mp,tspan,SOSRI(),saveat=0.1)))
+neural_dmsde(dudt,x,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.1)
+Flux.back!(sum(neural_dmsde(dudt,x,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)))
 @test ! iszero(Tracker.grad(dudt[1].W))
-
 
 # Batch
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))

@@ -31,9 +31,10 @@ cb = function ()
 end
 
 # Display the ODE with the current parameter values.
-cb()
-
+loss1 = loss_rd()
 Flux.train!(loss_rd, params, data, opt, cb = cb)
+loss2 = loss_rd()
+@test 10loss2 < loss1
 
 # Forward-mode, R^n -> R^m layer
 
@@ -58,9 +59,10 @@ cb = function ()
 end
 
 # Display the ODE with the current parameter values.
-cb()
-
+loss1 = loss_fd()
 Flux.train!(loss_fd, params, data, opt, cb = cb)
+loss2 = loss_fd()
+@test 10loss2 < loss1
 
 # Forward-mode, R^n -> R loss
 
@@ -84,9 +86,12 @@ cb = function ()
 end
 
 # Display the ODE with the current parameter values.
-cb()
-
+loss1 = loss_fd2()
 Flux.train!(loss_fd2, params, data, opt, cb = cb)
+loss2 = loss_fd2()
+@test 10loss2 < loss1
+
+
 
 # Adjoint sensitivity
 p = param([2.2, 1.0, 2.0, 0.4])
@@ -108,6 +113,7 @@ cb = function ()
 end
 
 # Display the ODE with the current parameter values.
-cb()
-
+loss1 = loss_adjoint()
 Flux.train!(loss_adjoint, params, data, opt, cb = cb)
+loss2 = loss_adjoint()
+@test 10loss2 < loss1
