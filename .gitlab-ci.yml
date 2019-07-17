@@ -20,10 +20,7 @@ build:
                 versioninfo()"
     - julia --project -e "using Pkg;
                           Pkg.update();
-                          Pkg.instantiate();
-                          Pkg.add(\"OrdinaryDiffEq\");
-                          pkg\"precompile\";
-                          using OrdinaryDiffEq;"
+                          Pkg.instantiate();"
   only:
   - master
   - tags
@@ -48,7 +45,6 @@ test-GPU:
     - julia -e "using InteractiveUtils;
                 versioninfo()"
     - julia --project -e "using Pkg; Pkg.add(\"CuArrays\");
-                          Pkg.add(\"OrdinaryDiffEq\");
                           Pkg.test(\"DiffEqFlux\"; coverage=true);"
   only:
   - master
