@@ -104,7 +104,7 @@ neural_ode_rd(dudt,u0,tspan,Tsit5(),saveat=0.1)
 # Adjoint
 
 @testset "adjoint mode trackedu0" begin
-    @test_broken
+    @test_broken begin
         Tracker.zero_grad!(dudt[1].W.grad)
         Tracker.zero_grad!(downsample.W.grad)
         m1 = Chain(downsample, u0->neural_ode(dudt,u0,tspan,Tsit5(),save_everystep=false,save_start=false)) #broke
