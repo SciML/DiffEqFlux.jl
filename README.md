@@ -286,9 +286,9 @@ cb = function () #callback function to observe training
   display(loss_n_ode())
   # plot current prediction against data
   cur_pred = Flux.data(predict_n_ode())
-  pl = scatter(0.0:0.1:10.0,ode_data[1,:],label="data")
-  scatter!(pl,0.0:0.1:10.0,cur_pred[1,:],label="prediction")
-  plot(pl)
+  pl = scatter(t,ode_data[1,:],label="data")
+  scatter!(pl,t,cur_pred[1,:],label="prediction")
+  display(plot(pl))
 end
 
 # Display the ODE with the initial parameter values.
