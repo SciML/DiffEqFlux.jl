@@ -88,7 +88,7 @@ p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
 params = Flux.Params([p])
 
 function predict_rd() # Our 1-layer neural network
-  Tracker.collect(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
+  Tracker.collect(diffeq_adjoint(p,prob,Tsit5(),saveat=0.1))
 end
 ```
 
@@ -97,7 +97,7 @@ the Lotka-Volterra solution constant `x(t)=1`, so we defined our loss as the
 squared distance from 1:
 
 ```julia
-loss_rd() = sum(abs2,x-1 for x in predict_rd())
+loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
 ```
 
 Lastly, we train the neural network using Flux to arrive at parameters which
@@ -107,7 +107,7 @@ optimize for our goal:
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function () #callback function to observe training
-  display(loss_rd())
+  display(loss_adjoint())
   # using `remake` to re-create our `prob` with current parameters `p`
   display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
@@ -115,12 +115,12 @@ end
 # Display the ODE with the initial parameter values.
 cb()
 
-Flux.train!(loss_rd, params, data, opt, cb = cb)
+Flux.train!(loss_adjoint, params, data, opt, cb = cb)
 ```
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
 
-Note that by using anonymous functions, this `diffeq_rd` can be used as a
+Note that by using anonymous functions, this `diffeq_adjoint` can be used as a
 layer in a neural network `Chain`, for example like
 
 ```julia
@@ -145,6 +145,13 @@ m = Chain(
   Dense(32, 10),
   softmax)
 ```
+
+Similarly, `diffeq_adjoint`, a O(1) memory adjoint implementation, can be
+replaced with `diffeq_rd` for reverse-mode automatic differentiation or
+`diffeq_fd` for forward-mode automatic differentiation. `diffeq_fd` will
+be fastest with small numbers of parameters, while `diffeq_adjoint` will
+be the fastest when there are large numbers of parameters (like with a
+neural ODE).
 
 ### Using Other Differential Equations
 
