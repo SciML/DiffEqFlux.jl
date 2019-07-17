@@ -1,7 +1,7 @@
 name = "DiffEqFlux"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "v0.5.1"
+version = "v0.5.2"
 
 [deps]
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
