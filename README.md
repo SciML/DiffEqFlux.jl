@@ -24,6 +24,14 @@ with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc. method
 [the release blog post](https://julialang.org/blog/2019/01/fluxdiffeq). Additional demonstrations, like neural
 PDEs and neural jump SDEs, can be found [at this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/) (among many others!).
 
+Do not limit yourself to the current neuralization. With this package, you can explore various ways to integrate
+the two methodologies:
+
+- Neural networks can be defined where the “activations” are nonlinear functions described by differential equations.
+- Neural networks can be defined where some layers are ODE solves
+- ODEs can be defined where some terms are neural networks
+- Cost functions on ODEs can define neural networks
+
 ## Citation
 
 If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond neural ODEs, please cite:
