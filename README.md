@@ -96,7 +96,7 @@ p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
 params = Flux.Params([p])
 
 function predict_rd() # Our 1-layer neural network
-  Tracker.collect(diffeq_adjoint(p,prob,Tsit5(),saveat=0.1))
+  Tracker.collect(diffeq_adjoint(p,prob,Tsit5(),saveat=0.0:0.1:10.0))
 end
 ```
 
@@ -117,7 +117,7 @@ opt = ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_adjoint())
   # using `remake` to re-create our `prob` with current parameters `p`
-  display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.0:0.1:10.0),ylim=(0,6)))
 end
 
 # Display the ODE with the initial parameter values.
