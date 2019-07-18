@@ -415,7 +415,9 @@ Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 - `diffeq_rd(p,prob, args...;u0 = prob.u0, kwargs...)` uses Flux.jl's
   reverse-mode AD through the differential equation solver with parameters `p`
   and initial condition `u0`. The rest of the arguments are passed to the
-  differential equation solver. The return is the DESolution.
+  differential equation solver. The return is the DESolution. Note: if you
+  use this function, it is much better to use the allocating out of place
+  form (`f(u,p,t)` for ODEs) than the in place form (`f(du,u,p,t)` for ODEs)!
 - `diffeq_fd(p,reduction,n,prob,args...;u0 = prob.u0, kwargs...)` uses
   ForwardDiff.jl's forward-mode AD through the differential equation solver
   with parameters `p` and initial condition `u0`. `n` is the output size
