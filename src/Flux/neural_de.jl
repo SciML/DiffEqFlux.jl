@@ -1,3 +1,12 @@
+struct NeuralODE
+    model
+    tspan
+end
+
+function (n::NeuralODE)(x,args...;kwargs...)
+    return neural_ode(n.model,x,n.tspan,args...;kwargs...)
+end
+
 function neural_ode(model,x,tspan,
                     args...;kwargs...)
   p = destructure(model)

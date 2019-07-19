@@ -139,3 +139,11 @@ end;
     #@test ! iszero(Tracker.grad(dudt[1].W))
     #@test ! iszero(Tracker.grad(downsample.W))
 end;
+
+@testset "struct NeuralODE" begin
+    using BenchmarkTools
+    no = DiffEqFlux.NeuralODE(dudt,tspan)
+    struct_sol = no(u0,Tsit5(),save_everystep=false,save_start=false)
+    func_sol = neural_ode(dudt,u0,tspan,Tsit5(),save_everystep=false,save_start=false)
+    @test struct_sol == func_sol
+end;
