@@ -148,3 +148,22 @@ end;
     #@test ! iszero(Tracker.grad(dudt[1].W)) =#
     #@test ! iszero(Tracker.grad(downsample.W)) =#
 end;
+
+@testset "stay on gpu" begin
+    using CuArrays
+    x = gpu(randn(784,10))
+    down = Chain(
+                 Dense(784,20,tanh)
+                )|>gpu
+    nn = Chain(
+               Dense(20,10,tanh),
+               Dense(10,10,tanh),
+               Dense(10,20,tanh)
+              ) |>gpu
+    fc = Chain(
+               Dense(20,10)
+              )|>gpu
+    nn_ode(x) = neural_ode(nn,x,gpu((0.f0,1.f0)), Tsit5(),save_everystep=false,reltol=1e-3,abstol=1e-3, save_start=false)
+    @test_broken typeof(nn(down(x))) == typeof(nn_ode(down(x)))
+end
+
