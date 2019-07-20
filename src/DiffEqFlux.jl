@@ -10,8 +10,8 @@ function __init__()
         gpu_or_cpu(x::TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}) = CuArrays.CuArray
         gpu_or_cpu(x::Transpose{<:Any,<:CuArrays.CuArray}) = CuArrays.CuArray
         gpu_or_cpu(x::Adjoint{<:Any,<:CuArrays.CuArray}) = CuArrays.CuArray
-        gpu_or_cpu(x::Adjoint{<:Any,{TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}}) = CuArrays.CuArray
-        gpu_or_cpu(x::Transpose{<:Any,{TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}}) = CuArrays.CuArray
+        gpu_or_cpu(x::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.CuArray
+        gpu_or_cpu(x::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.CuArray
     end
 end
 
