@@ -7,6 +7,9 @@ dudt = Chain(Dense(2,50,tanh),Dense(50,2))
 @testset "only end" begin
     only_end = neural_ode(dudt,xs,tspan,Tsit5(),save_everystep=false,save_start=false)
     @test_broken size(only_end)[end]==1
+    CuArrays.allowscalar(false)
+    only_end = neural_ode(dudt,xs,tspan,Tsit5(),save_everystep=false,save_start=false)
+    @test_broken size(only_end)[end]==1
 end
 
 
