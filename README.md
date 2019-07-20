@@ -24,6 +24,14 @@ with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc. method
 [the release blog post](https://julialang.org/blog/2019/01/fluxdiffeq). Additional demonstrations, like neural
 PDEs and neural jump SDEs, can be found [at this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/) (among many others!).
 
+Do not limit yourself to the current neuralization. With this package, you can explore various ways to integrate
+the two methodologies:
+
+- Neural networks can be defined where the “activations” are nonlinear functions described by differential equations.
+- Neural networks can be defined where some layers are ODE solves
+- ODEs can be defined where some terms are neural networks
+- Cost functions on ODEs can define neural networks
+
 ## Citation
 
 If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond neural ODEs, please cite:
@@ -88,7 +96,7 @@ p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
 params = Flux.Params([p])
 
 function predict_rd() # Our 1-layer neural network
-  Tracker.collect(diffeq_adjoint(p,prob,Tsit5(),saveat=0.1))
+  Tracker.collect(diffeq_adjoint(p,prob,Tsit5(),saveat=0.0:0.1:10.0))
 end
 ```
 
@@ -109,7 +117,7 @@ opt = ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_adjoint())
   # using `remake` to re-create our `prob` with current parameters `p`
-  display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.0:0.1:10.0),ylim=(0,6)))
 end
 
 # Display the ODE with the initial parameter values.
@@ -313,14 +321,14 @@ end
 prob = ODEProblem(ODEfunc, u0,tspan)
 
 # Runs on a GPU
-sol = solve(prob,BS3(),saveat=0.1)
+sol = solve(prob,Tsit5(),saveat=0.1)
 ```
 
 and the `diffeq` layer functions can be used similarly. Or we can directly use
 the neural ODE layer function, like:
 
 ```julia
-x -> neural_ode(gpu(dudt),gpu(x),tspan,BS3(),saveat=0.1)
+x -> neural_ode(gpu(dudt),gpu(x),tspan,Tsit5(),saveat=0.1)
 ```
 
 ## Mixed Neural DEs
@@ -415,7 +423,9 @@ Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 - `diffeq_rd(p,prob, args...;u0 = prob.u0, kwargs...)` uses Flux.jl's
   reverse-mode AD through the differential equation solver with parameters `p`
   and initial condition `u0`. The rest of the arguments are passed to the
-  differential equation solver. The return is the DESolution.
+  differential equation solver. The return is the DESolution. Note: if you
+  use this function, it is much better to use the allocating out of place
+  form (`f(u,p,t)` for ODEs) than the in place form (`f(du,u,p,t)` for ODEs)!
 - `diffeq_fd(p,reduction,n,prob,args...;u0 = prob.u0, kwargs...)` uses
   ForwardDiff.jl's forward-mode AD through the differential equation solver
   with parameters `p` and initial condition `u0`. `n` is the output size
