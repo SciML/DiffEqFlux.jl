@@ -61,6 +61,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
                               save_start=true,save_end=false,
                               sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
                               kwargs...)
+
   T = gpu_or_cpu(u0)
   _prob = remake(prob,u0=Flux.data(u0),p=Flux.data(p))
 
@@ -85,7 +86,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   no_end && (sol_idxs = sol_idxs[1:end-1])
   # If didn't save start, take off first. If only wanted the end, return vector
   only_end = length(sol_idxs) == 1
-  out = only_end ? sol[end] : T(sol[sol_idxs])
+  out = only_end ? sol[end] : reduce(hcat,sol[sol_idxs].u)
   out, Δ -> begin
     Δ = Flux.data(Δ)
     function df(out, u, p, t, i)
