@@ -71,22 +71,15 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   # implementation and makes `save_start` and `save_end` arg safe.
   sol = solve(_prob,args...;save_start=true,save_end=true,kwargs...)
 
-  if haskey(kwargs, :saveat)
-    saveat = kwargs[:saveat]
-    tspan = _prob.tspan
-    saveat isa Number && (saveat = tspan[1]:saveat:tspan[2])
-    no_start = !save_start && saveat[1] != tspan[1]
-    no_end = !save_end && kwargs[:saveat][end] != tspan[end]
-  else
-    no_end = false
-    no_start = false
-  end
+  no_start = !save_start
+  no_end = !save_end
   sol_idxs = 1:length(sol)
   no_start && (sol_idxs = sol_idxs[2:end])
   no_end && (sol_idxs = sol_idxs[1:end-1])
   # If didn't save start, take off first. If only wanted the end, return vector
-  only_end = length(sol_idxs) == 1
+  only_end = length(sol_idxs) <= 1
   u = sol[sol_idxs]
+  only_end && (sol_idxs = 1)
   out = only_end ? sol[end] : reduce((x,y)->cat(x,y,dims=ndims(u)),u.u)
   out, Δ -> begin
     Δ = Flux.data(Δ)
