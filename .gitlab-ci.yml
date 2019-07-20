@@ -44,7 +44,7 @@ test-GPU:
     - export PATH="$(pwd)/julia-1.1.1/bin:$PATH"
     - julia -e "using InteractiveUtils;
                 versioninfo()"
-    - julia --project -e "using Pkg; Pkg.build(\"LLVM\"); Pkg.add(\"CuArrays\");
+    - julia --project -e "using Pkg; Pkg.add(\"CuArrays\");
                           Pkg.test(\"DiffEqFlux\"; coverage=true);"
   only:
   - master
