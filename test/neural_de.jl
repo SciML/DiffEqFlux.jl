@@ -8,6 +8,8 @@ neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)
 neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
 neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)
 
+Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)))
+
 # Adjoint
 @testset "adjoint mode" begin
     Tracker.zero_grad!(dudt[1].W.grad)
