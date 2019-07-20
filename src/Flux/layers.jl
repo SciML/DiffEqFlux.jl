@@ -86,7 +86,8 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   no_end && (sol_idxs = sol_idxs[1:end-1])
   # If didn't save start, take off first. If only wanted the end, return vector
   only_end = length(sol_idxs) == 1
-  out = only_end ? sol[end] : reduce(hcat,sol[sol_idxs].u)
+  u = sol[sol_idxs]
+  out = only_end ? sol[end] : cat(u.u...,dims=ndims(u))
   out, Δ -> begin
     Δ = Flux.data(Δ)
     function df(out, u, p, t, i)
