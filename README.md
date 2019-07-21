@@ -61,11 +61,6 @@ If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond neu
 
 For an overview of what this package is for, [see this blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
 
-## A Note About Performance
-
-DiffEqFlux.jl implements all interactions of automatic differentiation systems to satisfy completeness, but that
-does not mean that every combination is a good combination. 
-
 ### Optimizing parameters of an ODE
 
 First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
@@ -585,6 +580,20 @@ plot(p1,p2,layout=(2,1))
 
 (note: for simplicity we have used a constant `mp` vector, though once can `param` and
 train this value as well.)
+
+Try this with GPUs as well!
+
+### Neural Jump Diffusions (Neural Jump SDE) and Neural Partial Differential Equations (Neural PDEs)
+
+For the sake of not having a never-ending documentation of every single combination of CPU/GPU with
+every layer and every neural differential equation, we will end here. But you may want to consult
+[this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/) which
+showcases defining neural jump diffusions and neural partial differential equations.
+
+## A Note About Performance
+
+DiffEqFlux.jl implements all interactions of automatic differentiation systems to satisfy completeness, but that
+does not mean that every combination is a good combination. 
 
 ### Performance tl;dr
 
