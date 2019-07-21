@@ -193,7 +193,13 @@ loss_rd_dde() = sum(abs2,x-1 for x in predict_rd_dde())
 loss_rd_dde()
 ```
 
-Or we can use a stochastic differential equation:
+Notice that we used mutating reverse-mode to handle a small delay differential
+equation, a strategy that can be good for small equations (see the performance
+discussion for more details on other forms).
+
+Or we can use a stochastic differential equation. Here we demonstrate
+`diffeq_fd` for forward-mode automatic differentiation of a small differential
+equation:
 
 ```julia
 function lotka_volterra_noise(du,u,p,t)
@@ -205,7 +211,7 @@ prob = SDEProblem(lotka_volterra,lotka_volterra_noise,[1.0,1.0],(0.0,10.0))
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 function predict_fd_sde()
-  diffeq_fd(p,reduction,101,prob,SOSRI(),saveat=0.1)
+  diffeq_fd(p,Array,202,prob,SOSRI(),saveat=0.1)
 end
 loss_fd_sde() = sum(abs2,x-1 for x in predict_fd_sde())
 loss_fd_sde()
@@ -230,16 +236,19 @@ Flux.train!(loss_fd_sde, params, data, opt, cb = cb)
 We can use DiffEqFlux.jl to define, solve, and train neural ordinary differential
 equations. A neural ODE is an ODE where a neural network defines its derivative
 function. Thus for example, with the multilayer perceptron neural network
-`Chain(Dense(2,50,tanh),Dense(50,2))`, a neural ODE would be defined as having
-the ODE function:
+`Chain(Dense(2,50,tanh),Dense(50,2))`, the best way to define a neural ODE by hand
+would be to use non-mutating adjoints, which looks like:
 
 ```julia
-model = Chain(Dense(2,50,tanh),Dense(50,2))
-# Define the ODE as the forward pass of the neural network with weights `p`
-function dudt(du,u,p,t)
-    du .= model(u)
-end
+p = DiffEqFlux.destructure(model)
+dudt_(u::TrackedArray,p,t) = DiffEqFlux.restructure(model,p)(u)
+dudt_(u::AbstractArray,p,t) = Flux.data(DiffEqFlux.restructure(model,p)(u))
+prob = ODEProblem(dudt_,x,tspan,p)
+my_neural_ode_prob = diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
 ```
+
+(`DiffEqFlux.restructure` and `DiffEqFlux.destructure` are helper functions
+which transform the neural network to use parameters `p`)
 
 A convenience function which handles all of the details is `neural_ode`. To
 use `neural_ode`, you give it the initial condition, the internal neural
@@ -282,7 +291,11 @@ dudt = Chain(x -> x.^3,
 n_ode(x) = neural_ode(dudt,x,tspan,Tsit5(),saveat=t,reltol=1e-7,abstol=1e-9)
 ```
 
-And build a neural network around it. We will use the L2 loss of the network's
+Here we used the `x -> x.^3` assumption in the model. By incorporating structure
+into our equations, we can reduce the required size and training time for the
+neural network, but a good guess needs to be known!
+
+From here we build a loss function around it. We will use the L2 loss of the network's
 output against the time series data:
 
 ```julia
@@ -319,7 +332,7 @@ condition is a GPU array. Thus for example, we can define a neural ODE by hand
 that runs on the GPU:
 
 ```julia
-u0 = [2.; 0.] |> gpu
+u0 = Float32[2.; 0.] |> gpu
 dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
 
 function ODEfunc(du,u,p,t)
@@ -422,6 +435,154 @@ cb()
 
 Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 ```
+
+## Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.
+
+With neural stochastic differential equations, there is once again a helper form `neural_dmsde` which can
+be used for the multiplicative noise case (consult the layers API documentation, or 
+[this full example using the layer function](https://github.com/MikeInnes/zygote-paper/blob/master/neural_sde/neural_sde.jl)). 
+
+However, since there are far too many possible combinations for the API to support, in many cases you will want to 
+performantly define neural differential equations for non-ODE systems from scratch. For these systems, it is generally 
+best to use `diffeq_rd` with non-mutating (out-of-place) forms. For example, the following defines a neural SDE with
+neural networks for both the drift and diffusion terms:
+
+```julia
+dudt_(u,p,t) = model(u)
+g(u,p,t) = model2(u)
+prob = SDEProblem(dudt_,g,param(x),tspan,nothing)
+```
+
+where `model` and `model2` are different neural networks. The same can apply to a neural delay differential equation.
+Its out-of-place formulation is `f(u,h,p,t)`. Thus for example, if we want to define a neural delay differential equation
+which uses the history value at `p.tau` in the past, we can define:
+
+```julia
+dudt_(u,p,t) = model([u;h(t-p.tau)])
+prob = DDEProblem(dudt_,u0,h,tspan,nothing)
+```
+
+### Neural SDE Example
+
+First let's build training data from the same example as the neural ODE:
+
+```julia
+using Flux, DiffEqFlux, StochasticDiffEq, Plots, DiffEqBase.EnsembleAnalysis
+
+u0 = Float32[2.; 0.]
+datasize = 30
+tspan = (0.0f0,1.0f0)
+
+function trueODEfunc(du,u,p,t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u.^3)'true_A)'
+end
+t = range(tspan[1],tspan[2],length=datasize)
+mp = Float32[0.2,0.2]
+function true_noise_func(du,u,p,t)
+    du .= mp.*u
+end
+prob = SDEProblem(trueODEfunc,true_noise_func,u0,tspan)
+```
+
+For our dataset we will use DifferentialEquations.jl's [parallel ensemble interface](http://docs.juliadiffeq.org/latest/features/ensemble.html)
+to generate ata from the average of 100 runs of the SDE:
+
+```julia
+# Take a typical sample from the mean
+ensemble_prob = EnsembleProblem(prob)
+ensemble_sol = solve(ensemble_prob,SOSRI(),trajectories = 100)
+ensemble_sum = EnsembleSummary(ensemble_sol)
+sde_data = Array(timeseries_point_mean(ensemble_sol,t))
+```
+
+Now we build a neural SDE. For simplicity we will use the `neural_dmsde`
+multiplicative noise neural SDE layer function:
+
+```julia
+dudt = Chain(x -> x.^3,
+             Dense(2,50,tanh),
+             Dense(50,2))
+ps = Flux.params(dudt)
+n_sde = x->neural_dmsde(dudt,x,mp,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
+```
+
+Let's see what that looks like:
+
+```julia
+pred = n_sde(u0) # Get the prediction using the correct initial condition
+
+dudt_(u,p,t) = Flux.data(dudt(u))
+g(u,p,t) = mp.*u
+nprob = SDEProblem(dudt_,g,u0,(0.0f0,1.2f0),nothing)
+
+ensemble_nprob = EnsembleProblem(nprob)
+ensemble_nsol = solve(monte_nprob,SOSRI(),num_monte = 100)
+ensemble_nsum = EnsembleSummary(monte_nsol)
+p1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
+scatter!(p1,t,sde_data',lw=3)
+
+scatter(t,sde_data[1,:],label="data")
+scatter!(t,Flux.data(pred[1,:]),label="prediction")
+```
+
+Now just as with the neural ODE we define a loss function:
+
+```julia
+function predict_n_sde()
+  n_sde(u0)
+end
+loss_n_sde1() = sum(abs2,sde_data .- predict_n_sde())
+loss_n_sde10() = sum([sum(abs2,sde_data .- predict_n_sde()) for i in 1:10])
+Flux.back!(loss_n_sde1())
+
+data = Iterators.repeated((), 10)
+opt = ADAM(0.025)
+cb = function () #callback function to observe training
+  sample = predict_n_sde()
+  # loss against current data
+  display(sum(abs2,sde_data .- sample))
+  # plot current prediction against data
+  cur_pred = Flux.data(sample)
+  pl = scatter(t,sde_data[1,:],label="data")
+  scatter!(pl,t,cur_pred[1,:],label="prediction")
+  display(plot(pl))
+end
+
+# Display the SDE with the initial parameter values.
+cb()
+```
+
+Here we made two loss functions: one which uses single runs of the SDE and another which
+uses multiple runs. This is beceause an SDE is stochastic, so trying to fit the mean to
+high precision may require a taking the mean of a few trajectories (the more trajectories
+the more precise the calculation is). Thus to fit this, we first get in the general area
+through single SDE trajectory backprops, and then hone in with the mean:
+
+```julia
+Flux.train!(loss_n_sde1 , ps, Iterators.repeated((), 100), opt, cb = cb)
+Flux.train!(loss_n_sde10, ps, Iterators.repeated((), 20), opt, cb = cb)
+```
+
+And now we plot the solution to an ensemble of the trained neural SDE:
+
+```julia
+dudt_(u,p,t) = Flux.data(dudt(u))
+g(u,p,t) = mp.*u
+nprob = SDEProblem(dudt_,g,u0,(0.0f0,1.2f0),nothing)
+
+ensemble_nprob = EnsembleProblem(nprob)
+ensemble_nsol = solve(monte_nprob,SOSRI(),trajectories = 100)
+ensemble_nsum = EnsembleSummary(monte_nsol)
+#plot(monte_nsol,color=1,alpha=0.3)
+p2 = plot(monte_nsum, title = "Neural SDE: After Training", xlabel="Time")
+scatter!(p2,t,sde_data',lw=3,label=["x" "y" "z" "y"])
+
+plot(p1,p2,layout=(2,1))
+```
+
+(note: for simplicity we have used a constant `mp` vector, though once can `param` and
+train this value as well.)
 
 ### Performance tl;dr
 
