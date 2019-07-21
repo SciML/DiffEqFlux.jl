@@ -61,6 +61,11 @@ If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond neu
 
 For an overview of what this package is for, [see this blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
 
+## A Note About Performance
+
+DiffEqFlux.jl implements all interactions of automatic differentiation systems to satisfy completeness, but that
+does not mean that every combination is a good combination. 
+
 ### Optimizing parameters of an ODE
 
 First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
@@ -415,6 +420,48 @@ cb()
 
 Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 ```
+
+### Performance tl;dr
+
+- Use `diffeq_adjoint` with an out-of-place non-mutating function `f(u,p,t)` on ODEs without events.
+- Use `diffeq_rd` with an out-of-place non-mutating function (`f(u,p,t)` on ODEs/SDEs, `f(du,u,p,t)` for DAEs,
+  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/latest/index.html) for other equations) 
+  for non-ODE neural differential equations or ODEs with events
+- If the neural network is a sufficiently small (or non-existant) part of the differential equation, consider
+  `diffeq_fd` with the mutating form (`f(du,u,p,t)`).
+- Always use GPUs if the majority of the time is in larger kernels (matrix multiplication, PDE convolutions, etc.)
+
+### Extended Performance Discussion
+
+The major options to keep in mind are:
+
+- in-place vs out-of-place: for ODEs this amounts to `f(du,u,p,t)` mutating `du` vs `du = f(u,p,t)`. In almost all
+  scientific computing scenarios with floating point numbers, `f(du,u,p,t)` is highly preferred. This extends to
+  dual numbers and thus forward difference (`diffeq_fd`). However, reverse-mode automatic differentiation as implemented
+  by Flux.jl's Tracker.jl does not allow for mutation on its `TrackedArray` type, meaning that mutation is supported 
+  by `Array{TrackedReal}`. This fallback is exceedingly slow due to the large trace that is created, and thus out-of-place
+  (`f(u,p,t)` for ODEs) is preferred in this case. 
+- For adjoints, this fact is complicated due to the choices in the `SensitivityAlg`. See 
+  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Options-1). 
+  When `autojacvec=true`, a backpropogation is performed by Tracker in the intermediate steps, meaning the rule about mutation
+  applies. However, the majority of the computation is not hte `v^T*J` computation of the backpropogation, so it is not always
+  obvious to determine the best option given that mutation is slow for backprop but is much faster for large ODEs with many
+  scalar operations. But the latter portion of that statement is the determiner: if there are sufficiently large operations
+  which are dominating the runtime, then the backpropogation can be made trivial by using mutation, and thus `f(u,p,t)` is
+  more efficient. One example which falls into this case is the neural ODE which has large matrix multiply operations. However,
+  if the neural network is a small portion of the equation and there is heavy reliance on directly specified nonlinear forms
+  in the differential equation, `f(du,u,p,t)` with the option `sense=SensitivityAlg(autojacvec=false)` may be preferred. 
+- `diffeq_adjoint` currently only applies to ODEs, though continued development will handle other equations in the future.
+- `diffeq_adjoint` has O(1) memory with the default `backsolve`. However, it is known that this is unstable on many equations
+  with high enough stiffness (this is a fundamental fact of the numerics, see 
+  [the blog post for details and an example](https://julialang.org/blog/2019/01/fluxdiffeq). Likewise, this instability is not
+  often seen when training a neural ODE against real data. Thus it is recommended to try with the default options first, and 
+  then set `backsolve=false` if unstable gradients are found. When `backsolve=false` is set, this will trigger the `SensitivityAlg`
+  to use [checkpointed adjoints](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Options-1), which are more stable
+  but take more computation.
+- When the equation has small enough parameters, or they are not confined to large operations, `diffeq_fd` will be the fastest.
+  However, as it is well-known, forward-mode AD does not scale well for calculating the gradient with respect to large numbers
+  of parameters, and thus it will not scale well in cases like the neural ODE.
 
 ## API Documentation
 
