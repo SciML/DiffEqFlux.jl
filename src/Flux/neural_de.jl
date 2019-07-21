@@ -1,10 +1,15 @@
 struct NeuralODE
     model
     tspan
+    solver
+    kwargs
 end
+Flux.@treelike NeuralODE
 
-function (n::NeuralODE)(x,args...;kwargs...)
-    return neural_ode(n.model,x,n.tspan,args...;kwargs...)
+function Flux.params(n::NeuralODE) = params(n.model)
+
+function (n::NeuralODE)(x)
+    return neural_ode(n.model,x,n.tspan,n.solver, n.kwargs...)
 end
 
 function neural_ode(model,x,tspan,
