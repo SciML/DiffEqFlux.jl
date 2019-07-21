@@ -512,8 +512,8 @@ g(u,p,t) = mp.*u
 nprob = SDEProblem(dudt_,g,u0,(0.0f0,1.2f0),nothing)
 
 ensemble_nprob = EnsembleProblem(nprob)
-ensemble_nsol = solve(monte_nprob,SOSRI(),num_monte = 100)
-ensemble_nsum = EnsembleSummary(monte_nsol)
+ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100)
+ensemble_nsum = EnsembleSummary(ensemble_nsol)
 p1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
 scatter!(p1,t,sde_data',lw=3)
 
@@ -568,9 +568,8 @@ nprob = SDEProblem(dudt_,g,u0,(0.0f0,1.2f0),nothing)
 
 ensemble_nprob = EnsembleProblem(nprob)
 ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100)
-ensemble_nsum = EnsembleSummary(monte_nsol)
-#plot(monte_nsol,color=1,alpha=0.3)
-p2 = plot(monte_nsum, title = "Neural SDE: After Training", xlabel="Time")
+ensemble_nsum = EnsembleSummary(ensemble_nsol)
+p2 = plot(ensemble_nsum, title = "Neural SDE: After Training", xlabel="Time")
 scatter!(p2,t,sde_data',lw=3,label=["x" "y" "z" "y"])
 
 plot(p1,p2,layout=(2,1))
