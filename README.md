@@ -90,9 +90,11 @@ plot(sol)
 
 ![LV Solution Plot](https://user-images.githubusercontent.com/1814174/51388169-9a07f300-1af6-11e9-8c6c-83c41e81d11c.png)
 
-Next we define a single layer neural network that uses the `diffeq_rd` layer
+Next we define a single layer neural network that uses the `diffeq_adjoint` layer
 function that takes the parameters and returns the solution of the `x(t)`
-variable. Instead of being a function of the parameters, we will wrap our
+variable. Note that the `diffeq_adjoint` is usually preferred for ODEs, but does not
+extend to other differential equation types (see the performance discussion section for
+details). Instead of being a function of the parameters, we will wrap our
 parameters in `param` to be tracked by Flux:
 
 ```julia
@@ -100,8 +102,8 @@ using Flux, DiffEqFlux
 p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
 params = Flux.Params([p])
 
-function predict_rd() # Our 1-layer neural network
-  Tracker.collect(diffeq_adjoint(p,prob,Tsit5(),saveat=0.0:0.1:10.0))
+function predict_adjoint() # Our 1-layer neural network
+  diffeq_adjoint(p,prob,Tsit5(),saveat=0.0:0.1:10.0)
 end
 ```
 
@@ -144,7 +146,7 @@ m = Chain(
   x -> maxpool(x, (2,2)),
   x -> reshape(x, :, size(x, 4)),
   # takes in the ODE parameters from the previous layer
-  p -> Array(diffeq_rd(p,prob,Tsit5(),saveat=0.1),
+  p -> diffeq_adjoint(p,prob,Tsit5(),saveat=0.1),
   Dense(288, 10), softmax) |> gpu
 ```
 
@@ -154,7 +156,7 @@ or
 m = Chain(
   Dense(28^2, 32, relu),
   # takes in the initial condition from the previous layer
-  x -> Array(diffeq_rd(p,prob,Tsit5(),saveat=0.1,u0=x))),
+  x -> diffeq_rd(p,prob,Tsit5(),saveat=0.1,u0=x)),
   Dense(32, 10),
   softmax)
 ```
@@ -164,7 +166,7 @@ replaced with `diffeq_rd` for reverse-mode automatic differentiation or
 `diffeq_fd` for forward-mode automatic differentiation. `diffeq_fd` will
 be fastest with small numbers of parameters, while `diffeq_adjoint` will
 be the fastest when there are large numbers of parameters (like with a
-neural ODE).
+neural ODE). See the layer API documentation for details.
 
 ### Using Other Differential Equations
 
