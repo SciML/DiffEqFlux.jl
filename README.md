@@ -335,9 +335,9 @@ that runs on the GPU:
 u0 = Float32[2.; 0.] |> gpu
 dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
 
-function ODEfunc(du,u,p,t)
-    du .= Flux.data(dudt(u))
-end
+p = DiffEqFlux.destructure(model)
+dudt_(u::TrackedArray,p,t) = DiffEqFlux.restructure(model,p)(u)
+dudt_(u::AbstractArray,p,t) = Flux.data(DiffEqFlux.restructure(model,p)(u))
 prob = ODEProblem(ODEfunc, u0,tspan)
 
 # Runs on a GPU
