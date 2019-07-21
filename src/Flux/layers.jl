@@ -58,7 +58,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   Flux.Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
 
 @grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
-                              save_start=true,save_end=false,
+                              save_start=true,save_end=true,
                               sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
                               kwargs...)
 
