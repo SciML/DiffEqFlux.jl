@@ -581,6 +581,8 @@ scatter!(p2,t,sde_data',lw=3,label=["x" "y" "z" "y"])
 plot(p1,p2,layout=(2,1))
 ```
 
+![neural_sde](https://user-images.githubusercontent.com/1814174/61590115-c5d96380-ab81-11e9-8ffc-d3c473fe456a.png)
+
 (note: for simplicity we have used a constant `mp` vector, though once can `param` and
 train this value as well.)
 
