@@ -453,7 +453,7 @@ Its out-of-place formulation is `f(u,h,p,t)`. Thus for example, if we want to de
 which uses the history value at `p.tau` in the past, we can define:
 
 ```julia
-dudt_(u,p,t) = model([u;h(t-p.tau)])
+dudt_(u,h,p,t) = model([u;h(t-p.tau)])
 prob = DDEProblem(dudt_,u0,h,tspan,nothing)
 ```
 
