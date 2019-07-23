@@ -481,7 +481,7 @@ prob = SDEProblem(trueODEfunc,true_noise_func,u0,tspan)
 ```
 
 For our dataset we will use DifferentialEquations.jl's [parallel ensemble interface](http://docs.juliadiffeq.org/latest/features/ensemble.html)
-to generate ata from the average of 100 runs of the SDE:
+to generate data from the average of 100 runs of the SDE:
 
 ```julia
 # Take a typical sample from the mean
