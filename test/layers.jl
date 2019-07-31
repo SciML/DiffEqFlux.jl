@@ -24,7 +24,7 @@ grads = Tracker.gradient(loss_rd, params, nest=true)
 grads[p]
 
 data = Iterators.repeated((), 100)
-opt = SGD(0.1)
+opt = Nesterov(0.1)
 cb = function ()
   display(loss_rd())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
@@ -52,7 +52,7 @@ loss_fd()
 end
 
 data = Iterators.repeated((), 100)
-opt = SGD(0.1)
+opt = Nesterov(0.1)
 cb = function ()
   display(loss_fd())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
@@ -79,7 +79,7 @@ grads = Tracker.gradient(loss_fd2, params, nest=true)
 grads[p]
 
 data = Iterators.repeated((), 100)
-opt = SGD(0.1)
+opt = Nesterov(0.1)
 cb = function ()
   display(loss_fd2())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
@@ -106,7 +106,7 @@ grads = Tracker.gradient(loss_adjoint, params, nest=true)
 grads[p]
 
 data = Iterators.repeated((), 100)
-opt = SGD(0.1)
+opt = Nesterov(0.1)
 cb = function ()
   display(loss_adjoint())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
