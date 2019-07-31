@@ -24,7 +24,7 @@ grads = Tracker.gradient(loss_rd, params, nest=true)
 grads[p]
 
 data = Iterators.repeated((), 100)
-opt = Nesterov(0.1)
+opt = ADAM(0.1)
 cb = function ()
   display(loss_rd())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
@@ -41,7 +41,7 @@ loss2 = loss_rd()
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 function predict_fd()
-  diffeq_fd(p,vec,2*len,prob,Tsit5(),saveat=0.1) # 2 times for 2 output variables
+  diffeq_fd(p,vec,2*len,prob,Tsit5(),saveat=0.1,abstol=1e-8,reltol=1e-8) # 2 times for 2 output variables
 end
 loss_fd() = sum(abs2,x-1 for x in predict_fd())
 loss_fd()
@@ -52,7 +52,7 @@ loss_fd()
 end
 
 data = Iterators.repeated((), 100)
-opt = Nesterov(0.1)
+opt = ADAM(0.1)
 cb = function ()
   display(loss_fd())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
@@ -70,7 +70,7 @@ p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 function predict_fd2()
-  diffeq_fd(p,loss_reduction,nothing,prob,Tsit5(),saveat=0.1)
+  diffeq_fd(p,loss_reduction,nothing,prob,Tsit5(),saveat=0.1,abstol=1e-8,reltol=1e-8)
 end
 loss_fd2() = predict_fd2()
 loss_fd2()
@@ -79,7 +79,7 @@ grads = Tracker.gradient(loss_fd2, params, nest=true)
 grads[p]
 
 data = Iterators.repeated((), 100)
-opt = Nesterov(0.1)
+opt = ADAM(0.1)()
 cb = function ()
   display(loss_fd2())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
@@ -97,7 +97,7 @@ loss2 = loss_fd2()
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 function predict_adjoint()
-    diffeq_adjoint(p,prob,Tsit5())
+    diffeq_adjoint(p,prob,Tsit5(),abstol=1e-8,reltol=1e-8)
 end
 loss_adjoint() = loss_reduction(predict_adjoint())
 loss_adjoint()
@@ -105,8 +105,8 @@ loss_adjoint()
 grads = Tracker.gradient(loss_adjoint, params, nest=true)
 grads[p]
 
-data = Iterators.repeated((), 100)
-opt = Nesterov(0.1)
+data = Iterators.repeated((), 1000)
+opt = ADAM(0.1)
 cb = function ()
   display(loss_adjoint())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
