@@ -1,5 +1,4 @@
-using DiffEqFlux, Flux, OrdinaryDiffEq, Test
-#using Plots
+using DiffEqFlux, Flux, OrdinaryDiffEq, Test #using Plots
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -79,7 +78,7 @@ grads = Tracker.gradient(loss_fd2, params, nest=true)
 grads[p]
 
 data = Iterators.repeated((), 100)
-opt = ADAM(0.1)()
+opt = ADAM(0.1)
 cb = function ()
   display(loss_fd2())
   #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
@@ -97,7 +96,7 @@ loss2 = loss_fd2()
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 function predict_adjoint()
-    diffeq_adjoint(p,prob,Tsit5(),abstol=1e-8,reltol=1e-8)
+    diffeq_adjoint(p,prob,Tsit5())
 end
 loss_adjoint() = loss_reduction(predict_adjoint())
 loss_adjoint()
@@ -105,7 +104,7 @@ loss_adjoint()
 grads = Tracker.gradient(loss_adjoint, params, nest=true)
 grads[p]
 
-data = Iterators.repeated((), 1000)
+data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_adjoint())
