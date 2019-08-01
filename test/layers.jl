@@ -1,5 +1,4 @@
-using DiffEqFlux, Flux, OrdinaryDiffEq, Test
-#using Plots
+using DiffEqFlux, Flux, OrdinaryDiffEq, Test #using Plots
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -41,7 +40,7 @@ loss2 = loss_rd()
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 function predict_fd()
-  diffeq_fd(p,vec,2*len,prob,Tsit5(),saveat=0.1) # 2 times for 2 output variables
+  diffeq_fd(p,vec,2*len,prob,Tsit5(),saveat=0.1,abstol=1e-8,reltol=1e-8) # 2 times for 2 output variables
 end
 loss_fd() = sum(abs2,x-1 for x in predict_fd())
 loss_fd()
@@ -70,7 +69,7 @@ p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 function predict_fd2()
-  diffeq_fd(p,loss_reduction,nothing,prob,Tsit5(),saveat=0.1)
+  diffeq_fd(p,loss_reduction,nothing,prob,Tsit5(),saveat=0.1,abstol=1e-8,reltol=1e-8)
 end
 loss_fd2() = predict_fd2()
 loss_fd2()

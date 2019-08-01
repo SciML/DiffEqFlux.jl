@@ -13,6 +13,7 @@ if GROUP == "All"
     @safetestset "odenet" begin include("odenet.jl") end
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
+    @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
 end
 end
 
