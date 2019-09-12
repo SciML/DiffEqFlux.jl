@@ -1,4 +1,4 @@
-using Flux.Tracker: @grad
+using Tracker: @grad
 using DiffEqSensitivity: adjoint_sensitivities_u0
 
 ## Reverse-Mode via Flux.jl
