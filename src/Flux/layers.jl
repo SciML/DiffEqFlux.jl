@@ -26,13 +26,13 @@ function diffeq_fd(p,f,n,prob,args...;u0=prob.u0,kwargs...)
   f(solve(_prob,args...;kwargs...))
 end
 
-diffeq_fd(p::TrackedVector,args...;kwargs...) = Flux.Tracker.track(diffeq_fd, p, args...; kwargs...)
-Flux.Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;u0=prob.u0,kwargs...)
+diffeq_fd(p::TrackedVector,args...;kwargs...) = Tracker.track(diffeq_fd, p, args...; kwargs...)
+Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;u0=prob.u0,kwargs...)
   _f = function (p)
     _prob = remake(prob,u0=convert.(eltype(p),u0),p=p)
     f(solve(_prob,args...;kwargs...))
   end
-  _p = Flux.data(p)
+  _p = Tracker.data(p)
   if n === nothing
     result = DiffResults.GradientResult(_p)
     ForwardDiff.gradient!(result, _f, _p)
@@ -55,7 +55,7 @@ function diffeq_adjoint(p,prob,args...;u0=prob.u0,kwargs...)
 end
 
 diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
-  Flux.Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
+  Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
 
 @grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
                               save_start=true,save_end=true,
@@ -63,7 +63,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
                               kwargs...)
 
   T = gpu_or_cpu(u0)
-  _prob = remake(prob,u0=Flux.data(u0),p=Flux.data(p))
+  _prob = remake(prob,u0=Tracker.data(u0),p=Tracker.data(p))
 
   # Force `save_start` and `save_end` in the forward pass This forces the
   # solver to do the backsolve all the way back to `u0` Since the start aliases
@@ -82,7 +82,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
   only_end && (sol_idxs = 1)
   out = only_end ? sol[end] : reduce((x,y)->cat(x,y,dims=ndims(u)),u.u)
   out, Δ -> begin
-    Δ = Flux.data(Δ)
+    Δ = Tracker.data(Δ)
     function df(out, u, p, t, i)
       if only_end
         out[:] .= -vec(Δ)
