@@ -17,3 +17,13 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 [compat]
 DiffEqBase = ">= 5.6"
 julia = "1"
+
+[extras]
+DelayDiffEq = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["DelayDiffEq", "OrdinaryDiffEq", "SafeTestsets", "StochasticDiffEq", "Test"]
