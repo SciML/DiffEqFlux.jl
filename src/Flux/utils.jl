@@ -1,3 +1,8 @@
+function mapleaves(f, x; cache = IdDict())
+  haskey(cache, x) && return cache[x]
+  cache[x] = isleaf(x) ? f(x) : mapchildren(x -> mapleaves(f, x, cache = cache), x)
+end
+
 function destructure(m)
   xs = []
   mapleaves(m) do x
