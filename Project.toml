@@ -13,7 +13,18 @@ ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 
 [compat]
 DiffEqBase = ">= 5.6"
 julia = "1"
+
+[extras]
+DelayDiffEq = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["DelayDiffEq", "OrdinaryDiffEq", "SafeTestsets", "StochasticDiffEq", "Test"]

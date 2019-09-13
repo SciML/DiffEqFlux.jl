@@ -1,4 +1,4 @@
-using Flux, Test
+using Flux, Tracker, Test
 using DiffEqFlux: destructure, restructure
 
 model = Chain(Dense(10, 5, relu), Dense(5, 2))
