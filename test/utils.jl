@@ -7,7 +7,7 @@ p = destructure(model)
 
 m2 = restructure(model, p)
 
-@test !Tracker.isleaf(m2[1].W)
+@test !Flux.isleaf(m2[1].W)
 
 x = rand(10)
 

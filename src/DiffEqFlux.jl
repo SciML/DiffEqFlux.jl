@@ -1,7 +1,7 @@
 module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
-      Requires, RecursiveArrayTools, Adapt, LinearAlgebra
+      Flux, Requires, RecursiveArrayTools, Adapt, LinearAlgebra
 
 gpu_or_cpu(x) = Array
 function __init__()

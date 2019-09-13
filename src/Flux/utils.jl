@@ -1,18 +1,3 @@
-children(x) = ()
-children(x::Tuple) = x
-children(x::NamedTuple) = x
-
-mapchildren(f, x) = x
-mapchildren(f, x::Tuple) = map(f, x)
-mapchildren(f, x::NamedTuple) = map(f, x)
-
-isleaf(x) = isempty(children(x))
-
-function mapleaves(f, x; cache = IdDict())
-  haskey(cache, x) && return cache[x]
-  cache[x] = isleaf(x) ? f(x) : mapchildren(x -> mapleaves(f, x, cache = cache), x)
-end
-
 function destructure(m)
   xs = []
   mapleaves(m) do x
