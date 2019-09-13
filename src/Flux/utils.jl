@@ -1,3 +1,26 @@
+children(x) = ()
+mapchildren(f, x) = x
+
+children(x::Tuple) = x
+children(x::NamedTuple) = x
+mapchildren(f, x::Tuple) = map(f, x)
+mapchildren(f, x::NamedTuple) = map(f, x)
+
+function treelike(m::Module, T, fs = fieldnames(T))
+  @eval m begin
+    Flux.children(x::$T) = ($([:(x.$f) for f in fs]...),)
+    Flux.mapchildren(f, x::$T) = $T(f.($children(x))...)
+  end
+end
+
+macro treelike(T, fs = nothing)
+  fs == nothing || isexpr(fs, :tuple) || error("@treelike T (a, b)")
+  fs = fs == nothing ? [] : [:($(map(QuoteNode, fs.args)...),)]
+  :(treelike(@__MODULE__, $(esc(T)), $(fs...)))
+end
+
+isleaf(x) = isempty(children(x))
+
 function mapleaves(f, x; cache = IdDict())
   haskey(cache, x) && return cache[x]
   cache[x] = isleaf(x) ? f(x) : mapchildren(x -> mapleaves(f, x, cache = cache), x)
