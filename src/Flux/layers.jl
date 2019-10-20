@@ -54,7 +54,7 @@ function diffeq_adjoint(p,prob,args...;u0=prob.u0,kwargs...)
   adapt(T, solve(_prob,args...;kwargs...))
 end
 
-diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
+diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
   Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
 
 @grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
@@ -95,6 +95,7 @@ diffeq_adjoint(p::TrackedVector,prob,args...;u0=prob.u0,kwargs...) =
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
                     sensealg=sensealg,
                     kwargs...)
-    (dp', reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
+
+    (reshape(dp,size(p)), reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
   end
 end
