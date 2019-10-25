@@ -22,6 +22,7 @@ As such, it is the first package to support and demonstrate:
 - Neural delay differential equations (neural DDEs)
 - Neural partial differential equations (neural PDEs)
 - Neural jump stochastic differential equations (neural jump diffusions)
+- Hybrid neural differential equations (neural DEs with event handling)
 
 with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc. methods. For examples, please refer to
 [the release blog post](https://julialang.org/blog/2019/01/fluxdiffeq). Additional demonstrations, like neural
