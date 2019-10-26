@@ -1,5 +1,29 @@
 function neural_ode(model,x,tspan,
                     args...;kwargs...)
+  """
+  Constructs a neural ODE with the gradients computed using the adjoint
+  method[1]. At a high level this corresponds to solving the forward
+  differential equation, using a second differential equation that propagates
+  the derivatives of the loss  backwards in time.
+  This first solves the continuous time problem, and then discretizes following
+  the rules specified by the numerical ODE solver.
+  On the other hand, the 'neural_ode_rd' first disretizes the solution and then
+  computes the adjoint using automatic differentiation.
+
+  Ref
+  [1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
+
+  Arguments
+  ≡≡≡≡≡≡≡≡
+  model::Chain defines the ̇x
+  x<:AbstractArray initial value x(t₀)
+  args arguments passed to ODESolve
+  kwargs key word arguments passed to ODESolve; accepts an additional key
+      :callback_adj in addition to :callback. The Callback :callback_adj
+      passes a separate callback to the adjoint solver.
+
+
+  """
   p = destructure(model)
   dudt_(u::TrackedArray,p,t) = restructure(model,p)(u)
   dudt_(u::AbstractArray,p,t) = Tracker.data(restructure(model,p)(u))
