@@ -442,11 +442,11 @@ Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 ## Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.
 
 With neural stochastic differential equations, there is once again a helper form `neural_dmsde` which can
-be used for the multiplicative noise case (consult the layers API documentation, or 
-[this full example using the layer function](https://github.com/MikeInnes/zygote-paper/blob/master/neural_sde/neural_sde.jl)). 
+be used for the multiplicative noise case (consult the layers API documentation, or
+[this full example using the layer function](https://github.com/MikeInnes/zygote-paper/blob/master/neural_sde/neural_sde.jl)).
 
-However, since there are far too many possible combinations for the API to support, in many cases you will want to 
-performantly define neural differential equations for non-ODE systems from scratch. For these systems, it is generally 
+However, since there are far too many possible combinations for the API to support, in many cases you will want to
+performantly define neural differential equations for non-ODE systems from scratch. For these systems, it is generally
 best to use `diffeq_rd` with non-mutating (out-of-place) forms. For example, the following defines a neural SDE with
 neural networks for both the drift and diffusion terms:
 
@@ -600,13 +600,13 @@ showcases defining neural jump diffusions and neural partial differential equati
 ## A Note About Performance
 
 DiffEqFlux.jl implements all interactions of automatic differentiation systems to satisfy completeness, but that
-does not mean that every combination is a good combination. 
+does not mean that every combination is a good combination.
 
 ### Performance tl;dr
 
 - Use `diffeq_adjoint` with an out-of-place non-mutating function `f(u,p,t)` on ODEs without events.
 - Use `diffeq_rd` with an out-of-place non-mutating function (`f(u,p,t)` on ODEs/SDEs, `f(du,u,p,t)` for DAEs,
-  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/latest/index.html) for other equations) 
+  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/latest/index.html) for other equations)
   for non-ODE neural differential equations or ODEs with events
 - If the neural network is a sufficiently small (or non-existant) part of the differential equation, consider
   `diffeq_fd` with the mutating form (`f(du,u,p,t)`).
@@ -619,11 +619,11 @@ The major options to keep in mind are:
 - in-place vs out-of-place: for ODEs this amounts to `f(du,u,p,t)` mutating `du` vs `du = f(u,p,t)`. In almost all
   scientific computing scenarios with floating point numbers, `f(du,u,p,t)` is highly preferred. This extends to
   dual numbers and thus forward difference (`diffeq_fd`). However, reverse-mode automatic differentiation as implemented
-  by Flux.jl's Tracker.jl does not allow for mutation on its `TrackedArray` type, meaning that mutation is supported 
+  by Flux.jl's Tracker.jl does not allow for mutation on its `TrackedArray` type, meaning that mutation is supported
   by `Array{TrackedReal}`. This fallback is exceedingly slow due to the large trace that is created, and thus out-of-place
-  (`f(u,p,t)` for ODEs) is preferred in this case. 
-- For adjoints, this fact is complicated due to the choices in the `SensitivityAlg`. See 
-  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Options-1). 
+  (`f(u,p,t)` for ODEs) is preferred in this case.
+- For adjoints, this fact is complicated due to the choices in the `SensitivityAlg`. See
+  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Options-1).
   When `autojacvec=true`, a backpropogation is performed by Tracker in the intermediate steps, meaning the rule about mutation
   applies. However, the majority of the computation is not hte `v^T*J` computation of the backpropogation, so it is not always
   obvious to determine the best option given that mutation is slow for backprop but is much faster for large ODEs with many
@@ -631,12 +631,12 @@ The major options to keep in mind are:
   which are dominating the runtime, then the backpropogation can be made trivial by using mutation, and thus `f(u,p,t)` is
   more efficient. One example which falls into this case is the neural ODE which has large matrix multiply operations. However,
   if the neural network is a small portion of the equation and there is heavy reliance on directly specified nonlinear forms
-  in the differential equation, `f(du,u,p,t)` with the option `sense=SensitivityAlg(autojacvec=false)` may be preferred. 
+  in the differential equation, `f(du,u,p,t)` with the option `sense=SensitivityAlg(autojacvec=false)` may be preferred.
 - `diffeq_adjoint` currently only applies to ODEs, though continued development will handle other equations in the future.
 - `diffeq_adjoint` has O(1) memory with the default `backsolve`. However, it is known that this is unstable on many equations
-  with high enough stiffness (this is a fundamental fact of the numerics, see 
+  with high enough stiffness (this is a fundamental fact of the numerics, see
   [the blog post for details and an example](https://julialang.org/blog/2019/01/fluxdiffeq). Likewise, this instability is not
-  often seen when training a neural ODE against real data. Thus it is recommended to try with the default options first, and 
+  often seen when training a neural ODE against real data. Thus it is recommended to try with the default options first, and
   then set `backsolve=false` if unstable gradients are found. When `backsolve=false` is set, this will trigger the `SensitivityAlg`
   to use [checkpointed adjoints](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Options-1), which are more stable
   but take more computation.
@@ -666,15 +666,26 @@ The major options to keep in mind are:
   differential equation solver or handled by the adjoint sensitivity algorithm
   (for more details on sensitivity arguments, see
   [the diffeq documentation](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Adjoint-Sensitivity-Analysis-1)).
+  It is possible to specify separate callbacks for the forward and adjoint
+  solutions. Passing a value for the keyword `callback` will attach a callback
+  to the forward solve, whereas passing a value for the keyword `callback_adj`
+  will attach a callback to the adjoint solve. This might be useful for e.g.
+  observing function values and gradients during training.
 
 ### Neural DE Layer Functions
 
 - `neural_ode(model,x,tspan,args...;kwargs...)` defines a neural ODE layer where
   `model` is a Flux.jl model, `x` is the initial condition, `tspan` is the
   time span to integrate, and the rest of the arguments are passed to the ODE
-  solver. The parameters should be implicit in the `model`.
+  solver. The parameters should be implicit in the `model`. Same `args` and
+  `kwargs` are passed to the forward and adjoint solvers, as specified in
+  `diffeq_adjoint`, with the exception of `callback_adj`, which is a separate
+  callback passed only to the adjoint sensitivity algorithm.
+- `neural_ode_rd(model,x,tspan,args...;kwargs...)` defines a neural ODE layer,
+   just like neural_ode, but uses Flux.jl's reverse-mode automatic
+   differentiation to compute the gradients.
 - `neural_dmsde(model,x,mp,tspan,args...;kwargs)` defines a neural multiplicative
-  SDE layer where `model` is a Flux.jl model, `x` is the initial condition, 
+  SDE layer where `model` is a Flux.jl model, `x` is the initial condition,
   `tspan` is the time span to integrate, and the rest of the arguments are
   passed to the SDE solver. The noise is assumed to be diagonal multiplicative,
   i.e. the Wiener term is `mp.*u.*dW` for some array of noise constants `mp`.
