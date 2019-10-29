@@ -71,10 +71,10 @@ diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
   # implementation and makes `save_start` and `save_end` arg safe.
   sol = solve(_prob,args...;save_start=true,save_end=true,kwargs...)
 
-  kwargs = Dict(kwargs)
-  kwargs_adj = Dict(kwargs) # kwargs for the adjoint
-  kwargs_adj[:callback] = get(kwargs_bwd,:callback_adj, nothing)
-  delete!(kwargs, :callback_adj) 
+  kwargs = Dict{Symbol,Any}(kwargs)
+  kwargs_adj = Dict{Symbol,Any}(kwargs) # kwargs for the adjoint
+  kwargs_adj[:callback] = get(kwargs_adj,:callback_adj, nothing)
+  delete!(kwargs, :callback_adj)
   delete!(kwargs_adj, :callback_adj)
 
   no_start = !save_start
