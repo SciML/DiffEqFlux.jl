@@ -11,8 +11,11 @@ tspan = (0.0,10.0)
 
 prob = ODEProblem(lotka_volterra,u0,tspan,p)
 sol = solve(prob,Tsit5())
+
+#=
 using Plots
 plot(sol)
+=#
 
 using Flux, DiffEqFlux
 p = param([2.2 1.0;2.0 0.4]) # Tweaked Initial Parameter Array
