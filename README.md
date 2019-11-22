@@ -7,7 +7,7 @@
 
 DiffEqFlux.jl fuses the world of differential equations with machine learning
 by helping users put diffeq solvers into neural networks. This package utilizes
-[DifferentialEquations.jl](http://docs.juliadiffeq.org/latest/) and
+[DifferentialEquations.jl](http://docs.juliadiffeq.org/dev/) and
 [Flux.jl](https://fluxml.ai/) as its building blocks to support research in
 [Scientific Machine Learning](http://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/)
 and neural differential equations in traditional machine learning.
@@ -68,7 +68,7 @@ For an overview of what this package is for, [see this blog post](https://julial
 ### Optimizing parameters of an ODE
 
 First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
-more details, [see the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/latest/)
+more details, [see the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/dev/)
 
 ```julia
 using DifferentialEquations
@@ -489,7 +489,7 @@ end
 prob = SDEProblem(trueODEfunc,true_noise_func,u0,tspan)
 ```
 
-For our dataset we will use DifferentialEquations.jl's [parallel ensemble interface](http://docs.juliadiffeq.org/latest/features/ensemble.html)
+For our dataset we will use DifferentialEquations.jl's [parallel ensemble interface](http://docs.juliadiffeq.org/dev/features/ensemble.html)
 to generate data from the average of 100 runs of the SDE:
 
 ```julia
@@ -607,7 +607,7 @@ does not mean that every combination is a good combination.
 
 - Use `diffeq_adjoint` with an out-of-place non-mutating function `f(u,p,t)` on ODEs without events.
 - Use `diffeq_rd` with an out-of-place non-mutating function (`f(u,p,t)` on ODEs/SDEs, `f(du,u,p,t)` for DAEs,
-  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/latest/index.html) for other equations) 
+  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/dev/index.html) for other equations) 
   for non-ODE neural differential equations or ODEs with events
 - If the neural network is a sufficiently small (or non-existant) part of the differential equation, consider
   `diffeq_fd` with the mutating form (`f(du,u,p,t)`).
@@ -624,7 +624,7 @@ The major options to keep in mind are:
   by `Array{TrackedReal}`. This fallback is exceedingly slow due to the large trace that is created, and thus out-of-place
   (`f(u,p,t)` for ODEs) is preferred in this case. 
 - For adjoints, this fact is complicated due to the choices in the `SensitivityAlg`. See 
-  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Options-1). 
+  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/dev/analysis/sensitivity.html#Options-1). 
   When `autojacvec=true`, a backpropogation is performed by Tracker in the intermediate steps, meaning the rule about mutation
   applies. However, the majority of the computation is not hte `v^T*J` computation of the backpropogation, so it is not always
   obvious to determine the best option given that mutation is slow for backprop but is much faster for large ODEs with many
@@ -639,7 +639,7 @@ The major options to keep in mind are:
   [the blog post for details and an example](https://julialang.org/blog/2019/01/fluxdiffeq). Likewise, this instability is not
   often seen when training a neural ODE against real data. Thus it is recommended to try with the default options first, and 
   then set `backsolve=false` if unstable gradients are found. When `backsolve=false` is set, this will trigger the `SensitivityAlg`
-  to use [checkpointed adjoints](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Options-1), which are more stable
+  to use [checkpointed adjoints](http://docs.juliadiffeq.org/dev/analysis/sensitivity.html#Options-1), which are more stable
   but take more computation.
 - When the equation has small enough parameters, or they are not confined to large operations, `diffeq_fd` will be the fastest.
   However, as it is well-known, forward-mode AD does not scale well for calculating the gradient with respect to large numbers
@@ -666,7 +666,7 @@ The major options to keep in mind are:
   `p` and initial condition `u0`. The rest of the arguments are passed to the
   differential equation solver or handled by the adjoint sensitivity algorithm
   (for more details on sensitivity arguments, see
-  [the diffeq documentation](http://docs.juliadiffeq.org/latest/analysis/sensitivity.html#Adjoint-Sensitivity-Analysis-1)).
+  [the diffeq documentation](http://docs.juliadiffeq.org/dev/analysis/sensitivity.html#Adjoint-Sensitivity-Analysis-1)).
 
 ### Neural DE Layer Functions
 
