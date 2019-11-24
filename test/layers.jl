@@ -90,8 +90,6 @@ Flux.train!(loss_fd2, params, data, opt, cb = cb)
 loss2 = loss_fd2()
 @test 10loss2 < loss1
 
-
-
 # Adjoint sensitivity
 p = param([2.2, 1.0, 2.0, 0.4])
 params = Flux.Params([p])
