@@ -69,6 +69,12 @@ diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
   # solver to do the backsolve all the way back to `u0` Since the start aliases
   # `_prob.u0`, this doesn't actually use more memory But it cleans up the
   # implementation and makes `save_start` and `save_end` arg safe.
+  kwargs_fwd = NamedTuple{Base.diff_names(Base._nt_names(
+  values(kwargs)), (:callback_adj,))}(values(kwargs))
+  kwargs_adj = NamedTuple{Base.diff_names(Base._nt_names(values(kwargs)), (:callback_adj,:callback))}(values(kwargs))
+  if haskey(kwargs, :callback_adj)
+    kwargs_adj = merge(kwargs_adj, NamedTuple{(:callback,)}( [get(kwargs, :callback_adj, nothing)] ))
+  end
   sol = solve(_prob,args...;save_start=true,save_end=true,kwargs...)
 
   no_start = !save_start
@@ -94,7 +100,7 @@ diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
     ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
                     sensealg=sensealg,
-                    kwargs...)
+                    kwargs_adj...)
 
     (reshape(dp,size(p)), reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
   end
