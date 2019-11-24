@@ -85,7 +85,7 @@ diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
   # If didn't save start, take off first. If only wanted the end, return vector
   only_end = length(sol_idxs) <= 1
   u = sol[sol_idxs]
-  only_end && (sol_idxs = 1)
+  only_end && (sol_idxs = length(sol))
   out = only_end ? sol[end] : reduce((x,y)->cat(x,y,dims=ndims(u)),u.u)
   out, Δ -> begin
     Δ = Tracker.data(Δ)
