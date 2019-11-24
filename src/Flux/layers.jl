@@ -73,12 +73,9 @@ diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
   values(kwargs)), (:callback_adj,))}(values(kwargs))
   kwargs_adj = NamedTuple{Base.diff_names(Base._nt_names(values(kwargs)), (:callback_adj,:callback))}(values(kwargs))
   if haskey(kwargs, :callback_adj)
-    kwargs_adj = merge(kwargs_adj, NamedTuple{:callback}(get(kwargs,:callback_adj,nothing)))
+    kwargs_adj = merge(kwargs_adj, NamedTuple{(:callback,)}( [get(kwargs, :callback_adj, nothing)] ))
   end
-
-
-  sol = solve(_prob,args...;save_start=true,save_end=true,kwargs_fwd...)
-
+  sol = solve(_prob,args...;save_start=true,save_end=true,kwargs...)
 
   no_start = !save_start
   no_end = !save_end
