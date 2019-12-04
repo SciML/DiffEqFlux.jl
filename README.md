@@ -690,3 +690,7 @@ The major options to keep in mind are:
   `tspan` is the time span to integrate, and the rest of the arguments are
   passed to the SDE solver. The noise is assumed to be diagonal multiplicative,
   i.e. the Wiener term is `mp.*u.*dW` for some array of noise constants `mp`.
+
+## Benchmarks
+
+A raw ODE solver benchmark showcases [a 50,000x performance advantage over torchdiffeq on small ODEs](https://gist.github.com/ChrisRackauckas/cc6ac746e2dfd285c28e0584a2bfd320).
