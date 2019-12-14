@@ -1,4 +1,4 @@
-using Flux, DiffEqFlux, DelayDiffEq, Test
+using Flux, DiffEqFlux, DelayDiffEq, Zygote, Test
 
 ## Setup DDE to optimize
 function delay_lotka_volterra(du,u,h,p,t)
