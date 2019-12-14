@@ -1,9 +1,8 @@
-using Tracker: @grad
-using DiffEqSensitivity: adjoint_sensitivities_u0
+## Reverse-Mode via Tracker.jl
 
-## Reverse-Mode via Flux.jl
+diffeq_rd(p,prob,args...;u0=prob.u0,kwargs...) = _diffeq_rd(p,prob,u0,args...;kwargs...)
 
-function diffeq_rd(p,prob,args...;u0=prob.u0,kwargs...)
+function _diffeq_rd(p,prob,u0,args...;kwargs...)
   if typeof(u0) <: AbstractArray && !(typeof(u0) <: TrackedArray)
     if DiffEqBase.isinplace(prob)
       # use Array{TrackedReal} for mutation to work
@@ -19,6 +18,26 @@ function diffeq_rd(p,prob,args...;u0=prob.u0,kwargs...)
   solve(_prob,args...;kwargs...)
 end
 
+ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
+  f = function (u0,p)
+    if DiffEqBase.isinplace(prob)
+      # use Array{TrackedReal} for mutation to work
+      # Recurse to all Array{TrackedArray}
+      _prob = remake(prob,u0=map(identity,u0),p=p)
+    else
+      # use TrackedArray for efficiency of the tape
+      _prob = remake(prob,u0=u0,p=p)
+    end
+    solve(_prob,args...;kwargs...)
+  end
+  prob_untracked = remake(prob,u0=u0,p=p)
+  solve(prob_untracked,args...;kwargs...), function (ybar)
+    u0bar,pbar = Tracker.forward(f,u0,p)[2](ybar)
+    _u0bar = u0bar isa Tracker.TrackedArray ? Tracker.data(u0bar) : Tracker.data.(u0bar)
+    (Tracker.data(pbar),nothing,_u0bar,ntuple(_->nothing, length(args))...)
+  end
+end
+
 ## Forward-Mode via ForwardDiff.jl
 
 function diffeq_fd(p,f,n,prob,args...;u0=prob.u0,kwargs...)
@@ -26,8 +45,7 @@ function diffeq_fd(p,f,n,prob,args...;u0=prob.u0,kwargs...)
   f(solve(_prob,args...;kwargs...))
 end
 
-diffeq_fd(p::TrackedVector,args...;kwargs...) = Tracker.track(diffeq_fd, p, args...; kwargs...)
-Tracker.@grad function diffeq_fd(p::TrackedVector,f,n,prob,args...;u0=prob.u0,kwargs...)
+ZygoteRules.@adjoint function diffeq_fd(p,f,n,prob,args...;u0=prob.u0,kwargs...)
   _f = function (p)
     _prob = remake(prob,u0=convert.(eltype(p),u0),p=p)
     f(solve(_prob,args...;kwargs...))
@@ -48,22 +66,21 @@ end
 ## Reverse-Mode using Adjoint Sensitivity Analysis
 # Always reduces to Array
 
-function diffeq_adjoint(p,prob,args...;u0=prob.u0,kwargs...)
+diffeq_adjoint(p,prob,args...;u0=prob.u0,kwargs...) = _diffeq_adjoint(p,u0,prob,args...;kwargs...)
+
+function _diffeq_adjoint(p,u0,prob,args...;kwargs...)
   _prob = remake(prob,u0=u0,p=p)
   T = gpu_or_cpu(u0)
   adapt(T, solve(_prob,args...;kwargs...))
 end
 
-diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
-  Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
-
-@grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
-                              save_start=true,save_end=true,
-                              sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
-                              kwargs...)
+ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;backsolve=true,
+                                        save_start=true,save_end=true,
+                                        sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
+                                        kwargs...)
 
   T = gpu_or_cpu(u0)
-  _prob = remake(prob,u0=Tracker.data(u0),p=Tracker.data(p))
+  _prob = remake(prob,u0=u0,p=p)
 
   # Force `save_start` and `save_end` in the forward pass This forces the
   # solver to do the backsolve all the way back to `u0` Since the start aliases

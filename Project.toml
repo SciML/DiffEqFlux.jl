@@ -14,18 +14,21 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
 
 [compat]
 Adapt = "1"
 DiffEqBase = "6"
 DiffEqSensitivity = "5.0"
 DiffResults = "0.0.4, 1.0"
-Flux = "0.9"
+Flux = "0.10"
 ForwardDiff = "0.10"
 RecursiveArrayTools = "1"
 Requires = "0.5, 1.0"
 Tracker = "0.2"
+Zygote = "0.4"
 julia = "1"
+ZygoteRules = "0.2"
 
 [extras]
 DelayDiffEq = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
@@ -34,6 +37,7 @@ SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
 test = ["DelayDiffEq", "OrdinaryDiffEq", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test"]
