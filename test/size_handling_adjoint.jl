@@ -18,7 +18,7 @@ plot(sol)
 =#
 
 using Flux, DiffEqFlux
-p = param([2.2 1.0;2.0 0.4]) # Tweaked Initial Parameter Array
+p = [2.2 1.0;2.0 0.4] # Tweaked Initial Parameter Array
 params = Flux.Params([p])
 
 function predict_adjoint() # Our 1-layer neural network

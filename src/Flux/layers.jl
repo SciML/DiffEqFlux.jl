@@ -30,9 +30,9 @@ ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
     end
     solve(_prob,args...;kwargs...)
   end
-  prob_untracked = remake(prob,u0=u0,p=p)
-  solve(prob_untracked,args...;kwargs...), function (ybar)
-    u0bar,pbar = Tracker.forward(f,u0,p)[2](ybar)
+  val,pullback = Tracker.forward(f,u0,p)
+  Tracker.data(val), function (ybar)
+    u0bar,pbar = pullback(ybar)
     _u0bar = u0bar isa Tracker.TrackedArray ? Tracker.data(u0bar) : Tracker.data.(u0bar)
     (Tracker.data(pbar),nothing,_u0bar,ntuple(_->nothing, length(args))...)
   end

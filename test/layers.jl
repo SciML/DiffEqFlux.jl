@@ -13,11 +13,11 @@ const len = length(range(0.0,stop=10.0,step=0.1)) # 101
 # Reverse-mode
 
 p = [2.2, 1.0, 2.0, 0.4]
-params = Tracker.Params([Tracker.param(p)])
 function predict_rd(p)
   vec(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
 end
 loss_rd(p) = sum(abs2,x-1 for x in predict_rd(p))
+loss_rd() = sum(abs2,x-1 for x in predict_rd(p))
 loss_rd()
 
 grads = Tracker.gradient(loss_rd, p)
@@ -64,7 +64,7 @@ loss2 = loss_fd()
 
 # Forward-mode, R^n -> R loss
 
-p = param([2.2, 1.0, 2.0, 0.4])
+p = [2.2, 1.0, 2.0, 0.4]
 params = Flux.Params([p])
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 function predict_fd2()

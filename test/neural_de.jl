@@ -1,4 +1,4 @@
-using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqFlux, Test
+using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqFlux, Zygote, Test
 
 x = Float32[2.; 0.]
 tspan = (0.0f0,25.0f0)
@@ -8,43 +8,25 @@ neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)
 neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
 neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)
 
-Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)))
+Zygote.gradient(x->sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)),x)
 
 # Adjoint
 @testset "adjoint mode" begin
-    Tracker.zero_grad!(dudt[1].W.grad)
-    Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)))
-    @test ! iszero(Tracker.grad(dudt[1].W))
-
-    Tracker.zero_grad!(dudt[1].W.grad)
-    Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
-    @test ! iszero(Tracker.grad(dudt[1].W))
-
-    Tracker.zero_grad!(dudt[1].W.grad)
-    @test_broken Flux.back!(sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)))
-    # @test ! iszero(Tracker.grad(dudt[1].W))
-end;
+    @test ! iszero(Zygote.gradient(x->sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)),x)[1])
+    @test ! iszero(Zygote.gradient(x->sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)),x)[1])
+    @test ! iszero(Zygote.gradient(x->sum(neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)),x)[1])
+end
 
 # RD
 @testset "reverse mode" begin
-    Tracker.zero_grad!(dudt[1].W.grad)
-    Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)))
-    @test ! iszero(Tracker.grad(dudt[1].W))
-
-    Tracker.zero_grad!(dudt[1].W.grad)
-    Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)))
-    @test ! iszero(Tracker.grad(dudt[1].W))
-
-    Tracker.zero_grad!(dudt[1].W.grad)
-    Flux.back!(sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)))
-    @test ! iszero(Tracker.grad(dudt[1].W))
-end;
+    @test ! iszero(Zygote.gradient(x->sum(neural_ode_rd(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)),x)[1])
+    @test ! iszero(Zygote.gradient(x->sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.0:0.1:10.0)),x)[1])
+    @test ! iszero(Zygote.gradient(x->sum(neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)),x)[1])
+end
 
 mp = Float32[0.1,0.1]
-Tracker.zero_grad!(dudt[1].W.grad)
 neural_dmsde(dudt,x,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.1)
-Flux.back!(sum(neural_dmsde(dudt,x,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)))
-@test ! iszero(Tracker.grad(dudt[1].W))
+@test ! iszero(Zygote.gradient(x->sum(neural_dmsde(dudt,x,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)),x)[1])
 
 # Batch
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))

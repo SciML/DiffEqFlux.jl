@@ -7,8 +7,6 @@ p = destructure(model)
 
 m2 = restructure(model, p)
 
-@test !Tracker.isleaf(m2[1].W)
-
 x = rand(10)
 
 @test model(x) == m2(x)
