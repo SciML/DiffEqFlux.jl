@@ -25,7 +25,7 @@ end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
 
-data = Iterators.repeated((), 100)
+data = Iterators.repeated((), 1000)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_rd())
@@ -61,12 +61,12 @@ prob = ODEProblem(dudt_,u0,tspan,p3)
 diffeq_adjoint(p3,prob,Tsit5(),u0=u0,abstol=1e-8,reltol=1e-6)
 
 function predict_adjoint()
-  diffeq_adjoint(p3,prob,Tsit5(),u0=u0,saveat=0.0:0.1:25.0)
+  diffeq_adjoint(p3,prob,Tsit5(),u0=u0,saveat=0.0:1:25.0)
 end
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
 loss_adjoint()
 
-data = Iterators.repeated((), 100)
+data = Iterators.repeated((), 300)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_adjoint())
