@@ -1,19 +1,25 @@
-function destructure(m)
-  xs = []
-  Flux.mapleaves(m) do x
-    x isa AbstractArray && push!(xs, x)
+using Flux.Zygote
+
+function params_(m)
+  i = 0
+  Flux.fmap(m) do x
+    x isa AbstractArray && (i += 1)
     return x
   end
-  return vcat(vec.(xs)...)
+  xs = Zygote.Buffer(Vector(undef, i))
+  i = 1
+  Flux.fmap(m) do x
+    if x isa AbstractArray
+      xs[i] = x
+      i += 1
+    end
+    x
+  end
+  copy(xs)
 end
 
-ZygoteRules.@adjoint function destructure(m)
-  xs = []
-  Flux.mapleaves(m) do x
-    x isa AbstractArray && push!(xs, x)
-    return x
-  end
-  vcat(vec.(xs)...),ybar->(nothing,)
+function destructure(m)
+  vcat(vec.(params_(m))...)
 end
 
 function restructure(m, xs)
