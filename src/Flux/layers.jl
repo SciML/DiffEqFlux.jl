@@ -57,9 +57,8 @@ end
 diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
   Tracker.track(diffeq_adjoint, p, u0, prob, args...; kwargs...)
 
-@grad function diffeq_adjoint(p,u0,prob,args...;backsolve=true,
+@grad function diffeq_adjoint(p,u0,prob,args...;
                               save_start=true,save_end=true,
-                              sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
                               kwargs...)
 
   T = gpu_or_cpu(u0)
@@ -99,7 +98,6 @@ diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
 
     ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
-                    sensealg=sensealg,
                     kwargs_adj...)
 
     (reshape(dp,size(p)), reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
