@@ -19,7 +19,7 @@ function _diffeq_rd(p,prob,u0,args...;kwargs...)
 end
 
 ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
-  f = function (u0,p)
+  function tracker_forward(u0,p)
     if DiffEqBase.isinplace(prob)
       # use Array{TrackedReal} for mutation to work
       # Recurse to all Array{TrackedArray}
@@ -30,7 +30,7 @@ ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
     end
     solve(_prob,args...;kwargs...)
   end
-  val,pullback = Tracker.forward(f,u0,p)
+  val,pullback = Tracker.forward(tracker_forward,u0,p)
   Tracker.data(val), function (ybar)
     u0bar,pbar = pullback(ybar)
     _u0bar = u0bar isa Tracker.TrackedArray ? Tracker.data(u0bar) : Tracker.data.(u0bar)
@@ -46,20 +46,26 @@ function diffeq_fd(p,f,n,prob,args...;u0=prob.u0,kwargs...)
 end
 
 ZygoteRules.@adjoint function diffeq_fd(p,f,n,prob,args...;u0=prob.u0,kwargs...)
-  _f = function (p)
+  function diffeq_fd_forward(p)
     _prob = remake(prob,u0=convert.(eltype(p),u0),p=p)
     f(solve(_prob,args...;kwargs...))
   end
   _p = Tracker.data(p)
   if n === nothing
     result = DiffResults.GradientResult(_p)
-    ForwardDiff.gradient!(result, _f, _p)
-    DiffResults.value(result),Δ -> (Δ .* DiffResults.gradient(result), ntuple(_->nothing, 3+length(args))...)
+    ForwardDiff.gradient!(result, diffeq_fd_forward, _p)
+    function diffeq_fd_adjoint1(Δ)
+      (Δ .* DiffResults.gradient(result), ntuple(_->nothing, 3+length(args))...)
+    end
+    DiffResults.value(result),diffeq_fd_adjoint1
   else
     y = adapt(typeof(_p),zeros(n))
     result = DiffResults.JacobianResult(y,_p)
-    ForwardDiff.jacobian!(result, _f, _p)
-    DiffResults.value(result),Δ -> (DiffResults.jacobian(result)' * Δ, ntuple(_->nothing, 3+length(args))...)
+    ForwardDiff.jacobian!(result, diffeq_fd_forward, _p)
+    function diffeq_fd_adjoint2(Δ)
+      (DiffResults.jacobian(result)' * Δ, ntuple(_->nothing, 3+length(args))...)
+    end
+    DiffResults.value(result),diffeq_fd_adjoint2
   end
 end
 
@@ -103,7 +109,8 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;
   u = sol[sol_idxs]
   only_end && (sol_idxs = length(sol))
   out = only_end ? sol[end] : reduce((x,y)->cat(x,y,dims=ndims(u)),u.u)
-  out, Δ -> begin
+
+  function diffeq_adjoint_adjoint(Δ)
     Δ = Tracker.data(Δ)
     function df(out, u, p, t, i)
       if only_end
@@ -115,8 +122,8 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;
 
     ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;kwargs_adj...)
-
-    rs = p isa Zygote.Params ? restructure(tuple(size.(p)...), dp) : p'
+    rs = p isa Flux.Params ? restructure(tuple(size.(p)...), dp) : reshape(dp, size(p))
     (rs, du0, ntuple(_->nothing, 1+length(args))...)
   end
+  out,diffeq_adjoint_adjoint
 end

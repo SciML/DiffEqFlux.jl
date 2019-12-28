@@ -21,7 +21,7 @@ kwargs key word arguments passed to ODESolve; accepts an additional key
     passes a separate callback to the adjoint solver.
 
 """
-function neural_ode(model,x,tspan,p=Flux.params(x,model),args...;kwargs...)
+function neural_ode(model,x,tspan,args...;p=Flux.params(x,model),kwargs...)
   dudt_(u::AbstractArray,p,t) = model(u)
   prob = ODEProblem{false}(dudt_,x,tspan,p)
   return diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
