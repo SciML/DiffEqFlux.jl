@@ -25,3 +25,14 @@ function restructure(m, xs)
     return x
   end
 end
+
+function restructure(sz::Tuple, xs)
+  t = []
+  i = 0
+  for s in sz
+    y = reshape(xs[i.+(1:prod(s))], s)
+    push!(t,y)
+    i += length(y)
+  end
+  t
+end

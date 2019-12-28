@@ -119,6 +119,7 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;backsolve=true,
                     sensealg=sensealg,
                     kwargs_adj...)
 
-    (reshape(dp,size(p)), reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
+    rs = p isa Params ? restructure(tuple(size.(p)...), dp) : reshape(rs, length(p))
+    (rs, reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
   end
 end
