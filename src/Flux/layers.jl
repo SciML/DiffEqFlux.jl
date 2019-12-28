@@ -79,6 +79,10 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;backsolve=true,
                                         sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
                                         kwargs...)
 
+@grad function diffeq_adjoint(p,u0,prob,args...;
+                              save_start=true,save_end=true,
+                              kwargs...)
+
   T = gpu_or_cpu(u0)
   _prob = remake(prob,u0=u0,p=p)
 
@@ -116,7 +120,6 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;backsolve=true,
 
     ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
-                    sensealg=sensealg,
                     kwargs_adj...)
 
     rs = p isa Params ? restructure(tuple(size.(p)...), dp) : reshape(rs, length(p))
