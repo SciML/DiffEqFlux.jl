@@ -74,14 +74,9 @@ function _diffeq_adjoint(p,u0,prob,args...;kwargs...)
   adapt(T, solve(_prob,args...;kwargs...))
 end
 
-ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;backsolve=true,
-                                        save_start=true,save_end=true,
-                                        sensealg=SensitivityAlg(quad=false,backsolve=backsolve),
-                                        kwargs...)
-
-@grad function diffeq_adjoint(p,u0,prob,args...;
-                              save_start=true,save_end=true,
-                              kwargs...)
+ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;
+                                              save_start=true,save_end=true,
+                                              kwargs...)
 
   T = gpu_or_cpu(u0)
   _prob = remake(prob,u0=u0,p=p)
@@ -119,10 +114,9 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;backsolve=true,
     end
 
     ts = sol.t[sol_idxs]
-    du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
-                    kwargs_adj...)
+    du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;kwargs_adj...)
 
-    rs = p isa Params ? restructure(tuple(size.(p)...), dp) : reshape(rs, length(p))
-    (rs, reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
+    rs = p isa Zygote.Params ? restructure(tuple(size.(p)...), dp) : p'
+    (rs, du0, ntuple(_->nothing, 1+length(args))...)
   end
 end

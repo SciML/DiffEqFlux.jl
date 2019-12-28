@@ -7,6 +7,7 @@ function destructure(m)
   return vcat(vec.(xs)...)
 end
 
+#=
 ZygoteRules.@adjoint function destructure(m)
   xs = []
   Flux.mapleaves(m) do x
@@ -15,6 +16,7 @@ ZygoteRules.@adjoint function destructure(m)
   end
   vcat(vec.(xs)...),ybar->(nothing,)
 end
+=#
 
 function restructure(m, xs)
   i = 0
