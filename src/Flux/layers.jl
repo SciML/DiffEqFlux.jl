@@ -99,6 +99,6 @@ diffeq_adjoint(p::TrackedArray,prob,args...;u0=prob.u0,kwargs...) =
     ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;
                     kwargs_adj...)
-    (dp', du0, ntuple(_->nothing, 1+length(args))...)
+    (reshape(dp',size(p)), reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
   end
 end
