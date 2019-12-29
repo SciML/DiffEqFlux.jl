@@ -122,7 +122,7 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;
 
     ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;kwargs_adj...)
-    rs = p isa Flux.Params ? restructure(tuple(size.(p)...), dp) : reshape(dp, size(p))
+    rs = p isa Flux.Params ? restructure(tuple(size.(p)...), dp') : reshape(dp', size(p))
     (rs, du0, ntuple(_->nothing, 1+length(args))...)
   end
   out,diffeq_adjoint_adjoint
