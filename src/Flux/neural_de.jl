@@ -34,18 +34,17 @@ automatic differentiation. This is equivalent to discretizing then optimizing
 the differential equation, cf neural_ode for a comparison with the adjoint method.
 """
 function neural_ode_rd(model,x,tspan,
-                       args...;kwargs...)
+                       args...;p=Flux.params(x,model),
+                       kwargs...)
   dudt_(u,p,t) = model(u)
   prob = ODEProblem{false}(dudt_,x,tspan)
-  p = destructure(model)
   Array(diffeq_rd(p,prob,args...;u0=x,kwargs...))
 end
 
-function neural_dmsde(model,x,mp,tspan,
+function neural_dmsde(model,x,mp,tspan,p=Flux.params(x,model),
                       args...;kwargs...)
   dudt_(u,p,t) = model(u)
   g(u,p,t) = mp.*u
   prob = SDEProblem{false}(dudt_,g,x,tspan,nothing)
-  p = destructure(model)
   Array(diffeq_rd(p,prob,args...;u0=x,kwargs...))
 end

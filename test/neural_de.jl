@@ -8,14 +8,14 @@ neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)
 neural_ode(dudt,x,tspan,Tsit5(),saveat=0.1)
 neural_ode_rd(dudt,x,tspan,Tsit5(),saveat=0.1)
 
-Zygote.gradient(x->sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)),x)
-
-@test !iszero(Zygote.gradient(x->sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)),x)[1])
-@test !iszero(Zygote.gradient(x->sum(neural_ode_rd(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)),x)[1])
+@test !iszero(Zygote.gradient(x->sum(neural_ode_rd(dudt,x,tspan,Tsit5(),p=x,save_everystep=false,save_start=false)),x)[1])
 
 grads = Zygote.gradient(()->sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false)),p)
 @test ! iszero(grads[x])
-@test_broken ! iszero(grads[dudt[1].W])
+@test ! iszero(grads[dudt[1].W])
+grads = Zygote.gradient(()->sum(neural_ode(dudt,x,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint())),p)
+@test ! iszero(grads[x])
+@test ! iszero(grads[dudt[1].W])
 
 # Adjoint
 @testset "adjoint mode" begin
