@@ -111,7 +111,6 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;
   out = only_end ? sol[end] : reduce((x,y)->cat(x,y,dims=ndims(u)),u.u)
 
   function diffeq_adjoint_adjoint(Δ)
-    Δ = Tracker.data(Δ)
     function df(out, u, p, t, i)
       if only_end
         out[:] .= -vec(Δ)

@@ -28,6 +28,12 @@ function restructure(m, xs)
   end
 end
 
+@generated function restructure(sz::Tuple, xs)
+  gen = (:(reshape(xs[(sum(prod.(sz[(1:$(i-1))]))+1):sum(prod.(sz[1:$i]))],sz[$i])) for i in 2:length(sz.parameters))
+  Expr(:vect,:(reshape(xs[1:sum(prod(sz[1]))], sz[1])),gen...)
+end
+
+#=
 function restructure(sz::Tuple, xs)
   t = []
   i = 0
@@ -38,3 +44,4 @@ function restructure(sz::Tuple, xs)
   end
   t
 end
+=#
