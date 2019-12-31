@@ -15,7 +15,7 @@ function _diffeq_rd(p,prob,u0,args...;kwargs...)
   else # u0 is functional, ignore the change
     _prob = remake(prob,u0=u0,p=p)
   end
-  solve(_prob,args...;kwargs...)
+  Array(solve(_prob,args...;kwargs...))
 end
 
 ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
@@ -28,7 +28,7 @@ ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
       # use TrackedArray for efficiency of the tape
       _prob = remake(prob,u0=u0,p=p)
     end
-    solve(_prob,args...;kwargs...)
+    Array(solve(_prob,args...;kwargs...))
   end
   val,pullback = Tracker.forward(tracker_forward,u0,p)
   Tracker.data(val), function (ybar)

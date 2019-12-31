@@ -20,7 +20,7 @@ prob = ODEProblem(dudt_,x,tspan,p)
 diffeq_rd(p,prob,Tsit5())
 
 function predict_rd()
-  Array(diffeq_rd(p,prob,Tsit5(),u0=x))
+  diffeq_rd(p,prob,Tsit5(),u0=x)
 end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
