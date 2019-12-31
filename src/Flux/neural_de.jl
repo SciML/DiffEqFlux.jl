@@ -37,14 +37,16 @@ function neural_ode_rd(model,x,tspan,
                        args...;p=Flux.params(model),
                        kwargs...)
   dudt_(u,p,t) = model(u)
+  dudt_(u,p::Tracker.TrackedArray,t) = restructure(model,p)(u)
   prob = ODEProblem{false}(dudt_,x,tspan)
-  Array(diffeq_rd(p,prob,args...;u0=x,kwargs...))
+  diffeq_rd(p,prob,args...;u0=x,kwargs...)
 end
 
-function neural_dmsde(model,x,mp,tspan,p=Flux.params(model),
-                      args...;kwargs...)
+function neural_dmsde(model,x,mp,tspan,
+                      args...;p=Flux.params(model),kwargs...)
   dudt_(u,p,t) = model(u)
+  dudt_(u,p::Tracker.TrackedArray,t) = restructure(model,p)(u)
   g(u,p,t) = mp.*u
-  prob = SDEProblem{false}(dudt_,g,x,tspan,nothing)
-  Array(diffeq_rd(p,prob,args...;u0=x,kwargs...))
+  prob = SDEProblem{false}(dudt_,g,x,tspan,p)
+  diffeq_rd(p,prob,args...;u0=x,kwargs...)
 end

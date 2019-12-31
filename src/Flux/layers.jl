@@ -38,8 +38,8 @@ ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
   end
 end
 
-ZygoteRules.@adjoint function _diffeq_rd(p::Zygote.Params,prob,u0,args...;kwargs...)
-  function tracker_forward()
+ZygoteRules.@adjoint function _diffeq_rd(p::Flux.Params,prob,u0,args...;kwargs...)
+  function tracker_forward(u0,p)
     if DiffEqBase.isinplace(prob)
       # use Array{TrackedReal} for mutation to work
       # Recurse to all Array{TrackedArray}
@@ -48,26 +48,25 @@ ZygoteRules.@adjoint function _diffeq_rd(p::Zygote.Params,prob,u0,args...;kwargs
       # use TrackedArray for efficiency of the tape
       _prob = remake(prob,u0=u0,p=p)
     end
-    solve(_prob,args...;kwargs...)
+    Array(solve(_prob,args...;kwargs...))
   end
-
-  function tracker_forward2(u0)
-    if DiffEqBase.isinplace(prob)
-      # use Array{TrackedReal} for mutation to work
-      # Recurse to all Array{TrackedArray}
-      _prob = remake(prob,u0=map(identity,u0),p=p)
-    else
-      # use TrackedArray for efficiency of the tape
-      _prob = remake(prob,u0=u0,p=p)
-    end
-    solve(_prob,args...;kwargs...)
-  end
-  val,pullback = Tracker.forward(tracker_forward,p)
-  val2,pullback2 = Tracker.forward(tracker_forward2,u0)
+  non_u0_p = p.order[p.order .!== (u0,)]
+  _p = reduce(vcat,vec.(non_u0_p))
+  sz = size.(non_u0_p)
+  val,pullback = Tracker.forward(tracker_forward,u0,_p)
   val, function (ybar)
-    pbar = pullback(ybar)
-    u0bar = first(pullback2(ybar))
-    (pbar,nothing,Tracker.data(u0bar),ntuple(_->nothing, length(args))...)
+    u0bar, pbar = pullback(ybar)
+    _pbar = Tracker.data(pbar)
+    rs = restructure(tuple(sz...), _pbar)
+    graddict = IdDict(x=>y for (x,y) in zip(non_u0_p,rs))
+    for x in keys(__context__.cache)
+      if x === u0
+        __context__.cache[x] = Tracker.data(u0bar)
+      else
+        __context__.cache[x] = graddict[x]
+      end
+    end
+    (_pbar,nothing,Tracker.data(u0bar),ntuple(_->nothing, length(args))...)
   end
 end
 
