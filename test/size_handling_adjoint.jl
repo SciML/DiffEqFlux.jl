@@ -17,8 +17,9 @@ using Plots
 plot(sol)
 =#
 
-using Flux, DiffEqFlux
-p = param([2.2 1.0;2.0 0.4]) # Tweaked Initial Parameter Array
+import Flux
+using DiffEqFlux
+p = [2.2 1.0;2.0 0.4] # Tweaked Initial Parameter Array
 params = Flux.Params([p])
 
 function predict_adjoint() # Our 1-layer neural network
@@ -28,7 +29,7 @@ end
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
 
 data = Iterators.repeated((), 100)
-opt = ADAM(0.1)
+opt = Flux.ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_adjoint())
 end

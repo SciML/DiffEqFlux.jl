@@ -12,9 +12,9 @@ if GROUP == "All"
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
     @safetestset "Size Handling in Adjoint Tests" begin include("size_handling_adjoint.jl") end
     @safetestset "odenet" begin include("odenet.jl") end
+    @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
-    @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
 end
 end
 

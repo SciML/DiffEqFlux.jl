@@ -21,12 +21,9 @@ kwargs key word arguments passed to ODESolve; accepts an additional key
     passes a separate callback to the adjoint solver.
 
 """
-function neural_ode(model,x,tspan,
-                    args...;kwargs...)
-  p = destructure(model)
-  dudt_(u::TrackedArray,p,t) = restructure(model,p)(u)
-  dudt_(u::AbstractArray,p,t) = Tracker.data(restructure(model,p)(u))
-  prob = ODEProblem(dudt_,x,tspan,p)
+function neural_ode(model,x,tspan,args...;p=Flux.params(model),kwargs...)
+  dudt_(u::AbstractArray,p,t) = model(u)
+  prob = ODEProblem{false}(dudt_,x,tspan,p)
   return diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
 end
 
@@ -37,19 +34,19 @@ automatic differentiation. This is equivalent to discretizing then optimizing
 the differential equation, cf neural_ode for a comparison with the adjoint method.
 """
 function neural_ode_rd(model,x,tspan,
-                       args...;kwargs...)
+                       args...;p=Flux.params(model),
+                       kwargs...)
   dudt_(u,p,t) = model(u)
-  _x = x isa TrackedArray ? x : param(x)
-  prob = ODEProblem(dudt_,_x,tspan)
-  # TODO could probably use vcat rather than collect here
-  solve(prob, args...; kwargs...) |> Tracker.collect
+  dudt_(u,p::Tracker.TrackedArray,t) = restructure(model,p)(u)
+  prob = ODEProblem{false}(dudt_,x,tspan)
+  diffeq_rd(p,prob,args...;u0=x,kwargs...)
 end
 
 function neural_dmsde(model,x,mp,tspan,
-                      args...;kwargs...)
+                      args...;p=Flux.params(model),kwargs...)
   dudt_(u,p,t) = model(u)
+  dudt_(u,p::Tracker.TrackedArray,t) = restructure(model,p)(u)
   g(u,p,t) = mp.*u
-  prob = SDEProblem(dudt_,g,param(x),tspan,nothing)
-  # TODO could probably use vcat rather than collect here
-  solve(prob, args...; kwargs...) |> Tracker.collect
+  prob = SDEProblem{false}(dudt_,g,x,tspan,p)
+  diffeq_rd(p,prob,args...;u0=x,kwargs...)
 end

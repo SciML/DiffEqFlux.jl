@@ -1,4 +1,5 @@
-using DiffEqFlux, Flux, OrdinaryDiffEq, Test #using Plots
+using DiffEqFlux, Flux, OrdinaryDiffEq, Zygote, Test #using Plots
+import Tracker
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -11,16 +12,16 @@ const len = length(range(0.0,stop=10.0,step=0.1)) # 101
 
 # Reverse-mode
 
-p = param([2.2, 1.0, 2.0, 0.4])
-params = Flux.Params([p])
-function predict_rd()
+p = [2.2, 1.0, 2.0, 0.4]
+function predict_rd(p)
   vec(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
 end
-loss_rd() = sum(abs2,x-1 for x in predict_rd())
+loss_rd(p) = sum(abs2,x-1 for x in predict_rd(p))
+loss_rd() = sum(abs2,x-1 for x in predict_rd(p))
 loss_rd()
 
-grads = Tracker.gradient(loss_rd, params, nest=true)
-grads[p]
+grads = Tracker.gradient(loss_rd, p)
+@test !iszero(grads[1])
 
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
@@ -31,13 +32,13 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_rd()
-Flux.train!(loss_rd, params, data, opt, cb = cb)
+Flux.train!(loss_rd, Flux.params([p]), data, opt, cb = cb)
 loss2 = loss_rd()
 @test 10loss2 < loss1
 
 # Forward-mode, R^n -> R^m layer
 
-p = param([2.2, 1.0, 2.0, 0.4])
+p = [2.2, 1.0, 2.0, 0.4]
 params = Flux.Params([p])
 function predict_fd()
   diffeq_fd(p,vec,2*len,prob,Tsit5(),saveat=0.1,abstol=1e-8,reltol=1e-8) # 2 times for 2 output variables
@@ -45,10 +46,8 @@ end
 loss_fd() = sum(abs2,x-1 for x in predict_fd())
 loss_fd()
 
-@test_broken begin
-  grads = Tracker.gradient(loss_fd, params, nest=true)
-  grads[p]
-end
+grads = Zygote.gradient(loss_fd, params)
+@test !iszero(grads[p])
 
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
@@ -65,7 +64,7 @@ loss2 = loss_fd()
 
 # Forward-mode, R^n -> R loss
 
-p = param([2.2, 1.0, 2.0, 0.4])
+p = [2.2, 1.0, 2.0, 0.4]
 params = Flux.Params([p])
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 function predict_fd2()
@@ -74,8 +73,8 @@ end
 loss_fd2() = predict_fd2()
 loss_fd2()
 
-grads = Tracker.gradient(loss_fd2, params, nest=true)
-grads[p]
+grads = Zygote.gradient(loss_fd2, params)
+@test !iszero(grads[p])
 
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
@@ -93,16 +92,17 @@ loss2 = loss_fd2()
 
 
 # Adjoint sensitivity
-p = param([2.2, 1.0, 2.0, 0.4])
+p = [2.2, 1.0, 2.0, 0.4]
 params = Flux.Params([p])
 function predict_adjoint()
     diffeq_adjoint(p,prob,Tsit5())
 end
+loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint() = loss_reduction(predict_adjoint())
 loss_adjoint()
 
-grads = Tracker.gradient(loss_adjoint, params, nest=true)
-grads[p]
+grads = Zygote.gradient(loss_adjoint, params)
+@test !iszero(grads[p])
 
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)

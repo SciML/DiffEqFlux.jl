@@ -3,6 +3,10 @@ module DiffEqFlux
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
       Flux, Requires, RecursiveArrayTools, Adapt, LinearAlgebra
 
+using DiffEqSensitivity: adjoint_sensitivities_u0
+
+import ZygoteRules
+
 gpu_or_cpu(x) = Array
 function __init__()
     @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin

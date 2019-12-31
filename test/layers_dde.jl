@@ -1,4 +1,4 @@
-using Flux, DiffEqFlux, DelayDiffEq, Test
+using Flux, DiffEqFlux, DelayDiffEq, Zygote, Test
 
 ## Setup DDE to optimize
 function delay_lotka_volterra(du,u,h,p,t)
@@ -9,17 +9,19 @@ function delay_lotka_volterra(du,u,h,p,t)
 end
 h(p,t) = ones(eltype(p),2)
 prob = DDEProblem(delay_lotka_volterra,[1.0,1.0],h,(0.0,10.0),constant_lags=[0.1])
-p = param([2.2, 1.0, 2.0, 0.4])
-function predict_fd_dde()
+p = [2.2, 1.0, 2.0, 0.4]
+function predict_fd_dde(p)
   diffeq_fd(p,sol->sol[1,:],101,prob,MethodOfSteps(Tsit5()),saveat=0.0:0.1:10.0)
 end
-loss_fd_dde() = sum(abs2,x-1 for x in predict_fd_dde())
-@test_broken loss_fd_dde()
-@test_broken Flux.back!(loss_fd_dde())
+loss_fd_dde(p) = sum(abs2,x-1 for x in predict_fd_dde(p))
+loss_fd_dde(p)
+@test !iszero(Zygote.gradient(loss_fd_dde,p)[1])
 
-function predict_rd_dde()
+function predict_rd_dde(p)
   diffeq_rd(p,prob,MethodOfSteps(Tsit5()),saveat=0.1)[1,:]
 end
-loss_rd_dde() = sum(abs2,x-1 for x in predict_rd_dde())
-loss_rd_dde()
-Flux.back!(loss_rd_dde())
+loss_rd_dde(p) = sum(abs2,x-1 for x in predict_rd_dde(p))
+loss_rd_dde(p)
+@test !iszero(Zygote.gradient(loss_rd_dde,p)[1])
+
+@test Zygote.gradient(loss_fd_dde,p)[1] ≈ Zygote.gradient(loss_rd_dde,p)[1] rtol=1e-2
