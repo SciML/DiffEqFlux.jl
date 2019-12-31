@@ -38,6 +38,39 @@ ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
   end
 end
 
+ZygoteRules.@adjoint function _diffeq_rd(p::Zygote.Params,prob,u0,args...;kwargs...)
+  function tracker_forward()
+    if DiffEqBase.isinplace(prob)
+      # use Array{TrackedReal} for mutation to work
+      # Recurse to all Array{TrackedArray}
+      _prob = remake(prob,u0=map(identity,u0),p=p)
+    else
+      # use TrackedArray for efficiency of the tape
+      _prob = remake(prob,u0=u0,p=p)
+    end
+    solve(_prob,args...;kwargs...)
+  end
+
+  function tracker_forward2(u0)
+    if DiffEqBase.isinplace(prob)
+      # use Array{TrackedReal} for mutation to work
+      # Recurse to all Array{TrackedArray}
+      _prob = remake(prob,u0=map(identity,u0),p=p)
+    else
+      # use TrackedArray for efficiency of the tape
+      _prob = remake(prob,u0=u0,p=p)
+    end
+    solve(_prob,args...;kwargs...)
+  end
+  val,pullback = Tracker.forward(tracker_forward,p)
+  val2,pullback2 = Tracker.forward(tracker_forward2,u0)
+  val, function (ybar)
+    pbar = pullback(ybar)
+    u0bar = first(pullback2(ybar))
+    (pbar,nothing,Tracker.data(u0bar),ntuple(_->nothing, length(args))...)
+  end
+end
+
 ## Forward-Mode via ForwardDiff.jl
 
 function diffeq_fd(p,f,n,prob,args...;u0=prob.u0,kwargs...)
