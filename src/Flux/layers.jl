@@ -154,8 +154,16 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;
 
     ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;kwargs_adj...)
-    rs = p isa Flux.Params ? restructure(tuple(size.(p)...), dp') : reshape(dp', size(p))
-    (rs, du0, ntuple(_->nothing, 1+length(args))...)
+    if p isa Flux.Params
+      rs = restructure(tuple(size.(p)...), dp')
+      graddict = IdDict(x=>y for (x,y) in zip(p.order,rs))
+      for x in keys(__context__.cache)
+        __context__.cache[x] = graddict[x]
+      end
+    else
+      rs = reshape(dp', size(p))
+    end
+    (rs, reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
   end
   out,diffeq_adjoint_adjoint
 end
