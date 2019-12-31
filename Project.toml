@@ -18,7 +18,7 @@ Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 [compat]
 Adapt = "1"
 DiffEqBase = "6"
-DiffEqSensitivity = "5.0"
+DiffEqSensitivity = "5.0, 6.0"
 DiffResults = "0.0.4, 1.0"
 Flux = "0.9"
 ForwardDiff = "0.10"
