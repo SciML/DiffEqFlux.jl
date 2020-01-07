@@ -21,8 +21,8 @@ kwargs key word arguments passed to ODESolve; accepts an additional key
     passes a separate callback to the adjoint solver.
 
 """
-function neural_ode(model,x,tspan,args...;p=Flux.params(model),kwargs...)
-  dudt_(u::AbstractArray,p,t) = model(u)
+function neural_ode(model,x,tspan,args...;p=Flux.destructure(model),kwargs...)
+  dudt_(u,p,t) = Flux._restructure(model,p)(u)
   prob = ODEProblem{false}(dudt_,x,tspan,p)
   return diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
 end
@@ -36,16 +36,16 @@ the differential equation, cf neural_ode for a comparison with the adjoint metho
 function neural_ode_rd(model,x,tspan,
                        args...;p=Flux.params(model),
                        kwargs...)
-  dudt_(u,p,t) = model(u)
-  dudt_(u,p::Tracker.TrackedArray,t) = restructure(model,p)(u)
+  dudt_(u,p,t) = Flux._restructure(model,p)(u)
+  dudt_(u,p::Tracker.TrackedArray,t) = Flux._restructure(model,p)(u)
   prob = ODEProblem{false}(dudt_,x,tspan)
   diffeq_rd(p,prob,args...;u0=x,kwargs...)
 end
 
 function neural_dmsde(model,x,mp,tspan,
-                      args...;p=Flux.params(model),kwargs...)
-  dudt_(u,p,t) = model(u)
-  dudt_(u,p::Tracker.TrackedArray,t) = restructure(model,p)(u)
+                      args...;p=Flux.destructure(model),kwargs...)
+  dudt_(u,p,t) = Flux._restructure(model,p)(u)
+  dudt_(u,p::Tracker.TrackedArray,t) = Flux._restructure(model,p)(u)
   g(u,p,t) = mp.*u
   prob = SDEProblem{false}(dudt_,g,x,tspan,p)
   diffeq_rd(p,prob,args...;u0=x,kwargs...)
