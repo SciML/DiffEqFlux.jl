@@ -239,9 +239,8 @@ function. Thus for example, with the multilayer perceptron neural network
 would be to use non-mutating adjoints, which looks like:
 
 ```julia
-p = DiffEqFlux.destructure(model)
-dudt_(u::TrackedArray,p,t) = DiffEqFlux.restructure(model,p)(u)
-dudt_(u::AbstractArray,p,t) = Flux.data(DiffEqFlux.restructure(model,p)(u))
+p,re = DiffEqFlux.destructure(model)
+dudt_(u,p,t) = re(p)(u)
 prob = ODEProblem(dudt_,x,tspan,p)
 my_neural_ode_prob = diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
 ```
@@ -607,7 +606,7 @@ does not mean that every combination is a good combination.
 
 - Use `diffeq_adjoint` with an out-of-place non-mutating function `f(u,p,t)` on ODEs without events.
 - Use `diffeq_rd` with an out-of-place non-mutating function (`f(u,p,t)` on ODEs/SDEs, `f(du,u,p,t)` for DAEs,
-  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/dev/index.html) for other equations) 
+  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/dev/index.html) for other equations)
   for non-ODE neural differential equations or ODEs with events
 - If the neural network is a sufficiently small (or non-existant) part of the differential equation, consider
   `diffeq_fd` with the mutating form (`f(du,u,p,t)`).
@@ -622,9 +621,9 @@ The major options to keep in mind are:
   dual numbers and thus forward difference (`diffeq_fd`). However, reverse-mode automatic differentiation as implemented
   by Flux.jl's Tracker.jl does not allow for mutation on its `TrackedArray` type, meaning that mutation is supported
   by `Array{TrackedReal}`. This fallback is exceedingly slow due to the large trace that is created, and thus out-of-place
-  (`f(u,p,t)` for ODEs) is preferred in this case. 
-- For adjoints, this fact is complicated due to the choices in the `SensitivityAlg`. See 
-  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/dev/analysis/sensitivity.html#Options-1). 
+  (`f(u,p,t)` for ODEs) is preferred in this case.
+- For adjoints, this fact is complicated due to the choices in the `SensitivityAlg`. See
+  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/dev/analysis/sensitivity.html#Options-1).
   When `autojacvec=true`, a backpropogation is performed by Tracker in the intermediate steps, meaning the rule about mutation
   applies. However, the majority of the computation is not hte `v^T*J` computation of the backpropogation, so it is not always
   obvious to determine the best option given that mutation is slow for backprop but is much faster for large ODEs with many
