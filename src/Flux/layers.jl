@@ -15,10 +15,12 @@ function _diffeq_rd(p,prob,u0,args...;kwargs...)
   else # u0 is functional, ignore the change
     _prob = remake(prob,u0=u0,p=p)
   end
-  Array(solve(_prob,args...;kwargs...))
+  T = gpu_or_cpu(u0)
+  adapt(T,solve(_prob,args...;kwargs...))
 end
 
 ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
+  T = gpu_or_cpu(u0)
   function tracker_forward(u0,p)
     if DiffEqBase.isinplace(prob)
       # use Array{TrackedReal} for mutation to work
@@ -28,7 +30,7 @@ ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
       # use TrackedArray for efficiency of the tape
       _prob = remake(prob,u0=u0,p=p)
     end
-    Array(solve(_prob,args...;kwargs...))
+    adapt(T,solve(_prob,args...;kwargs...))
   end
   val,pullback = Tracker.forward(tracker_forward,u0,p)
   Tracker.data(val), function (ybar)

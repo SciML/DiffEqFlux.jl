@@ -1,7 +1,7 @@
 module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
-      Flux, Requires, RecursiveArrayTools, Adapt, LinearAlgebra
+      Flux, Requires, Adapt, LinearAlgebra
 
 using DiffEqSensitivity: adjoint_sensitivities_u0
 
