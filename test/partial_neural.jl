@@ -49,14 +49,14 @@ tspan = (0.0f0,25.0f0)
 
 ann = Chain(Dense(2,10,tanh), Dense(10,1))
 
-p1,_ = Flux.destructure(ann)
+p1,re = Flux.destructure(ann)
 p2 = Float32[-2.0,1.1]
 p3 = [p1;p2]
 ps = Flux.params(p3,u0)
 
 function dudt_(du,u,p,t)
     x, y = u
-    du[1] = Flux._restructure(ann,p[1:41])(u)[1]
+    du[1] = re(p[1:41])(u)[1]
     du[2] = p[end-1]*y + p[end]*x
 end
 prob = ODEProblem(dudt_,u0,tspan,p3)

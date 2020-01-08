@@ -6,7 +6,6 @@ const is_TRAVIS = haskey(ENV,"TRAVIS")
 
 @time begin
 if GROUP == "All"
-    @safetestset "Utils Tests" begin include("utils.jl") end
     @safetestset "Layers Tests" begin include("layers.jl") end
     @safetestset "Layers SDE" begin include("layers_sde.jl") end
     @safetestset "Layers DDE" begin include("layers_dde.jl") end

@@ -39,7 +39,6 @@ function neural_ode_rd(model,x,tspan,
                        kwargs...)
   p,re = Flux.destructure(model)
   dudt_(u,p,t) = re(p)(u)
-  dudt_(u,p::Tracker.TrackedArray,t) = re(p)(u)
   prob = ODEProblem{false}(dudt_,x,tspan)
   diffeq_rd(p,prob,args...;u0=x,kwargs...)
 end
@@ -48,7 +47,6 @@ function neural_dmsde(model,x,mp,tspan,
                       args...;kwargs...)
   p,re = Flux.destructure(model)
   dudt_(u,p,t) = re(p)(u)
-  dudt_(u,p::Tracker.TrackedArray,t) = re(p)(u)
   g(u,p,t) = mp.*u
   prob = SDEProblem{false}(dudt_,g,x,tspan,p)
   diffeq_rd(p,prob,args...;u0=x,kwargs...)
