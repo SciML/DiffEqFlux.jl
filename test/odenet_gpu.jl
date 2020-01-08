@@ -2,13 +2,15 @@ using DiffEqFlux, Flux, Test, OrdinaryDiffEq, CuArrays
 using Statistics
 #= using Plots =#
 
+CuArrays.allowscalar(false)
+
 ## True Solution
 u0 = [2.; 0.] |> gpu
 datasize = 30
-tspan = (0.0,25.0)
+tspan = (0f0,25f0)
+const true_A = cu([-0.1 2.0; -2.0 -0.1])
 
 function trueODEfunc(du,u,p,t)
-    true_A = cu([-0.1 2.0; -2.0 -0.1])
     du .= ((u.^3)'true_A)'
 end
 
@@ -23,7 +25,7 @@ true_sol = solve(true_prob,BS3(),saveat=range(tspan[1],tspan[2],length=datasize)
 dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
 
 function ODEfunc(du,u,p,t)
-    du .= Flux.data(dudt(u))
+    du .= dudt(u)
 end
 
 pred_prob = ODEProblem(ODEfunc, u0,tspan)
@@ -31,4 +33,4 @@ pred_sol = solve(pred_prob,BS3(),saveat=range(tspan[1],tspan[2],length=datasize)
 
 ## Loss
 l1_loss(pred,target) = mean(abs.(pred-target))
-l1_loss(pred_sol,true_sol)
+l1_loss(Array(pred_sol),Array(true_sol))
