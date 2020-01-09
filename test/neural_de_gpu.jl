@@ -1,4 +1,5 @@
 using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqFlux, Zygote, Test, CuArrays
+CuArrays.allowscalar(false)
 
 x = Float32[2.; 0.] |> gpu
 tspan = (0.0f0,25.0f0)

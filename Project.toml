@@ -23,12 +23,12 @@ DiffEqSensitivity = "6.0"
 DiffResults = "0.0.4, 1.0"
 Flux = "0.10"
 ForwardDiff = "0.10"
-RecursiveArrayTools = "1"
 Requires = "0.5, 1.0"
 Tracker = "0.2"
 Zygote = "0.4"
 julia = "1"
 ZygoteRules = "0.2"
+RecursiveArrayTools = "2"
 
 [extras]
 DelayDiffEq = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"

@@ -15,10 +15,12 @@ function _diffeq_rd(p,prob,u0,args...;kwargs...)
   else # u0 is functional, ignore the change
     _prob = remake(prob,u0=u0,p=p)
   end
-  Array(solve(_prob,args...;kwargs...))
+  T = gpu_or_cpu(u0)
+  adapt(T,solve(_prob,args...;kwargs...))
 end
 
 ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
+  T = gpu_or_cpu(u0)
   function tracker_forward(u0,p)
     if DiffEqBase.isinplace(prob)
       # use Array{TrackedReal} for mutation to work
@@ -28,45 +30,13 @@ ZygoteRules.@adjoint function _diffeq_rd(p,prob,u0,args...;kwargs...)
       # use TrackedArray for efficiency of the tape
       _prob = remake(prob,u0=u0,p=p)
     end
-    Array(solve(_prob,args...;kwargs...))
+    adapt(T,solve(_prob,args...;kwargs...))
   end
   val,pullback = Tracker.forward(tracker_forward,u0,p)
   Tracker.data(val), function (ybar)
     u0bar,pbar = pullback(ybar)
     _u0bar = u0bar isa Tracker.TrackedArray ? Tracker.data(u0bar) : Tracker.data.(u0bar)
     (Tracker.data(pbar),nothing,_u0bar,ntuple(_->nothing, length(args))...)
-  end
-end
-
-ZygoteRules.@adjoint function _diffeq_rd(p::Flux.Params,prob,u0,args...;kwargs...)
-  function tracker_forward(u0,p)
-    if DiffEqBase.isinplace(prob)
-      # use Array{TrackedReal} for mutation to work
-      # Recurse to all Array{TrackedArray}
-      _prob = remake(prob,u0=map(identity,u0),p=p)
-    else
-      # use TrackedArray for efficiency of the tape
-      _prob = remake(prob,u0=u0,p=p)
-    end
-    Array(solve(_prob,args...;kwargs...))
-  end
-  non_u0_p = p.order[p.order .!== (u0,)]
-  _p = reduce(vcat,vec.(non_u0_p))
-  sz = size.(non_u0_p)
-  val,pullback = Tracker.forward(tracker_forward,u0,_p)
-  val, function (ybar)
-    u0bar, pbar = pullback(ybar)
-    _pbar = Tracker.data(pbar)
-    rs = restructure(tuple(sz...), _pbar)
-    graddict = IdDict(x=>y for (x,y) in zip(non_u0_p,rs))
-    for x in keys(__context__.cache)
-      if x === u0
-        __context__.cache[x] = Tracker.data(u0bar)
-      else
-        __context__.cache[x] = graddict[x]
-      end
-    end
-    (_pbar,nothing,Tracker.data(u0bar),ntuple(_->nothing, length(args))...)
   end
 end
 
@@ -153,16 +123,7 @@ ZygoteRules.@adjoint function _diffeq_adjoint(p,u0,prob,args...;
 
     ts = sol.t[sol_idxs]
     du0, dp = adjoint_sensitivities_u0(sol,args...,df,ts;kwargs_adj...)
-    if p isa Flux.Params
-      rs = restructure(tuple(size.(p)...), dp')
-      graddict = IdDict(x=>y for (x,y) in zip(p.order,rs))
-      for x in keys(__context__.cache)
-        __context__.cache[x] = graddict[x]
-      end
-    else
-      rs = reshape(dp', size(p))
-    end
-    (rs, reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
+    (reshape(dp', size(p)), reshape(du0,size(u0)), ntuple(_->nothing, 1+length(args))...)
   end
   out,diffeq_adjoint_adjoint
 end

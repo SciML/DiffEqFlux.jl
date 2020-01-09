@@ -93,13 +93,11 @@ Next we define a single layer neural network that uses the `diffeq_adjoint` laye
 function that takes the parameters and returns the solution of the `x(t)`
 variable. Note that the `diffeq_adjoint` is usually preferred for ODEs, but does not
 extend to other differential equation types (see the performance discussion section for
-details). Instead of being a function of the parameters, we will wrap our
-parameters in `param` to be tracked by Flux:
+details).
 
 ```julia
 using Flux, DiffEqFlux
-p = param([2.2, 1.0, 2.0, 0.4]) # Initial Parameter Vector
-params = Flux.Params([p])
+p = [2.2, 1.0, 2.0, 0.4] # Initial Parameter Vector
 
 function predict_adjoint() # Our 1-layer neural network
   diffeq_adjoint(p,prob,Tsit5(),saveat=0.0:0.1:10.0)
@@ -123,13 +121,13 @@ opt = ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_adjoint())
   # using `remake` to re-create our `prob` with current parameters `p`
-  display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.0:0.1:10.0),ylim=(0,6)))
+  display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.0:0.1:10.0),ylim=(0,6)))
 end
 
 # Display the ODE with the initial parameter values.
 cb()
 
-Flux.train!(loss_adjoint, params, data, opt, cb = cb)
+Flux.train!(loss_adjoint, Flux.params(p), data, opt, cb = cb)
 ```
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
@@ -183,10 +181,9 @@ end
 h(p,t) = ones(eltype(p),2)
 prob = DDEProblem(delay_lotka_volterra,[1.0,1.0],h,(0.0,10.0),constant_lags=[0.1])
 
-p = param([2.2, 1.0, 2.0, 0.4])
-params = Flux.Params([p])
+p = [2.2, 1.0, 2.0, 0.4]
 function predict_rd_dde()
-  Array(diffeq_rd(p,prob,MethodOfSteps(Tsit5()),saveat=0.1))
+  diffeq_rd(p,prob,MethodOfSteps(Tsit5()),saveat=0.1)
 end
 loss_rd_dde() = sum(abs2,x-1 for x in predict_rd_dde())
 loss_rd_dde()
@@ -207,8 +204,7 @@ function lotka_volterra_noise(du,u,p,t)
 end
 prob = SDEProblem(lotka_volterra,lotka_volterra_noise,[1.0,1.0],(0.0,10.0))
 
-p = param([2.2, 1.0, 2.0, 0.4])
-params = Flux.Params([p])
+p = [2.2, 1.0, 2.0, 0.4]
 function predict_fd_sde()
   diffeq_fd(p,Array,202,prob,SOSRI(),saveat=0.1)
 end
@@ -219,13 +215,13 @@ data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_fd_sde())
-  display(plot(solve(remake(prob,p=Flux.data(p)),SOSRI(),saveat=0.1),ylim=(0,6)))
+  display(plot(solve(remake(prob,p=p),SOSRI(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
 cb()
 
-Flux.train!(loss_fd_sde, params, data, opt, cb = cb)
+Flux.train!(loss_fd_sde, Flux.params(p), data, opt, cb = cb)
 ```
 
 ![SDE NN Animation](https://user-images.githubusercontent.com/1814174/51399524-2c6abf80-1b14-11e9-96ae-0192f7debd03.gif)
@@ -239,9 +235,8 @@ function. Thus for example, with the multilayer perceptron neural network
 would be to use non-mutating adjoints, which looks like:
 
 ```julia
-p = DiffEqFlux.destructure(model)
-dudt_(u::TrackedArray,p,t) = DiffEqFlux.restructure(model,p)(u)
-dudt_(u::AbstractArray,p,t) = Flux.data(DiffEqFlux.restructure(model,p)(u))
+p,re = DiffEqFlux.destructure(model)
+dudt_(u,p,t) = re(p)(u)
 prob = ODEProblem(dudt_,x,tspan,p)
 my_neural_ode_prob = diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
 ```
@@ -312,7 +307,7 @@ opt = ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_n_ode())
   # plot current prediction against data
-  cur_pred = Flux.data(predict_n_ode())
+  cur_pred = predict_n_ode()
   pl = scatter(t,ode_data[1,:],label="data")
   scatter!(pl,t,cur_pred[1,:],label="prediction")
   display(plot(pl))
@@ -322,6 +317,8 @@ end
 cb()
 
 ps = Flux.params(dudt)
+# or train the initial condition and neural network
+# ps = Flux.params(u0,dudt)
 Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
 ```
 ## Use with GPUs
@@ -334,10 +331,10 @@ that runs on the GPU:
 u0 = Float32[2.; 0.] |> gpu
 dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
 
-p = DiffEqFlux.destructure(model)
-dudt_(u::TrackedArray,p,t) = DiffEqFlux.restructure(model,p)(u)
-dudt_(u::AbstractArray,p,t) = Flux.data(DiffEqFlux.restructure(model,p)(u))
-prob = ODEProblem(ODEfunc, u0,tspan)
+p,re = DiffEqFlux.destructure(model)
+dudt_(u::TrackedArray,p,t) = re(p)(u)
+dudt_(u::AbstractArray,p,t) = re(p)(u)
+prob = ODEProblem(ODEfunc, u0,tspan, p)
 
 # Runs on a GPU
 sol = solve(prob,Tsit5(),saveat=0.1)
@@ -362,20 +359,22 @@ using DiffEqFlux, Flux, OrdinaryDiffEq
 ## --- Reverse-mode AD ---
 
 tspan = (0.0f0,25.0f0)
-u0 = Tracker.param(Float32[0.8; 0.8])
+u0 = Float32[0.8; 0.8]
 
 ann = Chain(Dense(2,10,tanh), Dense(10,1))
-p = param(Float32[-2.0,1.1])
+p = Float32[-2.0,1.1]
+p2,re = Flux.destructure(ann)
+_p = [p;p2]
 
 function dudt_(u::TrackedArray,p,t)
     x, y = u
     Flux.Tracker.collect(
-        [ann(u)[1],
+        [re(p[3:end])(u)[1],
         p[1]*y + p[2]*x*y])
 end
 function dudt_(u::AbstractArray,p,t)
     x, y = u
-    [Flux.data(ann(u)[1]),
+    [re(p[3:end])[1],
     p[1]*y + p[2]*x*y]
 end
 
@@ -383,7 +382,7 @@ prob = ODEProblem(dudt_,u0,tspan,p)
 diffeq_rd(p,prob,Tsit5())
 
 function predict_rd()
-  Flux.Tracker.collect(diffeq_rd(p,prob,Tsit5(),u0=u0))
+  diffeq_rd(p,prob,Tsit5(),u0=u0)
 end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
@@ -398,24 +397,24 @@ end
 # Display the ODE with the current parameter values.
 cb()
 
-Flux.train!(loss_rd, params(ann,p,u0), data, opt, cb = cb)
+Flux.train!(loss_rd, Flux.params(ann,p,u0), data, opt, cb = cb)
 
 
 ## --- Partial Neural Adjoint ---
 
-u0 = param(Float32[0.8; 0.8])
+u0 = Float32[0.8; 0.8]
 tspan = (0.0f0,25.0f0)
 
 ann = Chain(Dense(2,10,tanh), Dense(10,1))
 
-p1 = Flux.data(DiffEqFlux.destructure(ann))
+p1,re = Flux.destructure(ann)
 p2 = Float32[-2.0,1.1]
-p3 = param([p1;p2])
+p3 = [p1;p2]
 ps = Flux.params(p3,u0)
 
 function dudt_(du,u,p,t)
     x, y = u
-    du[1] = DiffEqFlux.restructure(ann,p[1:41])(u)[1]
+    du[1] = re(p[1:41])(u)[1]
     du[2] = p[end-1]*y + p[end]*x
 end
 prob = ODEProblem(dudt_,u0,tspan,p3)
@@ -454,7 +453,7 @@ neural networks for both the drift and diffusion terms:
 ```julia
 dudt_(u,p,t) = model(u)
 g(u,p,t) = model2(u)
-prob = SDEProblem(dudt_,g,param(x),tspan,nothing)
+prob = SDEProblem(dudt_,g,x,tspan,nothing)
 ```
 
 where `model` and `model2` are different neural networks. The same can apply to a neural delay differential equation.
@@ -516,7 +515,7 @@ Let's see what that looks like:
 ```julia
 pred = n_sde(u0) # Get the prediction using the correct initial condition
 
-dudt_(u,p,t) = Flux.data(dudt(u))
+dudt_(u,p,t) = dudt(u)
 g(u,p,t) = mp.*u
 nprob = SDEProblem(dudt_,g,u0,(0.0f0,1.2f0),nothing)
 
@@ -525,7 +524,6 @@ ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100)
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
 p1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
 scatter!(p1,t,sde_data',lw=3)
-
 scatter(t,sde_data[1,:],label="data")
 scatter!(t,Flux.data(pred[1,:]),label="prediction")
 ```
@@ -607,7 +605,7 @@ does not mean that every combination is a good combination.
 
 - Use `diffeq_adjoint` with an out-of-place non-mutating function `f(u,p,t)` on ODEs without events.
 - Use `diffeq_rd` with an out-of-place non-mutating function (`f(u,p,t)` on ODEs/SDEs, `f(du,u,p,t)` for DAEs,
-  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/dev/index.html) for other equations) 
+  `f(u,h,p,t)` for DDEs, and [consult the docs](http://docs.juliadiffeq.org/dev/index.html) for other equations)
   for non-ODE neural differential equations or ODEs with events
 - If the neural network is a sufficiently small (or non-existant) part of the differential equation, consider
   `diffeq_fd` with the mutating form (`f(du,u,p,t)`).
@@ -622,9 +620,9 @@ The major options to keep in mind are:
   dual numbers and thus forward difference (`diffeq_fd`). However, reverse-mode automatic differentiation as implemented
   by Flux.jl's Tracker.jl does not allow for mutation on its `TrackedArray` type, meaning that mutation is supported
   by `Array{TrackedReal}`. This fallback is exceedingly slow due to the large trace that is created, and thus out-of-place
-  (`f(u,p,t)` for ODEs) is preferred in this case. 
-- For adjoints, this fact is complicated due to the choices in the `SensitivityAlg`. See 
-  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/dev/analysis/sensitivity.html#Options-1). 
+  (`f(u,p,t)` for ODEs) is preferred in this case.
+- For adjoints, this fact is complicated due to the choices in the `SensitivityAlg`. See
+  [the adjoint SensitivityAlg options for more details](http://docs.juliadiffeq.org/dev/analysis/sensitivity.html#Options-1).
   When `autojacvec=true`, a backpropogation is performed by Tracker in the intermediate steps, meaning the rule about mutation
   applies. However, the majority of the computation is not hte `v^T*J` computation of the backpropogation, so it is not always
   obvious to determine the best option given that mutation is slow for backprop but is much faster for large ODEs with many
@@ -652,7 +650,7 @@ The major options to keep in mind are:
 - `diffeq_rd(p,prob, args...;u0 = prob.u0, kwargs...)` uses Flux.jl's
   reverse-mode AD through the differential equation solver with parameters `p`
   and initial condition `u0`. The rest of the arguments are passed to the
-  differential equation solver. The return is the DESolution. Note: if you
+  differential equation solver. The return is the array for the DESolution. Note: if you
   use this function, it is much better to use the allocating out of place
   form (`f(u,p,t)` for ODEs) than the in place form (`f(du,u,p,t)` for ODEs)!
 - `diffeq_fd(p,reduction,n,prob,args...;u0 = prob.u0, kwargs...)` uses
