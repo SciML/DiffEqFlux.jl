@@ -235,7 +235,7 @@ function. Thus for example, with the multilayer perceptron neural network
 would be to use non-mutating adjoints, which looks like:
 
 ```julia
-p,re = DiffEqFlux.destructure(model)
+p,re = Flux.destructure(model)
 dudt_(u,p,t) = re(p)(u)
 prob = ODEProblem(dudt_,x,tspan,p)
 my_neural_ode_prob = diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
@@ -321,6 +321,7 @@ ps = Flux.params(dudt)
 # ps = Flux.params(u0,dudt)
 Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
 ```
+
 ## Use with GPUs
 
 Note that the differential equation solvers will run on the GPU if the initial
@@ -332,8 +333,7 @@ u0 = Float32[2.; 0.] |> gpu
 dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
 
 p,re = DiffEqFlux.destructure(model)
-dudt_(u::TrackedArray,p,t) = re(p)(u)
-dudt_(u::AbstractArray,p,t) = re(p)(u)
+dudt_(u,p,t) = re(p)(u)
 prob = ODEProblem(ODEfunc, u0,tspan, p)
 
 # Runs on a GPU
