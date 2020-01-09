@@ -316,7 +316,7 @@ end
 # Display the ODE with the initial parameter values.
 cb()
 
-ps = Flux.params(dudt)
+ps = Flux.params(n_ode)
 # or train the initial condition and neural network
 # ps = Flux.params(u0,dudt)
 Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
@@ -507,8 +507,8 @@ multiplicative noise neural SDE layer function:
 drift_dudt = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
-ps = Flux.params(drift_dudt)
-n_sde = x->neural_dmsde(drift_dudt,x,mp,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
+n_sde = NeuralDMSDE(drift_dudt,mp,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
+ps = Flux.params(n_sde)
 ```
 
 Let's see what that looks like:
@@ -526,7 +526,7 @@ ensemble_nsum = EnsembleSummary(ensemble_nsol)
 p1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
 scatter!(p1,t,sde_data',lw=3)
 scatter(t,sde_data[1,:],label="data")
-scatter!(t,Flux.data(pred[1,:]),label="prediction")
+scatter!(t,pred[1,:],label="prediction")
 ```
 
 Now just as with the neural ODE we define a loss function:
@@ -537,7 +537,6 @@ function predict_n_sde()
 end
 loss_n_sde1() = sum(abs2,sde_data .- predict_n_sde())
 loss_n_sde10() = sum([sum(abs2,sde_data .- predict_n_sde()) for i in 1:10])
-Flux.back!(loss_n_sde1())
 
 data = Iterators.repeated((), 10)
 opt = ADAM(0.025)

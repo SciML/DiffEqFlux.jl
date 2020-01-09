@@ -37,29 +37,27 @@ function neural_ode_rd(model,x,tspan,
 end
 
 # Flux Layer Interface
-struct NeuralODE{P,M,RE,T,S,A,K}
+struct NeuralODE{P,M,RE,T,A,K}
     p::P
     model::M
     re::RE
     tspan::T
-    solver::S
     args::A
     kwargs::K
 end
 
-function NeuralODE(model,tspan,solver,args...;kwargs...)
+function NeuralODE(model,tspan,args...;kwargs...)
     p,re = Flux.destructure(model)
-    NeuralODE(p,model,re,tspan,solver,args,kwargs)
+    NeuralODE(p,model,re,tspan,args,kwargs)
 end
 
 # Play nice with Flux
 Flux.@functor NeuralODE
-Flux.params(n::NeuralODE) = n.p
 
 function (n::NeuralODE)(x)
     dudt_(u,p,t) = n.re(p)(u)
     prob = ODEProblem{false}(dudt_,x,n.tspan,n.p)
-    diffeq_adjoint(n.p,prob,n.solver,n.args...;u0=x,n.kwargs...)
+    diffeq_adjoint(n.p,prob,n.args...;u0=x,n.kwargs...)
 end
 
 function neural_dmsde(model,x,mp,tspan,
@@ -68,28 +66,27 @@ function neural_dmsde(model,x,mp,tspan,
 end
 
 # Flux Layer Interface
-struct NeuralDMSDE{P,M,RE,T,S,A,K}
+struct NeuralDMSDE{P,M,RE,MP,T,A,K}
     p::P
     model::M
     re::RE
+    mp::MP
     tspan::T
-    solver::S
     args::A
     kwargs::K
 end
 
-function NeuralDMSDE(model,mp,tspan,solver,args...;kwargs...)
+function NeuralDMSDE(model,mp,tspan,args...;kwargs...)
     p,re = Flux.destructure(model)
-    NeuralDMSDE(p,model,re,tspan,solver,args,kwargs)
+    NeuralDMSDE(p,model,re,mp,tspan,args,kwargs)
 end
 
 # Play nice with Flux
 Flux.@functor NeuralDMSDE
-Flux.params(n::NeuralDMSDE) = params(n.p,n.mp)
 
 function (n::NeuralDMSDE)(x)
     dudt_(u,p,t) = n.re(n.p)(u)
-    g(u,p,t) = mp.*u
+    g(u,p,t) = n.mp.*u
     prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p)
-    diffeq_rd(n.p,prob,n.solver,n.args...;u0=x,n.kwargs...)
+    diffeq_rd(n.p,prob,n.args...;u0=x,n.kwargs...)
 end
