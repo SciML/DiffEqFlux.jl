@@ -93,8 +93,7 @@ Next we define a single layer neural network that uses the `diffeq_adjoint` laye
 function that takes the parameters and returns the solution of the `x(t)`
 variable. Note that the `diffeq_adjoint` is usually preferred for ODEs, but does not
 extend to other differential equation types (see the performance discussion section for
-details). Instead of being a function of the parameters, we will wrap our
-parameters in `param` to be tracked by Flux:
+details).
 
 ```julia
 using Flux, DiffEqFlux
@@ -308,7 +307,7 @@ opt = ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_n_ode())
   # plot current prediction against data
-  cur_pred = Flux.data(predict_n_ode())
+  cur_pred = predict_n_ode()
   pl = scatter(t,ode_data[1,:],label="data")
   scatter!(pl,t,cur_pred[1,:],label="prediction")
   display(plot(pl))
@@ -408,7 +407,7 @@ tspan = (0.0f0,25.0f0)
 
 ann = Chain(Dense(2,10,tanh), Dense(10,1))
 
-p1,re = DiffEqFlux.destructure(ann)
+p1,re = Flux.destructure(ann)
 p2 = Float32[-2.0,1.1]
 p3 = [p1;p2]
 ps = Flux.params(p3,u0)
