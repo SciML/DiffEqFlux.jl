@@ -22,12 +22,8 @@ kwargs key word arguments passed to ODESolve; accepts an additional key
 
 """
 function neural_ode(model,x,tspan,args...;kwargs...)
-  p,re = Flux.destructure(model)
-  dudt_(u,p,t) = re(p)(u)
-  prob = ODEProblem{false}(dudt_,x,tspan,p)
-  return diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
+    error("neural_ode has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
 end
-
 
 """
 Constructs a neural ODE with the gradients computed using  reverse-mode
@@ -37,17 +33,61 @@ the differential equation, cf neural_ode for a comparison with the adjoint metho
 function neural_ode_rd(model,x,tspan,
                        args...;
                        kwargs...)
-  p,re = Flux.destructure(model)
-  dudt_(u,p,t) = re(p)(u)
-  prob = ODEProblem{false}(dudt_,x,tspan)
-  diffeq_rd(p,prob,args...;u0=x,kwargs...)
+    error("neural_ode_rd has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
+end
+
+# Flux Layer Interface
+struct NeuralODE{P,M,RE,S,A,K}
+    p::P
+    model::M
+    re::RE
+    solver::S
+    args::A
+    kwargs::K
+end
+
+function NeuralODE(model,tspan,solver,args...;kwargs...)
+    p,re = Flux.destructure(model)
+    NeuralODE(p,model,re,solver,args,kwargs)
+end
+
+# Play nice with Flux
+Flux.@treelike NeuralODE
+Flux.params(n::NeuralODE) = params(n.p)
+
+function (n::NeuralODE)(x)
+    dudt_(u,p,t) = n.re(p)(u)
+    prob = ODEProblem{false}(dudt_,x,n.tspan,n.p)
+    diffeq_adjoint(n.p,n.prob,n.args...;u0=x,n.kwargs...)
 end
 
 function neural_dmsde(model,x,mp,tspan,
                       args...;kwargs...)
-  p,re = Flux.destructure(model)
-  dudt_(u,p,t) = re(p)(u)
-  g(u,p,t) = mp.*u
-  prob = SDEProblem{false}(dudt_,g,x,tspan,p)
-  diffeq_rd(p,prob,args...;u0=x,kwargs...)
+    error("neural_dmsde has been deprecated with the change to Zygote. Please see the documentation on the new NeuralDMSDE layer.")
+end
+
+# Flux Layer Interface
+struct NeuralDMSDE{P,M,RE,S,A,K}
+    p::P
+    model::M
+    re::RE
+    solver::S
+    args::A
+    kwargs::K
+end
+
+function NeuralDMSDE(model,mp,tspan,solver,args...;kwargs...)
+    p,re = Flux.destructure(model)
+    NeuralDMSDE(p,model,re,solver,args,kwargs)
+end
+
+# Play nice with Flux
+Flux.@treelike NeuralDMSDE
+Flux.params(n::NeuralDMSDE) = params(n.p,n.mp)
+
+function (n::NeuralDMSDE)(x)
+    dudt_(u,p,t) = n.re(n.p)(u)
+    g(u,p,t) = mp.*u
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p)
+    diffeq_rd(n.p,n.prob,n.args...;u0=x,n.kwargs...)
 end

@@ -244,14 +244,14 @@ my_neural_ode_prob = diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
 (`DiffEqFlux.restructure` and `DiffEqFlux.destructure` are helper functions
 which transform the neural network to use parameters `p`)
 
-A convenience function which handles all of the details is `neural_ode`. To
-use `neural_ode`, you give it the initial condition, the internal neural
+A convenience function which handles all of the details is `NeuralODE`. To
+use `NeuralODE`, you give it the initial condition, the internal neural
 network model to use, the timespan to solve on, and any ODE solver arguments.
 For example, this neural ODE would be defined as:
 
 ```julia
 tspan = (0.0f0,25.0f0)
-x -> neural_ode(model,x,tspan,Tsit5(),saveat=0.1)
+n_ode = NeuralODE(model,tspan,Tsit5(),saveat=0.1)
 ```
 
 where here we made it a layer that takes in the initial condition and spits
@@ -279,10 +279,10 @@ Now let's define a neural network with a `neural_ode` layer. First we define
 the layer:
 
 ```julia
-dudt = Chain(x -> x.^3,
+dudt2 = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
-n_ode(x) = neural_ode(dudt,x,tspan,Tsit5(),saveat=t,reltol=1e-7,abstol=1e-9)
+n_ode = NeuralODE(dudt2,tspan,Tsit5(),saveat=t)
 ```
 
 Here we used the `x -> x.^3` assumption in the model. By incorporating structure
@@ -344,7 +344,7 @@ and the `diffeq` layer functions can be used similarly. Or we can directly use
 the neural ODE layer function, like:
 
 ```julia
-x -> neural_ode(gpu(dudt),gpu(x),tspan,Tsit5(),saveat=0.1)
+n_ode = NeuralODE(gpu(dudt2),tspan,Tsit5(),saveat=0.1)
 ```
 
 ## Mixed Neural DEs
@@ -669,17 +669,14 @@ The major options to keep in mind are:
 
 ### Neural DE Layer Functions
 
-- `neural_ode(model,x,tspan,args...;kwargs...)` defines a neural ODE layer where
-  `model` is a Flux.jl model, `x` is the initial condition, `tspan` is the
+- `NeuralODE(model,tspan,solver,args...;kwargs...)`defines a neural ODE
+  layer where `model` is a Flux.jl model, `tspan` is the
   time span to integrate, and the rest of the arguments are passed to the ODE
   solver. The parameters should be implicit in the `model`. Same `args` and
   `kwargs` are passed to the forward and adjoint solvers, as specified in
   `diffeq_adjoint`, with the exception of `callback_adj`, which is a separate
   callback passed only to the adjoint sensitivity algorithm.
-- `neural_ode_rd(model,x,tspan,args...;kwargs...)` defines a neural ODE layer,
-   just like neural_ode, but uses Flux.jl's reverse-mode automatic
-   differentiation to compute the gradients.
-- `neural_dmsde(model,x,mp,tspan,args...;kwargs)` defines a neural multiplicative
+- `NeuralDMSDE(model,mp,tspan,solver,args...;kwargs...)` defines a neural multiplicative
   SDE layer where `model` is a Flux.jl model, `x` is the initial condition,
   `tspan` is the time span to integrate, and the rest of the arguments are
   passed to the SDE solver. The noise is assumed to be diagonal multiplicative,
