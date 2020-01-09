@@ -356,50 +356,6 @@ doing this with both reverse-mode autodifferentiation and with adjoints:
 ```julia
 using DiffEqFlux, Flux, OrdinaryDiffEq
 
-## --- Reverse-mode AD ---
-
-tspan = (0.0f0,25.0f0)
-u0 = Float32[0.8; 0.8]
-
-ann = Chain(Dense(2,10,tanh), Dense(10,1))
-p = Float32[-2.0,1.1]
-p2,re = Flux.destructure(ann)
-_p = [p;p2]
-
-function dudt_(u::TrackedArray,p,t)
-    x, y = u
-    Flux.Tracker.collect(
-        [re(p[3:end])(u)[1],
-        p[1]*y + p[2]*x*y])
-end
-function dudt_(u::AbstractArray,p,t)
-    x, y = u
-    [re(p[3:end])[1],
-    p[1]*y + p[2]*x*y]
-end
-
-prob = ODEProblem(dudt_,u0,tspan,p)
-diffeq_rd(p,prob,Tsit5())
-
-function predict_rd()
-  diffeq_rd(p,prob,Tsit5(),u0=u0)
-end
-loss_rd() = sum(abs2,x-1 for x in predict_rd())
-loss_rd()
-
-data = Iterators.repeated((), 10)
-opt = ADAM(0.1)
-cb = function ()
-  display(loss_rd())
-  #display(plot(solve(remake(prob,u0=Flux.data(u0),p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
-end
-
-# Display the ODE with the current parameter values.
-cb()
-
-Flux.train!(loss_rd, Flux.params(ann,p,u0), data, opt, cb = cb)
-
-
 ## --- Partial Neural Adjoint ---
 
 u0 = Float32[0.8; 0.8]
@@ -426,7 +382,7 @@ end
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
 loss_adjoint()
 
-data = Iterators.repeated((), 10)
+data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_adjoint())
@@ -437,6 +393,51 @@ end
 cb()
 
 Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
+
+## --- Reverse-mode AD ---
+
+import Tracker
+
+tspan = (0.0f0,25.0f0)
+u0 = Float32[0.8; 0.8]
+
+ann = Chain(Dense(2,10,tanh), Dense(10,1))
+p = Float32[-2.0,1.1]
+p2,re = Flux.destructure(ann)
+_p = [p;p2]
+
+function partial_neural_rd(u::Tracker.TrackedArray,p,t)
+    x, y = u
+    Tracker.collect(
+        [re(p[3:end])(u)[1],
+        p[1]*y + p[2]*x*y])
+end
+function partial_neural_rd(u::AbstractArray,p,t)
+    x, y = u
+    [re(p[3:end])(u)[1],
+    p[1]*y + p[2]*x*y]
+end
+
+prob = ODEProblem(partial_neural_rd,u0,tspan,_p)
+diffeq_rd(_p,prob,Tsit5())
+
+function predict_rd()
+  diffeq_rd(_p,prob,Tsit5(),u0=u0)
+end
+loss_rd() = sum(abs2,x-1 for x in predict_rd())
+loss_rd()
+
+data = Iterators.repeated((), 1000)
+opt = ADAM(0.01)
+cb = function ()
+  display(loss_rd())
+  #display(plot(solve(remake(prob,u0=Flux.data(u0),p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+end
+
+# Display the ODE with the current parameter values.
+cb()
+
+Flux.train!(loss_rd, Flux.params(_p,u0), data, opt, cb = cb)
 ```
 
 ## Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.
@@ -503,11 +504,11 @@ Now we build a neural SDE. For simplicity we will use the `neural_dmsde`
 multiplicative noise neural SDE layer function:
 
 ```julia
-dudt = Chain(x -> x.^3,
+drift_dudt = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
-ps = Flux.params(dudt)
-n_sde = x->neural_dmsde(dudt,x,mp,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
+ps = Flux.params(drift_dudt)
+n_sde = x->neural_dmsde(drift_dudt,x,mp,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
 ```
 
 Let's see what that looks like:
@@ -515,9 +516,9 @@ Let's see what that looks like:
 ```julia
 pred = n_sde(u0) # Get the prediction using the correct initial condition
 
-dudt_(u,p,t) = dudt(u)
+drift_(u,p,t) = drift_dudt(u)
 g(u,p,t) = mp.*u
-nprob = SDEProblem(dudt_,g,u0,(0.0f0,1.2f0),nothing)
+nprob = SDEProblem(drift_,g,u0,(0.0f0,1.2f0),nothing)
 
 ensemble_nprob = EnsembleProblem(nprob)
 ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100)
@@ -545,9 +546,8 @@ cb = function () #callback function to observe training
   # loss against current data
   display(sum(abs2,sde_data .- sample))
   # plot current prediction against data
-  cur_pred = Flux.data(sample)
   pl = scatter(t,sde_data[1,:],label="data")
-  scatter!(pl,t,cur_pred[1,:],label="prediction")
+  scatter!(pl,t,sample[1,:],label="prediction")
   display(plot(pl))
 end
 
@@ -569,10 +569,6 @@ Flux.train!(loss_n_sde10, ps, Iterators.repeated((), 20), opt, cb = cb)
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```julia
-dudt_(u,p,t) = Flux.data(dudt(u))
-g(u,p,t) = mp.*u
-nprob = SDEProblem(dudt_,g,u0,(0.0f0,1.2f0),nothing)
-
 ensemble_nprob = EnsembleProblem(nprob)
 ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100)
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
