@@ -12,10 +12,11 @@ prob = ODEProblem(lotka_volterra,u0,(0.0,10.0),p)
 
 # Reverse-mode
 
-function predict_rd()
+function predict_rd(p)
   Array(concrete_solve(prob,Tsit5(),u0,p,saveat=0.1,reltol=1e-4,sensealg=TrackerAdjoint()))
 end
-loss_rd() = sum(abs2,x-1 for x in predict_rd())
+loss_rd(p) = sum(abs2,x-1 for x in predict_rd(p))
+loss_rd() = sum(abs2,x-1 for x in predict_rd(p))
 loss_rd()
 
 grads = Zygote.gradient(loss_rd, p)
