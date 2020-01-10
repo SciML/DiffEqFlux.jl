@@ -399,7 +399,7 @@ data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_adjoint())
-  #display(plot(solve(remake(prob,p=Flux.data(p3),u0=Flux.data(u0)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  #display(plot(solve(remake(prob,p=p3,u0=u0),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
@@ -444,7 +444,7 @@ data = Iterators.repeated((), 1000)
 opt = ADAM(0.01)
 cb = function ()
   display(loss_rd())
-  #display(plot(solve(remake(prob,u0=Flux.data(u0),p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  #display(plot(solve(remake(prob,u0=u0,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
