@@ -38,7 +38,7 @@ loss2 = loss_rd()
 
 p = [2.2, 1.0, 2.0, 0.4]
 function predict_fd()
-  vec(Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=0.1,reltol=1e-4,sensealg=ForwardDiffSensitivity())))
+  vec(Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=0.0:0.1:1.0,reltol=1e-4,sensealg=ForwardDiffSensitivity())))
 end
 loss_fd() = sum(abs2,x-1 for x in predict_fd())
 loss_fd()

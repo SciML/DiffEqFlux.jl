@@ -3,8 +3,6 @@ module DiffEqFlux
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools
 
-using DiffEqSensitivity: adjoint_sensitivities_u0
-
 import ZygoteRules
 
 gpu_or_cpu(x) = Array
