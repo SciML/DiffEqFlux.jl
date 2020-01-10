@@ -102,8 +102,6 @@ end
     @test ! iszero(grads[node.p])
 end
 
-Zygote.@nograd pairs
-
 mp = Float32[0.1,0.1]
 NeuralDMSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.1)(x)
 sode = NeuralDMSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)

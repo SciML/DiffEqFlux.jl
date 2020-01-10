@@ -23,7 +23,8 @@ else ## false crashes. that is when i am tracking the initial conditions
     prob = ODEProblem(monomial,u0,tspan,p)
 end
 function predict_rd() # Our 1-layer neural network
-  diffeq_rd(p,prob,Tsit5(),saveat=1.0:1.0:59.0)
+  #diffeq_rd(p,prob,Tsit5(),saveat=1.0:1.0:59.0)
+  vec(Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=1.0:1.0:59.0,reltol=1e-4,sensealg=TrackerAdjoint())))
 end
 
 function loss_rd() ##L2 norm biases the newer times unfairly
@@ -46,7 +47,7 @@ peek = function () #callback function to observe training
 end
 
 peek()
-Flux.train!(loss_rd, Flux.Params([p,u0]), data, opt, cb=peek)
+Flux.train!(loss_rd, Flux.params(p,u0), data, opt, cb=peek)
 peek()
 
 @test loss_rd() < 0.2
@@ -69,7 +70,7 @@ else ## false crashes. that is when i am tracking the initial conditions
     prob = ODEProblem(monomial,u0,tspan,p)
 end
 function predict_adjoint() # Our 1-layer neural network
-  diffeq_adjoint(p,prob,Tsit5(),saveat=1.0)
+  Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=1.0,reltol=1e-4))
 end
 
 function loss_adjoint() ##L2 norm biases the newer times unfairly
@@ -92,6 +93,6 @@ peek = function () #callback function to observe training
 end
 
 peek()
-Flux.train!(loss_adjoint, Flux.Params([p,u0]), data, opt, cb=peek)
+Flux.train!(loss_adjoint, Flux.params(p,u0), data, opt, cb=peek)
 peek()
 @test loss_adjoint() < 0.2

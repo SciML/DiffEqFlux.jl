@@ -20,10 +20,10 @@ plot(sol)
 import Flux
 using DiffEqFlux
 p = [2.2 1.0;2.0 0.4] # Tweaked Initial Parameter Array
-params = Flux.Params([p])
+ps = Flux.params(p)
 
 function predict_adjoint() # Our 1-layer neural network
-  diffeq_adjoint(p,prob,Tsit5(),saveat=0.0:0.1:10.0)
+  Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=0.0:0.1:10.0))
 end
 
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
@@ -38,6 +38,6 @@ predict_adjoint()
 
 # Display the ODE with the initial parameter values.
 cb()
-Flux.train!(loss_adjoint, params, data, opt, cb = cb)
+Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 
 @test loss_adjoint() < 1

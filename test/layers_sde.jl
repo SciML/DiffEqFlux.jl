@@ -23,7 +23,7 @@ loss_fd_sde(p)
 prob = SDEProblem(lotka_volterra,lotka_volterra_noise,[1.0,1.0],(0.0,0.5))
 function predict_rd_sde(p)
   #Array(diffeq_rd(p,prob,SOSRI(),saveat=0.0:0.1:0.5))
-  vec(Array(concrete_solve(prob,MethodOfSteps(Tsit5()),prob.u0,p,saveat=0.0:0.1:0.5,reltol=1e-4,sensealg=TrackerAdjoint()))[1,:])
+  vec(Array(concrete_solve(prob,SOSRI(),prob.u0,p,saveat=0.0:0.1:0.5,sensealg=TrackerAdjoint()))[1,:])
 end
 loss_rd_sde(p) = sum(abs2,x-1 for x in predict_rd_sde(p))
 @test !iszero(Zygote.gradient(loss_rd_sde,p)[1])
