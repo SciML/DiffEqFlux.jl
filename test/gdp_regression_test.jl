@@ -24,7 +24,7 @@ else ## false crashes. that is when i am tracking the initial conditions
 end
 function predict_rd() # Our 1-layer neural network
   #diffeq_rd(p,prob,Tsit5(),saveat=1.0:1.0:59.0)
-  vec(Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=1.0:1.0:59.0,reltol=1e-4,sensealg=TrackerAdjoint())))
+  Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=1.0:1.0:59.0,reltol=1e-4,sensealg=TrackerAdjoint()))
 end
 
 function loss_rd() ##L2 norm biases the newer times unfairly

@@ -18,8 +18,7 @@ loss_fd_dde(p)
 @test !iszero(Zygote.gradient(loss_fd_dde,p)[1])
 
 function predict_rd_dde(p)
-  diffeq_rd(p,prob,MethodOfSteps(Tsit5()),saveat=0.1)[1,:]
-  #vec(Array(concrete_solve(prob,MethodOfSteps(Tsit5()),prob.u0,p,saveat=0.0:0.1:0.5,reltol=1e-4,sensealg=TrackerAdjoint()))[1,:])
+  concrete_solve(prob,MethodOfSteps(Tsit5()),prob.u0,p,saveat=0.1,reltol=1e-4,sensealg=TrackerAdjoint())[1,:]
 end
 loss_rd_dde(p) = sum(abs2,x-1 for x in predict_rd_dde(p))
 loss_rd_dde(p)

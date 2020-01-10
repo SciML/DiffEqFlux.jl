@@ -19,15 +19,15 @@ function dudt_(u::AbstractArray,p,t)
 end
 
 prob = ODEProblem(dudt_,x,tspan,_p)
-diffeq_rd(_p,prob,Tsit5())
+concrete_solve(prob,Tsit5(),x,_p)
 
 function predict_rd()
-  diffeq_rd(_p,prob,Tsit5(),u0=x,abstol=1e-7,reltol=1e-5)
+  Array(concrete_solve(prob,Tsit5(),x,_p,abstol=1e-6,reltol=1e-4))
 end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
 
-data = Iterators.repeated((), 1000)
+data = Iterators.repeated((), 100)
 opt = Descent(0.0005)
 cb = function ()
   println(loss_rd())
@@ -60,10 +60,10 @@ function dudt_(du,u,p,t)
     du[2] = p[end-1]*y + p[end]*x
 end
 prob = ODEProblem(dudt_,u0,tspan,p3)
-diffeq_adjoint(p3,prob,Tsit5(),u0=u0,abstol=1e-8,reltol=1e-6)
+concrete_solve(prob,Tsit5(),u0,p3,abstol=1e-8,reltol=1e-6)
 
 function predict_adjoint()
-  diffeq_adjoint(p3,prob,Tsit5(),u0=u0,saveat=0.0:1:25.0)
+  Array(concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:1:25.0))
 end
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
 loss_adjoint()

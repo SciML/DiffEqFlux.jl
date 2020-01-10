@@ -7,17 +7,16 @@ function lotka_volterra(du,u,p,t)
   du[2] = dy = (δ*x - γ)y
 end
 p = [2.2, 1.0, 2.0, 0.4]
-prob = ODEProblem(lotka_volterra,[1.0,1.0],(0.0,10.0),p)
-const len = length(range(0.0,stop=10.0,step=0.1)) # 101
+u0 = [1.0,1.0]
+prob = ODEProblem(lotka_volterra,u0,(0.0,10.0),p)
 
 # Reverse-mode
 
-function predict_rd(p)
-  vec(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
-  #vec(Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=0.1,reltol=1e-4,sensealg=TrackerAdjoint())))
+function predict_rd()
+  #vec(diffeq_rd(p,prob,Tsit5(),saveat=0.1))
+  Array(concrete_solve(prob,Tsit5(),u0,p,saveat=0.1,reltol=1e-4,sensealg=TrackerAdjoint()))
 end
-loss_rd(p) = sum(abs2,x-1 for x in predict_rd(p))
-loss_rd() = sum(abs2,x-1 for x in predict_rd(p))
+loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
 
 grads = Zygote.gradient(loss_rd, p)
@@ -26,7 +25,7 @@ grads = Zygote.gradient(loss_rd, p)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_rd())
-  #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  #display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
@@ -52,7 +51,7 @@ data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_fd())
-  #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  #display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
@@ -78,7 +77,7 @@ data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_adjoint())
-  #display(plot(solve(remake(prob,p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  #display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
