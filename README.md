@@ -14,8 +14,9 @@ and neural differential equations in traditional machine learning.
 
 ## Problem Domain
 
-DiffEqFlux.jl is not just for neural ordinary differential equations. DiffEqFlux.jl is for neural differential equations.
-As such, it is the first package to support and demonstrate:
+DiffEqFlux.jl is not just for neural ordinary differential equations.
+DiffEqFlux.jl is for neural differential equations. As such, it is the first
+package to support and demonstrate:
 
 - Stiff neural ordinary differential equations (neural ODEs)
 - Neural stochastic differential equations (neural SDEs)
@@ -24,21 +25,27 @@ As such, it is the first package to support and demonstrate:
 - Neural jump stochastic differential equations (neural jump diffusions)
 - Hybrid neural differential equations (neural DEs with event handling)
 
-with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc. methods. For examples, please refer to
-[the release blog post](https://julialang.org/blog/2019/01/fluxdiffeq). Additional demonstrations, like neural
-PDEs and neural jump SDEs, can be found [at this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/) (among many others!).
+with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc.
+methods. For examples, please refer to
+[the release blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
+Additional demonstrations, like neural
+PDEs and neural jump SDEs, can be found
+[at this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
+(among many others!).
 
-Do not limit yourself to the current neuralization. With this package, you can explore various ways to integrate
-the two methodologies:
+Do not limit yourself to the current neuralization. With this package, you can
+explore various ways to integrate the two methodologies:
 
-- Neural networks can be defined where the “activations” are nonlinear functions described by differential equations.
+- Neural networks can be defined where the “activations” are nonlinear functions
+  described by differential equations.
 - Neural networks can be defined where some layers are ODE solves
 - ODEs can be defined where some terms are neural networks
 - Cost functions on ODEs can define neural networks
 
 ## Citation
 
-If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond neural ODEs, please cite:
+If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond
+neural ODEs, please cite:
 
 ```
 @article{DBLP:journals/corr/abs-1902-02376,
@@ -63,7 +70,8 @@ If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond neu
 
 ## Example Usage
 
-For an overview of what this package is for, [see this blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
+For an overview of what this package is for,
+[see this blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
 
 ### Optimizing parameters of an ODE
 
@@ -89,18 +97,20 @@ plot(sol)
 
 ![LV Solution Plot](https://user-images.githubusercontent.com/1814174/51388169-9a07f300-1af6-11e9-8c6c-83c41e81d11c.png)
 
-Next we define a single layer neural network that uses the `diffeq_adjoint` layer
-function that takes the parameters and returns the solution of the `x(t)`
-variable. Note that the `diffeq_adjoint` is usually preferred for ODEs, but does not
-extend to other differential equation types (see the performance discussion section for
-details).
+Next we define a single layer neural network that using the
+[AD-compatible `concrete_solve` function](https://docs.juliadiffeq.org/latest/analysis/sensitivity/)
+function that takes the parameters and an initial condition and returns the
+solution of the differential equation as a
+[`DiffEqArray`](https://github.com/JuliaDiffEq/RecursiveArrayTools.jl) (same
+array semantics as the standard differential equation solution object but without
+the interpolations).
 
 ```julia
 using Flux, DiffEqFlux
 p = [2.2, 1.0, 2.0, 0.4] # Initial Parameter Vector
 
 function predict_adjoint() # Our 1-layer neural network
-  diffeq_adjoint(p,prob,Tsit5(),saveat=0.0:0.1:10.0)
+  Array(concrete_solve(prob,Tsit5(),u0,p,saveat=0.0:0.1:10.0))
 end
 ```
 
@@ -179,49 +189,52 @@ function delay_lotka_volterra(du,u,h,p,t)
   du[2] = dy = (δ*x - γ)*y
 end
 h(p,t) = ones(eltype(p),2)
-prob = DDEProblem(delay_lotka_volterra,[1.0,1.0],h,(0.0,10.0),constant_lags=[0.1])
+u0 = [1.0,1.0]
+prob = DDEProblem(delay_lotka_volterra,u0,h,(0.0,10.0),constant_lags=[0.1])
 
 p = [2.2, 1.0, 2.0, 0.4]
-function predict_rd_dde()
-  diffeq_rd(p,prob,MethodOfSteps(Tsit5()),saveat=0.1)
+function predict_dde()
+  Array(concrete_solve(prob,MethodOfSteps(Tsit5()),u0,p,saveat=0.1,sensealg=TrackerAdjoint())
 end
-loss_rd_dde() = sum(abs2,x-1 for x in predict_rd_dde())
-loss_rd_dde()
+loss_dde() = sum(abs2,x-1 for x in predict_dde())
+loss_dde()
 ```
 
-Notice that we used mutating reverse-mode to handle a small delay differential
-equation, a strategy that can be good for small equations (see the performance
-discussion for more details on other forms).
+Notice that we chose `sensealg=ForwardDiffSensitivity()` to utilize the ForwardDiff.jl
+forward-mode to handle a small delay differential equation, a strategy that can
+be good for small equations (see the performance discussion for more details
+on other forms).
 
 Or we can use a stochastic differential equation. Here we demonstrate
-`diffeq_fd` for forward-mode automatic differentiation of a small differential
-equation:
+`sensealg=TrackerAdjoint()` for reverse-mode automatic differentiation
+of a small differential equation:
 
 ```julia
 function lotka_volterra_noise(du,u,p,t)
   du[1] = 0.1u[1]
   du[2] = 0.1u[2]
 end
-prob = SDEProblem(lotka_volterra,lotka_volterra_noise,[1.0,1.0],(0.0,10.0))
+u0 = [1.0,1.0]
+prob = SDEProblem(lotka_volterra,lotka_volterra_noise,u0,(0.0,10.0))
 
 p = [2.2, 1.0, 2.0, 0.4]
-function predict_fd_sde()
-  diffeq_fd(p,Array,202,prob,SOSRI(),saveat=0.1)
+function predict_sde()
+  Array(concrete_solve(prob,SOSRI,u0,p,sensealg=TrackerAdjoint(),saveat=0.1))
 end
-loss_fd_sde() = sum(abs2,x-1 for x in predict_fd_sde())
-loss_fd_sde()
+loss_sde() = sum(abs2,x-1 for x in predict_sde())
+loss_sde()
 
 data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
-  display(loss_fd_sde())
+  display(loss_sde())
   display(plot(solve(remake(prob,p=p),SOSRI(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
 cb()
 
-Flux.train!(loss_fd_sde, Flux.params(p), data, opt, cb = cb)
+Flux.train!(loss_sde, Flux.params(p), data, opt, cb = cb)
 ```
 
 ![SDE NN Animation](https://user-images.githubusercontent.com/1814174/51399524-2c6abf80-1b14-11e9-96ae-0192f7debd03.gif)
@@ -238,20 +251,20 @@ would be to use non-mutating adjoints, which looks like:
 p,re = Flux.destructure(model)
 dudt_(u,p,t) = re(p)(u)
 prob = ODEProblem(dudt_,x,tspan,p)
-my_neural_ode_prob = diffeq_adjoint(p,prob,args...;u0=x,kwargs...)
+my_neural_ode_prob = concrete_solve(prob,Tsit5(),u0,p,args...;kwargs...)
 ```
 
-(`DiffEqFlux.restructure` and `DiffEqFlux.destructure` are helper functions
-which transform the neural network to use parameters `p`)
+(`Flux.restructure` and `Flux.destructure` are helper functions which transform
+the neural network to use parameters `p`)
 
-A convenience function which handles all of the details is `neural_ode`. To
-use `neural_ode`, you give it the initial condition, the internal neural
+A convenience function which handles all of the details is `NeuralODE`. To
+use `NeuralODE`, you give it the initial condition, the internal neural
 network model to use, the timespan to solve on, and any ODE solver arguments.
 For example, this neural ODE would be defined as:
 
 ```julia
 tspan = (0.0f0,25.0f0)
-x -> neural_ode(model,x,tspan,Tsit5(),saveat=0.1)
+n_ode = NeuralODE(model,tspan,Tsit5(),saveat=0.1)
 ```
 
 where here we made it a layer that takes in the initial condition and spits
@@ -279,10 +292,10 @@ Now let's define a neural network with a `neural_ode` layer. First we define
 the layer:
 
 ```julia
-dudt = Chain(x -> x.^3,
+dudt2 = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
-n_ode(x) = neural_ode(dudt,x,tspan,Tsit5(),saveat=t,reltol=1e-7,abstol=1e-9)
+n_ode = NeuralODE(dudt2,tspan,Tsit5(),saveat=t)
 ```
 
 Here we used the `x -> x.^3` assumption in the model. By incorporating structure
@@ -316,7 +329,7 @@ end
 # Display the ODE with the initial parameter values.
 cb()
 
-ps = Flux.params(dudt)
+ps = Flux.params(n_ode)
 # or train the initial condition and neural network
 # ps = Flux.params(u0,dudt)
 Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
@@ -344,7 +357,7 @@ and the `diffeq` layer functions can be used similarly. Or we can directly use
 the neural ODE layer function, like:
 
 ```julia
-x -> neural_ode(gpu(dudt),gpu(x),tspan,Tsit5(),saveat=0.1)
+n_ode = NeuralODE(gpu(dudt2),tspan,Tsit5(),saveat=0.1)
 ```
 
 ## Mixed Neural DEs
@@ -374,10 +387,10 @@ function dudt_(du,u,p,t)
     du[2] = p[end-1]*y + p[end]*x
 end
 prob = ODEProblem(dudt_,u0,tspan,p3)
-diffeq_adjoint(p3,prob,Tsit5(),u0=u0,abstol=1e-8,reltol=1e-6)
+concrete_solve(prob,Tsit5(),u0,p3,abstol=1e-8,reltol=1e-6)
 
 function predict_adjoint()
-  diffeq_adjoint(p3,prob,Tsit5(),u0=u0,saveat=0.0:0.1:25.0)
+  concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:0.1:25.0,abstol=1e-8,reltol=1e-6)
 end
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
 loss_adjoint()
@@ -422,7 +435,7 @@ prob = ODEProblem(partial_neural_rd,u0,tspan,_p)
 diffeq_rd(_p,prob,Tsit5())
 
 function predict_rd()
-  diffeq_rd(_p,prob,Tsit5(),u0=u0)
+  concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:0.1:25.0)
 end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
@@ -507,8 +520,8 @@ multiplicative noise neural SDE layer function:
 drift_dudt = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
-ps = Flux.params(drift_dudt)
-n_sde = x->neural_dmsde(drift_dudt,x,mp,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
+n_sde = NeuralDMSDE(drift_dudt,mp,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
+ps = Flux.params(n_sde)
 ```
 
 Let's see what that looks like:
@@ -526,7 +539,7 @@ ensemble_nsum = EnsembleSummary(ensemble_nsol)
 p1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
 scatter!(p1,t,sde_data',lw=3)
 scatter(t,sde_data[1,:],label="data")
-scatter!(t,Flux.data(pred[1,:]),label="prediction")
+scatter!(t,pred[1,:],label="prediction")
 ```
 
 Now just as with the neural ODE we define a loss function:
@@ -537,7 +550,6 @@ function predict_n_sde()
 end
 loss_n_sde1() = sum(abs2,sde_data .- predict_n_sde())
 loss_n_sde10() = sum([sum(abs2,sde_data .- predict_n_sde()) for i in 1:10])
-Flux.back!(loss_n_sde1())
 
 data = Iterators.repeated((), 10)
 opt = ADAM(0.025)
@@ -669,17 +681,14 @@ The major options to keep in mind are:
 
 ### Neural DE Layer Functions
 
-- `neural_ode(model,x,tspan,args...;kwargs...)` defines a neural ODE layer where
-  `model` is a Flux.jl model, `x` is the initial condition, `tspan` is the
+- `NeuralODE(model,tspan,solver,args...;kwargs...)`defines a neural ODE
+  layer where `model` is a Flux.jl model, `tspan` is the
   time span to integrate, and the rest of the arguments are passed to the ODE
   solver. The parameters should be implicit in the `model`. Same `args` and
   `kwargs` are passed to the forward and adjoint solvers, as specified in
   `diffeq_adjoint`, with the exception of `callback_adj`, which is a separate
   callback passed only to the adjoint sensitivity algorithm.
-- `neural_ode_rd(model,x,tspan,args...;kwargs...)` defines a neural ODE layer,
-   just like neural_ode, but uses Flux.jl's reverse-mode automatic
-   differentiation to compute the gradients.
-- `neural_dmsde(model,x,mp,tspan,args...;kwargs)` defines a neural multiplicative
+- `NeuralDMSDE(model,mp,tspan,solver,args...;kwargs...)` defines a neural multiplicative
   SDE layer where `model` is a Flux.jl model, `x` is the initial condition,
   `tspan` is the time span to integrate, and the rest of the arguments are
   passed to the SDE solver. The noise is assumed to be diagonal multiplicative,

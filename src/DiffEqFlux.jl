@@ -3,8 +3,6 @@ module DiffEqFlux
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools
 
-using DiffEqSensitivity: adjoint_sensitivities_u0
-
 import ZygoteRules
 
 gpu_or_cpu(x) = Array
@@ -19,10 +17,25 @@ function __init__()
     end
 end
 
-include("Flux/layers.jl")
-include("Flux/neural_de.jl")
+function diffeq_fd(p,f,n,prob,solver=nothing,args...;u0=prob.u0,kwargs...)
+  @warn("diffeq_fd has been deprecated in the update of DiffEqFlux to Zygote support. Use the concrete_solve function with sensealg=ForwardDiffSensitivity() to recover the same functionality. See https://docs.juliadiffeq.org/latest/analysis/sensitivity/ for more details")
+  f(concrete_solve(prob,solver,u0,p,args...;kwargs...))
+end
+
+function diffeq_rd(p,prob,solver=nothing,args...;u0=prob.u0,kwargs...)
+  @warn("diffeq_rd has been deprecated in the update of DiffEqFlux to Zygote support. Use the concrete_solve function with sensealg=TrackerAdjoint() to recover the same functionality. See https://docs.juliadiffeq.org/latest/analysis/sensitivity/ for more details")
+  concrete_solve(prob,solver,u0,p,args...;kwargs...)
+end
+
+function diffeq_adjoint(p,prob,solver=nothing,args...;u0=prob.u0,kwargs...)
+  @warn("diffeq_adjoint has been deprecated in the update of DiffEqFlux to Zygote support. Use the concrete_solve function to recover the same functionality. See https://docs.juliadiffeq.org/latest/analysis/sensitivity/ for more details")
+  concrete_solve(prob,solver,u0,p,args...;kwargs...)
+end
+
+include("neural_de.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
+export NeuralODE, NeuralDMSDE
 export neural_ode, neural_ode_rd
 export neural_dmsde
 end
