@@ -1,4 +1,4 @@
-using DiffEqFlux, Flux, OrdinaryDiffEq, Test
+using DiffEqFlux, Flux, OrdinaryDiffEq, Test, DiffEqSensitivity
 import Tracker
 
 x = Float32[0.8; 0.8]
@@ -22,7 +22,7 @@ prob = ODEProblem(dudt_,x,tspan,_p)
 concrete_solve(prob,Tsit5(),x,_p)
 
 function predict_rd()
-  Array(concrete_solve(prob,Tsit5(),x,_p,abstol=1e-6,reltol=1e-4))
+  Array(concrete_solve(prob,Tsit5(),x,_p,abstol=1e-6,reltol=1e-4,sensealg=TrackerAdjoint()))
 end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
