@@ -9,26 +9,26 @@ p = Float32[-2.0,1.1]
 p2,re = Flux.destructure(ann)
 _p = [p;p2]
 
-function dudt_(u::Tracker.TrackedArray,p,t)
+function dudt2_(u::Tracker.TrackedArray,p,t)
     x, y = u
     Tracker.collect([re(p[3:end])(u)[1],p[1]*y + p[2]*x])
 end
-function dudt_(u::AbstractArray,p,t)
+function dudt2_(u::AbstractArray,p,t)
     x, y = u
-    [(re(p[3:end])(u)[1]),p[1]*y + p[2]*x*y]
+    [(re(p[3:end])(u)[1]),p[1]*y + p[2]*x]
 end
 
-prob = ODEProblem(dudt_,x,tspan,_p)
+prob = ODEProblem(dudt2_,x,tspan,_p)
 concrete_solve(prob,Tsit5(),x,_p)
 
 function predict_rd()
-  Array(concrete_solve(prob,Tsit5(),x,_p,abstol=1e-6,reltol=1e-4,sensealg=TrackerAdjoint()))
+  Array(concrete_solve(prob,Tsit5(),x,_p,abstol=1e-7,reltol=1e-5,sensealg=TrackerAdjoint()))
 end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
 
-data = Iterators.repeated((), 100)
-opt = Descent(0.0005)
+data = Iterators.repeated((), 300)
+opt = Descent(0.0001)
 cb = function ()
   println(loss_rd())
   #display(plot(solve(remake(prob,u0=Flux.data(_x),p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
@@ -40,7 +40,7 @@ cb()
 loss1 = loss_rd()
 Flux.train!(loss_rd, Flux.params(_p,x), data, opt, cb = cb)
 loss2 = loss_rd()
-@test 100loss2 < loss1
+@test 10loss2 < loss1
 
 ## Partial Neural Adjoint
 
