@@ -406,43 +406,6 @@ end
 cb()
 
 Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
-
-## --- Reverse-mode AD ---
-
-tspan = (0.0f0,25.0f0)
-u0 = Float32[0.8; 0.8]
-
-ann = Chain(Dense(2,10,tanh), Dense(10,1))
-p = Float32[-2.0,1.1]
-p2,re = Flux.destructure(ann)
-_p = [p;p2]
-
-function partial_neural_rd(u,p,t)
-    x, y = u
-    [re(p[3:end])(u)[1],
-    p[1]*y + p[2]*x*y]
-end
-
-prob = ODEProblem(partial_neural_rd,u0,tspan,_p)
-diffeq_rd(_p,prob,Tsit5())
-
-function predict_rd()
-  concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:0.1:25.0,sensealg=TrackerAdjoint())
-end
-loss_rd() = sum(abs2,x-1 for x in predict_rd())
-loss_rd()
-
-data = Iterators.repeated((), 1000)
-opt = ADAM(0.01)
-cb = function ()
-  display(loss_rd())
-  #display(plot(solve(remake(prob,u0=u0,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
-end
-
-# Display the ODE with the current parameter values.
-cb()
-
-Flux.train!(loss_rd, Flux.params(_p,u0), data, opt, cb = cb)
 ```
 
 ## Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.
@@ -484,7 +447,7 @@ u0 = Float32[2.; 0.]
 datasize = 30
 tspan = (0.0f0,1.0f0)
 
-function trueODEfunc(du,u,p,t)
+function trueSDEfunc(du,u,p,t)
     true_A = [-0.1 2.0; -2.0 -0.1]
     du .= ((u.^3)'true_A)'
 end
@@ -493,7 +456,7 @@ mp = Float32[0.2,0.2]
 function true_noise_func(du,u,p,t)
     du .= mp.*u
 end
-prob = SDEProblem(trueODEfunc,true_noise_func,u0,tspan)
+prob = SDEProblem(trueSDEfunc,true_noise_func,u0,tspan)
 ```
 
 For our dataset we will use DifferentialEquations.jl's [parallel ensemble interface](http://docs.juliadiffeq.org/dev/features/ensemble.html)
@@ -524,6 +487,10 @@ Let's see what that looks like:
 pred = n_sde(u0) # Get the prediction using the correct initial condition
 
 drift_(u,p,t) = drift_dudt(u)
+
+# Note that if this line uses scalar indexing, you may need to
+# `Tracker.collect()` the output in a separate dispatch i.e.
+# g(u::Tracker.TrackedArray,p,t) = Tracker.collect(mp.*u)
 g(u,p,t) = mp.*u
 nprob = SDEProblem(drift_,g,u0,(0.0f0,1.2f0),nothing)
 
