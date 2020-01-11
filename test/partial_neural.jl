@@ -8,7 +8,7 @@ p = Float32[-2.0,1.1]
 p2,re = Flux.destructure(ann)
 _p = [p;p2]
 
-function dudt2_(u::AbstractArray,p,t)
+function dudt2_(u,p,t)
     x, y = u
     [(re(p[3:end])(u)[1]),p[1]*y + p[2]*x]
 end
