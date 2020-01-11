@@ -1,4 +1,4 @@
-using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqSensitivity, Tracker, DiffEqFlux, Zygote, Test, CuArrays
+using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqSensitivity, DiffEqFlux, Zygote, Test, CuArrays
 CuArrays.allowscalar(false)
 
 mp = Float32[0.1,0.1] |> gpu

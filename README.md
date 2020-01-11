@@ -409,8 +409,6 @@ Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 
 ## --- Reverse-mode AD ---
 
-import Tracker
-
 tspan = (0.0f0,25.0f0)
 u0 = Float32[0.8; 0.8]
 
@@ -419,13 +417,7 @@ p = Float32[-2.0,1.1]
 p2,re = Flux.destructure(ann)
 _p = [p;p2]
 
-function partial_neural_rd(u::Tracker.TrackedArray,p,t)
-    x, y = u
-    Tracker.collect(
-        [re(p[3:end])(u)[1],
-        p[1]*y + p[2]*x*y])
-end
-function partial_neural_rd(u::AbstractArray,p,t)
+function partial_neural_rd(u,p,t)
     x, y = u
     [re(p[3:end])(u)[1],
     p[1]*y + p[2]*x*y]
@@ -435,7 +427,7 @@ prob = ODEProblem(partial_neural_rd,u0,tspan,_p)
 diffeq_rd(_p,prob,Tsit5())
 
 function predict_rd()
-  concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:0.1:25.0)
+  concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:0.1:25.0,sensealg=TrackerAdjoint())
 end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()

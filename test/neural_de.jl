@@ -1,5 +1,5 @@
 using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqFlux,
-      Zygote, Test, DiffEqSensitivity, Tracker
+      Zygote, Test, DiffEqSensitivity
 
 mp = Float32[0.1,0.1]
 x = Float32[2.; 0.]
