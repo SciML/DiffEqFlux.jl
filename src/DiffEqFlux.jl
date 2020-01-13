@@ -32,6 +32,18 @@ function diffeq_adjoint(p,prob,solver=nothing,args...;u0=prob.u0,kwargs...)
   concrete_solve(prob,solver,u0,p,args...;kwargs...)
 end
 
+function neural_ode(args...;kwargs...)
+  @error("neural_ode has be removed and replaced by NeuralODE. Please consult the README for more details.")
+end
+
+function neural_ode_rd(args...;kwargs...)
+  @error("neural_ode_rd has be removed and replaced by NeuralODE. Please consult the README for more details.")
+end
+
+function neural_dmsde(args...;kwargs...)
+  @error("neural_dmsde has be removed and replaced by NeuralDMSDE. Please consult the README for more details.")
+end
+
 include("neural_de.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
