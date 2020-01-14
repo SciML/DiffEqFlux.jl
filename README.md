@@ -360,7 +360,7 @@ the neural ODE layer function, like:
 n_ode = NeuralODE(gpu(dudt2),tspan,Tsit5(),saveat=0.1)
 ```
 
-## Mixed Neural DEs
+## Universal Differential Equations
 
 You can also mix a known differential equation and a neural differential equation, so that
 the parameters and the neural network are estimated simultaniously. Here's an example of
