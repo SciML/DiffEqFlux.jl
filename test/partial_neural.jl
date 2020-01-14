@@ -22,7 +22,7 @@ end
 loss_rd() = sum(abs2,x-1 for x in predict_rd())
 loss_rd()
 
-data = Iterators.repeated((), 300)
+data = Iterators.repeated((), 1000)
 opt = Descent(0.0001)
 cb = function ()
   println(loss_rd())
