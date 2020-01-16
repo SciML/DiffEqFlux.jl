@@ -15,15 +15,17 @@ and neural differential equations in traditional machine learning.
 ## Problem Domain
 
 DiffEqFlux.jl is not just for neural ordinary differential equations.
-DiffEqFlux.jl is for neural differential equations. As such, it is the first
-package to support and demonstrate:
+DiffEqFlux.jl is for universal differential equations. For an overview of the topic
+with applications, consult the paper [Universal Differential Equatoins for Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
 
-- Stiff neural ordinary differential equations (neural ODEs)
-- Neural stochastic differential equations (neural SDEs)
-- Neural delay differential equations (neural DDEs)
-- Neural partial differential equations (neural PDEs)
-- Neural jump stochastic differential equations (neural jump diffusions)
-- Hybrid neural differential equations (neural DEs with event handling)
+As such, it is the first package to support and demonstrate:
+
+- Stiff universal ordinary differential equations (universal ODEs)
+- Universal stochastic differential equations (universal SDEs)
+- Universal delay differential equations (universal DDEs)
+- Universal partial differential equations (universal PDEs)
+- Universal jump stochastic differential equations (universal jump diffusions)
+- Hybrid universal differential equations (universal DEs with event handling)
 
 with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc.
 methods. For examples, please refer to
