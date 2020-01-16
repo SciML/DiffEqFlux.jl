@@ -16,7 +16,7 @@ and neural differential equations in traditional machine learning.
 
 DiffEqFlux.jl is not just for neural ordinary differential equations.
 DiffEqFlux.jl is for universal differential equations. For an overview of the topic
-with applications, consult the paper [Universal Differential Equatoins for Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
+with applications, consult the paper [Universal Differential Equations for Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
 
 As such, it is the first package to support and demonstrate:
 
