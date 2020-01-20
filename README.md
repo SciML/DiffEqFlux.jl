@@ -15,15 +15,17 @@ and neural differential equations in traditional machine learning.
 ## Problem Domain
 
 DiffEqFlux.jl is not just for neural ordinary differential equations.
-DiffEqFlux.jl is for neural differential equations. As such, it is the first
-package to support and demonstrate:
+DiffEqFlux.jl is for universal differential equations. For an overview of the topic
+with applications, consult the paper [Universal Differential Equations for Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
 
-- Stiff neural ordinary differential equations (neural ODEs)
-- Neural stochastic differential equations (neural SDEs)
-- Neural delay differential equations (neural DDEs)
-- Neural partial differential equations (neural PDEs)
-- Neural jump stochastic differential equations (neural jump diffusions)
-- Hybrid neural differential equations (neural DEs with event handling)
+As such, it is the first package to support and demonstrate:
+
+- Stiff universal ordinary differential equations (universal ODEs)
+- Universal stochastic differential equations (universal SDEs)
+- Universal delay differential equations (universal DDEs)
+- Universal partial differential equations (universal PDEs)
+- Universal jump stochastic differential equations (universal jump diffusions)
+- Hybrid universal differential equations (universal DEs with event handling)
 
 with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc.
 methods. For examples, please refer to
@@ -390,7 +392,7 @@ prob = ODEProblem(dudt_,u0,tspan,p3)
 concrete_solve(prob,Tsit5(),u0,p3,abstol=1e-8,reltol=1e-6)
 
 function predict_adjoint()
-  concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:0.1:25.0,abstol=1e-8,reltol=1e-6)
+  Array(concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:0.1:25.0,abstol=1e-8,reltol=1e-6))
 end
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
 loss_adjoint()
@@ -407,6 +409,75 @@ cb()
 
 Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 ```
+
+### Training Universal Differential Equations with Optim's BFGS
+
+In many scientific computing cases, like what we see with Universal Differential Equations, 
+the classic `BFGS` or `L-BFGS` methods more stable than the methods commonly used in neural 
+networks. Thus for better fitting we can utilize [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl)
+and tell it to train using the BFGS method. An example of this is as follows:
+
+```julia
+using DiffEqFlux, Flux, OrdinaryDiffEq, Optim, Zygote
+
+u0 = Float32[0.8; 0.8]
+tspan = (0.0f0,25.0f0)
+
+ann = Chain(Dense(2,10,tanh), Dense(10,1))
+
+p1,re = Flux.destructure(ann)
+p2 = Float32[0.5,-0.5]
+p3 = [p1;p2]
+ptrain = [p3;u0]
+
+function dudt_(du,u,p,t)
+    x, y = u
+    du[1] = re(p[1:41])(u)[1]
+    du[2] = p[end-1]*y + p[end]*x
+end
+prob = ODEProblem(dudt_,u0,tspan,p3)
+concrete_solve(prob,Tsit5(),u0,p3,abstol=1e-8,reltol=1e-6)
+
+function predict_adjoint(fullp)
+  Array(concrete_solve(prob,Tsit5(),fullp[end-1:end],fullp[1:end-1],saveat=0.0:0.1:25.0,abstol=1e-8,reltol=1e-6))
+end
+loss_adjoint(fullp) = sum(abs2,x-1 for x in predict_adjoint(fullp))
+loss_adjoint(ptrain)
+
+function loss_adjoint_gradient!(G, fullp)
+    G .= Zygote.gradient(loss_adjoint,fullp)[1]
+end
+
+optimize(loss_adjoint, loss_adjoint_gradient!, ptrain, BFGS())
+```
+
+```
+ * Status: success
+
+ * Candidate solution
+    Minimizer: [2.94e-01, -3.52e-01, 4.39e-01,  ...]
+    Minimum:   4.463629e-11
+
+ * Found with
+    Algorithm:     BFGS
+    Initial Point: [3.13e-01, -3.43e-01, 3.38e-01,  ...]
+
+ * Convergence measures
+    |x - x'|               = 0.00e+00 ≤ 0.0e+00
+    |x - x'|/|x'|          = 0.00e+00 ≤ 0.0e+00
+    |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
+    |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
+    |g(x)|                 = 2.46e-05 ≰ 1.0e-08
+
+ * Work counters
+    Seconds run:   202  (vs limit Inf)
+    Iterations:    30
+    f(x) calls:    140
+    ∇f(x) calls:   140
+```
+
+Notice that in just 30 iterations we get to a minimum of `4e-11`! This is much faster than
+methods like ADAM or SGD.
 
 ## Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.
 
