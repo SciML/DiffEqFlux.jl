@@ -130,9 +130,9 @@ ddudt = Chain(Dense(6,50,tanh),Dense(50,2))
 NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.1)(x)
 dode = NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.0:0.1:2.0)
 
-@test_broken grads = Zygote.gradient(()->sum(dode(x)),Flux.params(x,dode))
-#@test ! iszero(grads[x])
-#@test ! iszero(grads[dode.p])
+grads = Zygote.gradient(()->sum(dode(x)),Flux.params(x,dode))
+@test ! iszero(grads[x])
+@test ! iszero(grads[dode.p])
 
 @test_broken grads = Zygote.gradient(()->sum(dode(xs)),Flux.params(xs,dode))
 #@test ! iszero(grads[xs])
