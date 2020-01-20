@@ -1,7 +1,7 @@
 module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
-      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, DiffEqNoiseProcess
+      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools
 
 import ZygoteRules
 
