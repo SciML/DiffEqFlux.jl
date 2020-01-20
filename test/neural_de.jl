@@ -104,10 +104,11 @@ end
 
 NeuralDMSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.1)(x)
 sode = NeuralDMSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)
+
 grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 @test ! iszero(grads[x])
-@test_broken ! iszero(grads[sode.p])
+@test ! iszero(grads[sode.p])
 
 grads = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
 @test ! iszero(grads[xs])
-@test_broken ! iszero(grads[sode.p])
+@test ! iszero(grads[sode.p])

@@ -485,8 +485,8 @@ Let's see what that looks like:
 
 ```julia
 pred = n_sde(u0) # Get the prediction using the correct initial condition
-
-drift_(u,p,t) = drift_dudt(u)
+p,re = Flux.destructure(drift_dudt)
+drift_(u,p,t) = re(n_sde.p)(u)
 
 # Note that if this line uses scalar indexing, you may need to
 # `Tracker.collect()` the output in a separate dispatch i.e.

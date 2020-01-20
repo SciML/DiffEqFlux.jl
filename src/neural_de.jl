@@ -87,9 +87,8 @@ end
 Flux.@functor NeuralDMSDE
 
 function (n::NeuralDMSDE)(x)
-    dudt_(u,p,t) = n.re(n.p)(u)
+    dudt_(u,p,t) = n.re(p)(u)
     g(u,p,t) = n.mp.*u
     prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p)
-    #diffeq_rd(n.p,prob,n.solver,n.args...;u0=x,n.kwargs...)
     concrete_solve(prob,n.solver,x,n.p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
