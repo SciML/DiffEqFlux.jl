@@ -107,11 +107,11 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K}
     kwargs::K
 end
 
-function NeuralDSDE(model1,model2,tspan,nbrown,solver=nothing,args...;kwargs...)
+function NeuralSDE(model1,model2,tspan,nbrown,solver=nothing,args...;kwargs...)
     p1,re1 = Flux.destructure(model1)
     p2,re2 = Flux.destructure(model2)
     p = [p1;p2]
-    NeuralDSDE(p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
+    NeuralSDE(p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
 end
 
 Flux.@functor NeuralSDE
@@ -119,7 +119,7 @@ Flux.@functor NeuralSDE
 function (n::NeuralSDE)(x)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p,noise_rate_prototype=zeros(length(x),n.nbrown))
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
     concrete_solve(prob,n.solver,x,n.p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 

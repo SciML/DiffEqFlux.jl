@@ -115,8 +115,8 @@ grads = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
 @test ! iszero(grads[sode.p])
 
 dudt22 = Chain(Dense(2,50,tanh),Dense(50,4),x->reshape(x,2,2))
-NeuralSDE(dudt,dudt22,(0.0f0,2.0f0),2,SOSRI(),saveat=0.1)(x)
-sode = NeuralSDE(dudt,dudt22,(0.0f0,2.0f0),2,SOSRI(),saveat=0.0:0.1:2.0)
+NeuralSDE(dudt,dudt22,(0.0f0,2.0f0),2,LambaEM(),saveat=0.1)(x)
+sode = NeuralSDE(dudt,dudt22,(0.0f0,2.0f0),2,LambaEM(),saveat=0.0:0.1:2.0)
 
 grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 @test ! iszero(grads[x])
