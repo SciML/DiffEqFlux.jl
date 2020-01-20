@@ -1,7 +1,7 @@
 module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
-      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools
+      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, DiffEqNoiseProcess
 
 import ZygoteRules
 
@@ -47,7 +47,7 @@ end
 include("neural_de.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
-export NeuralODE, NeuralDMSDE
+export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE
 export neural_ode, neural_ode_rd
 export neural_dmsde
 end

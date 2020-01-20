@@ -412,8 +412,8 @@ Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
 
 ### Training Universal Differential Equations with Optim's BFGS
 
-In many scientific computing cases, like what we see with Universal Differential Equations, 
-the classic `BFGS` or `L-BFGS` methods more stable than the methods commonly used in neural 
+In many scientific computing cases, like what we see with Universal Differential Equations,
+the classic `BFGS` or `L-BFGS` methods more stable than the methods commonly used in neural
 networks. Thus for better fitting we can utilize [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl)
 and tell it to train using the BFGS method. An example of this is as follows:
 
@@ -531,24 +531,25 @@ prob = SDEProblem(trueSDEfunc,true_noise_func,u0,tspan)
 ```
 
 For our dataset we will use DifferentialEquations.jl's [parallel ensemble interface](http://docs.juliadiffeq.org/dev/features/ensemble.html)
-to generate data from the average of 100 runs of the SDE:
+to generate data from the average of 10000 runs of the SDE:
 
 ```julia
 # Take a typical sample from the mean
 ensemble_prob = EnsembleProblem(prob)
-ensemble_sol = solve(ensemble_prob,SOSRI(),trajectories = 100)
+ensemble_sol = solve(ensemble_prob,SOSRI(),trajectories = 10000)
 ensemble_sum = EnsembleSummary(ensemble_sol)
-sde_data = Array(timeseries_point_mean(ensemble_sol,t))
+sde_data,sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol,t))
 ```
 
-Now we build a neural SDE. For simplicity we will use the `neural_dmsde`
-multiplicative noise neural SDE layer function:
+Now we build a neural SDE. For simplicity we will use the `NueralDSDE`
+neural SDE with diagonal noise layer function:
 
 ```julia
 drift_dudt = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
-n_sde = NeuralDMSDE(drift_dudt,mp,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
+diffusion_dudt = Chain(Dense(2,2))
+n_sde = NeuralDSDE(drift_dudt,diffusion_dudt,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
 ps = Flux.params(n_sde)
 ```
 
@@ -556,17 +557,14 @@ Let's see what that looks like:
 
 ```julia
 pred = n_sde(u0) # Get the prediction using the correct initial condition
-p,re = Flux.destructure(drift_dudt)
-drift_(u,p,t) = re(n_sde.p)(u)
-
-# Note that if this line uses scalar indexing, you may need to
-# `Tracker.collect()` the output in a separate dispatch i.e.
-# g(u::Tracker.TrackedArray,p,t) = Tracker.collect(mp.*u)
-g(u,p,t) = mp.*u
-nprob = SDEProblem(drift_,g,u0,(0.0f0,1.2f0),nothing)
+p1,re1 = Flux.destructure(drift_dudt)
+p2,re2 = Flux.destructure(diffusion_dudt)
+drift_(u,p,t) = re1(n_sde.p[1:n_sde.len])(u)
+diffusion_(u,p,t) = re2(n_sde.p[(n_sde.len+1):end])(u)
+nprob = SDEProblem(drift_,diffusion_,u0,(0.0f0,1.2f0),nothing)
 
 ensemble_nprob = EnsembleProblem(nprob)
-ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100)
+ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100, saveat = t)
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
 p1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
 scatter!(p1,t,sde_data',lw=3)
@@ -574,16 +572,21 @@ scatter(t,sde_data[1,:],label="data")
 scatter!(t,pred[1,:],label="prediction")
 ```
 
-Now just as with the neural ODE we define a loss function:
+Now just as with the neural ODE we define a loss function that calculates the
+mean and variance from `n` runs at each time point and uses the distance
+from the data values:
 
 ```julia
 function predict_n_sde()
-  n_sde(u0)
+  Array(n_sde(u0))
 end
-loss_n_sde1() = sum(abs2,sde_data .- predict_n_sde())
-loss_n_sde10() = sum([sum(abs2,sde_data .- predict_n_sde()) for i in 1:10])
+function loss_n_sde(;n=100)
+  samples = [predict_n_sde() for i in 1:n]
+  means = reshape(mean.([[samples[i][j] for i in 1:length(samples)] for j in 1:length(samples[1])]),size(samples[1])...)
+  vars = reshape(var.([[samples[i][j] for i in 1:length(samples)] for j in 1:length(samples[1])]),size(samples[1])...)
+  sum(abs2,sde_data - means) + sum(abs2,sde_data_vars - vars)
+end
 
-data = Iterators.repeated((), 10)
 opt = ADAM(0.025)
 cb = function () #callback function to observe training
   sample = predict_n_sde()
@@ -599,33 +602,30 @@ end
 cb()
 ```
 
-Here we made two loss functions: one which uses single runs of the SDE and another which
-uses multiple runs. This is beceause an SDE is stochastic, so trying to fit the mean to
-high precision may require a taking the mean of a few trajectories (the more trajectories
-the more precise the calculation is). Thus to fit this, we first get in the general area
-through single SDE trajectory backprops, and then hone in with the mean:
+Now we train using this loss function. We can pre-train a little bit using
+a smaller `n` and then decrease it after it has had some time to adjust towards
+the right mean behavior:
 
 ```julia
-Flux.train!(loss_n_sde1 , ps, Iterators.repeated((), 100), opt, cb = cb)
-Flux.train!(loss_n_sde10, ps, Iterators.repeated((), 20), opt, cb = cb)
+Flux.train!(()->loss_n_sde(n=10), ps, Iterators.repeated((), 100), opt, cb = cb)
+Flux.train!(loss_n_sde, ps, Iterators.repeated((), 100), opt, cb = cb)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```julia
 ensemble_nprob = EnsembleProblem(nprob)
-ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100)
+ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100, saveat =t )
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
-p2 = plot(ensemble_nsum, title = "Neural SDE: After Training", xlabel="Time")
-scatter!(p2,t,sde_data',lw=3,label=["x" "y" "z" "y"])
+
+p2 = scatter(t,sde_data')
+plot!(p2,ensemble_nsum, title = "Neural SDE: After Training", xlabel="Time")
+scatter!(p2,t,sde_data',lw=3)
 
 plot(p1,p2,layout=(2,1))
 ```
 
-![neural_sde](https://user-images.githubusercontent.com/1814174/61590115-c5d96380-ab81-11e9-8ffc-d3c473fe456a.png)
-
-(note: for simplicity we have used a constant `mp` vector, though once can `param` and
-train this value as well.)
+![neural_sde](https://user-images.githubusercontent.com/1814174/72701137-43bffc80-3b1c-11ea-9858-414ecbdd15e7.png)
 
 Try this with GPUs as well!
 
@@ -643,15 +643,27 @@ showcases defining neural jump diffusions and neural partial differential equati
 - `NeuralODE(model,tspan,solver,args...;kwargs...)`defines a neural ODE
   layer where `model` is a Flux.jl model, `tspan` is the
   time span to integrate, and the rest of the arguments are passed to the ODE
-  solver. The parameters should be implicit in the `model`. Same `args` and
-  `kwargs` are passed to the forward and adjoint solvers, as specified in
-  `diffeq_adjoint`, with the exception of `callback_adj`, which is a separate
-  callback passed only to the adjoint sensitivity algorithm.
-- `NeuralDMSDE(model,mp,tspan,solver,args...;kwargs...)` defines a neural multiplicative
-  SDE layer where `model` is a Flux.jl model, `x` is the initial condition,
-  `tspan` is the time span to integrate, and the rest of the arguments are
-  passed to the SDE solver. The noise is assumed to be diagonal multiplicative,
-  i.e. the Wiener term is `mp.*u.*dW` for some array of noise constants `mp`.
+  solver.
+- `NeuralDSDE(model1,model2,tspan,solver,args...;kwargs...)` defines a neural
+  SDE layer where `model1` is a Flux.jl for the drift equation, `model2` is a
+  Flux.jl model for the diffusion equation, `tspan` is the time span to
+  integrate, and the rest of the arguments are passed to the SDE solver.
+  The noise is diagonal, i.e. it assumes a vector output and performs
+  `model2(u) .* dW` against a dW matching the number of states.
+- `NeuralSDE(model1,model2,tspan,nbrown,solver,args...;kwargs...)` defines a neural
+  SDE layer where `model1` is a Flux.jl for the drift equation, `model2` is a
+  Flux.jl model for the diffusion equation, `tspan` is the time span to
+  integrate, `nbrown` is the number of Brownian motions, and the rest of the
+  arguments are passed to the SDE solver. The model is multiplicative,
+  i.e. it's interpreted as `model2(u) * dW`, and so the return of `model2` should
+  be an appropriate matrix for performing this multiplication, i.e. the size of
+  its output should be `length(x) x nbrown`.
+- `NeuralCDDE(model,tspan,lags,solver,args...;kwargs...)`defines a neural DDE
+  layer where `model` is a Flux.jl model, `tspan` is the
+  time span to integrate, lags is the lagged values to use in the predictor,
+  and the rest of the arguments are passed to the ODE solver. The model should
+  take in a vector that concatenates the lagged states, i.e.
+  `[u(t);u(t-lags[1]);...;u(t-lags[end])]`
 
 ## Benchmarks
 

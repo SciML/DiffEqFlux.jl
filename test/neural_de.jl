@@ -1,4 +1,4 @@
-using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqFlux,
+using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq, Flux, DiffEqFlux,
       Zygote, Test, DiffEqSensitivity
 
 mp = Float32[0.1,0.1]
@@ -102,8 +102,9 @@ end
     @test ! iszero(grads[node.p])
 end
 
-NeuralDMSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.1)(x)
-sode = NeuralDMSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)
+dudt2 = Chain(Dense(2,50,tanh),Dense(50,2))
+NeuralDSDE(dudt,dudt2,(0.0f0,2.0f0),SOSRI(),saveat=0.1)(x)
+sode = NeuralDSDE(dudt,dudt2,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)
 
 grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 @test ! iszero(grads[x])
@@ -112,3 +113,27 @@ grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 grads = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
 @test ! iszero(grads[xs])
 @test ! iszero(grads[sode.p])
+
+dudt22 = Chain(Dense(2,50,tanh),Dense(50,4),x->reshape(x,2,2))
+NeuralSDE(dudt,dudt22,(0.0f0,2.0f0),2,SOSRI(),saveat=0.1)(x)
+sode = NeuralSDE(dudt,dudt22,(0.0f0,2.0f0),2,SOSRI(),saveat=0.0:0.1:2.0)
+
+grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
+@test ! iszero(grads[x])
+@test ! iszero(grads[sode.p])
+
+@test_broken grads = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
+@test ! iszero(grads[xs])
+@test ! iszero(grads[sode.p])
+
+ddudt = Chain(Dense(6,50,tanh),Dense(50,2))
+NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.1)(x)
+dode = NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.0:0.1:2.0)
+
+grads = Zygote.gradient(()->sum(dode(x)),Flux.params(x,dode))
+@test ! iszero(grads[x])
+@test ! iszero(grads[dode.p])
+
+@test_broken grads = Zygote.gradient(()->sum(dode(xs)),Flux.params(xs,dode))
+@test ! iszero(grads[xs])
+@test ! iszero(grads[dode.p])
