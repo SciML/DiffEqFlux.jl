@@ -44,6 +44,8 @@ function neural_dmsde(args...;kwargs...)
   @error("neural_dmsde has be removed and replaced by NeuralDMSDE. Please consult the README for more details.")
 end
 
+Flux.Zygote.grad_mut(d::IdDict) = IdDict()
+
 include("neural_de.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
