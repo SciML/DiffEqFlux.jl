@@ -5,13 +5,13 @@ backpropagation and calls the optimizer `opt`.
 Takes a callback as keyword argument `cb`. For example, this will print "training"
 every 10 seconds:
 ```julia
-Flux.train!(loss, params, data, opt,
+DiffEqFlux.sciml_train!(loss, params, data, opt,
             cb = throttle(() -> println("training"), 10))
 ```
 The callback can call `Flux.stop()` to interrupt the training loop.
 Multiple optimisers and callbacks can be passed to `opt` and `cb` as arrays.
 """
-function train!(loss, θ, data, opt; cb = () -> ())
+function sciml_train!(loss, θ, data, opt; cb = () -> ())
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
   cb = Flux.runall(cb)
@@ -37,7 +37,7 @@ end
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
 decompose_trace(trace) = trace
 
-function train!(loss, θ, data, opt::Optim.AbstractOptimizer; cb = () -> ())
+function sciml_train!(loss, θ, data, opt::Optim.AbstractOptimizer; cb = () -> ())
   x_tail = nothing
   _cb(trace) = cb(decompose_trace(trace),x_tail...)
   function optim_loss(θ)
