@@ -11,43 +11,46 @@ DiffEqFlux.sciml_train!(loss, params, data, opt,
 The callback can call `Flux.stop()` to interrupt the training loop.
 Multiple optimisers and callbacks can be passed to `opt` and `cb` as arrays.
 """
-function sciml_train!(loss, θ, data, opt; cb = () -> ())
+function sciml_train!(loss, _θ, data, opt; cb = (args...) -> ())
+  θ = copy(_θ)
+  ps = Flux.params(θ)
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
-  cb = Flux.runall(cb)
   @progress for d in data
     try
       local x
-      gs = Zygote.gradient(θ) do
-        x = loss(θ,d...)
+      gs = Flux.Zygote.gradient(ps) do
+        x = loss(θ)
         first(x)
       end
-      Flux.update!(opt, ps, gs)
-      cb(θ,Base.tail(x)...)
+      Flux.Optimise.update!(opt, ps, gs)
+      cb(θ,x...)
     catch ex
-      if ex isa StopException
+      if ex isa Flux.Optimise.StopException
         break
       else
         rethrow(ex)
       end
     end
   end
+  θ
 end
 
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
 decompose_trace(trace) = trace
 
-function sciml_train!(loss, θ, data, opt::Optim.AbstractOptimizer; cb = () -> ())
-  x_tail = nothing
-  _cb(trace) = cb(decompose_trace(trace),x_tail...)
+function sciml_train!(loss, θ, data, opt::Optim.AbstractOptimizer; cb = (args...) -> ())
+  local x
+  _cb(trace) = (cb(decompose_trace(trace).metadata["x"],x...);false)
   function optim_loss(θ)
-    x = loss(θ,next(data))
-    x_tail = Base.tail(x)
+    x = loss(θ)
     first(x)
   end
 
   function optim_loss_gradient!(g,θ)
-    g .= Zygote.gradient(loss_adjoint,θ)[1]
+    g .= Zygote.gradient(optim_loss,θ)[1]
+    nothing
   end
-  result =  optimize(optim_loss, optim_loss_gradient!, θ, opt, Optim.Options(extended_trace=true,callback = cb))
+  result =  optimize(optim_loss, optim_loss_gradient!, θ, opt, Optim.Options(extended_trace=true,callback = _cb))
+  result.minimizer
 end
