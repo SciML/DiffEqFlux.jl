@@ -7,6 +7,7 @@ const is_TRAVIS = haskey(ENV,"TRAVIS")
 @time begin
 if GROUP == "All"
     @safetestset "Layers Tests" begin include("layers.jl") end
+    @safetestset "Fast Layers" begin include("fast_layers.jl") end
     @safetestset "Layers SciML Tests" begin include("layers_sciml.jl") end
     @safetestset "Layers SDE" begin include("layers_sde.jl") end
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
@@ -14,6 +15,7 @@ if GROUP == "All"
     @safetestset "odenet" begin include("odenet.jl") end
     @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
+    @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
 end
 end

@@ -1,7 +1,8 @@
 module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
-      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Juno, Optim
+      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Juno, Optim,
+      StaticArrays, UnsafeArrays
 
 import ZygoteRules
 
@@ -47,10 +48,12 @@ end
 Flux.Zygote.grad_mut(d::IdDict) = IdDict()
 
 include("train.jl")
+include("fast_layers.jl")
 include("neural_de.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE
 export neural_ode, neural_ode_rd
 export neural_dmsde
+export FastDense, StaticDense, FastChain, initial_params
 end

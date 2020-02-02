@@ -15,7 +15,9 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+UnsafeArrays = "c4a57d5a-5b31-53a6-b365-19f8c011fbd6"
 ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
 
 [compat]
