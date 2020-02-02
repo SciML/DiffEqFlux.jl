@@ -36,27 +36,43 @@ function neural_ode_rd(model,x,tspan,
     error("neural_ode_rd has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
 end
 
-struct NeuralODE{P,M,RE,T,S,A,K}
-    p::P
+struct NeuralODE{M,P,RE,T,S,A,K}
     model::M
+    p::P
     re::RE
     tspan::T
     solver::S
     args::A
     kwargs::K
-end
 
-function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
-    p,re = Flux.destructure(model)
-    NeuralODE(p,model,re,tspan,solver,args,kwargs)
+    function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
+        p,re = Flux.destructure(model)
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,solver,args,kwargs)
+    end
+
+    function NeuralODE(model::FastChain,tspan,solver=nothing,args...;kwargs...)
+        p = initial_params(model)
+        re = nothing
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,solver,args,kwargs)
+    end
 end
 
 Flux.@functor NeuralODE
 
-function (n::NeuralODE)(x)
+function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
-    prob = ODEProblem{false}(dudt_,x,n.tspan,n.p)
-    concrete_solve(prob,n.solver,x,n.p,n.args...;n.kwargs...)
+    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
+end
+
+function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
+    dudt_(u,p,t) = n.model(u,p)
+    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
 end
 
 function neural_dmsde(model,x,mp,tspan,
@@ -64,7 +80,7 @@ function neural_dmsde(model,x,mp,tspan,
     error("neural_dmsde has been deprecated with the change to Zygote. Please see the documentation on the new NeuralDSDE layer.")
 end
 
-struct NeuralDSDE{P,M,RE,M2,RE2,T,S,A,K}
+struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K}
     p::P
     len::Int
     model1::M
@@ -75,22 +91,41 @@ struct NeuralDSDE{P,M,RE,M2,RE2,T,S,A,K}
     solver::S
     args::A
     kwargs::K
-end
+    function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
+        p1,re1 = Flux.destructure(model1)
+        p2,re2 = Flux.destructure(model2)
+        p = [p1;p2]
+        new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
+            length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
+    end
 
-function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
-    p1,re1 = Flux.destructure(model1)
-    p2,re2 = Flux.destructure(model2)
-    p = [p1;p2]
-    NeuralDSDE(p,length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
+    function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,solver=nothing,args...;kwargs...)
+        p1 = initial_params(model1)
+        p2 = initial_params(model2)
+        re1 = nothing
+        re2 = nothing
+        p = [p1;p2]
+        new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
+            length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
+    end
 end
 
 Flux.@functor NeuralDSDE
 
-function (n::NeuralDSDE)(x)
+function (n::NeuralDSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p)
-    concrete_solve(prob,n.solver,x,n.p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
+    dudt_(u,p,t) = n.model1(u,p)
+    g(u,p,t) = n.model2(u,p)
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K}
@@ -116,11 +151,11 @@ end
 
 Flux.@functor NeuralSDE
 
-function (n::NeuralSDE)(x)
+function (n::NeuralSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    concrete_solve(prob,n.solver,x,n.p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 struct NeuralCDDE{P,M,RE,H,L,T,S,A,K}
@@ -142,11 +177,11 @@ end
 
 Flux.@functor NeuralCDDE
 
-function (n::NeuralCDDE)(x)
+function (n::NeuralCDDE)(x,p=n.p)
     function dudt_(u,h,p,t)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.re(p)(_u)
     end
-    prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,n.p,constant_lags = n.lags)
-    concrete_solve(prob,n.solver,x,n.p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,p,constant_lags = n.lags)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end

@@ -75,13 +75,13 @@ neural ODEs, please cite:
 For an overview of what this package is for,
 [see this blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
 
-### Optimizing parameters of an ODE
+### Optimizing parameters of an ODE for an Optimal Control problem
 
 First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
 more details, [see the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/dev/)
 
 ```julia
-using DifferentialEquations
+using DifferentialEquations, Flux, Optim, DiffEqFlux
 function lotka_volterra(du,u,p,t)
   x, y = u
   α, β, δ, γ = p
@@ -108,74 +108,81 @@ array semantics as the standard differential equation solution object but withou
 the interpolations).
 
 ```julia
-using Flux, DiffEqFlux
-p = [2.2, 1.0, 2.0, 0.4] # Initial Parameter Vector
-
-function predict_adjoint() # Our 1-layer neural network
+function predict_adjoint(p) # Our 1-layer neural network
   Array(concrete_solve(prob,Tsit5(),u0,p,saveat=0.0:0.1:10.0))
 end
 ```
 
 Next we choose a loss function. Our goal will be to find parameter that make
 the Lotka-Volterra solution constant `x(t)=1`, so we defined our loss as the
-squared distance from 1:
+squared distance from 1. Note that when using `sciml_train!`, the first return
+is the loss value, and the other returns are sent to the callback for monitoring
+convergence.
 
 ```julia
-loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
+function loss_adjoint(p)
+  prediction = predict_adjoint(p)
+  loss = sum(abs2,x-1 for x in prediction)
+  loss,prediction
+end
 ```
 
-Lastly, we train the neural network using Flux to arrive at parameters which
-optimize for our goal:
+Lastly, we use the `sciml_train!` function to train the parameters using BFGS to
+arrive at parameters which optimize for our goal. `sciml_train!` allows defining
+a callback that will be called at each step of our training loop. It takes in the
+current parameter vector and the returns of the last call to the loss function.
+We will display the current loss and make a plot of the current situation:
 
 ```julia
-data = Iterators.repeated((), 100)
-opt = ADAM(0.1)
-cb = function () #callback function to observe training
-  display(loss_adjoint())
+cb = function (p,l,pred) #callback function to observe training
+  display(l)
   # using `remake` to re-create our `prob` with current parameters `p`
   display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.0:0.1:10.0),ylim=(0,6)))
 end
 
 # Display the ODE with the initial parameter values.
-cb()
+cb(p,loss_adjoint(p)...)
 
-Flux.train!(loss_adjoint, Flux.params(p), data, opt, cb = cb)
+res = DiffEqFlux.sciml_train!(loss_adjoint, p, BFGS(initial_stepnorm = 0.0001), cb = cb)
 ```
+
+```julia
+* Status: failure (objective increased between iterations) (line search failed)
+
+* Candidate solution
+   Minimizer: [1.44e+00, 1.44e+00, 2.54e+00,  ...]
+   Minimum:   1.993849e-06
+
+* Found with
+   Algorithm:     BFGS
+   Initial Point: [1.50e+00, 1.00e+00, 3.00e+00,  ...]
+
+* Convergence measures
+   |x - x'|               = 1.27e-09 ≰ 0.0e+00
+   |x - x'|/|x'|          = 4.98e-10 ≰ 0.0e+00
+   |f(x) - f(x')|         = 1.99e-12 ≰ 0.0e+00
+   |f(x) - f(x')|/|f(x')| = 1.00e-06 ≰ 0.0e+00
+   |g(x)|                 = 5.74e-03 ≰ 1.0e-08
+
+* Work counters
+   Seconds run:   6  (vs limit Inf)
+   Iterations:    6
+   f(x) calls:    83
+   ∇f(x) calls:   83
+```
+
+In just seconds we found parameters which give a loss of `1e-6`! We can get the
+final loss with `res.minimum`, and get the optimal parameters with `res.minimizer`.
+For example, we can plot the final outcome and show that we solved the control
+problem and successfully found parameters to make the ODE solution constant:
+
+```julia
+plot(solve(remake(prob,p=res.minimizer),Tsit5(),saveat=0.0:0.1:10.0),ylim=(0,6))
+```
+
+Here's an old video showing the use of the ADAM optimizer:
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
-
-Note that by using anonymous functions, this `diffeq_adjoint` can be used as a
-layer in a neural network `Chain`, for example like
-
-```julia
-m = Chain(
-  Conv((2,2), 1=>16, relu),
-  x -> maxpool(x, (2,2)),
-  Conv((2,2), 16=>8, relu),
-  x -> maxpool(x, (2,2)),
-  x -> reshape(x, :, size(x, 4)),
-  # takes in the ODE parameters from the previous layer
-  p -> diffeq_adjoint(p,prob,Tsit5(),saveat=0.1),
-  Dense(288, 10), softmax) |> gpu
-```
-
-or
-
-```julia
-m = Chain(
-  Dense(28^2, 32, relu),
-  # takes in the initial condition from the previous layer
-  x -> diffeq_rd(p,prob,Tsit5(),saveat=0.1,u0=x)),
-  Dense(32, 10),
-  softmax)
-```
-
-Similarly, `diffeq_adjoint`, a O(1) memory adjoint implementation, can be
-replaced with `diffeq_rd` for reverse-mode automatic differentiation or
-`diffeq_fd` for forward-mode automatic differentiation. `diffeq_fd` will
-be fastest with small numbers of parameters, while `diffeq_adjoint` will
-be the fastest when there are large numbers of parameters (like with a
-neural ODE). See the layer API documentation for details.
 
 ### Using Other Differential Equations
 
@@ -195,21 +202,19 @@ u0 = [1.0,1.0]
 prob = DDEProblem(delay_lotka_volterra,u0,h,(0.0,10.0),constant_lags=[0.1])
 
 p = [2.2, 1.0, 2.0, 0.4]
-function predict_dde()
+function predict_dde(p)
   Array(concrete_solve(prob,MethodOfSteps(Tsit5()),u0,p,saveat=0.1,sensealg=TrackerAdjoint())
 end
-loss_dde() = sum(abs2,x-1 for x in predict_dde())
-loss_dde()
+loss_dde(p) = sum(abs2,x-1 for x in predict_dde(p))
+loss_dde(p)
 ```
 
-Notice that we chose `sensealg=ForwardDiffSensitivity()` to utilize the ForwardDiff.jl
-forward-mode to handle a small delay differential equation, a strategy that can
-be good for small equations (see the performance discussion for more details
-on other forms).
+Notice that we chose `sensealg=TrackerAdjoint()` to utilize the Tracker.jl
+reverse-mode to handle the delay differential equation.
 
 Or we can use a stochastic differential equation. Here we demonstrate
-`sensealg=TrackerAdjoint()` for reverse-mode automatic differentiation
-of a small differential equation:
+`sensealg=ForwardDiffSensitivity()` for forward-mode automatic differentiation
+of a small stochastic differential equation:
 
 ```julia
 function lotka_volterra_noise(du,u,p,t)
@@ -220,23 +225,33 @@ u0 = [1.0,1.0]
 prob = SDEProblem(lotka_volterra,lotka_volterra_noise,u0,(0.0,10.0))
 
 p = [2.2, 1.0, 2.0, 0.4]
-function predict_sde()
-  Array(concrete_solve(prob,SOSRI,u0,p,sensealg=TrackerAdjoint(),saveat=0.1))
+function predict_sde(p)
+  Array(concrete_solve(prob,SOSRI(),u0,p,sensealg=ForwardDiffSensitivity(),saveat=0.1))
 end
-loss_sde() = sum(abs2,x-1 for x in predict_sde())
-loss_sde()
+loss_sde(p) = sum(abs2,x-1 for x in predict_sde(p))
+loss_sde(p)
+```
 
-data = Iterators.repeated((), 100)
-opt = ADAM(0.1)
-cb = function ()
-  display(loss_sde())
-  display(plot(solve(remake(prob,p=p),SOSRI(),saveat=0.1),ylim=(0,6)))
+For this training process, because the loss function is stochastic, we will use
+the `ADAM` optimizer from Flux.jl. The `sciml_train!` function is the same as
+before. However, to speed up the training process, we will use a global counter
+so that way we only plot the current results every 10 iterations. This looks like:
+
+```julia
+iter = 0
+cb = function (p,l)
+  display(l)
+  global iter
+  if iter%10 == 0
+      display(plot(solve(remake(prob,p=p),SOSRI(),saveat=0.1),ylim=(0,6)))
+  end
+  iter += 1
 end
 
 # Display the ODE with the current parameter values.
-cb()
+cb(p,loss_sde(p))
 
-Flux.train!(loss_sde, Flux.params(p), data, opt, cb = cb)
+DiffEqFlux.sciml_train!(loss_sde, p, ADAM(0.1), cb = cb, maxiters = 100)
 ```
 
 ![SDE NN Animation](https://user-images.githubusercontent.com/1814174/51399524-2c6abf80-1b14-11e9-96ae-0192f7debd03.gif)
@@ -290,8 +305,18 @@ prob = ODEProblem(trueODEfunc,u0,tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 ```
 
-Now let's define a neural network with a `neural_ode` layer. First we define
-the layer:
+Now let's define a neural network with a `NeuralODE` layer. First we define
+the layer. Here we're going to use `FastChain`, which is a faster neural network
+structure for NeuralODEs:
+
+```julia
+dudt2 = FastChain((x,p) -> x.^3,
+            FastDense(2,50,tanh),
+            FastDense(50,2))
+n_ode = NeuralODE(dudt2,tspan,Tsit5(),saveat=t)
+```
+
+Note that we can directly use `Chain`s from Flux.jl as well, for example:
 
 ```julia
 dudt2 = Chain(x -> x.^3,
@@ -300,42 +325,99 @@ dudt2 = Chain(x -> x.^3,
 n_ode = NeuralODE(dudt2,tspan,Tsit5(),saveat=t)
 ```
 
-Here we used the `x -> x.^3` assumption in the model. By incorporating structure
+In our model we used the `x -> x.^3` assumption in the model. By incorporating structure
 into our equations, we can reduce the required size and training time for the
 neural network, but a good guess needs to be known!
 
-From here we build a loss function around it. We will use the L2 loss of the network's
+From here we build a loss function around it. The `NeuralODE` has an optional
+second argument for new parameters which we will use to iteratively change the
+neural network in our training loop. We will use the L2 loss of the network's
 output against the time series data:
 
 ```julia
-function predict_n_ode()
-  n_ode(u0)
+function predict_n_ode(p)
+  n_ode(u0,p)
 end
-loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
+
+function loss_n_ode(p)
+    pred = predict_n_ode(p)
+    loss = sum(abs2,ode_data .- pred)
+    loss,pred
+end
+
+loss_n_ode(n_ode.p) # n_ode.p stores the initial parameters of the neural ODE
 ```
 
 and then train the neural network to learn the ODE:
 
 ```julia
-data = Iterators.repeated((), 1000)
-opt = ADAM(0.1)
-cb = function () #callback function to observe training
-  display(loss_n_ode())
+cb = function (p,l,pred) #callback function to observe training
+  display(l)
   # plot current prediction against data
-  cur_pred = predict_n_ode()
   pl = scatter(t,ode_data[1,:],label="data")
-  scatter!(pl,t,cur_pred[1,:],label="prediction")
+  scatter!(pl,t,pred[1,:],label="prediction")
   display(plot(pl))
 end
 
 # Display the ODE with the initial parameter values.
-cb()
+cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-ps = Flux.params(n_ode)
-# or train the initial condition and neural network
-# ps = Flux.params(u0,dudt)
-Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
+res1 = DiffEqFlux.sciml_train!(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters = 100)
+res2 = DiffEqFlux.sciml_train!(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxiters = 100)
 ```
+
+```
+* Status: failure (reached maximum number of iterations)
+
+* Candidate solution
+   Minimizer: [-8.44e-01, 5.22e-01, 4.72e-01,  ...]
+   Minimum:   1.812476e+00
+
+* Found with
+   Algorithm:     ADAM
+   Initial Point: [-5.31e-02, 1.45e-01, 2.93e-01,  ...]
+
+* Convergence measures
+   |x - x'|               = NaN ≰ 0.0e+00
+   |x - x'|/|x'|          = NaN ≰ 0.0e+00
+   |f(x) - f(x')|         = NaN ≰ 0.0e+00
+   |f(x) - f(x')|/|f(x')| = NaN ≰ 0.0e+00
+   |g(x)|                 = NaN ≰ 0.0e+00
+
+* Work counters
+   Seconds run:   17  (vs limit Inf)
+   Iterations:    100
+   f(x) calls:    100
+   ∇f(x) calls:   100
+
+ * Status: failure (line search failed)
+
+ * Candidate solution
+    Minimizer: [-8.57e-01, 9.68e-02, 1.61e-01,  ...]
+    Minimum:   1.957973e-01
+
+ * Found with
+    Algorithm:     L-BFGS
+    Initial Point: [-8.44e-01, 5.22e-01, 4.72e-01,  ...]
+
+ * Convergence measures
+    |x - x'|               = 3.90e-02 ≰ 0.0e+00
+    |x - x'|/|x'|          = 2.62e-02 ≰ 0.0e+00
+    |f(x) - f(x')|         = 1.74e-02 ≰ 0.0e+00
+    |f(x) - f(x')|/|f(x')| = 8.87e-02 ≰ 0.0e+00
+    |g(x)|                 = 8.26e-01 ≰ 1.0e-08
+
+ * Work counters
+    Seconds run:   12  (vs limit Inf)
+    Iterations:    35
+    f(x) calls:    101
+    ∇f(x) calls:   101
+```
+
+Here we showcase starting the optimization with `ADAM` to more quickly find a
+minimum, and then honing in on the minimum by using `LBFGS`. By using the two
+together, we are able to fit the neural ODE in 29 seconds! (Note, the timing
+commented out the plotting).
 
 ## Use with GPUs
 
@@ -355,8 +437,8 @@ prob = ODEProblem(ODEfunc, u0,tspan, p)
 sol = solve(prob,Tsit5(),saveat=0.1)
 ```
 
-and the `diffeq` layer functions can be used similarly. Or we can directly use
-the neural ODE layer function, like:
+and `concrete_solve` works similarly. Or we can directly use the neural ODE
+layer function, like:
 
 ```julia
 n_ode = NeuralODE(gpu(dudt2),tspan,Tsit5(),saveat=0.1)
@@ -365,119 +447,80 @@ n_ode = NeuralODE(gpu(dudt2),tspan,Tsit5(),saveat=0.1)
 ## Universal Differential Equations
 
 You can also mix a known differential equation and a neural differential equation, so that
-the parameters and the neural network are estimated simultaniously. Here's an example of
-doing this with both reverse-mode autodifferentiation and with adjoints:
+the parameters and the neural network are estimated simultaneously!
+
+#### Universal Differential Equations for Neural Optimal Control
+
+Here's an example of doing this with both reverse-mode autodifferentiation and
+with adjoints. We will assume that we know the dynamics of the second equation
+(linear dynamics), and our goal is to find a neural network that will control
+the second equation to stay close to 1.
 
 ```julia
-using DiffEqFlux, Flux, OrdinaryDiffEq
+using DiffEqFlux, Flux, Optim, OrdinaryDiffEq
 
-## --- Partial Neural Adjoint ---
-
-u0 = Float32[0.8; 0.8]
+u0 = Float32[1.1]
 tspan = (0.0f0,25.0f0)
 
-ann = Chain(Dense(2,10,tanh), Dense(10,1))
-
-p1,re = Flux.destructure(ann)
-p2 = Float32[-2.0,1.1]
-p3 = [p1;p2]
-ps = Flux.params(p3,u0)
-
-function dudt_(du,u,p,t)
-    x, y = u
-    du[1] = re(p[1:41])(u)[1]
-    du[2] = p[end-1]*y + p[end]*x
-end
-prob = ODEProblem(dudt_,u0,tspan,p3)
-concrete_solve(prob,Tsit5(),u0,p3,abstol=1e-8,reltol=1e-6)
-
-function predict_adjoint()
-  Array(concrete_solve(prob,Tsit5(),u0,p3,saveat=0.0:0.1:25.0,abstol=1e-8,reltol=1e-6))
-end
-loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
-loss_adjoint()
-
-data = Iterators.repeated((), 100)
-opt = ADAM(0.1)
-cb = function ()
-  display(loss_adjoint())
-  #display(plot(solve(remake(prob,p=p3,u0=u0),Tsit5(),saveat=0.1),ylim=(0,6)))
-end
-
-# Display the ODE with the current parameter values.
-cb()
-
-Flux.train!(loss_adjoint, ps, data, opt, cb = cb)
-```
-
-### Training Universal Differential Equations with Optim's BFGS
-
-In many scientific computing cases, like what we see with Universal Differential Equations,
-the classic `BFGS` or `L-BFGS` methods more stable than the methods commonly used in neural
-networks. Thus for better fitting we can utilize [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl)
-and tell it to train using the BFGS method. An example of this is as follows:
-
-```julia
-using DiffEqFlux, Flux, OrdinaryDiffEq, Optim, Zygote
-
-u0 = Float32[0.8; 0.8]
-tspan = (0.0f0,25.0f0)
-
-ann = Chain(Dense(2,10,tanh), Dense(10,1))
-
+ann = Chain(Dense(2,16,tanh), Dense(16,16,tanh), Dense(16,1))
 p1,re = Flux.destructure(ann)
 p2 = Float32[0.5,-0.5]
 p3 = [p1;p2]
-ptrain = [p3;u0]
+θ = [u0;p3]
 
 function dudt_(du,u,p,t)
     x, y = u
-    du[1] = re(p[1:41])(u)[1]
+    du[1] = re(p[1:length(p1)])(u)[1]
     du[2] = p[end-1]*y + p[end]*x
 end
 prob = ODEProblem(dudt_,u0,tspan,p3)
-concrete_solve(prob,Tsit5(),u0,p3,abstol=1e-8,reltol=1e-6)
+concrete_solve(prob,Tsit5(),[0.0;u0],p3,abstol=1e-8,reltol=1e-6)
 
-function predict_adjoint(fullp)
-  Array(concrete_solve(prob,Tsit5(),fullp[end-1:end],fullp[1:end-1],saveat=0.0:0.1:25.0,abstol=1e-8,reltol=1e-6))
+function predict_adjoint(θ)
+  Array(concrete_solve(prob,Tsit5(),[0f0,θ[1]],θ[2:end],saveat=0.0:1:25.0))
 end
-loss_adjoint(fullp) = sum(abs2,x-1 for x in predict_adjoint(fullp))
-loss_adjoint(ptrain)
+loss_adjoint(θ) = sum(abs2,predict_adjoint(θ)[2,:].-1)
+l = loss_adjoint(θ)
 
-function loss_adjoint_gradient!(G, fullp)
-    G .= Zygote.gradient(loss_adjoint,fullp)[1]
+cb = function (θ,l)
+  println(l)
+  #display(plot(solve(remake(prob,p=Flux.data(p3),u0=Flux.data(u0)),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
-optimize(loss_adjoint, loss_adjoint_gradient!, ptrain, BFGS())
+# Display the ODE with the current parameter values.
+cb(θ,l)
+
+loss1 = loss_adjoint(θ)
+res = DiffEqFlux.sciml_train!(loss_adjoint, θ, BFGS(initial_stepnorm=0.01), cb = cb)
 ```
 
+```julia
+* Status: success
+
+* Candidate solution
+   Minimizer: [1.00e+00, -3.76e-02, -7.86e-02,  ...]
+   Minimum:   3.907985e-14
+
+* Found with
+   Algorithm:     BFGS
+   Initial Point: [1.10e+00, -3.50e-02, -5.91e-02,  ...]
+
+* Convergence measures
+   |x - x'|               = 0.00e+00 ≤ 0.0e+00
+   |x - x'|/|x'|          = 0.00e+00 ≤ 0.0e+00
+   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
+   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
+   |g(x)|                 = 2.32e-06 ≰ 1.0e-08
+
+* Work counters
+   Seconds run:   61  (vs limit Inf)
+   Iterations:    40
+   f(x) calls:    262
+   ∇f(x) calls:   262
 ```
- * Status: success
 
- * Candidate solution
-    Minimizer: [2.94e-01, -3.52e-01, 4.39e-01,  ...]
-    Minimum:   4.463629e-11
-
- * Found with
-    Algorithm:     BFGS
-    Initial Point: [3.13e-01, -3.43e-01, 3.38e-01,  ...]
-
- * Convergence measures
-    |x - x'|               = 0.00e+00 ≤ 0.0e+00
-    |x - x'|/|x'|          = 0.00e+00 ≤ 0.0e+00
-    |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
-    |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-    |g(x)|                 = 2.46e-05 ≰ 1.0e-08
-
- * Work counters
-    Seconds run:   202  (vs limit Inf)
-    Iterations:    30
-    f(x) calls:    140
-    ∇f(x) calls:   140
-```
-
-Notice that in just 30 iterations we get to a minimum of `4e-11`! This is much faster than
-methods like ADAM or SGD.
+Notice that in just 40 iterations or 61 seconds we get to a minimum of `4e-14`,
+successfully solving the nonlinear optimal control problem.
 
 ## Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.
 
@@ -512,7 +555,7 @@ prob = DDEProblem(dudt_,u0,h,tspan,nothing)
 First let's build training data from the same example as the neural ODE:
 
 ```julia
-using Flux, DiffEqFlux, StochasticDiffEq, Plots, DiffEqBase.EnsembleAnalysis
+using Flux, DiffEqFlux, StochasticDiffEq, Plots, DiffEqBase.EnsembleAnalysis, Statistics
 
 u0 = Float32[2.; 0.]
 datasize = 30
@@ -541,27 +584,24 @@ ensemble_sum = EnsembleSummary(ensemble_sol)
 sde_data,sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol,t))
 ```
 
-Now we build a neural SDE. For simplicity we will use the `NueralDSDE`
+Now we build a neural SDE. For simplicity we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
 ```julia
-drift_dudt = Chain(x -> x.^3,
-             Dense(2,50,tanh),
-             Dense(50,2))
-diffusion_dudt = Chain(Dense(2,2))
+drift_dudt = FastChain((x,p) -> x.^3,
+             FastDense(2,50,tanh),
+             FastDense(50,2))
+diffusion_dudt = FastChain(FastDense(2,2))
 n_sde = NeuralDSDE(drift_dudt,diffusion_dudt,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
-ps = Flux.params(n_sde)
 ```
 
 Let's see what that looks like:
 
 ```julia
 pred = n_sde(u0) # Get the prediction using the correct initial condition
-p1,re1 = Flux.destructure(drift_dudt)
-p2,re2 = Flux.destructure(diffusion_dudt)
-drift_(u,p,t) = re1(n_sde.p[1:n_sde.len])(u)
-diffusion_(u,p,t) = re2(n_sde.p[(n_sde.len+1):end])(u)
-nprob = SDEProblem(drift_,diffusion_,u0,(0.0f0,1.2f0),nothing)
+drift_(u,p,t) = drift_dudt(u,p[1:n_sde.len])
+diffusion_(u,p,t) = diffusion_dudt(u,p[(n_sde.len+1):end])
+nprob = SDEProblem(drift_,diffusion_,u0,(0.0f0,1.2f0),n_sde.p)
 
 ensemble_nprob = EnsembleProblem(nprob)
 ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100, saveat = t)
@@ -577,29 +617,28 @@ mean and variance from `n` runs at each time point and uses the distance
 from the data values:
 
 ```julia
-function predict_n_sde()
-  Array(n_sde(u0))
+function predict_n_sde(p)
+  Array(n_sde(u0,p))
 end
-function loss_n_sde(;n=100)
-  samples = [predict_n_sde() for i in 1:n]
+function loss_n_sde(p;n=100)
+  samples = [predict_n_sde(p) for i in 1:n]
   means = reshape(mean.([[samples[i][j] for i in 1:length(samples)] for j in 1:length(samples[1])]),size(samples[1])...)
   vars = reshape(var.([[samples[i][j] for i in 1:length(samples)] for j in 1:length(samples[1])]),size(samples[1])...)
-  sum(abs2,sde_data - means) + sum(abs2,sde_data_vars - vars)
+  loss = sum(abs2,sde_data - means) + sum(abs2,sde_data_vars - vars)
+  loss,means,vars
 end
 
-opt = ADAM(0.025)
-cb = function () #callback function to observe training
-  sample = predict_n_sde()
+cb = function (p,loss,means,vars) #callback function to observe training
   # loss against current data
-  display(sum(abs2,sde_data .- sample))
+  display(loss)
   # plot current prediction against data
-  pl = scatter(t,sde_data[1,:],label="data")
-  scatter!(pl,t,sample[1,:],label="prediction")
+  pl = scatter(t,sde_data[1,:],yerror = sde_data_vars[1,:],label="data")
+  scatter!(pl,t,means[1,:],ribbon = vars[1,:], label="prediction")
   display(plot(pl))
 end
 
 # Display the SDE with the initial parameter values.
-cb()
+cb(n_sde.p,loss_n_sde(n_sde.p)...)
 ```
 
 Now we train using this loss function. We can pre-train a little bit using
@@ -607,21 +646,22 @@ a smaller `n` and then decrease it after it has had some time to adjust towards
 the right mean behavior:
 
 ```julia
-Flux.train!(()->loss_n_sde(n=10), ps, Iterators.repeated((), 100), opt, cb = cb)
-Flux.train!(loss_n_sde, ps, Iterators.repeated((), 100), opt, cb = cb)
+opt = ADAM(0.025)
+DiffEqFlux.sciml_train!((p)->loss_n_sde(p,n=10),  n_sde.p, opt, cb = cb, maxiters = 100)
+DiffEqFlux.sciml_train!((p)->loss_n_sde(p,n=100), n_sde.p, opt, cb = cb, maxiters = 100)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```julia
-ensemble_nprob = EnsembleProblem(nprob)
-ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100, saveat =t )
-ensemble_nsum = EnsembleSummary(ensemble_nsol)
+finalprob = remake(nprob,p=res2.minimizer)
+ensemble_fnprob = EnsembleProblem(finalprob)
+ensemble_fnsol = solve(ensemble_fnprob,SOSRI(),trajectories = 100, saveat = t)
+ensemble_fnsum = EnsembleSummary(ensemble_fnsol)
 
 p2 = scatter(t,sde_data')
-plot!(p2,ensemble_nsum, title = "Neural SDE: After Training", xlabel="Time")
-scatter!(p2,t,sde_data',lw=3)
-
+plot!(p2,ensemble_fnsum, title = "Neural SDE: After Training", xlabel="Time")
+scatter!(p2,t,sde_data', yerror = sde_data_vars', lw=3)
 plot(p1,p2,layout=(2,1))
 ```
 
