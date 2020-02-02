@@ -25,7 +25,7 @@ struct FastDense{F,F2} <: Function
   σ::F
   initial_params::F2
   function FastDense(in::Integer, out::Integer, σ = identity;
-                 initW = Flux.glorot_uniform, initb = zeros)
+                 initW = Flux.glorot_uniform, initb = Flux.zeros)
     initial_params() = vcat(vec(initW(out, in)),initb(out))
     new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params)
   end
@@ -39,7 +39,7 @@ struct StaticDense{out,in,F,F2} <: Function
   σ::F
   initial_params::F2
   function StaticDense(in::Integer, out::Integer, σ = identity;
-                 initW = Flux.glorot_uniform, initb = zeros)
+                 initW = Flux.glorot_uniform, initb = Flux.zeros)
     initial_params() = vcat(vec(initW(out, in)),initb(out))
     new{out,in,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end

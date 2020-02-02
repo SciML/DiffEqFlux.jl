@@ -588,7 +588,7 @@ Now we build a neural SDE. For simplicity we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
 ```julia
-drift_dudt = FastChain(x -> x.^3,
+drift_dudt = FastChain((x,p) -> x.^3,
              FastDense(2,50,tanh),
              FastDense(50,2))
 diffusion_dudt = FastChain(FastDense(2,2))
