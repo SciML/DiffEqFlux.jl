@@ -599,11 +599,9 @@ Let's see what that looks like:
 
 ```julia
 pred = n_sde(u0) # Get the prediction using the correct initial condition
-p1,re1 = Flux.destructure(drift_dudt)
-p2,re2 = Flux.destructure(diffusion_dudt)
-drift_(u,p,t) = re1(n_sde.p[1:n_sde.len])(u)
-diffusion_(u,p,t) = re2(n_sde.p[(n_sde.len+1):end])(u)
-nprob = SDEProblem(drift_,diffusion_,u0,(0.0f0,1.2f0),nothing)
+drift_(u,p,t) = drift_dudt(u,p[1:n_sde.len])
+diffusion_(u,p,t) = diffusion_dudt(u,p[(n_sde.len+1):end])
+nprob = SDEProblem(drift_,diffusion_,u0,(0.0f0,1.2f0),n_sde.p)
 
 ensemble_nprob = EnsembleProblem(nprob)
 ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100, saveat = t)
@@ -656,14 +654,14 @@ DiffEqFlux.sciml_train!((p)->loss_n_sde(p,n=100), n_sde.p, opt, cb = cb, maxiter
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```julia
-ensemble_nprob = EnsembleProblem(nprob)
-ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100, saveat = t)
-ensemble_nsum = EnsembleSummary(ensemble_nsol)
+finalprob = remake(nprob,p=res2.minimizer)
+ensemble_fnprob = EnsembleProblem(finalprob)
+ensemble_fnsol = solve(ensemble_fnprob,SOSRI(),trajectories = 100, saveat = t)
+ensemble_fnsum = EnsembleSummary(ensemble_fnsol)
 
 p2 = scatter(t,sde_data')
-plot!(p2,ensemble_nsum, title = "Neural SDE: After Training", xlabel="Time")
+plot!(p2,ensemble_fnsum, title = "Neural SDE: After Training", xlabel="Time")
 scatter!(p2,t,sde_data', yerror = sde_data_vars', lw=3)
-
 plot(p1,p2,layout=(2,1))
 ```
 
