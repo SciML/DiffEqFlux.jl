@@ -80,7 +80,7 @@ function neural_dmsde(model,x,mp,tspan,
     error("neural_dmsde has been deprecated with the change to Zygote. Please see the documentation on the new NeuralDSDE layer.")
 end
 
-struct NeuralDSDE{P,M,RE,M2,RE2,T,S,A,K}
+struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K}
     p::P
     len::Int
     model1::M
@@ -91,13 +91,25 @@ struct NeuralDSDE{P,M,RE,M2,RE2,T,S,A,K}
     solver::S
     args::A
     kwargs::K
-end
+    function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
+        p1,re1 = Flux.destructure(model1)
+        p2,re2 = Flux.destructure(model2)
+        p = [p1;p2]
+        new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
+            length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
+    end
 
-function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
-    p1,re1 = Flux.destructure(model1)
-    p2,re2 = Flux.destructure(model2)
-    p = [p1;p2]
-    NeuralDSDE(p,length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
+    function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,solver=nothing,args...;kwargs...)
+        p1 = initial_params(model1)
+        p2 = initial_params(model2)
+        re1 = nothing
+        re2 = nothing
+        p = [p1;p2]
+        new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
+            length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
+    end
 end
 
 Flux.@functor NeuralDSDE
@@ -105,6 +117,13 @@ Flux.@functor NeuralDSDE
 function (n::NeuralDSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
+    dudt_(u,p,t) = n.model1(u,p)
+    g(u,p,t) = n.model2(u,p)
     prob = SDEProblem{false}(dudt_,g,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end

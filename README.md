@@ -305,8 +305,18 @@ prob = ODEProblem(trueODEfunc,u0,tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 ```
 
-Now let's define a neural network with a `neural_ode` layer. First we define
-the layer:
+Now let's define a neural network with a `NeuralODE` layer. First we define
+the layer. Here we're going to use `FastChain`, which is a faster neural network
+structure for NeuralODEs:
+
+```julia
+dudt2 = FastChain((x,p) -> x.^3,
+            FastDense(2,50,tanh),
+            FastDense(50,2))
+n_ode = NeuralODE(dudt2,tspan,Tsit5(),saveat=t)
+```
+
+Note that we can directly use `Chain`s from Flux.jl as well, for example:
 
 ```julia
 dudt2 = Chain(x -> x.^3,
@@ -315,7 +325,7 @@ dudt2 = Chain(x -> x.^3,
 n_ode = NeuralODE(dudt2,tspan,Tsit5(),saveat=t)
 ```
 
-Here we used the `x -> x.^3` assumption in the model. By incorporating structure
+In our model we used the `x -> x.^3` assumption in the model. By incorporating structure
 into our equations, we can reduce the required size and training time for the
 neural network, but a good guess needs to be known!
 
@@ -352,12 +362,62 @@ end
 # Display the ODE with the initial parameter values.
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-res1 = DiffEqFlux.sciml_train!(loss_n_ode, n_ode.p, ADAM(0.01), cb = cb, maxiters = 100)
+res1 = DiffEqFlux.sciml_train!(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters = 100)
 res2 = DiffEqFlux.sciml_train!(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxiters = 100)
 ```
 
+```
+* Status: failure (reached maximum number of iterations)
+
+* Candidate solution
+   Minimizer: [-8.44e-01, 5.22e-01, 4.72e-01,  ...]
+   Minimum:   1.812476e+00
+
+* Found with
+   Algorithm:     ADAM
+   Initial Point: [-5.31e-02, 1.45e-01, 2.93e-01,  ...]
+
+* Convergence measures
+   |x - x'|               = NaN ≰ 0.0e+00
+   |x - x'|/|x'|          = NaN ≰ 0.0e+00
+   |f(x) - f(x')|         = NaN ≰ 0.0e+00
+   |f(x) - f(x')|/|f(x')| = NaN ≰ 0.0e+00
+   |g(x)|                 = NaN ≰ 0.0e+00
+
+* Work counters
+   Seconds run:   17  (vs limit Inf)
+   Iterations:    100
+   f(x) calls:    100
+   ∇f(x) calls:   100
+
+ * Status: failure (line search failed)
+
+ * Candidate solution
+    Minimizer: [-8.57e-01, 9.68e-02, 1.61e-01,  ...]
+    Minimum:   1.957973e-01
+
+ * Found with
+    Algorithm:     L-BFGS
+    Initial Point: [-8.44e-01, 5.22e-01, 4.72e-01,  ...]
+
+ * Convergence measures
+    |x - x'|               = 3.90e-02 ≰ 0.0e+00
+    |x - x'|/|x'|          = 2.62e-02 ≰ 0.0e+00
+    |f(x) - f(x')|         = 1.74e-02 ≰ 0.0e+00
+    |f(x) - f(x')|/|f(x')| = 8.87e-02 ≰ 0.0e+00
+    |g(x)|                 = 8.26e-01 ≰ 1.0e-08
+
+ * Work counters
+    Seconds run:   12  (vs limit Inf)
+    Iterations:    35
+    f(x) calls:    101
+    ∇f(x) calls:   101
+```
+
 Here we showcase starting the optimization with `ADAM` to more quickly find a
-minimum, and then honing in on the minimum by using `LBFGS`.
+minimum, and then honing in on the minimum by using `LBFGS`. By using the two
+together, we are able to fit the neural ODE in 29 seconds! (Note, the timing
+commented out the plotting).
 
 ## Use with GPUs
 
@@ -524,14 +584,14 @@ ensemble_sum = EnsembleSummary(ensemble_sol)
 sde_data,sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol,t))
 ```
 
-Now we build a neural SDE. For simplicity we will use the `NueralDSDE`
+Now we build a neural SDE. For simplicity we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
 ```julia
-drift_dudt = Chain(x -> x.^3,
-             Dense(2,50,tanh),
-             Dense(50,2))
-diffusion_dudt = Chain(Dense(2,2))
+drift_dudt = FastChain(x -> x.^3,
+             FastDense(2,50,tanh),
+             FastDense(50,2))
+diffusion_dudt = FastChain(FastDense(2,2))
 n_sde = NeuralDSDE(drift_dudt,diffusion_dudt,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
 ```
 
