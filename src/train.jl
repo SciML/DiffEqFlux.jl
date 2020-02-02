@@ -15,11 +15,12 @@ function sciml_train!(loss, _θ, opt; cb = (args...) -> (), maxiters)
   θ = copy(_θ)
   ps = Flux.params(θ)
   data = Iterators.repeated((), maxiters)
+  t0 = time()
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
+  local x
   @progress for d in data
     try
-      local x
       gs = Flux.Zygote.gradient(ps) do
         x = loss(θ)
         first(x)
@@ -34,7 +35,34 @@ function sciml_train!(loss, _θ, opt; cb = (args...) -> (), maxiters)
       end
     end
   end
-  θ
+  _time = time()
+  Optim.MultivariateOptimizationResults(opt,
+                                        _θ,# initial_x,
+                                        θ, #pick_best_x(f_incr_pick, state),
+                                        first(x), # pick_best_f(f_incr_pick, state, d),
+                                        maxiters, #iteration,
+                                        maxiters >= maxiters, #iteration == options.iterations,
+                                        false, # x_converged,
+                                        0.0,#T(options.x_tol),
+                                        0.0,#T(options.x_tol),
+                                        NaN,# x_abschange(state),
+                                        NaN,# x_abschange(state),
+                                        false,# f_converged,
+                                        0.0,#T(options.f_tol),
+                                        0.0,#T(options.f_tol),
+                                        NaN,#f_abschange(d, state),
+                                        NaN,#f_abschange(d, state),
+                                        false,#g_converged,
+                                        0.0,#T(options.g_tol),
+                                        NaN,#g_residual(d),
+                                        false, #f_increased,
+                                        nothing,
+                                        maxiters,
+                                        maxiters,
+                                        0,
+                                        true,
+                                        NaN,
+                                        _time-t0,)
 end
 
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
@@ -53,6 +81,5 @@ function sciml_train!(loss, θ, opt::Optim.AbstractOptimizer;
     g .= Zygote.gradient(optim_loss,θ)[1]
     nothing
   end
-  result =  optimize(optim_loss, optim_loss_gradient!, θ, opt, Optim.Options(extended_trace=true,callback = _cb))
-  result.minimizer
+  optimize(optim_loss, optim_loss_gradient!, θ, opt, Optim.Options(extended_trace=true,callback = _cb))
 end

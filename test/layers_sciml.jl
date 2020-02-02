@@ -31,11 +31,11 @@ end
 # Display the ODE with the current parameter values.
 loss1 = loss_rd(p)
 pmin = DiffEqFlux.sciml_train!(loss_rd, p, ADAM(0.1), cb = cb, maxiters = 100)
-loss2 = loss_rd(pmin)
+loss2 = loss_rd(pmin.minimizer)
 @test 10loss2 < loss1
 
 pmin = DiffEqFlux.sciml_train!(loss_rd, p, BFGS(initial_stepnorm = 0.01), cb = cb)
-loss2 = loss_rd(pmin)
+loss2 = loss_rd(pmin.minimizer)
 @test 10loss2 < loss1
 
 # Forward-mode, R^n -> R^m layer
@@ -59,11 +59,11 @@ end
 # Display the ODE with the current parameter values.
 loss1 = loss_fd(p)
 pmin = DiffEqFlux.sciml_train!(loss_fd, p, opt, cb = cb, maxiters = 100)
-loss2 = loss_fd(pmin)
+loss2 = loss_fd(pmin.minimizer)
 @test 10loss2 < loss1
 
-pmin = DiffEqFlux.sciml_train!(loss_fd, p, Iterators.repeated((), 100), BFGS(initial_stepnorm = 0.01), cb = cb)
-loss2 = loss_fd(pmin)
+pmin = DiffEqFlux.sciml_train!(loss_fd, p, BFGS(initial_stepnorm = 0.01), cb = cb)
+loss2 = loss_fd(pmin.minimizer)
 @test 10loss2 < loss1
 
 # Adjoint sensitivity
@@ -88,9 +88,9 @@ end
 # Display the ODE with the current parameter values.
 loss1 = loss_adjoint(p)
 pmin = DiffEqFlux.sciml_train!(loss_adjoint, p, opt, cb = cb, maxiters = 100)
-loss2 = loss_adjoint(pmin)
+loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
 
-pmin = DiffEqFlux.sciml_train!(loss_adjoint, p, Iterators.repeated((), 100), BFGS(initial_stepnorm = 0.01), cb = cb)
-loss2 = loss_adjoint(pmin)
+pmin = DiffEqFlux.sciml_train!(loss_adjoint, p, BFGS(initial_stepnorm = 0.01), cb = cb)
+loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
