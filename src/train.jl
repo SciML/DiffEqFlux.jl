@@ -20,20 +20,12 @@ function sciml_train!(loss, _θ, opt; cb = (args...) -> (), maxiters)
   # this is a Flux optimizer
   local x
   @progress for d in data
-    try
-      gs = Flux.Zygote.gradient(ps) do
-        x = loss(θ)
-        first(x)
-      end
-      Flux.Optimise.update!(opt, ps, gs)
-      cb(θ,x...)
-    catch ex
-      if ex isa Flux.Optimise.StopException
-        break
-      else
-        rethrow(ex)
-      end
+    gs = Flux.Zygote.gradient(ps) do
+      x = loss(θ)
+      first(x)
     end
+    Flux.Optimise.update!(opt, ps, gs)
+    cb(θ,x...)
   end
   _time = time()
   Optim.MultivariateOptimizationResults(opt,
@@ -69,7 +61,7 @@ decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
 decompose_trace(trace) = trace
 
 function sciml_train!(loss, θ, opt::Optim.AbstractOptimizer;
-                      cb = (args...) -> (), maxiters = 1000)
+                      cb = (args...) -> (), maxiters = 0)
   local x
   _cb(trace) = (cb(decompose_trace(trace).metadata["x"],x...);false)
   function optim_loss(θ)
@@ -78,8 +70,10 @@ function sciml_train!(loss, θ, opt::Optim.AbstractOptimizer;
   end
 
   function optim_loss_gradient!(g,θ)
-    g .= Zygote.gradient(optim_loss,θ)[1]
+    g .= Flux.Zygote.gradient(optim_loss,θ)[1]
     nothing
   end
-  optimize(optim_loss, optim_loss_gradient!, θ, opt, Optim.Options(extended_trace=true,callback = _cb))
+  optimize(optim_loss, optim_loss_gradient!, θ, opt,
+           Optim.Options(extended_trace=true,callback = _cb,
+                         f_calls_limit = maxiters))
 end

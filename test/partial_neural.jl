@@ -1,4 +1,4 @@
-using DiffEqFlux, Flux, OrdinaryDiffEq, Test, DiffEqSensitivity
+using DiffEqFlux, Flux, OrdinaryDiffEq, Test, Optim, DiffEqSensitivity
 
 x = Float32[0.8; 0.8]
 tspan = (0.0f0,10.0f0)
@@ -57,7 +57,7 @@ prob = ODEProblem(dudt_,u0,tspan,p3)
 concrete_solve(prob,Tsit5(),u0,p3,abstol=1e-8,reltol=1e-6)
 
 function predict_adjoint(θ)
-  Array(concrete_solve(prob,Tsit5(),θ[1:2],p3[3:end],saveat=0.0:1:25.0))
+  Array(concrete_solve(prob,Tsit5(),θ[1:2],θ[3:end],saveat=0.0:1:25.0))
 end
 loss_adjoint(θ) = sum(abs2,x-1 for x in predict_adjoint(θ))
 l = loss_adjoint(θ)

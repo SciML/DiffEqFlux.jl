@@ -1,6 +1,6 @@
 module DiffEqFlux
 
-using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff, Zygote,
+using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Juno, Optim
 
 import ZygoteRules

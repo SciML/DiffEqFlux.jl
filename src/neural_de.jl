@@ -53,10 +53,10 @@ end
 
 Flux.@functor NeuralODE
 
-function (n::NeuralODE)(x)
+function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
-    prob = ODEProblem{false}(dudt_,x,n.tspan,n.p)
-    concrete_solve(prob,n.solver,x,n.p,n.args...;n.kwargs...)
+    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
 end
 
 function neural_dmsde(model,x,mp,tspan,
@@ -86,11 +86,11 @@ end
 
 Flux.@functor NeuralDSDE
 
-function (n::NeuralDSDE)(x)
+function (n::NeuralDSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p)
-    concrete_solve(prob,n.solver,x,n.p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K}
@@ -116,11 +116,11 @@ end
 
 Flux.@functor NeuralSDE
 
-function (n::NeuralSDE)(x)
+function (n::NeuralSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,n.p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    concrete_solve(prob,n.solver,x,n.p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 struct NeuralCDDE{P,M,RE,H,L,T,S,A,K}
@@ -142,11 +142,11 @@ end
 
 Flux.@functor NeuralCDDE
 
-function (n::NeuralCDDE)(x)
+function (n::NeuralCDDE)(x,p=n.p)
     function dudt_(u,h,p,t)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.re(p)(_u)
     end
-    prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,n.p,constant_lags = n.lags)
-    concrete_solve(prob,n.solver,x,n.p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,p,constant_lags = n.lags)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
