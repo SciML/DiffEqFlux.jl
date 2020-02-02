@@ -17,6 +17,7 @@ getparams(x::Tuple) = last(x)
 applychain(::Tuple{}, x, p) = x
 applychain(fs::Tuple, x, p) = applychain(Base.tail(fs), first(fs)(x,p[1:paramlength(first(fs))]), p[(paramlength(first(fs))+1):end])
 (c::FastChain)(x,p) = applychain(c.layers, x, p)
+paramlength(c::FastChain) = sum(paramlength(x) for x in c.layers)
 initial_params(c::FastChain) = vcat(initial_params.(c.layers)...)
 
 struct FastDense{F,F2} <: Function
