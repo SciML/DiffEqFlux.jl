@@ -11,9 +11,10 @@ DiffEqFlux.sciml_train!(loss, params, data, opt,
 The callback can call `Flux.stop()` to interrupt the training loop.
 Multiple optimisers and callbacks can be passed to `opt` and `cb` as arrays.
 """
-function sciml_train!(loss, _θ, data, opt; cb = (args...) -> ())
+function sciml_train!(loss, _θ, opt; cb = (args...) -> (), maxiters)
   θ = copy(_θ)
   ps = Flux.params(θ)
+  data = Iterators.repeated((), maxiters)
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
   @progress for d in data
@@ -39,7 +40,8 @@ end
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
 decompose_trace(trace) = trace
 
-function sciml_train!(loss, θ, data, opt::Optim.AbstractOptimizer; cb = (args...) -> ())
+function sciml_train!(loss, θ, opt::Optim.AbstractOptimizer;
+                      cb = (args...) -> (), maxiters = 1000)
   local x
   _cb(trace) = (cb(decompose_trace(trace).metadata["x"],x...);false)
   function optim_loss(θ)

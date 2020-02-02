@@ -24,18 +24,17 @@ loss_rd(p)
 grads = Zygote.gradient(loss_rd, p)
 @test !iszero(grads[1])
 
-opt = ADAM(0.1)
 cb = function (p,l)
   display(l)
 end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_rd(p)
-pmin = DiffEqFlux.sciml_train!(loss_rd, p, Iterators.repeated((), 100), opt, cb = cb)
+pmin = DiffEqFlux.sciml_train!(loss_rd, p, ADAM(0.1), cb = cb, maxiters = 100)
 loss2 = loss_rd(pmin)
 @test 10loss2 < loss1
 
-pmin = DiffEqFlux.sciml_train!(loss_rd, p, Iterators.repeated((), 100), BFGS(initial_stepnorm = 0.01), cb = cb)
+pmin = DiffEqFlux.sciml_train!(loss_rd, p, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = loss_rd(pmin)
 @test 10loss2 < loss1
 
@@ -48,11 +47,9 @@ end
 loss_fd(p) = sum(abs2,x-1 for x in predict_fd(p))
 loss_fd(p)
 
-ps = Flux.params(p)
-grads = Zygote.gradient(loss_fd, ps)
-@test !iszero(grads[p])
+grads = Zygote.gradient(loss_fd, p)
+@test !iszero(grads[1])
 
-data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function (p,l)
   display(l)
@@ -61,7 +58,7 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_fd(p)
-pmin = DiffEqFlux.sciml_train!(loss_fd, p, Iterators.repeated((), 100), opt, cb = cb)
+pmin = DiffEqFlux.sciml_train!(loss_fd, p, opt, cb = cb, maxiters = 100)
 loss2 = loss_fd(pmin)
 @test 10loss2 < loss1
 
@@ -82,7 +79,6 @@ loss_adjoint(p)
 grads = Zygote.gradient(loss_adjoint, p)
 @test !iszero(grads[1])
 
-data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function (p,l)
   display(l)
@@ -91,7 +87,7 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_adjoint(p)
-pmin = DiffEqFlux.sciml_train!(loss_adjoint, p, Iterators.repeated((), 100), opt, cb = cb)
+pmin = DiffEqFlux.sciml_train!(loss_adjoint, p, opt, cb = cb, maxiters = 100)
 loss2 = loss_adjoint(pmin)
 @test 10loss2 < loss1
 
