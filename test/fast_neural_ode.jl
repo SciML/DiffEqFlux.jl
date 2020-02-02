@@ -27,6 +27,21 @@ function fast_loss_n_ode(p)
     loss,pred
 end
 
+staticdudt2,p2 = FastChain((x,p) -> x.^3,
+                         StaticDense(2,50,tanh),
+                         StaticDense(50,2))
+static_n_ode = NeuralODE(staticdudt2,p,tspan,Tsit5(),saveat=t)
+
+function static_predict_n_ode(p)
+  static_n_ode(u0,p)
+end
+
+function static_loss_n_ode(p)
+    pred = static_predict_n_ode(p)
+    loss = sum(abs2,ode_data .- pred)
+    loss,pred
+end
+
 dudt2 = Chain((x) -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
@@ -44,5 +59,15 @@ end
 
 _p,re = Flux.destructure(dudt2)
 @test fastdudt2(ones(2),_p) ≈ dudt2(ones(2))
+@test staticdudt2(ones(2),_p) ≈ dudt2(ones(2))
 @test fast_loss_n_ode(p)[1] ≈ loss_n_ode(p)[1]
+@test static_loss_n_ode(p)[1] ≈ loss_n_ode(p)[1]
 @test Zygote.gradient((p)->fast_loss_n_ode(p)[1], p)[1] ≈ Zygote.gradient((p)->loss_n_ode(p)[1], p)[1]
+@test_broken Zygote.gradient((p)->static_loss_n_ode(p)[1], p)[1] ≈ Zygote.gradient((p)->loss_n_ode(p)[1], p)[1]
+
+#=
+using BenchmarkTools
+@btime Zygote.gradient((p)->static_loss_n_ode(p)[1], p)
+@btime Zygote.gradient((p)->fast_loss_n_ode(p)[1], p)
+@btime Zygote.gradient((p)->loss_n_ode(p)[1], p)
+=#
