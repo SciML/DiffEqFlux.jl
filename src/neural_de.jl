@@ -36,25 +36,40 @@ function neural_ode_rd(model,x,tspan,
     error("neural_ode_rd has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
 end
 
-struct NeuralODE{P,M,RE,T,S,A,K}
-    p::P
+struct NeuralODE{M,P,RE,T,S,A,K}
     model::M
+    p::P
     re::RE
     tspan::T
     solver::S
     args::A
     kwargs::K
-end
 
-function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
-    p,re = Flux.destructure(model)
-    NeuralODE(p,model,re,tspan,solver,args,kwargs)
+    function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
+        p,re = Flux.destructure(model)
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,solver,args,kwargs)
+    end
+
+    function NeuralODE(model::FastChain,p,tspan,solver=nothing,args...;kwargs...)
+        re = nothing
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,solver,args,kwargs)
+    end
 end
 
 Flux.@functor NeuralODE
 
 function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
+    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
+end
+
+function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
+    dudt_(u,p,t) = n.model(u,p)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
 end
