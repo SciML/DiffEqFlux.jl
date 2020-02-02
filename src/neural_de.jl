@@ -52,7 +52,8 @@ struct NeuralODE{M,P,RE,T,S,A,K}
             model,p,re,tspan,solver,args,kwargs)
     end
 
-    function NeuralODE(model::FastChain,p,tspan,solver=nothing,args...;kwargs...)
+    function NeuralODE(model::FastChain,tspan,solver=nothing,args...;kwargs...)
+        p = initial_params(model)
         re = nothing
         new{typeof(model),typeof(p),typeof(re),
             typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(

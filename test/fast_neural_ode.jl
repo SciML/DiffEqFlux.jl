@@ -12,10 +12,10 @@ t = range(tspan[1],tspan[2],length=datasize)
 prob = ODEProblem(trueODEfunc,u0,tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 
-fastdudt2,p = FastChain((x,p) -> x.^3,
+fastdudt2 = FastChain((x,p) -> x.^3,
              FastDense(2,50,tanh),
              FastDense(50,2))
-fast_n_ode = NeuralODE(fastdudt2,p,tspan,Tsit5(),saveat=t)
+fast_n_ode = NeuralODE(fastdudt2,tspan,Tsit5(),saveat=t)
 
 function fast_predict_n_ode(p)
   fast_n_ode(u0,p)
@@ -27,10 +27,10 @@ function fast_loss_n_ode(p)
     loss,pred
 end
 
-staticdudt2,p2 = FastChain((x,p) -> x.^3,
-                         StaticDense(2,50,tanh),
-                         StaticDense(50,2))
-static_n_ode = NeuralODE(staticdudt2,p,tspan,Tsit5(),saveat=t)
+staticdudt2 = FastChain((x,p) -> x.^3,
+                        StaticDense(2,50,tanh),
+                        StaticDense(50,2))
+static_n_ode = NeuralODE(staticdudt2,tspan,Tsit5(),saveat=t)
 
 function static_predict_n_ode(p)
   static_n_ode(u0,p)
@@ -57,6 +57,7 @@ function loss_n_ode(p)
     loss,pred
 end
 
+p = initial_params(fastdudt2)
 _p,re = Flux.destructure(dudt2)
 @test fastdudt2(ones(2),_p) ≈ dudt2(ones(2))
 @test staticdudt2(ones(2),_p) ≈ dudt2(ones(2))
