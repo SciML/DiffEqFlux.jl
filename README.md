@@ -495,7 +495,7 @@ prob = DDEProblem(dudt_,u0,h,tspan,nothing)
 First let's build training data from the same example as the neural ODE:
 
 ```julia
-using Flux, DiffEqFlux, StochasticDiffEq, Plots, DiffEqBase.EnsembleAnalysis
+using Flux, DiffEqFlux, StochasticDiffEq, Plots, DiffEqBase.EnsembleAnalysis, Statistics
 
 u0 = Float32[2.; 0.]
 datasize = 30
@@ -533,7 +533,6 @@ drift_dudt = Chain(x -> x.^3,
              Dense(50,2))
 diffusion_dudt = Chain(Dense(2,2))
 n_sde = NeuralDSDE(drift_dudt,diffusion_dudt,tspan,SOSRI(),saveat=t,reltol=1e-1,abstol=1e-1)
-ps = Flux.params(n_sde)
 ```
 
 Let's see what that looks like:
@@ -560,29 +559,28 @@ mean and variance from `n` runs at each time point and uses the distance
 from the data values:
 
 ```julia
-function predict_n_sde()
-  Array(n_sde(u0))
+function predict_n_sde(p)
+  Array(n_sde(u0,p))
 end
-function loss_n_sde(;n=100)
-  samples = [predict_n_sde() for i in 1:n]
+function loss_n_sde(p;n=100)
+  samples = [predict_n_sde(p) for i in 1:n]
   means = reshape(mean.([[samples[i][j] for i in 1:length(samples)] for j in 1:length(samples[1])]),size(samples[1])...)
   vars = reshape(var.([[samples[i][j] for i in 1:length(samples)] for j in 1:length(samples[1])]),size(samples[1])...)
-  sum(abs2,sde_data - means) + sum(abs2,sde_data_vars - vars)
+  loss = sum(abs2,sde_data - means) + sum(abs2,sde_data_vars - vars)
+  loss,means,vars
 end
 
-opt = ADAM(0.025)
-cb = function () #callback function to observe training
-  sample = predict_n_sde()
+cb = function (p,loss,means,vars) #callback function to observe training
   # loss against current data
-  display(sum(abs2,sde_data .- sample))
+  display(loss)
   # plot current prediction against data
-  pl = scatter(t,sde_data[1,:],label="data")
-  scatter!(pl,t,sample[1,:],label="prediction")
+  pl = scatter(t,sde_data[1,:],yerror = sde_data_vars[1,:],label="data")
+  scatter!(pl,t,means[1,:],ribbon = vars[1,:], label="prediction")
   display(plot(pl))
 end
 
 # Display the SDE with the initial parameter values.
-cb()
+cb(n_sde.p,loss_n_sde(n_sde.p)...)
 ```
 
 Now we train using this loss function. We can pre-train a little bit using
@@ -590,20 +588,21 @@ a smaller `n` and then decrease it after it has had some time to adjust towards
 the right mean behavior:
 
 ```julia
-Flux.train!(()->loss_n_sde(n=10), ps, Iterators.repeated((), 100), opt, cb = cb)
-Flux.train!(loss_n_sde, ps, Iterators.repeated((), 100), opt, cb = cb)
+opt = ADAM(0.025)
+DiffEqFlux.sciml_train!((p)->loss_n_sde(p,n=10),  n_sde.p, opt, cb = cb, maxiters = 100)
+DiffEqFlux.sciml_train!((p)->loss_n_sde(p,n=100), n_sde.p, opt, cb = cb, maxiters = 100)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```julia
 ensemble_nprob = EnsembleProblem(nprob)
-ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100, saveat =t )
+ensemble_nsol = solve(ensemble_nprob,SOSRI(),trajectories = 100, saveat = t)
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
 
 p2 = scatter(t,sde_data')
 plot!(p2,ensemble_nsum, title = "Neural SDE: After Training", xlabel="Time")
-scatter!(p2,t,sde_data',lw=3)
+scatter!(p2,t,sde_data', yerror = sde_data_vars', lw=3)
 
 plot(p1,p2,layout=(2,1))
 ```
