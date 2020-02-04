@@ -1,3 +1,5 @@
+abstract type NeuralDELayer <: Function end
+
 """
 Constructs a neural ODE with the gradients computed using the adjoint
 method[1]. At a high level this corresponds to solving the forward
@@ -36,7 +38,7 @@ function neural_ode_rd(model,x,tspan,
     error("neural_ode_rd has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
 end
 
-struct NeuralODE{M,P,RE,T,S,A,K}
+struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
     model::M
     p::P
     re::RE
@@ -80,7 +82,7 @@ function neural_dmsde(model,x,mp,tspan,
     error("neural_dmsde has been deprecated with the change to Zygote. Please see the documentation on the new NeuralDSDE layer.")
 end
 
-struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K}
+struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     p::P
     len::Int
     model1::M
@@ -128,7 +130,7 @@ function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K}
+struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     p::P
     len::Int
     model1::M
@@ -158,7 +160,7 @@ function (n::NeuralSDE)(x,p=n.p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-struct NeuralCDDE{P,M,RE,H,L,T,S,A,K}
+struct NeuralCDDE{P,M,RE,H,L,T,S,A,K} <: NeuralDELayer
     p::P
     model::M
     re::RE

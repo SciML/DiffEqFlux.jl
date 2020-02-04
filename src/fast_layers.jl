@@ -1,8 +1,10 @@
+abstract type FastLayer <: Function
+
 paramlength(f) = 0
 initial_params(f) = Float32[]
 initial_params(f::Chain) = Flux.destructure(f)[1]
 
-struct FastChain{T<:Tuple}
+struct FastChain{T<:Tuple} <: FastLayer
   layers::T
   function FastChain(xs...)
     layers = getfunc.(xs)
@@ -20,7 +22,7 @@ applychain(fs::Tuple, x, p) = applychain(Base.tail(fs), first(fs)(x,p[1:paramlen
 paramlength(c::FastChain) = sum(paramlength(x) for x in c.layers)
 initial_params(c::FastChain) = vcat(initial_params.(c.layers)...)
 
-struct FastDense{F,F2} <: Function
+struct FastDense{F,F2} <: FastLayer
   out::Int
   in::Int
   σ::F
@@ -36,7 +38,7 @@ end
 paramlength(f::FastDense) = f.out*(f.in + 1)
 initial_params(f::FastDense) = f.initial_params()
 
-struct StaticDense{out,in,F,F2} <: Function
+struct StaticDense{out,in,F,F2} <: FastLayer
   σ::F
   initial_params::F2
   function StaticDense(in::Integer, out::Integer, σ = identity;
