@@ -1,4 +1,4 @@
-abstract type FastLayer <: Function
+abstract type FastLayer <: Function end
 
 paramlength(f) = 0
 initial_params(f) = Float32[]
