@@ -25,7 +25,10 @@ function sciml_train!(loss, _θ, opt; cb = (args...) -> (), maxiters)
       first(x)
     end
     Flux.Optimise.update!(opt, ps, gs)
-    cb(θ,x...)
+    cb_call = cb(θ,x...)
+    if typeof(cb_call) == Bool && cb_call
+      break
+    end
   end
   _time = time()
   Optim.MultivariateOptimizationResults(opt,
@@ -63,7 +66,7 @@ decompose_trace(trace) = trace
 function sciml_train!(loss, θ, opt::Optim.AbstractOptimizer;
                       cb = (args...) -> (), maxiters = 0)
   local x
-  _cb(trace) = (cb(decompose_trace(trace).metadata["x"],x...);false)
+  _cb(trace) = cb(decompose_trace(trace).metadata["x"],x...)
   function optim_loss(θ)
     x = loss(θ)
     first(x)
