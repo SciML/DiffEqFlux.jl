@@ -652,8 +652,8 @@ the right mean behavior:
 
 ```julia
 opt = ADAM(0.025)
-DiffEqFlux.sciml_train((p)->loss_n_sde(p,n=10),  n_sde.p, opt, cb = cb, maxiters = 100)
-DiffEqFlux.sciml_train((p)->loss_n_sde(p,n=100), n_sde.p, opt, cb = cb, maxiters = 100)
+res1 = DiffEqFlux.sciml_train((p)->loss_n_sde(p,n=10),  n_sde.p, opt, cb = cb, maxiters = 100)
+res2 = DiffEqFlux.sciml_train((p)->loss_n_sde(p,n=100), res1.minimizer, opt, cb = cb, maxiters = 100)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
