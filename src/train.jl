@@ -72,9 +72,8 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer;
     cb_call = cb(decompose_trace(trace).metadata["x"],x...)
     if !(typeof(cb_call) <: Bool)
       error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
-    elseif cb_call
-      break
     end
+    cb_call
   end
 
   function optim_loss(θ)
