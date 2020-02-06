@@ -26,13 +26,14 @@ l = loss_rd(θ)
 cb = function (θ,l)
   println(l)
   #display(plot(solve(remake(prob,u0=Flux.data(_x),p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  false
 end
 
 # Display the ODE with the current parameter values.
 cb(θ,l)
 
 loss1 = loss_rd(θ)
-res = DiffEqFlux.sciml_train!(loss_rd, θ, BFGS(initial_stepnorm = 0.01), cb = cb)
+res = DiffEqFlux.sciml_train(loss_rd, θ, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = res.minimum
 @test 10loss2 < loss1
 
@@ -65,12 +66,13 @@ l = loss_adjoint(θ)
 cb = function (θ,l)
   println(l)
   #display(plot(solve(remake(prob,p=Flux.data(p3),u0=Flux.data(u0)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  false
 end
 
 # Display the ODE with the current parameter values.
 cb(θ,l)
 
 loss1 = loss_adjoint(θ)
-res = DiffEqFlux.sciml_train!(loss_adjoint, θ, BFGS(initial_stepnorm = 0.01), cb = cb)
+res = DiffEqFlux.sciml_train(loss_adjoint, θ, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = res.minimum
 @test 10loss2 < loss1
