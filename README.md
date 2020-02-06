@@ -115,7 +115,7 @@ end
 
 Next we choose a loss function. Our goal will be to find parameter that make
 the Lotka-Volterra solution constant `x(t)=1`, so we defined our loss as the
-squared distance from 1. Note that when using `sciml_train!`, the first return
+squared distance from 1. Note that when using `sciml_train`, the first return
 is the loss value, and the other returns are sent to the callback for monitoring
 convergence.
 
@@ -127,8 +127,8 @@ function loss_adjoint(p)
 end
 ```
 
-Lastly, we use the `sciml_train!` function to train the parameters using BFGS to
-arrive at parameters which optimize for our goal. `sciml_train!` allows defining
+Lastly, we use the `sciml_train` function to train the parameters using BFGS to
+arrive at parameters which optimize for our goal. `sciml_train` allows defining
 a callback that will be called at each step of our training loop. It takes in the
 current parameter vector and the returns of the last call to the loss function.
 We will display the current loss and make a plot of the current situation:
@@ -138,12 +138,13 @@ cb = function (p,l,pred) #callback function to observe training
   display(l)
   # using `remake` to re-create our `prob` with current parameters `p`
   display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.0:0.1:10.0),ylim=(0,6)))
+  return false # Tell it to not halt the optimization. If return true, then optimization stops
 end
 
 # Display the ODE with the initial parameter values.
 cb(p,loss_adjoint(p)...)
 
-res = DiffEqFlux.sciml_train!(loss_adjoint, p, BFGS(initial_stepnorm = 0.0001), cb = cb)
+res = DiffEqFlux.sciml_train(loss_adjoint, p, BFGS(initial_stepnorm = 0.0001), cb = cb)
 ```
 
 ```julia
@@ -233,7 +234,7 @@ loss_sde(p)
 ```
 
 For this training process, because the loss function is stochastic, we will use
-the `ADAM` optimizer from Flux.jl. The `sciml_train!` function is the same as
+the `ADAM` optimizer from Flux.jl. The `sciml_train` function is the same as
 before. However, to speed up the training process, we will use a global counter
 so that way we only plot the current results every 10 iterations. This looks like:
 
@@ -246,12 +247,13 @@ cb = function (p,l)
       display(plot(solve(remake(prob,p=p),SOSRI(),saveat=0.1),ylim=(0,6)))
   end
   iter += 1
+  return false
 end
 
 # Display the ODE with the current parameter values.
 cb(p,loss_sde(p))
 
-DiffEqFlux.sciml_train!(loss_sde, p, ADAM(0.1), cb = cb, maxiters = 100)
+DiffEqFlux.sciml_train(loss_sde, p, ADAM(0.1), cb = cb, maxiters = 100)
 ```
 
 ![SDE NN Animation](https://user-images.githubusercontent.com/1814174/51399524-2c6abf80-1b14-11e9-96ae-0192f7debd03.gif)
@@ -357,13 +359,14 @@ cb = function (p,l,pred) #callback function to observe training
   pl = scatter(t,ode_data[1,:],label="data")
   scatter!(pl,t,pred[1,:],label="prediction")
   display(plot(pl))
+  return false
 end
 
 # Display the ODE with the initial parameter values.
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-res1 = DiffEqFlux.sciml_train!(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters = 100)
-res2 = DiffEqFlux.sciml_train!(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxiters = 100)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters = 100)
+res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxiters = 100)
 ```
 
 ```
@@ -485,13 +488,14 @@ l = loss_adjoint(θ)
 cb = function (θ,l)
   println(l)
   #display(plot(solve(remake(prob,p=Flux.data(p3),u0=Flux.data(u0)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  return false
 end
 
 # Display the ODE with the current parameter values.
 cb(θ,l)
 
 loss1 = loss_adjoint(θ)
-res = DiffEqFlux.sciml_train!(loss_adjoint, θ, BFGS(initial_stepnorm=0.01), cb = cb)
+res = DiffEqFlux.sciml_train(loss_adjoint, θ, BFGS(initial_stepnorm=0.01), cb = cb)
 ```
 
 ```julia
@@ -635,6 +639,7 @@ cb = function (p,loss,means,vars) #callback function to observe training
   pl = scatter(t,sde_data[1,:],yerror = sde_data_vars[1,:],label="data")
   scatter!(pl,t,means[1,:],ribbon = vars[1,:], label="prediction")
   display(plot(pl))
+  return false
 end
 
 # Display the SDE with the initial parameter values.
@@ -647,8 +652,8 @@ the right mean behavior:
 
 ```julia
 opt = ADAM(0.025)
-DiffEqFlux.sciml_train!((p)->loss_n_sde(p,n=10),  n_sde.p, opt, cb = cb, maxiters = 100)
-DiffEqFlux.sciml_train!((p)->loss_n_sde(p,n=100), n_sde.p, opt, cb = cb, maxiters = 100)
+DiffEqFlux.sciml_train((p)->loss_n_sde(p,n=10),  n_sde.p, opt, cb = cb, maxiters = 100)
+DiffEqFlux.sciml_train((p)->loss_n_sde(p,n=100), n_sde.p, opt, cb = cb, maxiters = 100)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
