@@ -23,21 +23,6 @@ kwargs key word arguments passed to ODESolve; accepts an additional key
     passes a separate callback to the adjoint solver.
 
 """
-function neural_ode(model,x,tspan,args...;kwargs...)
-    error("neural_ode has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
-end
-
-"""
-Constructs a neural ODE with the gradients computed using  reverse-mode
-automatic differentiation. This is equivalent to discretizing then optimizing
-the differential equation, cf neural_ode for a comparison with the adjoint method.
-"""
-function neural_ode_rd(model,x,tspan,
-                       args...;
-                       kwargs...)
-    error("neural_ode_rd has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
-end
-
 struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
     model::M
     p::P
@@ -75,11 +60,6 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     dudt_(u,p,t) = n.model(u,p)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
-end
-
-function neural_dmsde(model,x,mp,tspan,
-                      args...;kwargs...)
-    error("neural_dmsde has been deprecated with the change to Zygote. Please see the documentation on the new NeuralDSDE layer.")
 end
 
 struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer

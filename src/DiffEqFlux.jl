@@ -45,6 +45,21 @@ function neural_dmsde(args...;kwargs...)
   @error("neural_dmsde has be removed and replaced by NeuralDMSDE. Please consult the README for more details.")
 end
 
+function neural_dmsde(model,x,mp,tspan,
+                      args...;kwargs...)
+    error("neural_dmsde has been deprecated with the change to Zygote. Please see the documentation on the new NeuralDSDE layer.")
+end
+
+function neural_ode_rd(model,x,tspan,
+                       args...;
+                       kwargs...)
+    error("neural_ode_rd has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
+end
+
+function neural_ode(model,x,tspan,args...;kwargs...)
+    error("neural_ode has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
+end
+
 Flux.Zygote.grad_mut(d::IdDict) = IdDict()
 
 include("train.jl")
