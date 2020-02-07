@@ -16,6 +16,7 @@ p = initial_params(f)
 
 fs = StaticDense(2,25,tanh)
 x = rand(2)
+
 @test fs(x,pd) ≈ fd(x,pd)
 fdgrad = Flux.Zygote.gradient((x,p)->sum(fd(x,p)),x,pd)
 fsgrad = Flux.Zygote.gradient((x,p)->sum(fs(x,p)),x,pd)

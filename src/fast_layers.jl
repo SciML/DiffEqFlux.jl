@@ -75,12 +75,12 @@ function param2Wb(f::StaticDense{out,in}, p) where {out,in}
 end
 function (f::StaticDense{out,in})(x,p) where {out,in}
   W, b = param2Wb(f, p)
-  f.σ.(W*x .+ p)
+  f.σ.(W*x .+ b)
 end
 ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   W, b = param2Wb(f, p)
   r = W*x .+ b
-  y = map(f.σ,r)
+  y = f.σ.(r)
   function StaticDense_adjoint(ȳ)
     if typeof(f.σ) <: typeof(tanh)
       σbar = 1 .- y.^2
