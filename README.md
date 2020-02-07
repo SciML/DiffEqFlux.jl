@@ -353,32 +353,36 @@ loss_n_ode(n_ode.p) # n_ode.p stores the initial parameters of the neural ODE
 and then train the neural network to learn the ODE:
 
 ```julia
-cb = function (p,l,pred) #callback function to observe training
+cb = function (p,l,pred;doplot=false) #callback function to observe training
   display(l)
   # plot current prediction against data
-  pl = scatter(t,ode_data[1,:],label="data")
-  scatter!(pl,t,pred[1,:],label="prediction")
-  display(plot(pl))
+  if doplot
+    pl = scatter(t,ode_data[1,:],label="data")
+    scatter!(pl,t,pred[1,:],label="prediction")
+    display(plot(pl))
+  end
   return false
 end
 
 # Display the ODE with the initial parameter values.
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters = 100)
-res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxiters = 100)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters = 300)
+cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
+res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb)
+cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 ```
 
 ```
 * Status: failure (reached maximum number of iterations)
 
 * Candidate solution
-   Minimizer: [-8.44e-01, 5.22e-01, 4.72e-01,  ...]
-   Minimum:   1.812476e+00
+   Minimizer: [4.56e-01, -7.88e-02, 3.67e-01,  ...]
+   Minimum:   2.030554e-01
 
 * Found with
    Algorithm:     ADAM
-   Initial Point: [-5.31e-02, 1.45e-01, 2.93e-01,  ...]
+   Initial Point: [2.51e-01, -1.99e-01, 1.39e-01,  ...]
 
 * Convergence measures
    |x - x'|               = NaN ≰ 0.0e+00
@@ -388,33 +392,33 @@ res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxi
    |g(x)|                 = NaN ≰ 0.0e+00
 
 * Work counters
-   Seconds run:   17  (vs limit Inf)
-   Iterations:    100
-   f(x) calls:    100
-   ∇f(x) calls:   100
+   Seconds run:   22  (vs limit Inf)
+   Iterations:    300
+   f(x) calls:    300
+   ∇f(x) calls:   300
 
- * Status: failure (line search failed)
+* Status: success
 
- * Candidate solution
-    Minimizer: [-8.57e-01, 9.68e-02, 1.61e-01,  ...]
-    Minimum:   1.957973e-01
+* Candidate solution
+   Minimizer: [4.56e-01, -7.86e-02, 3.67e-01,  ...]
+   Minimum:   1.984474e-01
 
- * Found with
-    Algorithm:     L-BFGS
-    Initial Point: [-8.44e-01, 5.22e-01, 4.72e-01,  ...]
+* Found with
+   Algorithm:     L-BFGS
+   Initial Point: [4.56e-01, -7.88e-02, 3.67e-01,  ...]
 
- * Convergence measures
-    |x - x'|               = 3.90e-02 ≰ 0.0e+00
-    |x - x'|/|x'|          = 2.62e-02 ≰ 0.0e+00
-    |f(x) - f(x')|         = 1.74e-02 ≰ 0.0e+00
-    |f(x) - f(x')|/|f(x')| = 8.87e-02 ≰ 0.0e+00
-    |g(x)|                 = 8.26e-01 ≰ 1.0e-08
+* Convergence measures
+   |x - x'|               = 9.31e-10 ≰ 0.0e+00
+   |x - x'|/|x'|          = 4.92e-10 ≰ 0.0e+00
+   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
+   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
+   |g(x)|                 = 1.26e-01 ≰ 1.0e-08
 
- * Work counters
-    Seconds run:   12  (vs limit Inf)
-    Iterations:    35
-    f(x) calls:    101
-    ∇f(x) calls:   101
+* Work counters
+   Seconds run:   12  (vs limit Inf)
+   Iterations:    11
+   f(x) calls:    212
+   ∇f(x) calls:   212
 ```
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a
