@@ -41,7 +41,11 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   r = W*x .+ b
   y = f.σ.(r)
   function FastDense_adjoint(ȳ)
-    σbar = ForwardDiff.derivative.(f.σ,r)
+    if typeof(f.σ) <: typeof(tanh)
+      σbar = 1 .- y.^2
+    else
+      σbar = ForwardDiff.derivative.(f.σ,r)
+    end
     zbar = ȳ .* σbar
     Wbar = zbar * x'
     bbar = zbar
@@ -76,9 +80,13 @@ end
 ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   W, b = param2Wb(f, p)
   r = W*x .+ b
-  y = f.σ.(r)
+  y = map(f.σ,r)
   function StaticDense_adjoint(ȳ)
-    σbar = ForwardDiff.derivative.(f.σ,r)
+    if typeof(f.σ) <: typeof(tanh)
+      σbar = 1 .- y.^2
+    else
+      σbar = ForwardDiff.derivative.(f.σ,r)
+    end
     zbar = SVector{out}(ȳ) .* σbar
     Wbar = zbar * SVector{in}(x)'
     bbar = zbar
