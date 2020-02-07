@@ -62,10 +62,19 @@ struct StaticDense{out,in,F,F2} <: FastLayer
     new{out,in,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end
 end
-(f::StaticDense{out,in})(x,p) where {out,in} = f.σ.(SMatrix{out,in}(uview(p,1:(out*in)))*x .+ SVector{out}(uview(p,(out*in+1):lastindex(p))))
+
+function param2Wb(f::StaticDense{out,in}, p) where {out,in}
+  _W, _b = @views p[1:(out*in)], p[(out*in+1):end]
+  W = @inbounds convert(SMatrix{out,in},_W)
+  b = @inbounds SVector{out}(_b)
+  return W, b
+end
+function (f::StaticDense{out,in})(x,p) where {out,in}
+  W, b = param2Wb(f, p)
+  f.σ.(W*x .+ p)
+end
 ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
-  W = SMatrix{out,in}(uview(p,1:(out*in)))
-  b = SVector{out}(uview(p,(out*in+1):lastindex(p)))
+  W, b = param2Wb(f, p)
   r = W*x .+ b
   y = f.σ.(r)
   function StaticDense_adjoint(ȳ)
