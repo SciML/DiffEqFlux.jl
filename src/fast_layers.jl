@@ -35,6 +35,25 @@ struct FastDense{F,F2} <: FastLayer
 end
 # (f::FastDense)(x,p) = f.σ.(reshape(uview(p,1:(f.out*f.in)),f.out,f.in)*x .+ uview(p,(f.out*f.in+1):lastindex(p)))
 (f::FastDense)(x,p) = f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])
+ZygoteRules.@adjoint function (f::FastDense)(x,p)
+  W = p[reshape(1:(f.out*f.in),f.out,f.in)] # @view after BLAS fixes
+  b = p[(f.out*f.in+1):end]
+  r = W*x .+ b
+  y = f.σ.(r)
+  function FastDense_adjoint(ȳ)
+    if typeof(f.σ) <: typeof(tanh)
+      σbar = 1 .- y.^2
+    else
+      σbar = ForwardDiff.derivative.(f.σ,r)
+    end
+    zbar = ȳ .* σbar
+    Wbar = zbar * x'
+    bbar = zbar
+    xbar = W' * zbar
+    nothing,xbar,vcat(vec(Wbar),bbar)
+  end
+  y,FastDense_adjoint
+end
 paramlength(f::FastDense) = f.out*(f.in + 1)
 initial_params(f::FastDense) = f.initial_params()
 
@@ -47,15 +66,37 @@ struct StaticDense{out,in,F,F2} <: FastLayer
     new{out,in,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end
 end
-(f::StaticDense{out,in})(x,p) where {out,in} = f.σ.(SMatrix{out,in}(uview(p,1:(out*in)))*x .+ SVector{out}(uview(p,(out*in+1):lastindex(p))))
+
+function param2Wb(f::StaticDense{out,in}, p) where {out,in}
+  _W, _b = @views p[1:(out*in)], p[(out*in+1):end]
+  W = @inbounds convert(SMatrix{out,in},_W)
+  b = @inbounds SVector{out}(_b)
+  return W, b
+end
+function (f::StaticDense{out,in})(x,p) where {out,in}
+  W, b = param2Wb(f, p)
+  f.σ.(W*x .+ b)
+end
 ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
-  W = SMatrix{out,in}(uview(p,1:(out*in)))
-  b = SVector{out}(uview(p,(out*in+1):lastindex(p)))
-  res = f.σ.(W*x .+ b)
+  W, b = param2Wb(f, p)
+  r = W*x .+ b
+  y = f.σ.(r)
   function StaticDense_adjoint(ȳ)
-    W'*ȳ,vcat(vec(ȳ*res'),ȳ)
+    if typeof(f.σ) <: typeof(tanh)
+      σbar = 1 .- y.^2
+    else
+      σbar = ForwardDiff.derivative.(f.σ,r)
+    end
+    zbar = SVector{out}(ȳ) .* σbar
+    Wbar = zbar * SVector{in}(x)'
+    bbar = zbar
+    xbar = W' * zbar
+    pbar = vcat(vec(Wbar),bbar)
+    xbar_out = x isa SArray ? xbar : adapt(typeof(x),xbar)
+    pbar_out = p isa SArray ? pbar : adapt(typeof(p),pbar)
+    nothing,xbar_out,pbar_out
   end
-  res,StaticDense_adjoint
+  y,StaticDense_adjoint
 end
 paramlength(f::StaticDense{out,in}) where {out,in} = out*(in + 1)
 initial_params(f::StaticDense) = f.initial_params()

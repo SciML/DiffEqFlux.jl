@@ -64,7 +64,7 @@ _p,re = Flux.destructure(dudt2)
 @test fast_loss_n_ode(p)[1] ≈ loss_n_ode(p)[1]
 @test static_loss_n_ode(p)[1] ≈ loss_n_ode(p)[1]
 @test Zygote.gradient((p)->fast_loss_n_ode(p)[1], p)[1] ≈ Zygote.gradient((p)->loss_n_ode(p)[1], p)[1]
-@test_broken Zygote.gradient((p)->static_loss_n_ode(p)[1], p)[1] ≈ Zygote.gradient((p)->loss_n_ode(p)[1], p)[1]
+@test Zygote.gradient((p)->static_loss_n_ode(p)[1], p)[1] ≈ Zygote.gradient((p)->loss_n_ode(p)[1], p)[1]
 
 #=
 using BenchmarkTools

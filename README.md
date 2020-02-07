@@ -353,32 +353,36 @@ loss_n_ode(n_ode.p) # n_ode.p stores the initial parameters of the neural ODE
 and then train the neural network to learn the ODE:
 
 ```julia
-cb = function (p,l,pred) #callback function to observe training
+cb = function (p,l,pred;doplot=false) #callback function to observe training
   display(l)
   # plot current prediction against data
-  pl = scatter(t,ode_data[1,:],label="data")
-  scatter!(pl,t,pred[1,:],label="prediction")
-  display(plot(pl))
+  if doplot
+    pl = scatter(t,ode_data[1,:],label="data")
+    scatter!(pl,t,pred[1,:],label="prediction")
+    display(plot(pl))
+  end
   return false
 end
 
 # Display the ODE with the initial parameter values.
 cb(n_ode.p,loss_n_ode(n_ode.p)...)
 
-res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters = 100)
-res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxiters = 100)
+res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters = 300)
+cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
+res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb)
+cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 ```
 
 ```
 * Status: failure (reached maximum number of iterations)
 
 * Candidate solution
-   Minimizer: [-8.44e-01, 5.22e-01, 4.72e-01,  ...]
-   Minimum:   1.812476e+00
+   Minimizer: [4.56e-01, -7.88e-02, 3.67e-01,  ...]
+   Minimum:   2.030554e-01
 
 * Found with
    Algorithm:     ADAM
-   Initial Point: [-5.31e-02, 1.45e-01, 2.93e-01,  ...]
+   Initial Point: [2.51e-01, -1.99e-01, 1.39e-01,  ...]
 
 * Convergence measures
    |x - x'|               = NaN ≰ 0.0e+00
@@ -388,33 +392,33 @@ res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb, maxi
    |g(x)|                 = NaN ≰ 0.0e+00
 
 * Work counters
-   Seconds run:   17  (vs limit Inf)
-   Iterations:    100
-   f(x) calls:    100
-   ∇f(x) calls:   100
+   Seconds run:   22  (vs limit Inf)
+   Iterations:    300
+   f(x) calls:    300
+   ∇f(x) calls:   300
 
- * Status: failure (line search failed)
+* Status: success
 
- * Candidate solution
-    Minimizer: [-8.57e-01, 9.68e-02, 1.61e-01,  ...]
-    Minimum:   1.957973e-01
+* Candidate solution
+   Minimizer: [4.56e-01, -7.86e-02, 3.67e-01,  ...]
+   Minimum:   1.984474e-01
 
- * Found with
-    Algorithm:     L-BFGS
-    Initial Point: [-8.44e-01, 5.22e-01, 4.72e-01,  ...]
+* Found with
+   Algorithm:     L-BFGS
+   Initial Point: [4.56e-01, -7.88e-02, 3.67e-01,  ...]
 
- * Convergence measures
-    |x - x'|               = 3.90e-02 ≰ 0.0e+00
-    |x - x'|/|x'|          = 2.62e-02 ≰ 0.0e+00
-    |f(x) - f(x')|         = 1.74e-02 ≰ 0.0e+00
-    |f(x) - f(x')|/|f(x')| = 8.87e-02 ≰ 0.0e+00
-    |g(x)|                 = 8.26e-01 ≰ 1.0e-08
+* Convergence measures
+   |x - x'|               = 9.31e-10 ≰ 0.0e+00
+   |x - x'|/|x'|          = 4.92e-10 ≰ 0.0e+00
+   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
+   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
+   |g(x)|                 = 1.26e-01 ≰ 1.0e-08
 
- * Work counters
-    Seconds run:   12  (vs limit Inf)
-    Iterations:    35
-    f(x) calls:    101
-    ∇f(x) calls:   101
+* Work counters
+   Seconds run:   12  (vs limit Inf)
+   Iterations:    11
+   f(x) calls:    212
+   ∇f(x) calls:   212
 ```
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a
@@ -462,22 +466,22 @@ the second equation to stay close to 1.
 ```julia
 using DiffEqFlux, Flux, Optim, OrdinaryDiffEq
 
-u0 = Float32[1.1]
+u0 = Float32(1.1)
 tspan = (0.0f0,25.0f0)
 
-ann = Chain(Dense(2,16,tanh), Dense(16,16,tanh), Dense(16,1))
-p1,re = Flux.destructure(ann)
+ann = FastChain(FastDense(2,16,tanh), FastDense(16,16,tanh), FastDense(16,1))
+p1 = initial_params(ann)
 p2 = Float32[0.5,-0.5]
 p3 = [p1;p2]
-θ = [u0;p3]
+θ = Float32[u0;p3]
 
 function dudt_(du,u,p,t)
     x, y = u
-    du[1] = re(p[1:length(p1)])(u)[1]
+    du[1] = ann(u,p[1:length(p1)])[1]
     du[2] = p[end-1]*y + p[end]*x
 end
 prob = ODEProblem(dudt_,u0,tspan,p3)
-concrete_solve(prob,Tsit5(),[0.0;u0],p3,abstol=1e-8,reltol=1e-6)
+concrete_solve(prob,Tsit5(),[0f0,u0],p3,abstol=1e-8,reltol=1e-6)
 
 function predict_adjoint(θ)
   Array(concrete_solve(prob,Tsit5(),[0f0,θ[1]],θ[2:end],saveat=0.0:1:25.0))
@@ -502,28 +506,28 @@ res = DiffEqFlux.sciml_train(loss_adjoint, θ, BFGS(initial_stepnorm=0.01), cb =
 * Status: success
 
 * Candidate solution
-   Minimizer: [1.00e+00, -3.76e-02, -7.86e-02,  ...]
-   Minimum:   3.907985e-14
+   Minimizer: [1.00e+00, 4.33e-02, 3.72e-01,  ...]
+   Minimum:   6.572520e-13
 
 * Found with
    Algorithm:     BFGS
-   Initial Point: [1.10e+00, -3.50e-02, -5.91e-02,  ...]
+   Initial Point: [1.10e+00, 4.18e-02, 3.64e-01,  ...]
 
 * Convergence measures
    |x - x'|               = 0.00e+00 ≤ 0.0e+00
    |x - x'|/|x'|          = 0.00e+00 ≤ 0.0e+00
    |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
    |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-   |g(x)|                 = 2.32e-06 ≰ 1.0e-08
+   |g(x)|                 = 5.45e-06 ≰ 1.0e-08
 
 * Work counters
-   Seconds run:   61  (vs limit Inf)
-   Iterations:    40
-   f(x) calls:    262
-   ∇f(x) calls:   262
+   Seconds run:   8  (vs limit Inf)
+   Iterations:    23
+   f(x) calls:    172
+   ∇f(x) calls:   172
 ```
 
-Notice that in just 40 iterations or 61 seconds we get to a minimum of `4e-14`,
+Notice that in just 23 iterations or 8 seconds we get to a minimum of `7e-13`,
 successfully solving the nonlinear optimal control problem.
 
 ## Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.
