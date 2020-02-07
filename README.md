@@ -466,22 +466,22 @@ the second equation to stay close to 1.
 ```julia
 using DiffEqFlux, Flux, Optim, OrdinaryDiffEq
 
-u0 = Float32[1.1]
+u0 = Float32(1.1)
 tspan = (0.0f0,25.0f0)
 
-ann = Chain(Dense(2,16,tanh), Dense(16,16,tanh), Dense(16,1))
-p1,re = Flux.destructure(ann)
+ann = FastChain(FastDense(2,16,tanh), FastDense(16,16,tanh), FastDense(16,1))
+p1 = initial_params(ann)
 p2 = Float32[0.5,-0.5]
 p3 = [p1;p2]
-θ = [u0;p3]
+θ = Float32[u0;p3]
 
 function dudt_(du,u,p,t)
     x, y = u
-    du[1] = re(p[1:length(p1)])(u)[1]
+    du[1] = ann(u,p[1:length(p1)])[1]
     du[2] = p[end-1]*y + p[end]*x
 end
 prob = ODEProblem(dudt_,u0,tspan,p3)
-concrete_solve(prob,Tsit5(),[0.0;u0],p3,abstol=1e-8,reltol=1e-6)
+concrete_solve(prob,Tsit5(),[0f0,u0],p3,abstol=1e-8,reltol=1e-6)
 
 function predict_adjoint(θ)
   Array(concrete_solve(prob,Tsit5(),[0f0,θ[1]],θ[2:end],saveat=0.0:1:25.0))
@@ -506,28 +506,28 @@ res = DiffEqFlux.sciml_train(loss_adjoint, θ, BFGS(initial_stepnorm=0.01), cb =
 * Status: success
 
 * Candidate solution
-   Minimizer: [1.00e+00, -3.76e-02, -7.86e-02,  ...]
-   Minimum:   3.907985e-14
+   Minimizer: [1.00e+00, 4.33e-02, 3.72e-01,  ...]
+   Minimum:   6.572520e-13
 
 * Found with
    Algorithm:     BFGS
-   Initial Point: [1.10e+00, -3.50e-02, -5.91e-02,  ...]
+   Initial Point: [1.10e+00, 4.18e-02, 3.64e-01,  ...]
 
 * Convergence measures
    |x - x'|               = 0.00e+00 ≤ 0.0e+00
    |x - x'|/|x'|          = 0.00e+00 ≤ 0.0e+00
    |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
    |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-   |g(x)|                 = 2.32e-06 ≰ 1.0e-08
+   |g(x)|                 = 5.45e-06 ≰ 1.0e-08
 
 * Work counters
-   Seconds run:   61  (vs limit Inf)
-   Iterations:    40
-   f(x) calls:    262
-   ∇f(x) calls:   262
+   Seconds run:   8  (vs limit Inf)
+   Iterations:    23
+   f(x) calls:    172
+   ∇f(x) calls:   172
 ```
 
-Notice that in just 40 iterations or 61 seconds we get to a minimum of `4e-14`,
+Notice that in just 23 iterations or 8 seconds we get to a minimum of `7e-13`,
 successfully solving the nonlinear optimal control problem.
 
 ## Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.
