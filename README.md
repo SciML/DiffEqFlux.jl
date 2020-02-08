@@ -294,6 +294,8 @@ out an array for the time series saved at every 0.1 time steps.
 Let's get a time series array from the Lotka-Volterra equation as data:
 
 ```julia
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+
 u0 = Float32[2.; 0.]
 datasize = 30
 tspan = (0.0f0,1.5f0)
