@@ -12,6 +12,22 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 [Scientific Machine Learning](http://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/)
 and neural differential equations in traditional machine learning.
 
+## Contents
+* [Problem Domain](#problem-domain)
+* [Citation](#citation)
+* [Example Usage](#example-usage)
+  * [Optimizing parameters of an ODE for an Optimal Control problem](#optimizing-parameters-of-an-ode-for-an-optimal-control-problem)
+  * [Using Other Differential Equations](#using-other-differential-equations)
+  * [Neural Ordinary Differential Equations](#neural-ordinary-differential-equations)
+  * [Training a Neural Ordinary Differential Equation](#training-a-neural-ordinary-differential-equation)
+* [Use with GPUs](#use-with-gpus)
+* [Universal Differential Equations](#universal-differential-equations)
+  * [Universal Differential Equations for Neural Optimal Control](#universal-differential-equations-for-neural-optimal-control)
+* [Neural Differential Equations for Non-ODEs: Neural SDEs, Neural DDEs, etc.](#Neural-Differential-Equations-for-Non-ODEs:-Neural-SDEs,-Neural-DDEs,-etc.)
+* [API Documentation](#api-documentation)
+  * [Neural DE Layer Functions](#Neural-DE-Layer-Functions)
+* [Benchmarks](#benchmarks)
+
 ## Problem Domain
 
 DiffEqFlux.jl is not just for neural ordinary differential equations.
@@ -458,7 +474,7 @@ n_ode = NeuralODE(gpu(dudt2),tspan,Tsit5(),saveat=0.1)
 You can also mix a known differential equation and a neural differential equation, so that
 the parameters and the neural network are estimated simultaneously!
 
-#### Universal Differential Equations for Neural Optimal Control
+### Universal Differential Equations for Neural Optimal Control
 
 Here's an example of doing this with both reverse-mode autodifferentiation and
 with adjoints. We will assume that we know the dynamics of the second equation
