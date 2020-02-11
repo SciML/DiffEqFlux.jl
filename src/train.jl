@@ -90,7 +90,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer;
                          f_calls_limit = maxiters))
 end
 
-function sciml_train(loss, lower_bounds, upper_bounds, θ, opt::Optim.AbstractConstrainedOptimizer;
+function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer;lower_bounds, upper_bounds,
                       cb = (args...) -> (false), maxiters = 0)
   local x
   function _cb(trace)
