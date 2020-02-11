@@ -89,3 +89,26 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer;
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
 end
+
+function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer;lower_bounds, upper_bounds,
+                      cb = (args...) -> (false), maxiters = 0)
+  local x
+  function _cb(trace)
+    cb_call = cb(decompose_trace(trace).metadata["x"],x...)
+    if !(typeof(cb_call) <: Bool)
+      error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
+    end
+    cb_call
+  end
+  function optim_loss(θ)
+    x = loss(θ)
+    first(x)
+  end
+  function optim_loss_gradient!(g,θ)
+    g .= Flux.Zygote.gradient(optim_loss,θ)[1]
+    nothing
+  end
+  optimize(optim_loss, optim_loss_gradient!, lower_bounds, upper_bounds, θ, opt,
+           Optim.Options(extended_trace=true,callback = _cb,
+                         f_calls_limit = maxiters))
+end
