@@ -389,6 +389,10 @@ res1 = DiffEqFlux.sciml_train(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiters
 cb(res1.minimizer,loss_n_ode(res1.minimizer)...;doplot=true)
 res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb)
 cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
+
+# result is res2 as an Optim.jl object
+# res2.minimizer are the best parameters
+# res2.minimum is the best loss
 ```
 
 ```
