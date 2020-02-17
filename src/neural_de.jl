@@ -167,3 +167,29 @@ function (n::NeuralCDDE)(x,p=n.p)
     prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,p,constant_lags = n.lags)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
+
+struct NeuralDAE{P,M,RE,T,S,DV,A,K} <: NeuralDELayer
+    model::M
+    p::P
+    re::RE
+    tspan::T
+    solver::S
+    differential_vars::DV
+    args::A
+    kwargs::K
+
+    function NeuralDAE(model,tspan,solver=nothing,args...;kwargs...)
+        p,re = Flux.destructure(model)
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,solver,args,kwargs)
+    end
+end
+
+Flux.@functor NeuralDAE
+
+function (n::NeuralDAE)(x,p=n.p)
+    dudt_(u,p,t) = n.re(p)(u)
+    prob = DAEProblem{false}(dudt_,x,n.tspan,p,differential_vars=n.differential_vars)
+    concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
+end
