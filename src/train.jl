@@ -1,8 +1,10 @@
 struct NullData end
 const DEFAULT_DATA = Iterators.cycle((NullData(),))
+Base.iterate(::NullData, i=1) = nothing
+Base.length(::NullData) = 0
 
-get_maxiters(data) = Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa IsInfinite ||
-                     Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa SizeUnknown ?
+get_maxiters(data) = Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa Iterators.IsInfinite ||
+                     Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa Iterators.SizeUnknown ?
                      typemax(Int) : length(data)
 
 """
@@ -92,8 +94,8 @@ decompose_trace(trace) = trace
 
 function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA;
                       cb = (args...) -> (false), maxiters = get_maxiters(data))
-  local x, state
-  state = nothing
+  local x, cur, state
+  cur,state = iterate(data)
 
   function _cb(trace)
     cb_call = cb(decompose_trace(trace).metadata["x"],x...)
@@ -103,27 +105,34 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
     cb_call
   end
 
-  function optim_loss(θ)
+  function optim_fg!(F,G,θ)
+    _x,lambda = Flux.Zygote.pullback(θ) do θ
+      x = loss(θ,cur...)
+      first(x)
+    end
+
+    if G != nothing
+      G .= first(lambda(1))
+    end
+
+    if F != nothing
+      return _x
+    end
+
     cur,state = iterate(data,state)
-    x = loss(θ,cur...)
-    first(x)
   end
 
-  function optim_loss_gradient!(g,θ)
-    g .= Flux.Zygote.gradient(optim_loss,θ)[1]
-    nothing
-  end
-
-  optimize(optim_loss, optim_loss_gradient!, θ, opt,
+  optimize(Optim.only_fg!(optim_fg!), θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
 end
 
-function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer;
+function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
+                     data = DEFAULT_DATA;
                      lower_bounds, upper_bounds,
                      cb = (args...) -> (false), maxiters = get_maxiters(data))
-  local x, state
-  state = nothing
+  local x, cur, state
+  cur,state = iterate(data)
 
   function _cb(trace)
     cb_call = cb(decompose_trace(trace).metadata["x"],x...)
@@ -133,18 +142,24 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer;
     cb_call
   end
 
-  function optim_loss(θ)
+  function optim_fg!(F,G,θ)
+    _x,lambda = Flux.Zygote.pullback(θ) do θ
+      x = loss(θ,cur...)
+      first(x)
+    end
+
+    if G != nothing
+      G .= first(lambda(1))
+    end
+
+    if F != nothing
+      return first(x)
+    end
+
     cur,state = iterate(data,state)
-    x = loss(θ,cur...)
-    first(x)
   end
 
-  function optim_loss_gradient!(g,θ)
-    g .= Flux.Zygote.gradient(optim_loss,θ)[1]
-    nothing
-  end
-
-  optimize(optim_loss, optim_loss_gradient!, lower_bounds, upper_bounds, θ, opt,
+  optimize(Optim.only_fg!(optim_fg!), lower_bounds, upper_bounds, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
 end
