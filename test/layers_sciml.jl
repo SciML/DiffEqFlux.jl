@@ -41,6 +41,7 @@ loss2 = loss_rd(pmin.minimizer)
 pmin = DiffEqFlux.sciml_train(loss_rd, p, Fminbox(BFGS(initial_stepnorm = 0.01)), lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
 loss2 = loss_rd(pmin.minimizer)
 @test 10loss2 < loss1
+
 # Forward-mode, R^n -> R^m layer
 
 p = [2.2, 1.0, 2.0, 0.4]
