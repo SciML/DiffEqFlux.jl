@@ -51,7 +51,7 @@ end
 Flux.@functor NeuralODE
 
 function (n::NeuralODE)(x,p=n.p)
-    dudt_(u,p,t) = n.re(p)(u)
+    dudt_(u,p,t) = n.re(p)(u, p)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
 end
