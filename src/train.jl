@@ -1,23 +1,47 @@
+struct NullData end
+const DEFAULT_DATA = Iterators.cycle((NullData(),))
+
+get_maxiters(data) = Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa IsInfinite ||
+                     Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa SizeUnknown ?
+                     typemax(Int) : length(data)
+
 """
-    train!(loss, params, data, opt; cb)
-For each datapoint `d` in `data` computes the gradient of `loss(p,d...)` through
-backpropagation and calls the optimizer `opt`.
-Takes a callback as keyword argument `cb`. For example, this will print "training"
-every 10 seconds:
-```julia
-DiffEqFlux.sciml_train(loss, params, data, opt,
-            cb = throttle(() -> println("training"), 10))
-```
-The callback can call `Flux.stop()` to interrupt the training loop.
-Multiple optimisers and callbacks can be passed to `opt` and `cb` as arrays.
+    sciml_train(loss, θ, opt, data = DEFAULT_DATA; cb, maxiters)
+
+Optimizes the `loss(θ,curdata...)` function with respect to the parameter vector
+`θ` iterating over the `data`. By default the data iterator is empty, i.e.
+`loss(θ)` is used. The first output of the loss function is considered the loss.
+Extra outputs are passed to the callback.
+
+The keyword arguments are as follows:
+
+- `cb`: For specifying a callback function `cb(θ,l...)` which acts on the current
+  parameters `θ`, where `l...` are the returns of the latest call to `loss`. This
+  callback should return a boolean where, if true, the training will end prematurely.
+- `maxiters`: Specifies the maximum number of iterations for the optimization.
+  Required if a Flux optimizer is chosen and no data iterator is given, otherwise
+  defaults to infinite.
 """
-function sciml_train(loss, _θ, opt; cb = (args...) -> (false), maxiters)
-  θ = copy(_θ)
-  ps = Flux.params(θ)
-  data = Iterators.repeated((), maxiters)
-  t0 = time()
+function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
+                     cb = (args...) -> (false),
+                     maxiters = get_maxiters(data))
+
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
+  θ = copy(_θ)
+  ps = Flux.params(θ)
+
+  if _data == DEFAULT_DATA && maxiters == typemax(Int)
+    error("For Flux optimizers, either a data iterator must be provided or the `maxiters` keyword argument must be set.")
+  elseif _data == DEFAULT_DATA && maxiters != typemax(Int)
+    data = Iterators.repeated((), maxiters)
+  elseif maxiters != typemax(Int)
+    data = take(_data, maxiters)
+  else
+    data = _data
+  end
+
+  t0 = time()
   local x
   @progress for d in data
     gs = Flux.Zygote.gradient(ps) do
@@ -32,6 +56,7 @@ function sciml_train(loss, _θ, opt; cb = (args...) -> (false), maxiters)
       break
     end
   end
+
   _time = time()
   Optim.MultivariateOptimizationResults(opt,
                                         _θ,# initial_x,
@@ -65,9 +90,11 @@ end
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
 decompose_trace(trace) = trace
 
-function sciml_train(loss, θ, opt::Optim.AbstractOptimizer;
-                      cb = (args...) -> (false), maxiters = 0)
-  local x
+function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA;
+                      cb = (args...) -> (false), maxiters = get_maxiters(data))
+  local x, state
+  state = nothing
+
   function _cb(trace)
     cb_call = cb(decompose_trace(trace).metadata["x"],x...)
     if !(typeof(cb_call) <: Bool)
@@ -77,7 +104,8 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer;
   end
 
   function optim_loss(θ)
-    x = loss(θ)
+    cur,state = iterate(data,state)
+    x = loss(θ,cur...)
     first(x)
   end
 
@@ -85,14 +113,18 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer;
     g .= Flux.Zygote.gradient(optim_loss,θ)[1]
     nothing
   end
+
   optimize(optim_loss, optim_loss_gradient!, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
 end
 
-function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer;lower_bounds, upper_bounds,
-                      cb = (args...) -> (false), maxiters = 0)
-  local x
+function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer;
+                     lower_bounds, upper_bounds,
+                     cb = (args...) -> (false), maxiters = get_maxiters(data))
+  local x, state
+  state = nothing
+
   function _cb(trace)
     cb_call = cb(decompose_trace(trace).metadata["x"],x...)
     if !(typeof(cb_call) <: Bool)
@@ -100,14 +132,18 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer;lower_bou
     end
     cb_call
   end
+
   function optim_loss(θ)
-    x = loss(θ)
+    cur,state = iterate(data,state)
+    x = loss(θ,cur...)
     first(x)
   end
+
   function optim_loss_gradient!(g,θ)
     g .= Flux.Zygote.gradient(optim_loss,θ)[1]
     nothing
   end
+
   optimize(optim_loss, optim_loss_gradient!, lower_bounds, upper_bounds, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
