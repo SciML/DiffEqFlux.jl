@@ -98,6 +98,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
   cur,state = iterate(data)
 
   function _cb(trace)
+    cur,state = iterate(data,state)
     cb_call = cb(decompose_trace(trace).metadata["x"],x...)
     if !(typeof(cb_call) <: Bool)
       error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
@@ -119,7 +120,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
       return _x
     end
 
-    cur,state = iterate(data,state)
+    return _x
   end
 
   optimize(Optim.only_fg!(optim_fg!), θ, opt,
