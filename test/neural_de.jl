@@ -4,7 +4,7 @@ using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq, Flux, DiffEqFlux,
 mp = Float32[0.1,0.1]
 x = Float32[2.; 0.]
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))
-tspan = (0.0f0,25.0f0)
+tspan = (0.0f0,1.0f0)
 dudt = Chain(Dense(2,50,tanh),Dense(50,2))
 
 NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)(x)
@@ -103,8 +103,8 @@ end
 end
 
 dudt2 = Chain(Dense(2,50,tanh),Dense(50,2))
-NeuralDSDE(dudt,dudt2,(0.0f0,1.0f0),SOSRI(),saveat=0.1)(x)
-sode = NeuralDSDE(dudt,dudt2,(0.0f0,1.0f0),SOSRI(),saveat=0.0:0.1:1.0)
+NeuralDSDE(dudt,dudt2,(0.0f0,.1f0),SOSRI(),saveat=0.1)(x)
+sode = NeuralDSDE(dudt,dudt2,(0.0f0,.1f0),SOSRI(),saveat=0.0:0.1:1.0)
 
 grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 @test ! iszero(grads[x])
