@@ -47,7 +47,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
   local x
   @progress for d in data
     gs = Flux.Zygote.gradient(ps) do
-      x = loss(θ)
+      x = loss(θ,d...)
       first(x)
     end
     Flux.Optimise.update!(opt, ps, gs)
