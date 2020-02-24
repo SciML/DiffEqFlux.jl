@@ -50,13 +50,14 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
       x = loss(θ,d...)
       first(x)
     end
-    Flux.Optimise.update!(opt, ps, gs)
     cb_call = cb(θ,x...)
     if !(typeof(cb_call) <: Bool)
       error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
     elseif cb_call
       break
     end
+    
+    Flux.Optimise.update!(opt, ps, gs)
   end
 
   _time = time()
