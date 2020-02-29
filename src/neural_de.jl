@@ -180,7 +180,7 @@ struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
     args::A
     kwargs::K
 
-    function NeuralDAE(model,constraints_model,tspan,du0,differential_vars,solver=nothing,args...;kwargs...)
+    function NeuralDAE(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
         p,re = Flux.destructure(model)
         new{typeof(p),typeof(model),typeof(constraints_model),typeof(du0),typeof(re),
             typeof(tspan),typeof(solver),typeof(differential_vars),typeof(args),typeof(kwargs)}(
@@ -191,10 +191,32 @@ end
 Flux.@functor NeuralDAE
 
 function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
-    function f(u,p,t)
-        vcat([n.differential_vars[i] == 1 ? n.re(p)(u[i]) : n.constraints_model(u[i],p,t) for i in 1:length(n.differential_vars)])
+    function f(du,u,p,t)
+        nn_out = n.re(p)(u)  
+        alg_out = n.constraints_model(u,p,t)
+        v_out = []
+        for (j,i) in enumerate(n.differential_vars)
+            if i 
+                push!(v_out,nn_out[j])
+            else
+                push!(v_out,alg_out[j])
+            end
+        end
+        return v_out
     end
-    dudt_(u,p,t) = f
+    dudt_(du,u,p,t) = f
     prob = DAEProblem(dudt_,du0,x,n.tspan,p,differential_vars=n.differential_vars)
-    concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
+end
+
+function (n::NeuralDAE)(x,mass_matrix,p=n.p)
+    function f(du,u,p,t)
+        nn_out = n.re(p)(u)
+        alg_out = n.constraints_model(u,p,t)
+        du .= vcat(nn_out,alg_out)
+        nothing
+    end
+    dudt_= ODEFunction(f,mass_matrix=mass_matrix)
+    prob = ODEProblem(dudt_,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
 end
