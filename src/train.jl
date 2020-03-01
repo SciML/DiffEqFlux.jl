@@ -7,6 +7,29 @@ get_maxiters(data) = Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa Iterators.
                      Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa Iterators.SizeUnknown ?
                      typemax(Int) : length(data)
 
+function update!(x::AbstractArray, x̄::AbstractArray{<:ForwardDiff.Dual})
+  x .-= x̄
+end
+
+function update!(x::AbstractArray, x̄)
+  x .-= getindex.(ForwardDiff.partials.(x̄),1)
+end
+
+function update!(opt, x, x̄)
+  x .-= Flux.Optimise.apply!(opt, x, x̄)
+end
+
+function update!(opt, x, x̄::AbstractArray{<:ForwardDiff.Dual})
+  x .-= Flux.Optimise.apply!(opt, x, getindex.(ForwardDiff.partials.(x̄),1))
+end
+
+function update!(opt, xs::Flux.Zygote.Params, gs)
+  for x in xs
+    gs[x] == nothing && continue
+    update!(opt, x, gs[x])
+  end
+end
+
 """
     sciml_train(loss, θ, opt, data = DEFAULT_DATA; cb, maxiters)
 
@@ -57,7 +80,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
       break
     end
     
-    Flux.Optimise.update!(opt, ps, gs)
+    update!(opt, ps, gs)
   end
 
   _time = time()
@@ -114,7 +137,12 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
     end
 
     if G != nothing
-      G .= first(lambda(1))
+      grad = first(lambda(1))
+      if eltype(grad) <: ForwardDiff.Dual
+        G .= getindex.(ForwardDiff.partials.(grad),1)
+      else
+        G .= grad
+      end
     end
 
     if F != nothing
