@@ -168,7 +168,7 @@ function (n::NeuralCDDE)(x,p=n.p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
+struct NeuralDAEDV{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
     model::M
     constraints_model::M2
     p::P
@@ -180,7 +180,7 @@ struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
     args::A
     kwargs::K
 
-    function NeuralDAE(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
+    function NeuralDAEDV(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
         p,re = Flux.destructure(model)
         new{typeof(p),typeof(model),typeof(constraints_model),typeof(du0),typeof(re),
             typeof(tspan),typeof(solver),typeof(differential_vars),typeof(args),typeof(kwargs)}(
@@ -188,9 +188,9 @@ struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
     end
 end
 
-Flux.@functor NeuralDAE
+Flux.@functor NeuralDAEDV
 
-function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
+function (n::NeuralDAEDV)(x,du0=n.du0,p=n.p)
     function f(du,u,p,t)
         nn_out = n.re(p)(u)  
         alg_out = n.constraints_model(u,p,t)
@@ -209,14 +209,35 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralDAE)(x,mass_matrix,p=n.p)
+struct NeuralDAE{P,M,M2,RE,T,S,MM,A,K} <: NeuralDELayer
+    model::M
+    constraints_model::M2
+    p::P
+    re::RE
+    tspan::T
+    solver::S
+    mass_matrix::MM
+    args::A
+    kwargs::K
+
+    function NeuralDAE(model,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
+        p,re = Flux.destructure(model)
+        new{typeof(p),typeof(model),typeof(constraints_model),typeof(re),
+            typeof(tspan),typeof(solver),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
+            model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
+    end
+end
+
+Flux.@functor NeuralDAE
+
+function (n::NeuralDAE)(x,p=n.p)
     function f(du,u,p,t)
         nn_out = n.re(p)(u)
         alg_out = n.constraints_model(u,p,t)
         du .= vcat(nn_out,alg_out)
         nothing
     end
-    dudt_= ODEFunction(f,mass_matrix=mass_matrix)
+    dudt_= ODEFunction(f,mass_matrix=n.mass_matrix)
     prob = ODEProblem(dudt_,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
 end
