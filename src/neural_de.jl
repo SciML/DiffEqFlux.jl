@@ -59,7 +59,10 @@ end
 function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     dudt_(u,p,t) = n.model(u,p)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
-    concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
+    concrete_solve(prob,n.solver,x,p,n.args...;
+                                sensealg=InterpolatingAdjoint(
+                                autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
+                                n.kwargs...)
 end
 
 struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
@@ -166,4 +169,99 @@ function (n::NeuralCDDE)(x,p=n.p)
     end
     prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,p,constant_lags = n.lags)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
+    model::M
+    constraints_model::M2
+    p::P
+    du0::D
+    re::RE
+    tspan::T
+    solver::S
+    differential_vars::DV
+    args::A
+    kwargs::K
+
+    function NeuralDAE(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
+        p,re = Flux.destructure(model)
+        new{typeof(p),typeof(model),typeof(constraints_model),typeof(du0),typeof(re),
+            typeof(tspan),typeof(solver),typeof(differential_vars),typeof(args),typeof(kwargs)}(
+            model,constraints_model,p,du0,re,tspan,solver,differential_vars,args,kwargs)
+    end
+end
+
+Flux.@functor NeuralDAE
+
+function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
+    function f(du,u,p,t)
+        nn_out = n.re(p)(u)
+        alg_out = n.constraints_model(u,p,t)
+        v_out = []
+        for (j,i) in enumerate(n.differential_vars)
+            if i
+                push!(v_out,nn_out[j])
+            else
+                push!(v_out,alg_out[j])
+            end
+        end
+        return v_out
+    end
+    dudt_(du,u,p,t) = f
+    prob = DAEProblem(dudt_,du0,x,n.tspan,p,differential_vars=n.differential_vars)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
+end
+
+struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
+    model::M
+    constraints_model::M2
+    p::P
+    re::RE
+    tspan::T
+    solver::S
+    mass_matrix::MM
+    args::A
+    kwargs::K
+
+    function NeuralODEMM(model,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
+        p,re = Flux.destructure(model)
+        new{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
+            typeof(tspan),typeof(solver),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
+            model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
+    end
+
+    function NeuralODEMM(model::FastChain,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
+        p = initial_params(model)
+        re = nothing
+        new{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
+            typeof(tspan),typeof(solver),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
+            model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
+    end
+end
+
+Flux.@functor NeuralODEMM
+
+function (n::NeuralODEMM)(x,p=n.p)
+    function f(u,p,t)
+        nn_out = n.re(p)(u)
+        alg_out = n.constraints_model(u,p,t)
+        vcat(nn_out,alg_out)
+    end
+    dudt_= ODEFunction(f,mass_matrix=n.mass_matrix)
+    prob = ODEProblem(dudt_,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
+end
+
+function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
+    function f(u,p,t)
+        nn_out = n.model(u,p)
+        alg_out = n.constraints_model(u,p,t)
+        vcat(nn_out,alg_out)
+    end
+    dudt_= ODEFunction(f,mass_matrix=n.mass_matrix)
+    prob = ODEProblem(dudt_,x,n.tspan,p)
+    concrete_solve(prob,n.solver,x,p,n.args...;
+                   sensealg=InterpolatingAdjoint(
+                            autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
+                            n.kwargs...)
 end
