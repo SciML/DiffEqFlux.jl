@@ -67,7 +67,7 @@ include("fast_layers.jl")
 include("neural_de.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
-export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE
+export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM
 export neural_ode, neural_ode_rd
 export neural_dmsde
 export FastDense, StaticDense, FastChain, initial_params
