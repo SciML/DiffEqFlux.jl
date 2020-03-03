@@ -61,7 +61,7 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;
                                 sensealg=InterpolatingAdjoint(
-                                autojacvec=DiffEqSensitivity.ReverseDiffVJP()),
+                                autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
                                 n.kwargs...)
 end
 
@@ -262,6 +262,6 @@ function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
     prob = ODEProblem(dudt_,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;
                    sensealg=InterpolatingAdjoint(
-                            autojacvec=DiffEqSensitivity.ReverseDiffVJP()),
+                            autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
                             n.kwargs...)
 end
