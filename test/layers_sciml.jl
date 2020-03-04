@@ -106,7 +106,7 @@ loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
 
 opt = Opt(:LD_MMA, 4)
-maxiters!(opt, 100)
+maxeval(opt, 100)
 pmin = DiffEqFlux.sciml_train(loss_adjoint, p, opt)
 loss2 = loss_adjoint(pmin[2])
 @test 10loss2 < loss1
