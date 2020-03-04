@@ -2,7 +2,7 @@ module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Juno, Optim,
-      StaticArrays, Base.Iterators
+      StaticArrays, Base.Iterators, NLopt
 
 import ZygoteRules, ReverseDiff
 

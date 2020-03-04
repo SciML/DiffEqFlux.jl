@@ -202,9 +202,31 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
     end
   end
 
-  optimize(Optim.only_fg!(optim_fg!), θ, opt,
+  Optim.optimize(Optim.only_fg!(optim_fg!), θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
+end
+
+function sciml_train(loss, θ, opt::NLopt.Opt, data = DEFAULT_DATA)
+  local x, cur, state
+  cur,state = iterate(data)
+
+  function nlopt_grad!(θ,grad)
+    _x,lambda = Flux.Zygote.pullback(θ) do θ
+      x = loss(θ)
+      first(x)
+    end
+
+    if length(grad) > 0 
+      grad .= first(lambda(1))
+    end
+    println(_x)
+    return _x
+  end
+
+  min_objective!(opt, nlopt_grad!)
+
+  NLopt.optimize(opt, θ)
 end
 
 function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
@@ -240,7 +262,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
     return _x
   end
 
-  optimize(Optim.only_fg!(optim_fg!), lower_bounds, upper_bounds, θ, opt,
+  Optim.optimize(Optim.only_fg!(optim_fg!), lower_bounds, upper_bounds, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
 end
