@@ -2,9 +2,9 @@ module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Juno, Optim,
-      StaticArrays, Base.Iterators, NLopt
+      StaticArrays, Base.Iterators
 
-import ZygoteRules, ReverseDiff
+import ZygoteRules, ReverseDiff, NLopt
 
 gpu_or_cpu(x) = Array
 function __init__()

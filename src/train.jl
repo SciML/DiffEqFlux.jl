@@ -224,8 +224,8 @@ function sciml_train(loss, θ, opt::NLopt.Opt, data = DEFAULT_DATA; maxeval=100)
     return _x
   end
 
-  min_objective!(opt, nlopt_grad!)
-  maxeval!(opt, maxeval)
+  NLopt.min_objective!(opt, nlopt_grad!)
+  NLopt.maxeval!(opt, maxeval)
   NLopt.optimize(opt, θ)
 end
 
@@ -246,10 +246,10 @@ function sciml_train(loss, θ, opt::NLopt.Opt, lower_bounds, upper_bounds, data 
     return _x
   end
 
-  min_objective!(opt, nlopt_grad!)
-  lower_bounds!(opt, lower_bounds)
-  upper_bounds!(opt, upper_bounds)
-  maxeval!(opt, maxeval)
+  NLopt.min_objective!(opt, nlopt_grad!)
+  NLopt.lower_bounds!(opt, lower_bounds)
+  NLopt.upper_bounds!(opt, upper_bounds)
+  NLopt.maxeval!(opt, maxeval)
   NLopt.optimize(opt, θ)
 end
 
