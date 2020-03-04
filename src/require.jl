@@ -12,7 +12,7 @@ function __init__()
         function sciml_train(loss, θ, opt::NLopt.Opt, data = DEFAULT_DATA; maxeval=100)
             local x, cur, state
             cur,state = iterate(data)
-        
+
             function nlopt_grad!(θ,grad)
               _x,lambda = Flux.Zygote.pullback(θ) do θ
                 x = loss(θ)
@@ -28,7 +28,38 @@ function __init__()
         
             NLopt.min_objective!(opt, nlopt_grad!)
             NLopt.maxeval!(opt, maxeval)
-            NLopt.optimize(opt, θ)
+
+            t0= time()
+            (minf,minx,ret) = NLopt.optimize(opt, θ)
+            _time = time()
+
+            Optim.MultivariateOptimizationResults(opt,
+                                                    θ,# initial_x,
+                                                    minx, #pick_best_x(f_incr_pick, state),
+                                                    minf, # pick_best_f(f_incr_pick, state, d),
+                                                    maxeval, #iteration,
+                                                    maxeval >= maxeval, #iteration == options.iterations,
+                                                    false, # x_converged,
+                                                    0.0,#T(options.x_tol),
+                                                    0.0,#T(options.x_tol),
+                                                    NaN,# x_abschange(state),
+                                                    NaN,# x_abschange(state),
+                                                    false,# f_converged,
+                                                    0.0,#T(options.f_tol),
+                                                    0.0,#T(options.f_tol),
+                                                    NaN,#f_abschange(d, state),
+                                                    NaN,#f_abschange(d, state),
+                                                    false,#g_converged,
+                                                    0.0,#T(options.g_tol),
+                                                    NaN,#g_residual(d),
+                                                    false, #f_increased,
+                                                    nothing,
+                                                    maxeval,
+                                                    maxeval,
+                                                    0,
+                                                    ret,
+                                                    NaN,
+                                                    _time-t0,)
         end
       
         function sciml_train(loss, θ, opt::NLopt.Opt, lower_bounds, upper_bounds, data = DEFAULT_DATA; maxeval=100)
@@ -52,7 +83,38 @@ function __init__()
           NLopt.lower_bounds!(opt, lower_bounds)
           NLopt.upper_bounds!(opt, upper_bounds)
           NLopt.maxeval!(opt, maxeval)
+
+          t0 = time()
           NLopt.optimize(opt, θ)
+          _time = time()
+          
+          Optim.MultivariateOptimizationResults(opt,
+                                                    θ,# initial_x,
+                                                    minx, #pick_best_x(f_incr_pick, state),
+                                                    minf, # pick_best_f(f_incr_pick, state, d),
+                                                    maxeval, #iteration,
+                                                    maxeval >= maxeval, #iteration == options.iterations,
+                                                    false, # x_converged,
+                                                    0.0,#T(options.x_tol),
+                                                    0.0,#T(options.x_tol),
+                                                    NaN,# x_abschange(state),
+                                                    NaN,# x_abschange(state),
+                                                    false,# f_converged,
+                                                    0.0,#T(options.f_tol),
+                                                    0.0,#T(options.f_tol),
+                                                    NaN,#f_abschange(d, state),
+                                                    NaN,#f_abschange(d, state),
+                                                    false,#g_converged,
+                                                    0.0,#T(options.g_tol),
+                                                    NaN,#g_residual(d),
+                                                    false, #f_increased,
+                                                    nothing,
+                                                    maxeval,
+                                                    maxeval,
+                                                    0,
+                                                    ret,
+                                                    NaN,
+                                                    _time-t0,)
         end
     end
 end
