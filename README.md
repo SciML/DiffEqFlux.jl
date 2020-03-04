@@ -399,12 +399,12 @@ cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 * Status: failure (reached maximum number of iterations)
 
 * Candidate solution
-   Minimizer: [4.56e-01, -7.88e-02, 3.67e-01,  ...]
-   Minimum:   2.030554e-01
+   Minimizer: [4.38e-01, -6.02e-01, 4.98e-01,  ...]
+   Minimum:   8.691715e-02
 
 * Found with
    Algorithm:     ADAM
-   Initial Point: [2.51e-01, -1.99e-01, 1.39e-01,  ...]
+   Initial Point: [-3.02e-02, -5.40e-02, 2.78e-01,  ...]
 
 * Convergence measures
    |x - x'|               = NaN ≰ 0.0e+00
@@ -414,38 +414,40 @@ cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
    |g(x)|                 = NaN ≰ 0.0e+00
 
 * Work counters
-   Seconds run:   22  (vs limit Inf)
+   Seconds run:   5  (vs limit Inf)
    Iterations:    300
    f(x) calls:    300
    ∇f(x) calls:   300
 
+
 * Status: success
 
 * Candidate solution
-   Minimizer: [4.56e-01, -7.86e-02, 3.67e-01,  ...]
-   Minimum:   1.984474e-01
+   Minimizer: [4.23e-01, -6.24e-01, 4.41e-01,  ...]
+   Minimum:   1.429496e-02
 
 * Found with
    Algorithm:     L-BFGS
-   Initial Point: [4.56e-01, -7.88e-02, 3.67e-01,  ...]
+   Initial Point: [4.38e-01, -6.02e-01, 4.98e-01,  ...]
 
 * Convergence measures
-   |x - x'|               = 9.31e-10 ≰ 0.0e+00
-   |x - x'|/|x'|          = 4.92e-10 ≰ 0.0e+00
+   |x - x'|               = 1.46e-11 ≰ 0.0e+00
+   |x - x'|/|x'|          = 1.26e-11 ≰ 0.0e+00
    |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
    |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-   |g(x)|                 = 1.26e-01 ≰ 1.0e-08
+   |g(x)|                 = 4.28e-02 ≰ 1.0e-08
 
 * Work counters
-   Seconds run:   12  (vs limit Inf)
-   Iterations:    11
-   f(x) calls:    212
-   ∇f(x) calls:   212
+   Seconds run:   4  (vs limit Inf)
+   Iterations:    35
+   f(x) calls:    336
+   ∇f(x) calls:   336
+
 ```
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a
 minimum, and then honing in on the minimum by using `LBFGS`. By using the two
-together, we are able to fit the neural ODE in 29 seconds! (Note, the timing
+together, we are able to fit the neural ODE in 9 seconds! (Note, the timing
 commented out the plotting).
 
 ## Use with GPUs
