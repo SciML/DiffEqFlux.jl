@@ -57,7 +57,6 @@ include("fast_layers.jl")
 include("neural_de.jl")
 include("require.jl")
 
-__init__()
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM
