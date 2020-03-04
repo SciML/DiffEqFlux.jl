@@ -207,51 +207,6 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
                          f_calls_limit = maxiters))
 end
 
-function sciml_train(loss, θ, opt::NLopt.Opt, data = DEFAULT_DATA; maxeval=100)
-  local x, cur, state
-  cur,state = iterate(data)
-
-  function nlopt_grad!(θ,grad)
-    _x,lambda = Flux.Zygote.pullback(θ) do θ
-      x = loss(θ)
-      first(x)
-    end
-
-    if length(grad) > 0 
-      grad .= first(lambda(1))
-    end
-
-    return _x
-  end
-
-  NLopt.min_objective!(opt, nlopt_grad!)
-  NLopt.maxeval!(opt, maxeval)
-  NLopt.optimize(opt, θ)
-end
-
-function sciml_train(loss, θ, opt::NLopt.Opt, lower_bounds, upper_bounds, data = DEFAULT_DATA; maxeval=100)
-  local x, cur, state
-  cur,state = iterate(data)
-
-  function nlopt_grad!(θ,grad)
-    _x,lambda = Flux.Zygote.pullback(θ) do θ
-      x = loss(θ)
-      first(x)
-    end
-
-    if length(grad) > 0 
-      grad .= first(lambda(1))
-    end
-
-    return _x
-  end
-
-  NLopt.min_objective!(opt, nlopt_grad!)
-  NLopt.lower_bounds!(opt, lower_bounds)
-  NLopt.upper_bounds!(opt, upper_bounds)
-  NLopt.maxeval!(opt, maxeval)
-  NLopt.optimize(opt, θ)
-end
 
 function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
                      data = DEFAULT_DATA;

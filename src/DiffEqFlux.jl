@@ -7,16 +7,6 @@ using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
 import ZygoteRules, ReverseDiff, NLopt
 
 gpu_or_cpu(x) = Array
-function __init__()
-    @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin
-        gpu_or_cpu(x::CuArrays.CuArray) = CuArrays.CuArray
-        gpu_or_cpu(x::TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}) = CuArrays.CuArray
-        gpu_or_cpu(x::Transpose{<:Any,<:CuArrays.CuArray}) = CuArrays.CuArray
-        gpu_or_cpu(x::Adjoint{<:Any,<:CuArrays.CuArray}) = CuArrays.CuArray
-        gpu_or_cpu(x::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.CuArray
-        gpu_or_cpu(x::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.CuArray
-    end
-end
 
 function diffeq_fd(p,f,n,prob,solver=nothing,args...;u0=prob.u0,kwargs...)
   @warn("diffeq_fd has been deprecated in the update of DiffEqFlux to Zygote support. Use the concrete_solve function with sensealg=ForwardDiffSensitivity() to recover the same functionality. See https://docs.juliadiffeq.org/latest/analysis/sensitivity/ for more details")
@@ -65,6 +55,9 @@ Flux.Zygote.grad_mut(d::IdDict) = IdDict()
 include("train.jl")
 include("fast_layers.jl")
 include("neural_de.jl")
+include("require.jl")
+
+__init__()
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM
