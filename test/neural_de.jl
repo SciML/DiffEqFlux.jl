@@ -104,7 +104,7 @@ end
 
 dudt2 = Chain(Dense(2,50,tanh),Dense(50,2))
 NeuralDSDE(dudt,dudt2,(0.0f0,.05f0),SOSRI(),saveat=0.1)(x)
-sode = NeuralDSDE(dudt,dudt2,(0.0f0,.1f0),SOSRI(),saveat=0.0:0.01:0.05)
+sode = NeuralDSDE(dudt,dudt2,(0.0f0,.05f0),SOSRI(),saveat=0.0:0.01:0.05)
 
 grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 @test ! iszero(grads[x])
@@ -115,8 +115,8 @@ grads = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
 @test ! iszero(grads[sode.p])
 
 dudt22 = Chain(Dense(2,50,tanh),Dense(50,4),x->reshape(x,2,2))
-NeuralSDE(dudt,dudt22,(0.0f0,1.0f0),2,LambaEM(),saveat=0.05)(x)
-sode = NeuralSDE(dudt,dudt22,(0.0f0,1.0f0),2,LambaEM(),saveat=0.0:0.01:0.05)
+NeuralSDE(dudt,dudt22,(0.0f0,.05f0),2,LambaEM(),saveat=0.05)(x)
+sode = NeuralSDE(dudt,dudt22,(0.0f0,0.05f0),2,LambaEM(),saveat=0.0:0.01:0.05)
 
 grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 @test ! iszero(grads[x])
@@ -128,7 +128,7 @@ grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 
 ddudt = Chain(Dense(6,50,tanh),Dense(50,2))
 NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.1)(x)
-dode = NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.0:0.1:2.0)
+dode = NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(0f0,2f-1),MethodOfSteps(Tsit5()),saveat=0.0:0.1:2.0)
 
 grads = Zygote.gradient(()->sum(dode(x)),Flux.params(x,dode))
 @test ! iszero(grads[x])
