@@ -30,6 +30,13 @@ function update!(opt, xs::Flux.Zygote.Params, gs)
   end
 end
 
+abstract type DiffMode end
+struct ForwardDiffMode <: DiffMode end
+struct TrackerDiffMode <: DiffMode end
+struct ReverseDiffMode <: DiffMode end
+struct ZygoteDiffMode <: DiffMode end
+
+
 """
     sciml_train(loss, θ, opt, data = DEFAULT_DATA; cb, maxiters)
 
@@ -79,7 +86,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
     elseif cb_call
       break
     end
-    
+
     update!(opt, ps, gs)
   end
 
@@ -117,7 +124,8 @@ decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
 decompose_trace(trace) = trace
 
 function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA;
-                      cb = (args...) -> (false), maxiters = get_maxiters(data))
+                      cb = (args...) -> (false), maxiters = get_maxiters(data),
+                      diffmode = ZygoteDiffMode())
   local x, cur, state
   cur,state = iterate(data)
 
@@ -130,26 +138,68 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
     cb_call
   end
 
-  function optim_fg!(F,G,θ)
-    _x,lambda = Flux.Zygote.pullback(θ) do θ
-      x = loss(θ,cur...)
-      first(x)
-    end
+  _loss = function (θ)
+    x = loss(θ,cur...)
+    first(x)
+  end
 
-    if G != nothing
-      grad = first(lambda(1))
-      if eltype(grad) <: ForwardDiff.Dual
-        G .= getindex.(ForwardDiff.partials.(grad),1)
-      else
-        G .= grad
+  if diffmode isa ZygoteDiffMode
+    optim_fg! =  function (F,G,θ)
+      _x,lambda = Flux.Zygote.pullback(_loss,θ)
+      if G != nothing
+        grad = first(lambda(1))
+        if eltype(grad) <: ForwardDiff.Dual
+          G .= getindex.(ForwardDiff.partials.(grad),1)
+        else
+          G .= grad
+        end
       end
-    end
-
-    if F != nothing
+      if F != nothing
+        return _x
+      end
       return _x
     end
+  elseif diffmode isa TrackerDiffMode
+    optim_fg! =  function (F,G,θ)
+      _x,lambda = Tracker.forward(_loss,θ)
+      if G != nothing
+        G .= first(lambda(1))
+      end
+      if F != nothing
+        return _x
+      end
+      return _x
+    end
+  elseif diffmode isa ForwardDiffMode
+    optim_fg! = let res = DiffResults.GradientResult(θ)
+      function (F,G,θ)
+        if G != nothing
+          ForwardDiff.gradient!(res,_loss,θ)
+          G .= DiffResults.gradient(res)
+        end
 
-    return _x
+        if F != nothing
+          return DiffResults.value(res)
+        end
+
+        return _x
+      end
+    end
+  elseif diffmode isa ReverseDiffMode
+    optim_fg! = let res = DiffResults.GradientResult(θ)
+      function (F,G,θ)
+        if G != nothing
+          ReverseDiff.gradient!(res,_loss,θ)
+          G .= DiffResults.gradient(res)
+        end
+
+        if F != nothing
+          return DiffResults.value(res)
+        end
+
+        return _x
+      end
+    end
   end
 
   optimize(Optim.only_fg!(optim_fg!), θ, opt,

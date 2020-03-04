@@ -4,7 +4,7 @@ using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Juno, Optim,
       StaticArrays, Base.Iterators
 
-import ZygoteRules
+import ZygoteRules, ReverseDiff
 
 gpu_or_cpu(x) = Array
 function __init__()
