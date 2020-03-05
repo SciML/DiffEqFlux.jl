@@ -202,10 +202,11 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
     end
   end
 
-  optimize(Optim.only_fg!(optim_fg!), θ, opt,
+  Optim.optimize(Optim.only_fg!(optim_fg!), θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
 end
+
 
 function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
                      data = DEFAULT_DATA;
@@ -240,7 +241,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
     return _x
   end
 
-  optimize(Optim.only_fg!(optim_fg!), lower_bounds, upper_bounds, θ, opt,
+  Optim.optimize(Optim.only_fg!(optim_fg!), lower_bounds, upper_bounds, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
 end

@@ -1,4 +1,4 @@
-using DiffEqFlux, DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, Optim, Test #using Plots
+using DiffEqFlux, DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, Optim, NLopt, Test #using Plots
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -102,5 +102,10 @@ loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
 
 pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Fminbox(BFGS(initial_stepnorm = 0.01)), lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
+loss2 = loss_adjoint(pmin.minimizer)
+@test 10loss2 < loss1
+
+opt = Opt(:LD_MMA, 4)
+pmin = DiffEqFlux.sciml_train(loss_adjoint, p, opt)
 loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
