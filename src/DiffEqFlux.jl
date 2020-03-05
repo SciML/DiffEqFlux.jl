@@ -50,7 +50,18 @@ function neural_ode(model,x,tspan,args...;kwargs...)
     error("neural_ode has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
 end
 
-Flux.Zygote.grad_mut(d::IdDict) = IdDict()
+# ForwardDiff integration
+
+ZygoteRules.@adjoint function ForwardDiff.Dual{T}(x, ẋ::Tuple) where T
+  @assert length(ẋ) == 1
+  ForwardDiff.Dual{T}(x, ẋ), ḋ -> (ḋ.partials[1], (ḋ.value,))
+end
+
+ZygoteRules.@adjoint ZygoteRules.literal_getproperty(d::ForwardDiff.Dual{T}, ::Val{:partials}) where T =
+  d.partials, ṗ -> (ForwardDiff.Dual{T}(ṗ[1], 0),)
+
+ZygoteRules.@adjoint ZygoteRules.literal_getproperty(d::ForwardDiff.Dual{T}, ::Val{:value}) where T =
+  d.value, ẋ -> (ForwardDiff.Dual{T}(0, ẋ),)
 
 include("train.jl")
 include("fast_layers.jl")
