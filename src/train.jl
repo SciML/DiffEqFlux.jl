@@ -2,6 +2,7 @@ struct NullData end
 const DEFAULT_DATA = Iterators.cycle((NullData(),))
 Base.iterate(::NullData, i=1) = nothing
 Base.length(::NullData) = 0
+global_logger(TerminalLogger(right_justify=120))
 
 get_maxiters(data) = Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa Iterators.IsInfinite ||
                      Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa Iterators.SizeUnknown ?
@@ -75,7 +76,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
 
   t0 = time()
   local x
-  @progress for d in data
+  ProgressLogging.@progress for d in data
     gs = Flux.Zygote.gradient(ps) do
       x = loss(θ,d...)
       first(x)
