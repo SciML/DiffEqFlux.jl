@@ -153,7 +153,22 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
   end
 
   if diffmode isa ZygoteDiffMode
-    optim_fg! =  function (F,G,θ)
+    f!  =  function (θ)
+      _loss(θ)
+    end
+
+    g!  =  function (G,θ)
+      _x,lambda = Flux.Zygote.pullback(_loss,θ)
+      grad = first(lambda(1))
+      if eltype(grad) <: ForwardDiff.Dual
+        G .= getindex.(ForwardDiff.partials.(grad),1)
+      else
+        G .= grad
+      end
+      return _x
+    end
+
+    fg! =  function (G,θ)
       _x,lambda = Flux.Zygote.pullback(_loss,θ)
       if G != nothing
         grad = first(lambda(1))
@@ -163,55 +178,70 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
           G .= grad
         end
       end
-      if F != nothing
-        return _x
-      end
       return _x
     end
-  elseif diffmode isa TrackerDiffMode
-    optim_fg! =  function (F,G,θ)
-      _x,lambda = Tracker.forward(_loss,θ)
-      if G != nothing
-        G .= first(lambda(1))
+
+    if opt isa Optim.KrylovTrustRegion
+      hv! = function (H,θ,v)
+        _θ = ForwardDiff.Dual.(θ,(v,))
+        H .= Zygote.gradient(_loss,_θ)
       end
-      if F != nothing
-        return _x
+      optim_f = TwiceDifferentiableHV(f,fg!,hv!,θ)
+    else
+      h! = function (H,θ)
+        H .= ForwardDiff.jacobian(θ) do θ
+          Zygote.gradient(_loss,θ)
+        end
+        optim_f = Twicedifferentiable(f, g!, fg!, h!, θ)
       end
-      return _x
     end
-  elseif diffmode isa ForwardDiffMode
-    optim_fg! = let res = DiffResults.GradientResult(θ)
-      function (F,G,θ)
+  else
+    if diffmode isa TrackerDiffMode
+      optim_fg! =  function (F,G,θ)
+        _x,lambda = Tracker.forward(_loss,θ)
         if G != nothing
-          ForwardDiff.gradient!(res,_loss,θ)
-          G .= DiffResults.gradient(res)
+          G .= first(lambda(1))
         end
-
         if F != nothing
-          return DiffResults.value(res)
+          return _x
         end
-
         return _x
       end
-    end
-  elseif diffmode isa ReverseDiffMode
-    optim_fg! = let res = DiffResults.GradientResult(θ)
-      function (F,G,θ)
-        if G != nothing
-          ReverseDiff.gradient!(res,_loss,θ)
-          G .= DiffResults.gradient(res)
-        end
+    elseif diffmode isa ForwardDiffMode
+      optim_fg! = let res = DiffResults.GradientResult(θ)
+        function (F,G,θ)
+          if G != nothing
+            ForwardDiff.gradient!(res,_loss,θ)
+            G .= DiffResults.gradient(res)
+          end
 
-        if F != nothing
-          return DiffResults.value(res)
-        end
+          if F != nothing
+            return DiffResults.value(res)
+          end
 
-        return _x
+          return _x
+        end
+      end
+    elseif diffmode isa ReverseDiffMode
+      optim_fg! = let res = DiffResults.GradientResult(θ)
+        function (F,G,θ)
+          if G != nothing
+            ReverseDiff.gradient!(res,_loss,θ)
+            G .= DiffResults.gradient(res)
+          end
+
+          if F != nothing
+            return DiffResults.value(res)
+          end
+
+          return _x
+        end
       end
     end
+    optim_f = Optim.only_fg!(optim_fg!)
   end
 
-  Optim.optimize(Optim.only_fg!(optim_fg!), θ, opt,
+  Optim.optimize(optim_f, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
 end
