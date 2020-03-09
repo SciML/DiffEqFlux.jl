@@ -186,15 +186,16 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
         _θ = ForwardDiff.Dual.(θ,(v,))
         H .= Zygote.gradient(_loss,_θ)
       end
-      optim_f = TwiceDifferentiableHV(f,fg!,hv!,θ)
+      optim_f = Optim.TwiceDifferentiableHV(f!,fg!,hv!,θ)
     else
       h! = function (H,θ)
         H .= ForwardDiff.jacobian(θ) do θ
-          Zygote.gradient(_loss,θ)
+          Flux.Zygote.gradient(_loss,θ)
         end
-        optim_f = Twicedifferentiable(f, g!, fg!, h!, θ)
       end
+      optim_f = TwiceDifferentiable(f!, g!, fg!, h!, θ)
     end
+
   else
     if diffmode isa TrackerDiffMode
       optim_fg! =  function (F,G,θ)
