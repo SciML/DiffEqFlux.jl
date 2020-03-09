@@ -56,7 +56,7 @@ The keyword arguments are as follows:
 """
 function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                      cb = (args...) -> (false),
-                     maxiters = get_maxiters(data))
+                     maxiters = get_maxiters(data),progress=true)
 
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
@@ -73,9 +73,14 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
     data = _data
   end
 
+  progress && @logmsg(LogLevel(-1),
+  "Training",
+  _id = :DiffEqFlux,
+  progress=0)
+
   t0 = time()
   local x
-  @progress for d in data
+  @progress for (i,d) in enumerate(data)
     gs = Flux.Zygote.gradient(ps) do
       x = loss(θ,d...)
       first(x)
@@ -86,11 +91,15 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
     elseif cb_call
       break
     end
-
+    progress && @logmsg(LogLevel(-1),
+    "Training",
+    _id = :DiffEqFlux,
+    progress=i/maxiters)
     update!(opt, ps, gs)
   end
 
   _time = time()
+
   Optim.MultivariateOptimizationResults(opt,
                                         _θ,# initial_x,
                                         θ, #pick_best_x(f_incr_pick, state),
