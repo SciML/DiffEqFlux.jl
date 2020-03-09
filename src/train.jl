@@ -76,7 +76,6 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
   progress && @logmsg(LogLevel(-1),
   "Training",
   _id = :DiffEqFlux,
-  message="init params = "*string(ps),
   progress=0)
 
   t0 = time()
