@@ -139,7 +139,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
   cur,state = iterate(data)
 
   function _cb(trace)
-    cb_call = cb(decompose_trace(trace).metadata["x"],x...)
+    cb_call = false #cb(decompose_trace(trace).metadata["x"],x...)
     if !(typeof(cb_call) <: Bool)
       error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
     end
@@ -183,14 +183,14 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
 
     if opt isa Optim.KrylovTrustRegion
       hv! = function (H,θ,v)
-        _θ = ForwardDiff.Dual.(θ,(v,))
-        H .= Zygote.gradient(_loss,_θ)
+        _θ = ForwardDiff.Dual.(θ,v)
+        H .= getindex.(ForwardDiff.partials.(Flux.Zygote.gradient(_loss,_θ)[1]),1)
       end
       optim_f = Optim.TwiceDifferentiableHV(f!,fg!,hv!,θ)
     else
       h! = function (H,θ)
         H .= ForwardDiff.jacobian(θ) do θ
-          Flux.Zygote.gradient(_loss,θ)
+          Flux.Zygote.gradient(_loss,θ)[1]
         end
       end
       optim_f = TwiceDifferentiable(f!, g!, fg!, h!, θ)

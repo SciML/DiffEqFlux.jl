@@ -75,7 +75,7 @@ loss2 = loss_fd(pmin.minimizer)
 p = [2.2, 1.0, 2.0, 0.4]
 ps = Flux.params(p)
 function predict_adjoint(p)
-    vec(Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=0.1,reltol=1e-4)))
+    vec(Array(concrete_solve(prob,Tsit5(),eltype(p).(prob.u0),p,saveat=0.1,reltol=1e-4)))
 end
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint(p) = loss_reduction(predict_adjoint(p))
@@ -107,5 +107,34 @@ loss2 = loss_adjoint(pmin.minimizer)
 
 opt = Opt(:LD_MMA, 4)
 pmin = DiffEqFlux.sciml_train(loss_adjoint, p, opt)
+loss2 = loss_adjoint(pmin.minimizer)
+@test 10loss2 < loss1
+
+
+function lotka_volterra2(u,p,t)
+  x, y = u
+  α, β, δ, γ = p
+  dx = (α - β*y)x
+  dy = (δ*x - γ)y
+  [dx,dy]
+end
+p = [2.2, 1.0, 2.0, 0.4]
+u0 = [1.0,1.0]
+prob = ODEProblem{false}(lotka_volterra2,u0,(0.0,10.0),p)
+function predict_adjoint(p)
+    vec(Array(concrete_solve(prob,Tsit5(),eltype(p).(prob.u0),p,saveat=0.1,reltol=1e-4)))
+end
+loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
+loss_adjoint(p) = loss_reduction(predict_adjoint(p))
+
+pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Newton())
+loss2 = loss_adjoint(pmin.minimizer)
+@test 10loss2 < loss1
+
+pmin = DiffEqFlux.sciml_train(loss_adjoint, p, NewtonTrustRegion())
+loss2 = loss_adjoint(pmin.minimizer)
+@test 10loss2 < loss1
+
+pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Optim.KrylovTrustRegion())
 loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
