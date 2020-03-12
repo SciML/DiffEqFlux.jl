@@ -73,33 +73,37 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
     data = _data
   end
 
-  progress && @logmsg(LogLevel(-1),
-  "Training",
-  _id = :DiffEqFlux,
-  progress=0)
+  logger = progress ? DiffEqBase.default_logger(Logging.current_logger()) : nothing
 
-  t0 = time()
-  local x
-  @progress for (i,d) in enumerate(data)
-    gs = Flux.Zygote.gradient(ps) do
-      x = loss(θ,d...)
-      first(x)
-    end
-    cb_call = cb(θ,x...)
-    if !(typeof(cb_call) <: Bool)
-      error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
-    elseif cb_call
-      break
-    end
+  local x,t0,_time
+
+  DiffEqBase.maybe_with_logger(logger) do
     progress && @logmsg(LogLevel(-1),
     "Training",
     _id = :DiffEqFlux,
-    progress=i/maxiters)
-    update!(opt, ps, gs)
+    progress=0)
+
+    t0 = time()
+    @progress for (i,d) in enumerate(data)
+      gs = Flux.Zygote.gradient(ps) do
+        x = loss(θ,d...)
+        first(x)
+      end
+      cb_call = cb(θ,x...)
+      if !(typeof(cb_call) <: Bool)
+        error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
+      elseif cb_call
+        break
+      end
+      progress && @logmsg(LogLevel(-1),
+      "Training",
+      _id = :DiffEqFlux,
+      progress=i/maxiters)
+      update!(opt, ps, gs)
+    end
+
+    _time = time()
   end
-
-  _time = time()
-
   Optim.MultivariateOptimizationResults(opt,
                                         _θ,# initial_x,
                                         θ, #pick_best_x(f_incr_pick, state),
