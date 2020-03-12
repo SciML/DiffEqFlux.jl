@@ -1,10 +1,12 @@
 module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
-      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Juno, Optim,
-      StaticArrays, Base.Iterators, Logging
+      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Optim,
+      StaticArrays, Base.Iterators
 
-import ZygoteRules, ReverseDiff
+import ProgressLogging, ZygoteRules, ReverseDiff
+
+import Logging
 
 gpu_or_cpu(x) = Array
 
