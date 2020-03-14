@@ -36,6 +36,17 @@ struct TrackerDiffMode <: DiffMode end
 struct ReverseDiffMode <: DiffMode end
 struct ZygoteDiffMode <: DiffMode end
 
+macro withprogress(progress, exprs...)
+  quote
+    if $progress
+      $DiffEqBase.maybe_with_logger($DiffEqBase.default_logger($Logging.current_logger())) do
+        $ProgressLogging.@withprogress $(exprs...)
+      end
+    else
+      $(exprs[end])
+    end
+  end |> esc
+end
 
 """
     sciml_train(loss, θ, opt, data = DEFAULT_DATA; cb, maxiters)
@@ -55,8 +66,8 @@ The keyword arguments are as follows:
   defaults to infinite.
 """
 function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
-                     cb = (args...) -> (false),
-                     maxiters = get_maxiters(data),progress=true)
+                     cb = (args...) -> false,
+                     maxiters = get_maxiters(data), progress=true)
 
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
@@ -73,29 +84,24 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
     data = _data
   end
 
-  progress && @logmsg(LogLevel(-1),
-  "Training",
-  _id = :DiffEqFlux,
-  progress=0)
-
   t0 = time()
+
   local x
-  @progress for (i,d) in enumerate(data)
-    gs = Flux.Zygote.gradient(ps) do
-      x = loss(θ,d...)
-      first(x)
+  @withprogress progress name="Training" begin
+    for (i,d) in enumerate(data)
+      gs = Flux.Zygote.gradient(ps) do
+        x = loss(θ,d...)
+        first(x)
+      end
+      cb_call = cb(θ,x...)
+      if !(typeof(cb_call) <: Bool)
+        error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
+      elseif cb_call
+        break
+      end
+      progress && ProgressLogging.@logprogress i/maxiters
+      update!(opt, ps, gs)
     end
-    cb_call = cb(θ,x...)
-    if !(typeof(cb_call) <: Bool)
-      error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
-    elseif cb_call
-      break
-    end
-    progress && @logmsg(LogLevel(-1),
-    "Training",
-    _id = :DiffEqFlux,
-    progress=i/maxiters)
-    update!(opt, ps, gs)
   end
 
   _time = time()
@@ -126,7 +132,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                                         0,
                                         true,
                                         NaN,
-                                        _time-t0,)
+                                        _time-t0)
 end
 
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
