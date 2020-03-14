@@ -1,6 +1,6 @@
 using DiffEqFlux, Flux, Optim, OrdinaryDiffEq
 
-n = 10  # number of ODEs
+n = 5  # number of ODEs
 tspan = (0.0, 1.0)
 
 d = 5  # number of data pairs
@@ -13,9 +13,13 @@ NN = Chain(Dense(n, 10n, tanh),
 
 nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
+println("Dense")
+
 loss_function(θ, x, y) = Flux.mse(y, nODE(x, θ))
 res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), training_data)
 res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), training_data)
+
+println("FastDense")
 
 NN = FastChain(FastDense(n, 10n, tanh),
                FastDense(10n, n))
