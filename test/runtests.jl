@@ -15,7 +15,7 @@ if GROUP == "All"
     @safetestset "odenet" begin include("odenet.jl") end
     @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
-    @safetestset "Newton Neural DE Tests" begin include("newton_neural_de.jl") end
+    @safetestset "Newton Neural DE Tests" begin include("newton_neural_ode.jl") end
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
