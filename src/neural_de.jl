@@ -262,7 +262,7 @@ function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
     end
     dudt_= ODEFunction(f,mass_matrix=n.mass_matrix)
     prob = ODEProblem(dudt_,dualize(x,p),n.tspan,p)
-    concrete_solve(prob,n.solver,dualize(x,p)x,p,n.args...;
+    concrete_solve(prob,n.solver,dualize(x,p),p,n.args...;
                    sensealg=InterpolatingAdjoint(
                             autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
                             n.kwargs...)
