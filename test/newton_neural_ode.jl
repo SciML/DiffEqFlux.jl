@@ -1,4 +1,4 @@
-using DiffEqFlux, Flux, Optim
+using DiffEqFlux, Flux, Optim, OrdinaryDiffEq
 
 n = 10  # number of ODEs
 tspan = (0.0, 1.0)
@@ -19,7 +19,7 @@ res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), trainin
 
 NN = FastChain(FastDense(n, 10n, tanh),
                FastDense(10n, n))
-               
+
 nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ, x, y) = Flux.mse(y, nODE(x, θ))
