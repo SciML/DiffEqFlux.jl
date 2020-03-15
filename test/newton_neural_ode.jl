@@ -1,6 +1,6 @@
 using DiffEqFlux, Flux, Optim, OrdinaryDiffEq
 
-n = 10  # number of ODEs
+n = 5  # number of ODEs
 tspan = (0.0, 1.0)
 
 d = 5  # number of data pairs
