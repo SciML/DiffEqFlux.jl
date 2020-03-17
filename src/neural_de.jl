@@ -107,8 +107,8 @@ function (n::NeuralDSDE)(x,p=n.p)
 end
 
 function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
-    dudt_(u,p,t) = n.model1(u,p)
-    g(u,p,t) = n.model2(u,p)
+    dudt_(u,p,t) = n.model1(u,p[1:n.len])
+    g(u,p,t) = n.model2(u,p[(n.len+1):end])
     prob = SDEProblem{false}(dudt_,g,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
@@ -139,6 +139,13 @@ Flux.@functor NeuralSDE
 function (n::NeuralSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
+    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+function (n::NeuralSDE{M})(x,p=n.p) where {M<:FastChain}
+    dudt_(u,p,t) = n.model1(u,p[1:n.len])
+    g(u,p,t) = n.model2(u,p[(n.len+1):end])
     prob = SDEProblem{false}(dudt_,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
