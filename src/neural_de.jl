@@ -125,14 +125,27 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     solver::S
     args::A
     kwargs::K
+    function NeuralSDE(model1,model2,tspan,nbrown,solver=nothing,args...;kwargs...)
+        p1,re1 = Flux.destructure(model1)
+        p2,re2 = Flux.destructure(model2)
+        p = [p1;p2]
+        new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
+            p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
+    end
+
+    function NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,solver=nothing,args...;kwargs...)
+        p1 = initial_params(model1)
+        p2 = initial_params(model2)
+        re1 = nothing
+        re2 = nothing
+        p = [p1;p2]
+        new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
+            p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
+    end
 end
 
-function NeuralSDE(model1,model2,tspan,nbrown,solver=nothing,args...;kwargs...)
-    p1,re1 = Flux.destructure(model1)
-    p2,re2 = Flux.destructure(model2)
-    p = [p1;p2]
-    NeuralSDE(p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
-end
 
 Flux.@functor NeuralSDE
 
@@ -143,7 +156,7 @@ function (n::NeuralSDE)(x,p=n.p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralSDE{M})(x,p=n.p) where {M<:FastChain}
+function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     dudt_(u,p,t) = n.model1(u,p[1:n.len])
     g(u,p,t) = n.model2(u,p[(n.len+1):end])
     prob = SDEProblem{false}(dudt_,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
@@ -167,12 +180,27 @@ function NeuralCDDE(model,tspan,hist,lags,solver=nothing,args...;kwargs...)
     NeuralCDDE(p,model,re,hist,lags,tspan,solver,args,kwargs)
 end
 
+function NeuralCDDE(model::FastChain,tspan,hist,lags,solver=nothing,args...;kwargs...)
+    p = initial_params(model)
+    re = nothing
+    NeuralCDDE(p,model,re,hist,lags,tspan,solver,args,kwargs)
+end
+
 Flux.@functor NeuralCDDE
 
 function (n::NeuralCDDE)(x,p=n.p)
     function dudt_(u,h,p,t)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.re(p)(_u)
+    end
+    prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,p,constant_lags = n.lags)
+    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
+    function dudt_(u,h,p,t)
+        _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
+        n.model(_u,p)
     end
     prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,p,constant_lags = n.lags)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
