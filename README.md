@@ -687,18 +687,17 @@ res2 = DiffEqFlux.sciml_train((p)->loss_n_sde(p,n=100), res1.minimizer, opt, cb 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```julia
-finalprob = remake(nprob,p=res2.minimizer)
-ensemble_fnprob = EnsembleProblem(finalprob)
-ensemble_fnsol = solve(ensemble_fnprob,SOSRI(),trajectories = 100, saveat = t)
-ensemble_fnsum = EnsembleSummary(ensemble_fnsol)
+samples = [predict_n_sde(res2.minimizer) for i in 1:1000]
+means = reshape(mean.([[samples[i][j] for i in 1:length(samples)] for j in 1:length(samples[1])]),size(samples[1])...)
+vars = reshape(var.([[samples[i][j] for i in 1:length(samples)] for j in 1:length(samples[1])]),size(samples[1])...)
 
-p2 = scatter(t,sde_data')
-plot!(p2,ensemble_fnsum, title = "Neural SDE: After Training", xlabel="Time")
-scatter!(p2,t,sde_data', yerror = sde_data_vars', lw=3)
+p2 = scatter(t,sde_data',yerror = sde_data_vars',label="data", title = "Neural SDE: After Training", xlabel="Time")
+plot!(p2,t,means',lw = 8,ribbon = vars', label="prediction")
+
 plot(p1,p2,layout=(2,1))
 ```
 
-![neural_sde](https://user-images.githubusercontent.com/1814174/72701137-43bffc80-3b1c-11ea-9858-414ecbdd15e7.png)
+![neural_sde](https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png)
 
 Try this with GPUs as well!
 
