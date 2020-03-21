@@ -99,7 +99,8 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
       elseif cb_call
         break
       end
-      progress && ProgressLogging.@logprogress i/maxiters
+      msg = @sprintf("loss: %.3g", x[1])
+      progress && ProgressLogging.@logprogress msg i/maxiters
       update!(opt, ps, gs)
     end
   end

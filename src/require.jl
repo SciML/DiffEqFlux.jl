@@ -21,6 +21,7 @@ function __init__()
           
               if length(grad) > 0 
                 grad .= first(lambda(1))
+                @printf("fval:%2.2e  norm:%2.2e\n", _x[1], norm(θ))
               end
           
               return _x
