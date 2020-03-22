@@ -86,7 +86,9 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
 
   t0 = time()
 
-  local x
+  local x, min_err
+  min_err = 999999 #dummy variables
+  min_opt = 1
   @withprogress progress name="Training" begin
     for (i,d) in enumerate(data)
       gs = Flux.Zygote.gradient(ps) do
@@ -102,6 +104,15 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
       msg = @sprintf("loss: %.3g", x[1])
       progress && ProgressLogging.@logprogress msg i/maxiters
       update!(opt, ps, gs)
+
+      if x < min_err  #found a better solution
+        min_opt = opt
+        min_err = x
+      end
+      if i == maxiters  #Last iteration, revert to best.
+        opt = min_opt
+        cb(θ,min_err...)
+      end
     end
   end
 
@@ -248,7 +259,6 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
     end
     optim_f = Optim.only_fg!(optim_fg!)
   end
-
   Optim.optimize(optim_f, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
