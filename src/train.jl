@@ -64,10 +64,13 @@ The keyword arguments are as follows:
 - `maxiters`: Specifies the maximum number of iterations for the optimization.
   Required if a Flux optimizer is chosen and no data iterator is given, otherwise
   defaults to infinite.
+- `save_best`: Specifies whether you want the best solution, corresponding to the
+  lowest loss function value. If false, the last solution found will be returned.
 """
 function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                      cb = (args...) -> false,
-                     maxiters = get_maxiters(data), progress=true)
+                     maxiters = get_maxiters(data),
+                     progress=true, save_best=true)
 
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
@@ -86,7 +89,10 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
 
   t0 = time()
 
-  local x
+  local x, min_err
+  min_err = typemax(eltype(_θ)) #dummy variables
+  min_opt = 1
+  
   @withprogress progress name="Training" begin
     for (i,d) in enumerate(data)
       gs = Flux.Zygote.gradient(ps) do
@@ -102,6 +108,17 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
       msg = @sprintf("loss: %.3g", x[1])
       progress && ProgressLogging.@logprogress msg i/maxiters
       update!(opt, ps, gs)
+
+      if save_best
+        if x < min_err  #found a better solution
+          min_opt = opt
+          min_err = x
+        end
+        if i == maxiters  #Last iteration, revert to best.
+          opt = min_opt
+          cb(θ,min_err...)
+        end
+      end
     end
   end
 
@@ -248,7 +265,6 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
     end
     optim_f = Optim.only_fg!(optim_fg!)
   end
-
   Optim.optimize(optim_f, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
                          f_calls_limit = maxiters))
