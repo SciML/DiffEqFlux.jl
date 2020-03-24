@@ -311,18 +311,9 @@ end
 
 
 function sciml_train(loss, opt::Symbol = :adaptive_de_rand_1_bin, data = DEFAULT_DATA;lower_bounds, upper_bounds,
-                      cb = (args...) -> (false), maxiters = get_maxiters(data), kwargs...)
+                      maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
-
-  function _cb(trace)
-    cb_call = cb(decompose_trace(trace).metadata["x"],x...)
-    if !(typeof(cb_call) <: Bool)
-      error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
-    end
-    cur,state = iterate(data,state)
-    cb_call
-  end
 
   _loss = function (θ)
     x = loss(θ,cur...)
