@@ -309,8 +309,13 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
                          f_calls_limit = maxiters))
 end
 
+struct BBO
+  method::Symbol         
+end
 
-function sciml_train(loss, opt::Symbol = :adaptive_de_rand_1_bin, data = DEFAULT_DATA;lower_bounds, upper_bounds,
+BBO() = BBO(:adaptive_de_rand_1_bin)
+
+function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, upper_bounds,
                       maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
@@ -320,5 +325,33 @@ function sciml_train(loss, opt::Symbol = :adaptive_de_rand_1_bin, data = DEFAULT
     first(x)
   end
 
-  BlackBoxOptim.bboptimize(_loss;Method = opt, SearchRange = [(lower_bounds[i], upper_bounds[i]) for i in 1:length(lower_bounds)], kwargs...)
+  bboptre = BlackBoxOptim.bboptimize(_loss;Method = opt.method, SearchRange = [(lower_bounds[i], upper_bounds[i]) for i in 1:length(lower_bounds)], MaxSteps = maxiters, kwargs...)
+
+  Optim.MultivariateOptimizationResults(opt.method,
+                                        NaN,# initial_x,
+                                        best_candidate(bboptre), #pick_best_x(f_incr_pick, state),
+                                        best_fitness(bboptre), # pick_best_f(f_incr_pick, state, d),
+                                        iterations(bboptre), #iteration,
+                                        iterations(bboptre) >= maxiters, #iteration == options.iterations,
+                                        false, # x_converged,
+                                        0.0,#T(options.x_tol),
+                                        0.0,#T(options.x_tol),
+                                        NaN,# x_abschange(state),
+                                        NaN,# x_abschange(state),
+                                        false,# f_converged,
+                                        0.0,#T(options.f_tol),
+                                        0.0,#T(options.f_tol),
+                                        NaN,#f_abschange(d, state),
+                                        NaN,#f_abschange(d, state),
+                                        false,#g_converged,
+                                        0.0,#T(options.g_tol),
+                                        NaN,#g_residual(d),
+                                        false, #f_increased,
+                                        nothing,
+                                        maxiters,
+                                        maxiters,
+                                        0,
+                                        true,
+                                        NaN,
+                                        bboptre.elapsed_time)
 end
