@@ -316,7 +316,7 @@ end
 BBO() = BBO(:adaptive_de_rand_1_bin)
 
 function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, upper_bounds,
-                      maxiters = get_maxiters(data), kwargs...)
+                      cb = (args...) -> (false), maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
 
@@ -325,7 +325,7 @@ function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, u
     first(x)
   end
 
-  bboptre = BlackBoxOptim.bboptimize(_loss;Method = opt.method, SearchRange = [(lower_bounds[i], upper_bounds[i]) for i in 1:length(lower_bounds)], MaxSteps = maxiters, kwargs...)
+  bboptre = BlackBoxOptim.bboptimize(_loss;Method = opt.method, SearchRange = [(lower_bounds[i], upper_bounds[i]) for i in 1:length(lower_bounds)], MaxSteps = maxiters, CallbackFunction = cb, CallbackInterval = 0.0, kwargs...)
 
   Optim.MultivariateOptimizationResults(opt.method,
                                         [NaN],# initial_x,
