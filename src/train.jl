@@ -328,11 +328,11 @@ function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, u
   bboptre = BlackBoxOptim.bboptimize(_loss;Method = opt.method, SearchRange = [(lower_bounds[i], upper_bounds[i]) for i in 1:length(lower_bounds)], MaxSteps = maxiters, kwargs...)
 
   Optim.MultivariateOptimizationResults(opt.method,
-                                        NaN,# initial_x,
+                                        [NaN],# initial_x,
                                         best_candidate(bboptre), #pick_best_x(f_incr_pick, state),
                                         best_fitness(bboptre), # pick_best_f(f_incr_pick, state, d),
-                                        iterations(bboptre), #iteration,
-                                        iterations(bboptre) >= maxiters, #iteration == options.iterations,
+                                        bboptre.iterations, #iteration,
+                                        bboptre.iterations >= maxiters, #iteration == options.iterations,
                                         false, # x_converged,
                                         0.0,#T(options.x_tol),
                                         0.0,#T(options.x_tol),
