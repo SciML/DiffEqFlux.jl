@@ -315,7 +315,7 @@ end
 
 BBO() = BBO(:adaptive_de_rand_1_bin)
 
-function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, upper_bounds,
+function sciml_train(loss, _θ, opt::BBO, lower_bounds, upper_bounds, data = DEFAULT_DATA;
                       maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
