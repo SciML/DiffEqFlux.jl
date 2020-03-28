@@ -110,7 +110,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
       update!(opt, ps, gs)
 
       if save_best
-        if x < min_err  #found a better solution
+        if first(x) < first(min_err)  #found a better solution
           min_opt = opt
           min_err = x
         end
