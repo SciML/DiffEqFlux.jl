@@ -326,6 +326,9 @@ function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, u
     if !(typeof(cb_call) <: Bool)
       error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
     end
+    if cb_call == true
+      BlackBoxOptim.shutdown_optimizer!(trace) #doesn't work
+    end
     cur,state = iterate(data,state)
     cb_call
   end
