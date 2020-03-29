@@ -154,6 +154,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
 end
 
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
+decompose_trace(opt::BlackBoxOptim.OptRunController) = BlackBoxOptim.best_candidate(opt)
 decompose_trace(trace) = trace
 
 function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA;
@@ -320,12 +321,21 @@ function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, u
   local x, cur, state
   cur,state = iterate(data)
 
+  function _cb(trace)
+    cb_call = cb(decompose_trace(trace),x...)
+    if !(typeof(cb_call) <: Bool)
+      error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
+    end
+    cur,state = iterate(data,state)
+    cb_call
+  end
+
   _loss = function (θ)
     x = loss(θ,cur...)
     first(x)
   end
 
-  bboptre = BlackBoxOptim.bboptimize(_loss;Method = opt.method, SearchRange = [(lower_bounds[i], upper_bounds[i]) for i in 1:length(lower_bounds)], MaxSteps = maxiters, CallbackFunction = cb, CallbackInterval = 0.0, kwargs...)
+  bboptre = BlackBoxOptim.bboptimize(_loss;Method = opt.method, SearchRange = [(lower_bounds[i], upper_bounds[i]) for i in 1:length(lower_bounds)], MaxSteps = maxiters, CallbackFunction = _cb, CallbackInterval = 0.0, kwargs...)
 
   Optim.MultivariateOptimizationResults(opt.method,
                                         [NaN],# initial_x,
