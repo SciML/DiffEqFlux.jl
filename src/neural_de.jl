@@ -48,6 +48,36 @@ struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
     end
 end
 
+struct NeuralODEBatchConv{M,P,RE,T,S,A,K} <: NeuralDELayer
+    n::NeuralODE
+    model::M
+    p::P
+    re::RE
+    tspan::T
+    solver::S
+    args::A
+    kwargs::K
+    function NeuralODEBatchConv(model,tspan,solver=nothing,args...;kwargs...)
+        n = NeuralODE(model,tspan,solver=solver,args...;kwargs...)
+        model = n.model
+        p = n.p
+        re = n.re
+        tspan = n.tspan
+        solver = n.solver
+        args = n.args
+        kwargs = n.kwargs
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
+            n,model,p,re,tspan,solver,args,kwargs)
+    end
+end
+
+Flux.@functor NeuralODEBatchConv
+function (n::NeuralODEBatchConv)(x, args...)
+    pred = n.n(x, args...)
+    reshape(Array(pred), (size(pred)..., 1))
+end
+
 Flux.@functor NeuralODE
 
 function (n::NeuralODE)(x,p=n.p)
