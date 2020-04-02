@@ -158,7 +158,7 @@ decompose_trace(trace) = trace
 
 function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA;
                       cb = (args...) -> (false), maxiters = get_maxiters(data),
-                      diffmode = ZygoteDiffMode())
+                      diffmode = ZygoteDiffMode(), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
 
@@ -266,8 +266,8 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
     optim_f = Optim.only_fg!(optim_fg!)
   end
   Optim.optimize(optim_f, θ, opt,
-           Optim.Options(extended_trace=true,callback = _cb,
-                         f_calls_limit = maxiters))
+           Optim.Options(;extended_trace=true,callback = _cb,
+                         f_calls_limit = maxiters, kwargs...))
 end
 
 
