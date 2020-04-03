@@ -1,4 +1,6 @@
 using Flux, DiffEqFlux, OrdinaryDiffEq, Optim
+using Random
+Random.seed!(123)
 
 #A desired MWE for now, not a test yet.
 

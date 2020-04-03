@@ -1,4 +1,6 @@
 using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqSensitivity, DiffEqFlux, Zygote, Test, CuArrays
+using Random
+Random.seed!(123)
 CuArrays.allowscalar(false)
 
 mp = Chain(Dense(2,2)) |> gpu

@@ -1,4 +1,6 @@
 using DiffEqFlux, Flux, Optim, OrdinaryDiffEq
+using Random
+Random.seed!(123)
 
 n = 5  # number of ODEs
 tspan = (0.0, 1.0)

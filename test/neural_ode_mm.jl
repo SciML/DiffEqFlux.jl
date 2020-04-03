@@ -1,5 +1,7 @@
 using Flux, DiffEqFlux, OrdinaryDiffEq, Optim, Test
-#A desired MWE for now, not a test yet.
+using Random
+Random.seed!(123)
+
 function f(du,u,p,t)
     y₁,y₂,y₃ = u
     k₁,k₂,k₃ = p

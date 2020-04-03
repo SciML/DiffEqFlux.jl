@@ -1,4 +1,6 @@
 using DiffEqFlux, Flux, OrdinaryDiffEq, Test, Optim, DiffEqSensitivity
+using Random
+Random.seed!(123)
 
 x = Float32[0.8; 0.8]
 tspan = (0.0f0,10.0f0)

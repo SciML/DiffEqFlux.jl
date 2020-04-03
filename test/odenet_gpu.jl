@@ -1,5 +1,7 @@
 using DiffEqFlux, Flux, Test, OrdinaryDiffEq, CuArrays
 using Statistics
+using Random
+Random.seed!(123)
 #= using Plots =#
 
 CuArrays.allowscalar(false)

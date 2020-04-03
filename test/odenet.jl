@@ -1,5 +1,7 @@
 using DiffEqFlux, Flux, Test, OrdinaryDiffEq
 using Statistics
+using Random
+Random.seed!(123)
 #= using Plots =#
 
 ## True Solution
