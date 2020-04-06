@@ -272,15 +272,10 @@ end
 
 
 function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
-                     data = DEFAULT_DATA;
+                     data = DEFAULT_DATA; lower_bounds, upper_bounds,
                      cb = (args...) -> (false), maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
-
-  KD= Dict( kwargs ) #Mandatory kwargs
-  try KD[:lower_bounds],KD[:upper_bounds] catch; println("You must supply upper_bounds and lower_bounds as kwargs.") end
-  lower_bounds = KD[:lower_bounds]
-  upper_bounds = KD[:upper_bounds]
 
   function _cb(trace)
     cb_call = cb(decompose_trace(trace).metadata["x"],x...)
@@ -320,14 +315,9 @@ end
 BBO() = BBO(:adaptive_de_rand_1_bin)
 
 function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;
-                    maxiters = get_maxiters(data), kwargs...)
+                    maxiters = get_maxiters(data), lower_bounds, upper_bounds, kwargs...)
   local x, cur, state
   cur,state = iterate(data)
-
-  KD= Dict( kwargs ) #Mandatory kwargs
-  try KD[:lower_bounds],KD[:upper_bounds] catch; println("You must supply upper_bounds and lower_bounds as kwargs.") end
-  lower_bounds = KD[:lower_bounds]
-  upper_bounds = KD[:upper_bounds]
 
   _loss = function (θ)
     x = loss(θ,cur...)
