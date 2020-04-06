@@ -319,8 +319,8 @@ end
 
 BBO() = BBO(:adaptive_de_rand_1_bin)
 
-function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA; maxiters = get_maxiters(data),
-                      cb = BlackBoxOptim.trace_progress, kwargs...)
+function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;
+                    maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
 
