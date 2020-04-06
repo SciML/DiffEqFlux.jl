@@ -70,7 +70,7 @@ The keyword arguments are as follows:
 function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                      cb = (args...) -> false,
                      maxiters = get_maxiters(data),
-                     progress=true, save_best=true)
+                     progress=true, save_best=true, kwargs...)
 
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
@@ -92,7 +92,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
   local x, min_err
   min_err = typemax(eltype(_θ)) #dummy variables
   min_opt = 1
-  
+
   @withprogress progress name="Training" begin
     for (i,d) in enumerate(data)
       gs = Flux.Zygote.gradient(ps) do
@@ -273,10 +273,14 @@ end
 
 function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
                      data = DEFAULT_DATA;
-                     lower_bounds, upper_bounds,
-                     cb = (args...) -> (false), maxiters = get_maxiters(data))
+                     cb = (args...) -> (false), maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
+
+  KD= Dict( kwargs ) #Mandatory kwargs
+  try KD[:lower_bounds],KD[:upper_bounds] catch; println("You must supply upper_bounds and lower_bounds as kwargs.") end
+  lower_bounds = KD[:lower_bounds]
+  upper_bounds = KD[:upper_bounds]
 
   function _cb(trace)
     cb_call = cb(decompose_trace(trace).metadata["x"],x...)
@@ -310,15 +314,20 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
 end
 
 struct BBO
-  method::Symbol         
+  method::Symbol
 end
 
 BBO() = BBO(:adaptive_de_rand_1_bin)
 
-function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, upper_bounds,
-                      maxiters = get_maxiters(data), kwargs...)
+function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA; maxiters = get_maxiters(data),
+                      cb = BlackBoxOptim.trace_progress, kwargs...)
   local x, cur, state
   cur,state = iterate(data)
+
+  KD= Dict( kwargs ) #Mandatory kwargs
+  try KD[:lower_bounds],KD[:upper_bounds] catch; println("You must supply upper_bounds and lower_bounds as kwargs.") end
+  lower_bounds = KD[:lower_bounds]
+  upper_bounds = KD[:upper_bounds]
 
   _loss = function (θ)
     x = loss(θ,cur...)
