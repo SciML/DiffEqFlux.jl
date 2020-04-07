@@ -1,4 +1,5 @@
 using DiffEqFlux, DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, Optim, NLopt, BlackBoxOptim, Test #using Plots
+using MultistartOptimization, NLopt
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -46,6 +47,13 @@ pmin = DiffEqFlux.sciml_train(loss_rd, maxiters=100, lower_bounds = [0.0 for i i
 loss2 = loss_rd(pmin.minimizer)
 @test 10loss2 < loss1
 
+pmin = DiffEqFlux.sciml_train(loss_rd, p, TikTak(100), 
+                              local_method = NLopt.LN_BOBYQA, 
+                              maxiters=100, 
+                              lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
+loss2 = loss_rd(pmin.minimizer)
+@test 10loss2 < loss1
+
 # Forward-mode, R^n -> R^m layer
 
 p = [2.2, 1.0, 2.0, 0.4]
@@ -72,6 +80,13 @@ loss2 = loss_fd(pmin.minimizer)
 @test 10loss2 < loss1
 
 pmin = DiffEqFlux.sciml_train(loss_fd, p, BFGS(initial_stepnorm = 0.01), cb = cb)
+loss2 = loss_fd(pmin.minimizer)
+@test 10loss2 < loss1
+
+pmin = DiffEqFlux.sciml_train(loss_fd, p, TikTak(100), 
+                              local_method = NLopt.LN_BOBYQA, 
+                              maxiters=100, 
+                              lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
 loss2 = loss_fd(pmin.minimizer)
 @test 10loss2 < loss1
 
@@ -111,6 +126,13 @@ loss2 = loss_adjoint(pmin.minimizer)
 
 opt = Opt(:LD_MMA, 4)
 pmin = DiffEqFlux.sciml_train(loss_adjoint, p, opt)
+loss2 = loss_adjoint(pmin.minimizer)
+@test 10loss2 < loss1
+
+pmin = DiffEqFlux.sciml_train(loss_adjoint, p, TikTak(100), 
+                              local_method = NLopt.LN_BOBYQA, 
+                              maxiters=100, 
+                              lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
 loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
 
