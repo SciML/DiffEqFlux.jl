@@ -19,7 +19,6 @@ if GROUP == "All"
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
-    @safetestset "Global Optimizers" begin include("globaloptimizers.jl") end
 end
 end
 
