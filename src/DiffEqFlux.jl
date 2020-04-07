@@ -2,7 +2,8 @@ module DiffEqFlux
 
 using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Optim,
-      StaticArrays, Base.Iterators, Printf, BlackBoxOptim
+      StaticArrays, Base.Iterators, Printf, BlackBoxOptim, 
+      MultistartOptimization
 
 import ProgressLogging, ZygoteRules, ReverseDiff
 
