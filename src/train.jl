@@ -356,7 +356,7 @@ function sciml_train(loss, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, u
                                         bboptre.elapsed_time)
 end
 
-function sciml_train(loss, opt::TikTak, data = DEFAULT_DATA;lower_bounds, upper_bounds, local_method,
+function sciml_train(loss, _θ, opt::TikTak, data = DEFAULT_DATA;lower_bounds, upper_bounds, local_method,
                       maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
@@ -379,7 +379,7 @@ function sciml_train(loss, opt::TikTak, data = DEFAULT_DATA;lower_bounds, upper_
                                         [NaN],# initial_x,
                                         p.location, #pick_best_x(f_incr_pick, state),
                                         p.value, # pick_best_f(f_incr_pick, state, d),
-                                        nothing, #iteration,
+                                        0, #iteration,
                                         false, #iteration == options.iterations,
                                         false, # x_converged,
                                         0.0,#T(options.x_tol),
