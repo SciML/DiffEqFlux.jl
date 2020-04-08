@@ -168,5 +168,54 @@ function __init__()
                                                 t1 - t0)
         end
     end
+    @require QuadDIRECT = "dae52e8d-d666-5120-a592-9e15c33b8d7a" begin
+        export QuadDirect
+        struct QuadDirect
+        end
+        function sciml_train(loss, _θ, opt::QuadDirect, data = DEFAULT_DATA;lower_bounds, upper_bounds, splits,
+                              maxiters = get_maxiters(data), kwargs...)
+          local x, cur, state
+          cur,state = iterate(data)
+
+          _loss = function (θ)
+            x = loss(θ,cur...)
+            first(x)
+          end
+
+          t0 = time()
+
+          root, x0 = analyze(_loss, splits, lower_bounds, upper_bounds; kwargs...)
+          
+          t1 = time()
+
+          Optim.MultivariateOptimizationResults(opt,
+                                                [NaN],# initial_x,
+                                                position(root), #pick_best_x(f_incr_pick, state),
+                                                minimum(root), # pick_best_f(f_incr_pick, state, d),
+                                                0, #iteration,
+                                                false, #iteration == options.iterations,
+                                                false, # x_converged,
+                                                0.0,#T(options.x_tol),
+                                                0.0,#T(options.x_tol),
+                                                NaN,# x_abschange(state),
+                                                NaN,# x_abschange(state),
+                                                false,# f_converged,
+                                                0.0,#T(options.f_tol),
+                                                0.0,#T(options.f_tol),
+                                                NaN,#f_abschange(d, state),
+                                                NaN,#f_abschange(d, state),
+                                                false,#g_converged,
+                                                0.0,#T(options.g_tol),
+                                                NaN,#g_residual(d),
+                                                false, #f_increased,
+                                                nothing,
+                                                maxiters,
+                                                maxiters,
+                                                0,
+                                                true,
+                                                NaN,
+                                                t1 - t0)
+        end
+    end
 end
 
