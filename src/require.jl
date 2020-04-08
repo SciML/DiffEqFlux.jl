@@ -168,7 +168,7 @@ function __init__()
                                                 t1 - t0)
         end
     end
-    @require QuadDIRECT = "dae52e8d-d666-5120-a592-9e15c33b8d7a"
+    @require QuadDIRECT = "dae52e8d-d666-5120-a592-9e15c33b8d7a" begin
         export QuadDIRECT
         struct QuadDIRECT
         end
