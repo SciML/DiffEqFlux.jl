@@ -169,10 +169,10 @@ function __init__()
         end
     end
     @require QuadDIRECT = "dae52e8d-d666-5120-a592-9e15c33b8d7a" begin
-        export QuadDIRECT
-        struct QuadDIRECT
+        export QuadDirect
+        struct QuadDirect
         end
-        function sciml_train(loss, _θ, opt::QuadDIRECT, data = DEFAULT_DATA;lower_bounds, upper_bounds, splits,
+        function sciml_train(loss, _θ, opt::QuadDirect, data = DEFAULT_DATA;lower_bounds, upper_bounds, splits,
                               maxiters = get_maxiters(data), kwargs...)
           local x, cur, state
           cur,state = iterate(data)
