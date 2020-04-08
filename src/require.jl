@@ -169,6 +169,7 @@ function __init__()
         end
     end
     @require QuadDIRECT = "dae52e8d-d666-5120-a592-9e15c33b8d7a"
+        export QuadDIRECT
         struct QuadDIRECT
         end
         function sciml_train(loss, _θ, opt::QuadDIRECT, data = DEFAULT_DATA;lower_bounds, upper_bounds, splits,
