@@ -13,7 +13,6 @@ Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
-MultistartOptimization = "3933049c-43be-478e-a8bb-6e0f7fd53575"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 ProgressLogging = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
@@ -44,6 +43,7 @@ julia = "1"
 
 [extras]
 DelayDiffEq = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
+MultistartOptimization = "3933049c-43be-478e-a8bb-6e0f7fd53575"
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
@@ -53,4 +53,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["DelayDiffEq", "OrdinaryDiffEq", "NLopt", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
+test = ["DelayDiffEq", "OrdinaryDiffEq", "NLopt", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "Zygote", "MultistartOptimization"]
