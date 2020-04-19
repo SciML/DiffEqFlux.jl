@@ -368,3 +368,46 @@ function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;lower_boun
                                         NaN,
                                         bboptre.elapsed_time)
 end
+
+
+function sciml_train(loss, _θ, opt::Evolutionary.Optimizer, data = DEFAULT_DATA;maxiters = get_maxiters(data), kwargs...)
+  local x, cur, state
+  cur,state = iterate(data)
+
+  _loss = function (θ)
+    x = loss(θ,cur...)
+    first(x)
+  end
+
+  t0 = time()
+  evolres = Evolutionary.optimize(_loss,opt;iterations = maxiters, kwargs...)
+  _time = time()
+
+  Optim.MultivariateOptimizationResults(opt,
+                                        [NaN],# initial_x,
+                                        evolres[1], #pick_best_x(f_incr_pick, state),
+                                        evolres[2], # pick_best_f(f_incr_pick, state, d),
+                                        evolres[3], #iteration,
+                                        evolres[3] >= maxiters, #iteration == options.iterations,
+                                        false, # x_converged,
+                                        0.0,#T(options.x_tol),
+                                        0.0,#T(options.x_tol),
+                                        NaN,# x_abschange(state),
+                                        NaN,# x_abschange(state),
+                                        false,# f_converged,
+                                        0.0,#T(options.f_tol),
+                                        0.0,#T(options.f_tol),
+                                        NaN,#f_abschange(d, state),
+                                        NaN,#f_abschange(d, state),
+                                        false,#g_converged,
+                                        0.0,#T(options.g_tol),
+                                        NaN,#g_residual(d),
+                                        false, #f_increased,
+                                        nothing,
+                                        maxiters,
+                                        maxiters,
+                                        0,
+                                        true,
+                                        NaN,
+                                        _time-t0)
+end
