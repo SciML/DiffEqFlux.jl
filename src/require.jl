@@ -7,7 +7,7 @@ function __init__()
         gpu_or_cpu(x::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.CuArray
         gpu_or_cpu(x::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.CuArray
     end
-    
+
     @require NLopt="76087f3c-5699-56af-9a33-bf431cd00edd" begin
         function sciml_train(loss, θ, opt::NLopt.Opt, data = DEFAULT_DATA; maxeval=100)
             local x, cur, state
@@ -18,15 +18,15 @@ function __init__()
                 x = loss(θ)
                 first(x)
               end
-          
-              if length(grad) > 0 
+
+              if length(grad) > 0
                 grad .= first(lambda(1))
                 @printf("fval:%2.2e  norm:%2.2e\n", _x[1], norm(θ))
               end
-          
+
               return _x
             end
-        
+
             NLopt.min_objective!(opt, nlopt_grad!)
             NLopt.maxeval!(opt, maxeval)
 
@@ -62,24 +62,24 @@ function __init__()
                                                     NaN,
                                                     _time-t0,)
         end
-      
+
         function sciml_train(loss, θ, opt::NLopt.Opt, lower_bounds, upper_bounds, data = DEFAULT_DATA; maxeval=100)
           local x, cur, state
           cur,state = iterate(data)
-        
+
           function nlopt_grad!(θ,grad)
             _x,lambda = Flux.Zygote.pullback(θ) do θ
               x = loss(θ)
               first(x)
             end
-        
-            if length(grad) > 0 
+
+            if length(grad) > 0
               grad .= first(lambda(1))
             end
-        
+
             return _x
           end
-      
+
           NLopt.min_objective!(opt, nlopt_grad!)
           NLopt.lower_bounds!(opt, lower_bounds)
           NLopt.upper_bounds!(opt, upper_bounds)
@@ -88,7 +88,7 @@ function __init__()
           t0 = time()
           NLopt.optimize(opt, θ)
           _time = time()
-          
+
           Optim.MultivariateOptimizationResults(opt,
                                                     θ,# initial_x,
                                                     minx, #pick_best_x(f_incr_pick, state),
@@ -120,7 +120,7 @@ function __init__()
     end
 
     @require MultistartOptimization = "3933049c-43be-478e-a8bb-6e0f7fd53575" begin
-        function sciml_train(loss, _θ, opt::TikTak, data = DEFAULT_DATA;lower_bounds, upper_bounds, local_method,
+        function sciml_train(loss, _θ, opt::MultistartOptimization.TikTak, data = DEFAULT_DATA;lower_bounds, upper_bounds, local_method,
                               maxiters = get_maxiters(data), kwargs...)
           local x, cur, state
           cur,state = iterate(data)
@@ -132,11 +132,11 @@ function __init__()
 
           t0 = time()
 
-          P = MinimizationProblem(_loss, lower_bounds, upper_bounds)
+          P = MultistartOptimization.MinimizationProblem(_loss, lower_bounds, upper_bounds)
           multistart_method = opt
-          local_method = NLoptLocalMethod(local_method)
-          p = multistart_minimization(multistart_method, local_method, P)
-          
+          local_method = MultistartOptimization.NLoptLocalMethod(local_method)
+          p = MultistartOptimization.multistart_minimization(multistart_method, local_method, P)
+
           t1 = time()
 
           Optim.MultivariateOptimizationResults(opt,
@@ -184,14 +184,14 @@ function __init__()
 
           t0 = time()
 
-          root, x0 = analyze(_loss, splits, lower_bounds, upper_bounds; kwargs...)
-          
+          root, x0 = QuadDIRECT.analyze(_loss, splits, lower_bounds, upper_bounds; kwargs...)
+
           t1 = time()
 
           Optim.MultivariateOptimizationResults(opt,
                                                 [NaN],# initial_x,
-                                                position(root), #pick_best_x(f_incr_pick, state),
-                                                minimum(root), # pick_best_f(f_incr_pick, state, d),
+                                                QuadDIRECT.position(root), #pick_best_x(f_incr_pick, state),
+                                                QuadDIRECT.minimum(root), # pick_best_f(f_incr_pick, state, d),
                                                 0, #iteration,
                                                 false, #iteration == options.iterations,
                                                 false, # x_converged,
@@ -218,4 +218,3 @@ function __init__()
         end
     end
 end
-
