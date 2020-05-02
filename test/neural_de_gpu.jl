@@ -20,6 +20,11 @@ grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
 @test ! iszero(grads[x])
 @test ! iszero(grads[node.p])
 
+node = NeuralODE(dudt,tspan,Rosenbrock23(),save_everystep=false,save_start=false)
+grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
+@test ! iszero(grads[x])
+@test ! iszero(grads[node.p])
+
 grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @test ! iszero(grads[xs])
 @test ! iszero(grads[node.p])
