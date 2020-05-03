@@ -64,7 +64,7 @@ loss2 = loss_rd(pmin.minimizer)
 @test 10loss2 < loss1
 =#
 
-pmin = DiffEqFlux.sciml_train(loss_rd, p, GA(N=length(p)),maxiters=100)
+pmin = DiffEqFlux.sciml_train(loss_rd, p, CMAES(), abstol = 1e-5)
 loss2 = loss_rd(pmin.minimizer)
 @test 10loss2 < loss1
 # Forward-mode, R^n -> R^m layer
@@ -111,6 +111,10 @@ pmin = DiffEqFlux.sciml_train(loss_fd, p, QuadDIRECT(),
 loss2 = loss_fd(pmin.minimizer)
 @test 10loss2 < loss1
 =#
+
+pmin = DiffEqFlux.sciml_train(loss_rd, p, CMAES(), cb = cb, abstol = 1e-5)
+loss2 = loss_rd(pmin.minimizer)
+@test 10loss2 < loss1
 
 # Adjoint sensitivity
 p = [2.2, 1.0, 2.0, 0.4]

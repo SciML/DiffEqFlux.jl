@@ -48,6 +48,11 @@ macro withprogress(progress, exprs...)
   end |> esc
 end
 
+decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
+decompose_trace(opt::BlackBoxOptim.OptRunController) = BlackBoxOptim.best_candidate(opt)
+decompose_trace(trace::Evolutionary.OptimizationTrace) = last(trace)
+decompose_trace(trace) = trace
+
 """
     sciml_train(loss, θ, opt, data = DEFAULT_DATA; cb, maxiters)
 
@@ -152,10 +157,6 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                                         NaN,
                                         _time-t0)
 end
-
-decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
-decompose_trace(opt::BlackBoxOptim.OptRunController) = BlackBoxOptim.best_candidate(opt)
-decompose_trace(trace) = trace
 
 function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA;
                       cb = (args...) -> (false), maxiters = get_maxiters(data),
@@ -316,8 +317,11 @@ end
 
 BBO() = BBO(:adaptive_de_rand_1_bin)
 
-function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, upper_bounds,
-                      cb = BlackBoxOptim.trace_progress, maxiters = get_maxiters(data), kwargs...)
+function sciml_train(loss, _θ, opt::BBO = BBO(), 
+                      data = DEFAULT_DATA;
+                      lower_bounds, upper_bounds,
+                      cb = BlackBoxOptim.trace_progress, 
+                      maxiters = get_maxiters(data), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
 
@@ -369,45 +373,31 @@ function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;lower_boun
                                         bboptre.elapsed_time)
 end
 
+function Evolutionary.trace!(record::Dict{String,Any}, objfun, state, population, method::Evolutionary.AbstractOptimizer, options)
+  record["x"] = population
+end
 
-function sciml_train(loss, _θ, opt::Evolutionary.Optimizer, data = DEFAULT_DATA;maxiters = get_maxiters(data), kwargs...)
+function sciml_train(loss, _θ, opt::Evolutionary.AbstractOptimizer, 
+                      data = DEFAULT_DATA;
+                      maxiters = get_maxiters(data), 
+                      cb = (args...) -> (false), kwargs...)
   local x, cur, state
   cur,state = iterate(data)
+
+  function _cb(trace)
+    cb_call = cb(decompose_trace(trace).metadata["x"],trace.value...)
+    if !(typeof(cb_call) <: Bool)
+      error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
+    end
+    cur,state = iterate(data,state)
+    cb_call
+  end
 
   _loss = function (θ)
     x = loss(θ,cur...)
     first(x)
   end
 
-  t0 = time()
-  evolres = Evolutionary.optimize(_loss,opt;iterations = maxiters, kwargs...)
-  _time = time()
 
-  Optim.MultivariateOptimizationResults(opt,
-                                        [NaN],# initial_x,
-                                        evolres[1], #pick_best_x(f_incr_pick, state),
-                                        evolres[2], # pick_best_f(f_incr_pick, state, d),
-                                        evolres[3], #iteration,
-                                        evolres[3] >= maxiters, #iteration == options.iterations,
-                                        false, # x_converged,
-                                        0.0,#T(options.x_tol),
-                                        0.0,#T(options.x_tol),
-                                        NaN,# x_abschange(state),
-                                        NaN,# x_abschange(state),
-                                        false,# f_converged,
-                                        0.0,#T(options.f_tol),
-                                        0.0,#T(options.f_tol),
-                                        NaN,#f_abschange(d, state),
-                                        NaN,#f_abschange(d, state),
-                                        false,#g_converged,
-                                        0.0,#T(options.g_tol),
-                                        NaN,#g_residual(d),
-                                        false, #f_increased,
-                                        nothing,
-                                        maxiters,
-                                        maxiters,
-                                        0,
-                                        true,
-                                        NaN,
-                                        _time-t0)
+  evolres = Evolutionary.optimize(_loss, _θ, opt, Evolutionary.Options(;iterations = maxiters, callback = _cb, kwargs...))
 end
