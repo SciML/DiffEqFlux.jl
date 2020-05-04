@@ -196,7 +196,7 @@ callback = function (p, l, pred)
   if iter == 0
     list_plots = []
   end
-  iter +=1
+  iter += 1
 
   display(l)
 
@@ -355,9 +355,10 @@ callback = function (p, l)
   if iter == 0
     list_plots = []
   end
+  iter += 1
 
   display(l)
-  iter += 1
+
   if iter%10 == 1
     remade_solution = solve(remake(prob_sde, p = p), SOSRI(), saveat = 0.1)
     plt = plot(remade_solution, ylim = (0, 6))
