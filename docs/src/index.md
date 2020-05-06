@@ -60,15 +60,3 @@ neural ODEs, please cite:
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 ```
-
-
-```@contents
-Pages = [
-    "examples/LV.md",
-#    "examples/bracket_highlighting.md",
-#    "examples/bracket_complete.md",
-#    "examples/rainbow_brackets.md",
-#    "examples/markdown_highlight.md"
-]
-Depth = 1
-```
