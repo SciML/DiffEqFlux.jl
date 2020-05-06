@@ -1,9 +1,15 @@
-# The Lotka-Volterra ODE
+# The Lotka-Volterra ODE (@id ld-ode)
 
 First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
 more details, [see the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/dev/). The Lotka-Volterra equations have the form:
 
-``\frac{dx}{dt} &= \sigma \left( y - x \right)`` ; ``\frac{dy}{dt} &= x \left( \rho - z \right) - y`` ; ``\frac{dz}{dt} &= x y - \beta z``
+```math
+\begin{align}
+\frac{dx}{dt} &= \sigma \left( y - x \right)      \\
+\frac{dy}{dt} &= x \left( \rho - z \right) - y    \\
+\frac{dz}{dt} &= x y - \beta z                    \\
+\end{align}
+```
 
 ```@example ode
 using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
@@ -113,14 +119,15 @@ result_ode = DiffEqFlux.sciml_train(loss_adjoint, p,
                                     cb = callback)
 ```
 
-In just seconds we found parameters which give a loss of `1e-6`! We can get the
-final loss with `result_ode.minimum`, and get the optimal parameters with
-`result_ode.minimizer`. For example, we can plot the final outcome and show that
-we solved the control problem and successfully found parameters to make the ODE
-solution constant:
+In just seconds we found parameters which give a relative loss of `1e-6`! We can
+get the final loss with `result_ode.minimum`, and get the optimal parameters
+with `result_ode.minimizer`. For example, we can plot the final outcome and show
+that we solved the control problem and successfully found parameters to make the
+ODE solution constant:
 
 ```@example ode
-remade_solution = solve(remake(prob_ode, p = result_ode.minimizer), Tsit5(),      saveat = tsteps)
+remade_solution = solve(remake(prob_ode, p = result_ode.minimizer), Tsit5(),      
+                        saveat = tsteps)
 plot(remade_solution, ylim = (0, 6))
 savefig("LV_ode2.png"); nothing # hide
 ```

@@ -1,15 +1,6 @@
-### Neural Jump Diffusions (Neural Jump SDE) and Neural Partial Differential Equations (Neural PDEs)
+# API Documentation
 
-For the sake of not having a never-ending documentation of every single
-combination of CPU/GPU with every layer and every neural differential equation,
-we will end here. But you may want to consult [this blog
-post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
-which showcases defining neural jump diffusions and neural partial differential
-equations.
-
-## API Documentation
-
-### Neural DE Layer Functions
+## Neural DE Layer Functions
 
 - `NeuralODE(model, tspan, solver, args...; kwargs...)` defines a neural ODE
   layer where `model` is a Flux.jl model, `tspan` is the time span to integrate,
@@ -43,9 +34,3 @@ equations.
   the arguments are passed to the ODE solver. The model should take in a vector
   that concatenates the lagged states, i.e. `[u(t); u(t-lags[1]); ...; u(t -
   lags[end])]`
-
-## Benchmarks
-
-A raw ODE solver benchmark showcases [a 50,000x performance advantage over
-torchdiffeq on small
-ODEs](https://gist.github.com/ChrisRackauckas/cc6ac746e2dfd285c28e0584a2bfd320).
