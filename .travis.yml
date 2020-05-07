@@ -10,7 +10,7 @@ julia:
 #    - julia: nightly
 notifications:
   email: false
-script: 
+script:
   - julia -e 'using Pkg; pkg"registry add https://github.com/HolyLab/HolyLabRegistry.git"'
  - julia -e 'using Pkg; Pkg.test("DiffEqFlux"; coverage = true)'
 after_success:
