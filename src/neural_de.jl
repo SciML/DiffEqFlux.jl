@@ -1,4 +1,5 @@
 abstract type NeuralDELayer <: Function end
+basic_tgrad(u,p,t) = zero(u)
 
 """
 Constructs a neural ODE with the gradients computed using the adjoint
@@ -52,13 +53,15 @@ Flux.@functor NeuralODE
 
 function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
-    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
+    ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
+    prob = ODEProblem{false}(ff,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
 end
 
 function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     dudt_(u,p,t) = n.model(u,p)
-    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
+    ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
+    prob = ODEProblem{false}(ff,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;
                                 sensealg=InterpolatingAdjoint(
                                 autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
@@ -102,14 +105,16 @@ Flux.@functor NeuralDSDE
 function (n::NeuralDSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p)
+    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
+    prob = SDEProblem{false}(ff,g,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     dudt_(u,p,t) = n.model1(u,p[1:n.len])
     g(u,p,t) = n.model2(u,p[(n.len+1):end])
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p)
+    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
+    prob = SDEProblem{false}(ff,g,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
@@ -152,14 +157,16 @@ Flux.@functor NeuralSDE
 function (n::NeuralSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
+    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
+    prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     dudt_(u,p,t) = n.model1(u,p[1:n.len])
     g(u,p,t) = n.model2(u,p[(n.len+1):end])
-    prob = SDEProblem{false}(dudt_,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
+    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
+    prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
@@ -193,7 +200,8 @@ function (n::NeuralCDDE)(x,p=n.p)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.re(p)(_u)
     end
-    prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,p,constant_lags = n.lags)
+    ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
+    prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
@@ -202,7 +210,8 @@ function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.model(_u,p)
     end
-    prob = DDEProblem{false}(dudt_,x,n.hist,n.tspan,p,constant_lags = n.lags)
+    ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
+    prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
@@ -282,8 +291,8 @@ function (n::NeuralODEMM)(x,p=n.p)
         alg_out = n.constraints_model(u,p,t)
         vcat(nn_out,alg_out)
     end
-    dudt_= ODEFunction(f,mass_matrix=n.mass_matrix)
-    prob = ODEProblem(dudt_,x,n.tspan,p)
+    dudt_= ODEFunction{false}(f,mass_matrix=n.mass_matrix)
+    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
 end
 
@@ -293,8 +302,8 @@ function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
         alg_out = n.constraints_model(u,p,t)
         vcat(nn_out,alg_out)
     end
-    dudt_= ODEFunction(f,mass_matrix=n.mass_matrix)
-    prob = ODEProblem(dudt_,x,n.tspan,p)
+    dudt_= ODEFunction{false}(f;mass_matrix=n.mass_matrix)
+    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;
                    sensealg=InterpolatingAdjoint(
                             autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),

@@ -1,7 +1,7 @@
 name = "DiffEqFlux"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "1.8.2"
+version = "1.9.0"
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -46,7 +46,6 @@ DelayDiffEq = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
 MultistartOptimization = "3933049c-43be-478e-a8bb-6e0f7fd53575"
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
-QuadDIRECT = "dae52e8d-d666-5120-a592-9e15c33b8d7a"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
@@ -54,4 +53,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["DelayDiffEq", "OrdinaryDiffEq", "NLopt", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "Zygote", "MultistartOptimization", "QuadDIRECT"]
+test = ["DelayDiffEq", "OrdinaryDiffEq", "NLopt", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "Zygote", "MultistartOptimization"]
