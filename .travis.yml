@@ -10,15 +10,6 @@ julia:
 #    - julia: nightly
 notifications:
   email: false
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> ee0fb39d33f9a4065a18b58fee0f12783d8a74e2
-script:
-  - julia -e 'using Pkg; pkg"registry add https://github.com/HolyLab/HolyLabRegistry.git"'
- - julia -e 'using Pkg; Pkg.test("DiffEqFlux"; coverage = true)'
->>>>>>> Documenter.jl update - No gitpod. Revert badges.
 after_success:
   # push coverage results to Coveralls
   - julia -e 'import Pkg; cd(Pkg.dir("DiffEqFlux")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
