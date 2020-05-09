@@ -1,0 +1,220 @@
+# Neural Differential Equations for Non-ODEs: Neural SDEs
+
+With neural stochastic differential equations, there is once again a helper form
+`neural_dmsde` which can be used for the multiplicative noise case (consult the
+layers API documentation, or [this full example using the layer
+function](https://github.com/MikeInnes/zygote-paper/blob/master/neural_sde/neural_sde.jl)).
+
+However, since there are far too many possible combinations for the API to
+support, in many cases you will want to performantly define neural differential
+equations for non-ODE systems from scratch. For these systems, it is generally
+best to use `TrackerAdjoint` with non-mutating (out-of-place) forms. For
+example, the following defines a neural SDE with neural networks for both the
+drift and diffusion terms:
+
+```
+dudt(u, p, t) = model(u)
+g(u, p, t) = model2(u)
+prob = SDEProblem(dudt, g, x, tspan, nothing)
+```
+
+where `model` and `model2` are different neural networks. The same can apply to
+a neural delay differential equation. Its out-of-place formulation is
+`f(u,h,p,t)`. Thus for example, if we want to define a neural delay differential
+equation which uses the history value at `p.tau` in the past, we can define:
+
+```
+dudt!(u, h, p, t) = model([u; h(t - p.tau)])
+prob = DDEProblem(dudt_, u0, h, tspan, nothing)
+```
+
+
+First let's build training data from the same example as the neural ODE:
+
+```@example nnsde
+using Plots, Statistics
+using Flux, DiffEqFlux, StochasticDiffEq, DiffEqBase.EnsembleAnalysis
+
+u0 = Float32[2.; 0.]
+datasize = 30
+tspan = (0.0f0, 1.0f0)
+tsteps = range(tspan[1], tspan[2], length = datasize)
+```
+
+```@example nnsde
+function trueSDEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u.^3)'true_A)'
+end
+
+mp = Float32[0.2, 0.2]
+function true_noise_func(du, u, p, t)
+    du .= mp.*u
+end
+
+prob_truesde = SDEProblem(trueSDEfunc, true_noise_func, u0, tspan)
+nothing # hide
+```
+
+For our dataset we will use DifferentialEquations.jl's [parallel ensemble
+interface](http://docs.juliadiffeq.org/dev/features/ensemble.html) to generate
+data from the average of 10,000 runs of the SDE:
+
+```@example nnsde
+# Take a typical sample from the mean
+ensemble_prob = EnsembleProblem(prob_truesde)
+ensemble_sol = solve(ensemble_prob, SOSRI(), trajectories = 10000)
+ensemble_sum = EnsembleSummary(ensemble_sol)
+
+sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))
+nothing # hide
+```
+
+Now we build a neural SDE. For simplicity we will use the `NeuralDSDE`
+neural SDE with diagonal noise layer function:
+
+```@example nnsde
+drift_dudt = FastChain((x, p) -> x.^3,
+                       FastDense(2, 50, tanh),
+                       FastDense(50, 2))
+diffusion_dudt = FastChain(FastDense(2, 2))
+
+neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
+                       saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
+nothing # hide
+```
+
+Let's see what that looks like:
+
+```@example nnsde
+# Get the prediction using the correct initial condition
+prediction0 = neuralsde(u0)
+
+drift_(u, p, t) = drift_dudt(u, p[1:neuralsde.len])
+diffusion_(u, p, t) = diffusion_dudt(u, p[(neuralsde.len+1):end])
+
+prob_neuralsde = SDEProblem(drift_, diffusion_, u0,(0.0f0, 1.2f0), neuralsde.p)
+
+ensemble_nprob = EnsembleProblem(prob_neuralsde)
+ensemble_nsol = solve(ensemble_nprob, SOSRI(), trajectories = 100,
+                      saveat = tsteps)
+ensemble_nsum = EnsembleSummary(ensemble_nsol)
+
+plt1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
+scatter!(plt1, tsteps, sde_data', lw = 3)
+
+scatter(tsteps, sde_data[1,:], label = "data")
+scatter!(tsteps, prediction0[1,:], label = "prediction")
+nothing # hide
+```
+
+Now just as with the neural ODE we define a loss function that calculates the
+mean and variance from `n` runs at each time point and uses the distance from
+the data values:
+
+```@example nnsde
+function predict_neuralsde(p)
+  return Array(neuralsde(u0, p))
+end
+
+function loss_neuralsde(p; n = 100)
+  samples = [predict_neuralsde(p) for i in 1:n]
+  means = reshape(mean.([[samples[i][j] for i in 1:length(samples)]
+                                        for j in 1:length(samples[1])]),
+                      size(samples[1])...)
+  vars = reshape(var.([[samples[i][j] for i in 1:length(samples)]
+                                      for j in 1:length(samples[1])]),
+                      size(samples[1])...)
+  loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
+  return loss, means, vars
+end
+nothing # hide
+```
+
+```@example nnsde
+list_plots = []
+iter = 0
+
+# Callback function to observe training
+callback = function (p, loss, means, vars; doplot = false)
+  global list_plots, iter
+
+  if iter == 0
+    list_plots = []
+  end
+  iter += 1
+
+  # loss against current data
+  display(loss)
+
+  # plot current prediction against data
+  plt = scatter(tsteps, sde_data[1,:], yerror = sde_data_vars[1,:],
+                ylim = (-4.0, 8.0), label = "data")
+  scatter!(plt, tsteps, means[1,:], ribbon = vars[1,:], label = "prediction")
+  push!(list_plots, plt)
+
+  if doplot
+    display(plt)
+  end
+  return false
+end
+nothing # hide
+```
+
+Now we train using this loss function. We can pre-train a little bit using a
+smaller `n` and then decrease it after it has had some time to adjust towards
+the right mean behavior:
+
+```@example nnsde
+opt = ADAM(0.025)
+
+# First round of training with n = 10
+result1 = DiffEqFlux.sciml_train((p) -> loss_neuralsde(p, n = 10),  
+                                 neuralsde.p, opt,
+                                 cb = callback, maxiters = 100)
+```
+
+```@example nnsde
+animate(list_plots, "NN_sde_anim1.gif"); nothing # hide
+```
+
+![Progress of the optimization](NN_sde_anim1.gif)
+
+We resume the training with a larger `n`. (WARNING - this step is a couple of
+orders of magnitude longer than the previous one).
+
+```
+result2 = DiffEqFlux.sciml_train((p) -> loss_neuralsde(p, n = 100),
+                                 result1.minimizer, opt,
+                                 cb = callback, maxiters = 100)
+```
+
+```
+animate(list_plots, "assets/NN_sde_anim2.gif"); nothing # hide
+```
+
+![Progress of the optimization](assets/NN_sde_anim2.gif)
+
+And now we plot the solution to an ensemble of the trained neural SDE:
+
+```@example nnsde
+samples = [predict_neuralsde(result2.minimizer) for i in 1:1000]
+means = reshape(mean.([[samples[i][j] for i in 1:length(samples)]
+                                      for j in 1:length(samples[1])]),
+                    size(samples[1])...)
+vars = reshape(var.([[samples[i][j] for i in 1:length(samples)]
+                                    for j in 1:length(samples[1])]),
+                    size(samples[1])...)
+
+plt2 = scatter(tsteps, sde_data', yerror = sde_data_vars',
+               label = "data", title = "Neural SDE: After Training",
+               xlabel = "Time")
+plot!(plt2, tsteps, means', lw = 8, ribbon = vars', label = "prediction")
+
+plt = plot(plt1, plt2, layout = (2, 1))
+savefig(plt, "NN_sde_combined.png"); nothing # sde
+```
+
+![Neural SDE](NN_sde_combined.png)
+
+Try this with GPUs as well!

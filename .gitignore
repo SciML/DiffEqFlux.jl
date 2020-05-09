@@ -3,3 +3,5 @@
 *.jl.mem
 deps/deps.jl
 Manifest.toml
+docs/build
+
