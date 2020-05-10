@@ -173,7 +173,12 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
   end
 
   _loss = function (θ)
-    x = loss(θ,cur...)
+    x = loss(θ, cur...)
+    first(x)
+  end
+
+  _loss = function (θ::Tracker.TrackedArray)
+    x = loss(Tracker.data(θ), cur...)
     first(x)
   end
 
