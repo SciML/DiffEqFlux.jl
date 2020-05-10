@@ -73,6 +73,7 @@ end
 cb(θ,l)
 
 loss1 = loss_adjoint(θ)
-res = DiffEqFlux.sciml_train(loss_adjoint, θ, BFGS(initial_stepnorm = 0.01), cb = cb)
+res1 = DiffEqFlux.sciml_train(loss_adjoint, θ, ADAM(0.01), cb = cb, maxiters = 100)
+res = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = res.minimum
 @test 10loss2 < loss1
