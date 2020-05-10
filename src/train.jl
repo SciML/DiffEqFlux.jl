@@ -231,7 +231,6 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
         if F != nothing
           return _x
         end
-        return _x
       end
     elseif diffmode isa ForwardDiffMode
       optim_fg! = let res = DiffResults.GradientResult(θ)
@@ -244,8 +243,6 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
           if F != nothing
             return DiffResults.value(res)
           end
-
-          return _x
         end
       end
     elseif diffmode isa ReverseDiffMode
@@ -259,8 +256,6 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
           if F != nothing
             return DiffResults.value(res)
           end
-
-          return _x
         end
       end
     end
@@ -301,8 +296,6 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
     if F != nothing
       return _x
     end
-
-    return _x
   end
 
   Optim.optimize(Optim.only_fg!(optim_fg!), lower_bounds, upper_bounds, θ, opt,
