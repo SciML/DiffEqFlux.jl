@@ -16,6 +16,8 @@ NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)(xs)
 NeuralODE(dudt,tspan,Tsit5(),saveat=0.1)(xs)
 NeuralODE(dudt,tspan,Tsit5(),saveat=0.1,sensealg=TrackerAdjoint())(xs)
 
+@info "Test some gradients"
+
 node = NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)
 grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
 @test ! iszero(grads[x])
@@ -45,6 +47,8 @@ grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 
 ## Fast
 
+@info "Test some fast layers"
+
 node = NeuralODE(fastdudt,tspan,Tsit5(),save_everystep=false,save_start=false)
 grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
 @test ! iszero(grads[x])
@@ -71,6 +75,8 @@ grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
 @test_broken grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node)) isa Tuple
 #@test ! iszero(grads[xs])
 #@test ! iszero(grads[node.p])
+
+@info "Test some adjoints"
 
 # Adjoint
 @testset "adjoint mode" begin
@@ -129,6 +135,8 @@ grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
     #@test ! iszero(grads[node.p])
 end
 
+@info "Test Tracker"
+
 # RD
 @testset "Tracker mode" begin
     node = NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=TrackerAdjoint())
@@ -185,6 +193,8 @@ end
     #@test ! iszero(grads[xs])
     #@test ! iszero(grads[node.p])
 end
+
+@info "Test non-ODEs"
 
 dudt2 = Chain(Dense(2,50,tanh),Dense(50,2))
 fastdudt2 = FastChain(FastDense(2,50,tanh),FastDense(50,2))
