@@ -2,9 +2,12 @@
 
 Here we demonstrate `sensealg = ForwardDiffSensitivity()` (provided by
 DiffEqSensitivity.jl) for forward-mode automatic differentiation of a small
-stochastic differential equation:
+stochastic differential equation. For large parameter equations, like neural
+stochastic differential equations, you should use reverse-mode automatic
+differentition. However, forward-mode can be more efficient for low numbers
+of parameters (<100).
 
-```@example sde
+```julia
 using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
 
 function lotka_volterra!(du, u, p, t)
@@ -31,7 +34,7 @@ function predict_sde(p)
 end
 
 loss_sde(p) = sum(abs2, x-1 for x in predict_sde(p))
-nothing #hide
+nothing
 ```
 
 For this training process, because the loss function is stochastic, we will use
@@ -40,7 +43,7 @@ before. However, to speed up the training process, we will use a global counter
 so that way we only plot the current results every 10 iterations. This looks
 like:
 
-```@example sde
+```julia
 list_plots = []
 iter = 0
 callback = function (p, l)
@@ -67,11 +70,9 @@ nothing # hide
 
 Let's optimise
 
-```@example sde
+```julia
 result_sde = DiffEqFlux.sciml_train(loss_sde, p, ADAM(0.1),
                                     cb = callback, maxiters = 100)
 ```
 
-```@example sde
-animate(list_plots) # hide
-```
+![](https://user-images.githubusercontent.com/1814174/51399524-2c6abf80-1b14-11e9-96ae-0192f7debd03.gif)

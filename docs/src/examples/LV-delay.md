@@ -1,10 +1,10 @@
-# Delay Differential Equation
+# Delay Differential Equations
 
 Other differential equation problem types from DifferentialEquations.jl are
 supported. For example, we can build a layer with a delay differential equation
 like:
 
-```@example delay
+```
 using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity
 
 # Define the same LV equation, but including a delay parameter

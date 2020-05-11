@@ -9,7 +9,7 @@ makedocs(
 
     format = Documenter.HTML(#analytics = "",
                              assets = ["assets/favicon.ico"],
-                             canonical="https://docs.sciml.ai/stable/"),
+                             canonical="https://diffeqflux.sciml.ai/stable/"),
     pages=[
         "Home" => "index.md",
         "Simple examples" => Any[
@@ -23,7 +23,9 @@ makedocs(
             "examples/LV-NN-Stiff.md",
             "examples/LV-Jump.md"
         ],
-        "API" => "API.md",
+        "Neural Differential Equation Layers" => "NeuralDELayers.md",
+        "FastChain" => "FastChain.md",
+        "sciml_train" => "Scimltrain.md",
         "Benchmark" => "Benchmark.md"
     ]
 )

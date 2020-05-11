@@ -8,7 +8,7 @@ zeros, then we have a constraint defined by the right hand side. Using
 `NeuralODEMM`, we can use this to define a neural ODE where the sum of all 3
 terms must add to one. An example of this is as follows:
 
-```@example stiff
+```julia
 using Flux, DiffEqFlux, OrdinaryDiffEq, Optim, Test, Plots
 
 # A desired MWE for now, not a test yet.
@@ -60,11 +60,6 @@ result_stiff = DiffEqFlux.sciml_train(loss_stiff_ndae, model_stiff_ndae.p,
                                       BFGS(initial_stepnorm = 0.001),
                                       cb = callback, maxiters = 100)
 ```
-
-```@example stiff
-@test result_stiff.minimum < l1
-```
-
 
 This is a highly stiff problem, making the fitting difficult, but we have
 manually imposed that sum constraint via `(u,p,t) -> [u[1] + u[2] + u[3] - 1]`,

@@ -4,13 +4,12 @@ You can also mix a known differential equation and a neural differential
 equation, so that the parameters and the neural network are estimated
 simultaneously!
 
-
 Here's an example of doing this with both reverse-mode autodifferentiation and
 with adjoints. We will assume that we know the dynamics of the second equation
 (linear dynamics), and our goal is to find a neural network that will control
 the second equation to stay close to 1.
 
-```@example univ
+```julia
 using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, Plots
 
 u0 = 1.1f0
@@ -63,7 +62,7 @@ loss_univ(θ) = sum(abs2, predict_univ(θ)[2,:] .- 1)
 l = loss_univ(θ)
 ```
 
-```@example univ
+```julia
 list_plots = []
 iter = 0
 callback = function (θ, l)
@@ -83,17 +82,36 @@ callback = function (θ, l)
 end
 ```
 
-```@example univ
+```julia
 result_univ = DiffEqFlux.sciml_train(loss_univ, θ,
                                      BFGS(initial_stepnorm = 0.01),
                                      cb = callback)
 ```
 
-Notice that in just 23 iterations or 8 seconds we get to a minimum of `7e-13`,
-successfully solving the nonlinear optimal control problem.
+```
+* Status: success
 
-```@example univ
-animate(list_plots, "UNIV_anim.gif"); nothing # hide
+* Candidate solution
+   Minimizer: [1.00e+00, 4.33e-02, 3.72e-01,  ...]
+   Minimum:   6.572520e-13
+
+* Found with
+   Algorithm:     BFGS
+   Initial Point: [1.10e+00, 4.18e-02, 3.64e-01,  ...]
+
+* Convergence measures
+   |x - x'|               = 0.00e+00 ≤ 0.0e+00
+   |x - x'|/|x'|          = 0.00e+00 ≤ 0.0e+00
+   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
+   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
+   |g(x)|                 = 5.45e-06 ≰ 1.0e-08
+
+* Work counters
+   Seconds run:   8  (vs limit Inf)
+   Iterations:    23
+   f(x) calls:    172
+   ∇f(x) calls:   172
 ```
 
-![Universal DE convergence](UNIV_anim.gif)
+Notice that in just 23 iterations or 8 seconds we get to a minimum of `7e-13`,
+successfully solving the nonlinear optimal control problem.

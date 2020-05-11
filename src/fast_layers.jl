@@ -22,6 +22,17 @@ applychain(fs::Tuple, x, p) = applychain(Base.tail(fs), first(fs)(x,p[1:paramlen
 paramlength(c::FastChain) = sum(paramlength(x) for x in c.layers)
 initial_params(c::FastChain) = vcat(initial_params.(c.layers)...)
 
+"""
+FastDense(in,out,activation=identity;
+          initW = Flux.glorot_uniform, initb = Flux.zeros)
+
+A Dense layer `activation.(W*x + b)` with input size `in` and output size `out`.
+The `activation` function defaults to `identity`, meaning the layer is an affine
+function. Initial parameters are taken to match `Flux.Dense`.
+
+Note that this function has specializations on `tanh` for a slightly faster
+adjoint with Zygote.
+"""
 struct FastDense{F,F2} <: FastLayer
   out::Int
   in::Int
@@ -61,6 +72,20 @@ end
 paramlength(f::FastDense) = f.out*(f.in + 1)
 initial_params(f::FastDense) = f.initial_params()
 
+"""
+StaticDense(in,out,activation=identity;
+          initW = Flux.glorot_uniform, initb = Flux.zeros)
+
+A Dense layer `activation.(W*x + b)` with input size `in` and output size `out`.
+The `activation` function defaults to `identity`, meaning the layer is an affine
+function. Initial parameters are taken to match `Flux.Dense`. The internal
+calculations are done with `StaticArrays` for extra speed for small linear
+algebra operations. Should only be used for input/output sizes of approximately
+16 or less.
+
+Note that this function has specializations on `tanh` for a slightly faster
+adjoint with Zygote.
+"""
 struct StaticDense{out,in,F,F2} <: FastLayer
   σ::F
   initial_params::F2

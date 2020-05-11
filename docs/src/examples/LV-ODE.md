@@ -11,7 +11,7 @@ more details, [see the DifferentialEquations.jl documentation](http://docs.julia
 \end{align}
 ```
 
-```@example ode
+```julia
 using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
 
 function lotka_volterra!(du, u, p, t)
@@ -38,10 +38,10 @@ sol_ode = solve(prob_ode, Tsit5())
 # Plot the solution
 using Plots
 plot(sol_ode)
-savefig("LV_ode.png"); nothing        #hide
+savefig("LV_ode.png")
 ```
 
-![LV Solution Plot](LV_ode.png)
+![LV Solution Plot](https://user-images.githubusercontent.com/1814174/51388169-9a07f300-1af6-11e9-8c6c-83c41e81d11c.png)
 
 For this first example, we do not yet include a neural network. We take
 [AD-compatible `concrete_solve`
@@ -52,13 +52,13 @@ the differential equation as a
 array semantics as the standard differential equation solution object but
 without the interpolations).
 
-```@example ode
+```julia
 # Create a solution (prediction) for a given starting point u0 and set of
 # parameters p
 function predict_adjoint(p)
   return Array(concrete_solve(prob_ode, Tsit5(), u0, p, saveat = tsteps))
 end
-nothing #hide
+nothing
 ```
 
 Next we choose a square loss function. Our goal will be to find parameter that
@@ -67,13 +67,13 @@ the squared distance from 1. Note that when using `sciml_train`, the first
 return is the loss value, and the other returns are sent to the callback for
 monitoring convergence.
 
-```@example ode
+```julia
 function loss_adjoint(p)
   prediction = predict_adjoint(p)
   loss = sum(abs2, x-1 for x in prediction)
   return loss, prediction
 end
-nothing #hide
+nothing
 ```
 
 Lastly, we use the `sciml_train` function to train the parameters using BFGS to
@@ -83,12 +83,12 @@ the current parameter vector and the returns of the last call to the loss
 function. We will display the current loss and make a plot of the current
 situation:
 
-```@example ode
+```julia
 # Callback function to observe training
 list_plots = []
 iter = 0
 callback = function (p, l, pred)
-  global list_plots, iter
+  global iter
 
   if iter == 0
     list_plots = []
@@ -108,12 +108,12 @@ callback = function (p, l, pred)
   # optimization stops.
   return false
 end
-nothing #hide
+nothing
 ```
 
 Let's optimise the model.
 
-```@example ode
+```julia
 result_ode = DiffEqFlux.sciml_train(loss_adjoint, p,
                                     BFGS(initial_stepnorm = 0.0001),
                                     cb = callback)
@@ -125,14 +125,14 @@ with `result_ode.minimizer`. For example, we can plot the final outcome and show
 that we solved the control problem and successfully found parameters to make the
 ODE solution constant:
 
-```@example ode
+```julia
 remade_solution = solve(remake(prob_ode, p = result_ode.minimizer), Tsit5(),      
                         saveat = tsteps)
-plot(remade_solution, ylim = (0, 6))
-savefig("LV_ode2.png"); nothing # hide
+#plot(remade_solution, ylim = (0, 6))
+#savefig("LV_ode2.png")
 ```
 
-![Final plot](LV_ode2.png)
+![Final plot](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
 
 This shows the evolution of the solutions:
 
