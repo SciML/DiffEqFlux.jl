@@ -2,26 +2,36 @@ abstract type NeuralDELayer <: Function end
 basic_tgrad(u,p,t) = zero(u)
 
 """
-Constructs a neural ODE with the gradients computed using the adjoint
-method[1]. At a high level this corresponds to solving the forward
-differential equation, using a second differential equation that propagates
-the derivatives of the loss  backwards in time.
-This first solves the continuous time problem, and then discretizes following
-the rules specified by the numerical ODE solver.
-On the other hand, the 'neural_ode_rd' first disretizes the solution and then
-computes the adjoint using automatic differentiation.
+Constructs a continuous-time recurrant neural network, also known as a neural
+ordinary differential equation (neural ODE), with a fast gradient calculation
+via adjoints [1]. At a high level this corresponds to solving the forward
+differential equation, using a second differential equation that propagates the
+derivatives of the loss backwards in time.
+
+```julia
+NeuralODE(model,tspan,alg=nothing,args...;kwargs...)
+NeuralODE(model::FastChain,tspan,alg=nothing,args...;
+          sensealg=InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
+          kwargs...)
+```
+
+Arguments:
+
+- `model`: A Chain or FastChain neural network that defines the ̇x.
+- `tspan`: The timespan to be solved on.
+- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+  default algorithm from DifferentialEquations.jl.
+- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+  Defaults to an adjoint method, and with `FastChain` it defaults to utilizing
+  a tape-compiled ReverseDiff vector-Jacobian product for extra efficiency. Seee
+  the [Local Sensitivity Analysis](https://docs.sciml.ai/dev/analysis/sensitivity/)
+  documentation for more details.
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/dev/basics/common_solver_opts/)
+  documentation for more details.
 
 Ref
 [1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-
-Arguments
-≡≡≡≡≡≡≡≡
-model::Chain defines the ̇x
-x<:AbstractArray initial value x(t₀)
-args arguments passed to ODESolve
-kwargs key word arguments passed to ODESolve; accepts an additional key
-    :callback_adj in addition to :callback. The Callback :callback_adj
-    passes a separate callback to the adjoint solver.
 
 """
 struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
@@ -68,6 +78,31 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
                                 n.kwargs...)
 end
 
+"""
+Constructs a neural stochastic differential equation (neural SDE) with diagonal noise.
+
+```julia
+NeuralDSDE(model1,model2,tspan,alg=nothing,args...;
+           sensealg=TrackerAdjoint(),kwargs...)
+NeuralDSDE(model1::FastChain,model2::FastChain,tspan,alg=nothing,args...;
+           sensealg=TrackerAdjoint(),kwargs...)
+```
+
+Arguments:
+
+- `model1`: A Chain or FastChain neural network that defines the drift function.
+- `model2`: A Chain or FastChain neural network that defines the diffusion function.
+  Should output a vector of the same size as the input.
+- `tspan`: The timespan to be solved on.
+- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+  default algorithm from DifferentialEquations.jl.
+- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+  Defaults to using reverse-mode automatic differentiation via Tracker.jl
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/dev/basics/common_solver_opts/)
+  documentation for more details.
+
+"""
 struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     p::P
     len::Int
@@ -118,6 +153,32 @@ function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
+"""
+Constructs a neural stochastic differential equation (neural SDE).
+
+```julia
+NeuralSDE(model1,model2,tspan,nbrown,alg=nothing,args...;
+          sensealg=TrackerAdjoint(),kwargs...)
+NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,alg=nothing,args...;
+          sensealg=TrackerAdjoint(),kwargs...)
+```
+
+Arguments:
+
+- `model1`: A Chain or FastChain neural network that defines the drift function.
+- `model2`: A Chain or FastChain neural network that defines the diffusion function.
+  Should output a matrix that is nbrown x size(x,1).
+- `tspan`: The timespan to be solved on.
+- `nbrown`: The number of Brownian processes
+- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+  default algorithm from DifferentialEquations.jl.
+- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+  Defaults to using reverse-mode automatic differentiation via Tracker.jl
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/dev/basics/common_solver_opts/)
+  documentation for more details.
+
+"""
 struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     p::P
     len::Int
@@ -170,6 +231,35 @@ function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
+"""
+Constructs a neural delay differential equation (neural DDE) with constant
+delays.
+
+```julia
+NeuralCDDE(model,tspan,hist,lags,alg=nothing,args...;
+          sensealg=TrackerAdjoint(),kwargs...)
+NeuralCDDE(model::FastChain,tspan,hist,lags,alg=nothing,args...;
+          sensealg=TrackerAdjoint(),kwargs...)
+```
+
+Arguments:
+
+- `model`: A Chain or FastChain neural network that defines the derivative function.
+  Should take an input of size `[x;x(t-lag_1);...;x(t-lag_n)]` and produce and
+  output shaped like `x`.
+- `tspan`: The timespan to be solved on.
+- `hist`: Defines the history function `h(t)` for values before the start of the
+  integration.
+- `lags`: Defines the lagged values that should be utilized in the neural network.
+- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+  default algorithm from DifferentialEquations.jl.
+- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+  Defaults to using reverse-mode automatic differentiation via Tracker.jl
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/dev/basics/common_solver_opts/)
+  documentation for more details.
+
+"""
 struct NeuralCDDE{P,M,RE,H,L,T,S,A,K} <: NeuralDELayer
     p::P
     model::M
@@ -215,6 +305,33 @@ function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
+"""
+Constructs a neural differential-algebraic equation (neural DAE).
+
+```julia
+NeuralDAE(model,constraints_model,tspan,alg=nothing,args...;
+          sensealg=TrackerAdjoint(),kwargs...)
+NeuralDAE(model::FastChain,constraints_model,tspan,alg=nothing,args...;
+          sensealg=TrackerAdjoint(),kwargs...)
+```
+
+Arguments:
+
+- `model`: A Chain or FastChain neural network that defines the derivative function.
+  Should take an input of size `x` and produce the residual of `f(dx,x,t)`
+  for only the differential variables.
+- `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
+  constaints to impose on the algebraic equations.
+- `tspan`: The timespan to be solved on.
+- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+  default algorithm from DifferentialEquations.jl.
+- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+  Defaults to using reverse-mode automatic differentiation via Tracker.jl
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/dev/basics/common_solver_opts/)
+  documentation for more details.
+
+"""
 struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
     model::M
     constraints_model::M2
@@ -256,6 +373,46 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     concrete_solve(prob,n.solver,x,p,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
 end
 
+"""
+Constructs a physically-constrained continuous-time recurrant neural network,
+also known as a neural differential-algebraic equation (neural DAE), with a
+mass matrix and a fast gradient calculation via adjoints [1]. The mass matrix
+formulation is:
+
+```math
+Mu' = f(u,p,t)
+```
+
+where `M` is semi-explicit, i.e. singular with zeros for rows corresponding to
+the constraint equations.
+
+```julia
+NeuralODEMM(model,constraints_model,tspan,alg=nothing,args...;kwargs...)
+NeuralODEMM(model::FastChain,tspan,alg=nothing,args...;
+          sensealg=InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
+          kwargs...)
+```
+
+Arguments:
+
+- `model`: A Chain or FastChain neural network that defines the ̇`f(u,p,t)`
+- `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
+  constaints to impose on the algebraic equations.
+- `tspan`: The timespan to be solved on.
+- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+  default algorithm from DifferentialEquations.jl. This method requires an
+  implicit ODE solver compatible with singular mass matrices. Consult the
+  [DAE solvers](https://docs.sciml.ai/latest/solvers/dae_solve/) documentation for more details.
+- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+  Defaults to an adjoint method, and with `FastChain` it defaults to utilizing
+  a tape-compiled ReverseDiff vector-Jacobian product for extra efficiency. Seee
+  the [Local Sensitivity Analysis](https://docs.sciml.ai/dev/analysis/sensitivity/)
+  documentation for more details.
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/dev/basics/common_solver_opts/)
+  documentation for more details.
+
+"""
 struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
     model::M
     constraints_model::M2

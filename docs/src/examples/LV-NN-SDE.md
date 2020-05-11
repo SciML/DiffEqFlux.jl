@@ -12,7 +12,7 @@ best to use `TrackerAdjoint` with non-mutating (out-of-place) forms. For
 example, the following defines a neural SDE with neural networks for both the
 drift and diffusion terms:
 
-```
+```julia
 dudt(u, p, t) = model(u)
 g(u, p, t) = model2(u)
 prob = SDEProblem(dudt, g, x, tspan, nothing)
@@ -23,7 +23,7 @@ a neural delay differential equation. Its out-of-place formulation is
 `f(u,h,p,t)`. Thus for example, if we want to define a neural delay differential
 equation which uses the history value at `p.tau` in the past, we can define:
 
-```
+```julia
 dudt!(u, h, p, t) = model([u; h(t - p.tau)])
 prob = DDEProblem(dudt_, u0, h, tspan, nothing)
 ```
@@ -31,7 +31,7 @@ prob = DDEProblem(dudt_, u0, h, tspan, nothing)
 
 First let's build training data from the same example as the neural ODE:
 
-```@example nnsde
+```julia
 using Plots, Statistics
 using Flux, DiffEqFlux, StochasticDiffEq, DiffEqBase.EnsembleAnalysis
 
@@ -41,7 +41,7 @@ tspan = (0.0f0, 1.0f0)
 tsteps = range(tspan[1], tspan[2], length = datasize)
 ```
 
-```@example nnsde
+```julia
 function trueSDEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
     du .= ((u.^3)'true_A)'
@@ -53,27 +53,27 @@ function true_noise_func(du, u, p, t)
 end
 
 prob_truesde = SDEProblem(trueSDEfunc, true_noise_func, u0, tspan)
-nothing # hide
+nothing
 ```
 
 For our dataset we will use DifferentialEquations.jl's [parallel ensemble
 interface](http://docs.juliadiffeq.org/dev/features/ensemble.html) to generate
 data from the average of 10,000 runs of the SDE:
 
-```@example nnsde
+```julia
 # Take a typical sample from the mean
 ensemble_prob = EnsembleProblem(prob_truesde)
 ensemble_sol = solve(ensemble_prob, SOSRI(), trajectories = 10000)
 ensemble_sum = EnsembleSummary(ensemble_sol)
 
 sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))
-nothing # hide
+nothing
 ```
 
 Now we build a neural SDE. For simplicity we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
-```@example nnsde
+```julia
 drift_dudt = FastChain((x, p) -> x.^3,
                        FastDense(2, 50, tanh),
                        FastDense(50, 2))
@@ -81,12 +81,12 @@ diffusion_dudt = FastChain(FastDense(2, 2))
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
                        saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
-nothing # hide
+nothing
 ```
 
 Let's see what that looks like:
 
-```@example nnsde
+```julia
 # Get the prediction using the correct initial condition
 prediction0 = neuralsde(u0)
 
@@ -105,14 +105,14 @@ scatter!(plt1, tsteps, sde_data', lw = 3)
 
 scatter(tsteps, sde_data[1,:], label = "data")
 scatter!(tsteps, prediction0[1,:], label = "prediction")
-nothing # hide
+nothing
 ```
 
 Now just as with the neural ODE we define a loss function that calculates the
 mean and variance from `n` runs at each time point and uses the distance from
 the data values:
 
-```@example nnsde
+```julia
 function predict_neuralsde(p)
   return Array(neuralsde(u0, p))
 end
@@ -128,10 +128,10 @@ function loss_neuralsde(p; n = 100)
   loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
   return loss, means, vars
 end
-nothing # hide
+nothing
 ```
 
-```@example nnsde
+```julia
 list_plots = []
 iter = 0
 
@@ -158,14 +158,14 @@ callback = function (p, loss, means, vars; doplot = false)
   end
   return false
 end
-nothing # hide
+nothing
 ```
 
 Now we train using this loss function. We can pre-train a little bit using a
 smaller `n` and then decrease it after it has had some time to adjust towards
 the right mean behavior:
 
-```@example nnsde
+```julia
 opt = ADAM(0.025)
 
 # First round of training with n = 10
@@ -174,30 +174,18 @@ result1 = DiffEqFlux.sciml_train((p) -> loss_neuralsde(p, n = 10),
                                  cb = callback, maxiters = 100)
 ```
 
-```@example nnsde
-animate(list_plots, "NN_sde_anim1.gif"); nothing # hide
-```
-
-![Progress of the optimization](NN_sde_anim1.gif)
-
 We resume the training with a larger `n`. (WARNING - this step is a couple of
 orders of magnitude longer than the previous one).
 
-```
+```julia
 result2 = DiffEqFlux.sciml_train((p) -> loss_neuralsde(p, n = 100),
                                  result1.minimizer, opt,
                                  cb = callback, maxiters = 100)
 ```
 
-```
-animate(list_plots, "assets/NN_sde_anim2.gif"); nothing # hide
-```
-
-![Progress of the optimization](assets/NN_sde_anim2.gif)
-
 And now we plot the solution to an ensemble of the trained neural SDE:
 
-```@example nnsde
+```julia
 samples = [predict_neuralsde(result2.minimizer) for i in 1:1000]
 means = reshape(mean.([[samples[i][j] for i in 1:length(samples)]
                                       for j in 1:length(samples[1])]),
@@ -215,6 +203,6 @@ plt = plot(plt1, plt2, layout = (2, 1))
 savefig(plt, "NN_sde_combined.png"); nothing # sde
 ```
 
-![Neural SDE](NN_sde_combined.png)
+![](https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png)
 
 Try this with GPUs as well!
