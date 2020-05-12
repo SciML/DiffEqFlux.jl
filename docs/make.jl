@@ -12,19 +12,22 @@ makedocs(
                              canonical="https://diffeqflux.sciml.ai/stable/"),
     pages=[
         "Home" => "index.md",
-        "Simple examples" => Any[
+        "Tutorials" => Any[
             "examples/LV-ODE.md",
+            "examples/LV-Flux.md",
             "examples/LV-delay.md",
             "examples/LV-stochastic.md",
-            "examples/LV-GPU.md",
-            "examples/LV-NN-ODE.md",
-            "examples/LV-NN-SDE.md",
+            "examples/NN-ODE.md",
+            "examples/NeuralODE_Flux.md",
+            "examples/NN-SDE.md",
             "examples/LV-Univ.md",
             "examples/LV-NN-Stiff.md",
             "examples/LV-Jump.md"
         ],
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
+        "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
+        "GPUs" => "GPUs.md",
         "sciml_train" => "Scimltrain.md",
         "Benchmark" => "Benchmark.md"
     ]

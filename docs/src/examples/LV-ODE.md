@@ -1,4 +1,4 @@
-# The Lotka-Volterra ODE (@id ld-ode)
+# Optimization of Ordinary Differential Equations
 
 First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
 more details, [see the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/dev/). The Lotka-Volterra equations have the form:

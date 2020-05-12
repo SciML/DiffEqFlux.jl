@@ -1,4 +1,4 @@
-# Stochastic Differential Equation
+# Optimization of Stochastic Differential Equations
 
 Here we demonstrate `sensealg = ForwardDiffSensitivity()` (provided by
 DiffEqSensitivity.jl) for forward-mode automatic differentiation of a small

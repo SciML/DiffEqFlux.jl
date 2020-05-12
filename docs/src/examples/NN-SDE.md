@@ -1,4 +1,4 @@
-# Neural Differential Equations for Non-ODEs: Neural SDEs
+# Neural Stochastic Differential Equations
 
 With neural stochastic differential equations, there is once again a helper form
 `neural_dmsde` which can be used for the multiplicative noise case (consult the
