@@ -22,7 +22,8 @@ makedocs(
             "examples/NN-SDE.md",
             "examples/LV-Univ.md",
             "examples/LV-NN-Stiff.md",
-            "examples/LV-Jump.md"
+            "examples/LV-Jump.md",
+            "examples/universaldiffeq.md"
         ],
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
         "Use with Flux Chain and train!" => "Flux.md",
