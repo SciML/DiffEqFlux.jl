@@ -4,11 +4,11 @@ First let's create a Lotka-Volterra ODE using DifferentialEquations.jl. For
 more details, [see the DifferentialEquations.jl documentation](http://docs.juliadiffeq.org/dev/). The Lotka-Volterra equations have the form:
 
 ```math
-\begin{align}
+\begin{aligned}
 \frac{dx}{dt} &= \sigma \left( y - x \right)      \\
 \frac{dy}{dt} &= x \left( \rho - z \right) - y    \\
 \frac{dz}{dt} &= x y - \beta z                    \\
-\end{align}
+\end{aligned}
 ```
 
 ```julia
