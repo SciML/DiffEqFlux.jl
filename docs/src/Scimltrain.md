@@ -1,7 +1,6 @@
 # sciml_train
 
 !!! note
-
   `sciml_train` is planned to be replaced by [GalacticOptim.jl](https://github.com/SciML/GalacticOptim.jl)
   when it is ready. This optimizer library will have a feature superset of `sciml_train`
   but will have a slightly different interface to allow for backprpogation over
