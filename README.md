@@ -24,12 +24,17 @@ the documentation which contains the un-released features.
 ## Problem Domain
 
 DiffEqFlux.jl is not just for neural ordinary differential equations.
-DiffEqFlux.jl is for universal differential equations. For an overview of the topic
-with applications, consult the paper [Universal Differential Equations for Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
+DiffEqFlux.jl is for universal differential equations. Neural networks can
+be all or part of the model. They can be around the differential equation,
+in the cost function, or inside of the differential equation. Neural networks
+representing unknown portions of the model or functions can go anywhere you
+have uncertainty in the form of the scientific simulator. For an overview of the
+topic with applications, consult the paper [Universal Differential Equations for
+Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
 
 As such, it is the first package to support and demonstrate:
 
-- Stiff universal ordinary differential equations (universal ODEs)
+- Stiff and non-stiff universal ordinary differential equations (universal ODEs)
 - Universal stochastic differential equations (universal SDEs)
 - Universal delay differential equations (universal DDEs)
 - Universal partial differential equations (universal PDEs)
