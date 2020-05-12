@@ -62,8 +62,8 @@ function __init__()
                                                     NaN,
                                                     _time-t0,)
         end
-
-        function sciml_train(loss, θ, opt::NLopt.Opt, lower_bounds, upper_bounds, data = DEFAULT_DATA; maxeval=100)
+      
+        function sciml_train(loss, θ, opt::NLopt.Opt, lower_bounds, upper_bounds, data = DEFAULT_DATA; maxeval=100, nstart=1)
           local x, cur, state
           cur,state = iterate(data)
 
@@ -84,6 +84,15 @@ function __init__()
           NLopt.lower_bounds!(opt, lower_bounds)
           NLopt.upper_bounds!(opt, upper_bounds)
           NLopt.maxeval!(opt, maxeval)
+
+          if nstart > 1
+            localopt = opt
+            opt = NLopt.Opt(:G_MLSL_LDS, length(lower_bounds))
+            NLopt.lower_bounds!(opt, lower_bounds)
+            NLopt.upper_bounds!(opt, upper_bounds)
+            NLopt.local_optimizer!(opt, localopt)
+            NLopt.maxeval!(opt, nstart * maxeval)
+          end
 
           t0 = time()
           NLopt.optimize(opt, θ)
