@@ -3,7 +3,7 @@
 [![Join the chat at https://gitter.im/JuliaDiffEq/Lobby](https://badges.gitter.im/JuliaDiffEq/Lobby.svg)](https://gitter.im/JuliaDiffEq/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/SciML/DiffEqFlux.jl.svg?branch=master)](https://travis-ci.org/SciML/DiffEqFlux.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/e5a9pad58ojo26ir?svg=true)](https://ci.appveyor.com/project/ChrisRackauckas/diffeqflux-jl)
-[![GitlabCI](https://gitlab.com/sciml/DiffEqFlux-jl/badges/master/pipeline.svg)](https://gitlab.com/juliadiffeq/DiffEqFlux-jl/pipelines)
+[![GitlabCI](https://gitlab.com/juliadiffeq/DiffEqFlux-jl/badges/master/pipeline.svg)](https://gitlab.com/juliadiffeq/DiffEqFlux-jl/pipelines)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](http://diffeqflux.sciml.ai/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](http://diffeqflux.sciml.ai/dev/)
 
