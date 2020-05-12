@@ -1,4 +1,4 @@
-using Documenter, Example, DiffEqFlux
+using Documenter, DiffEqFlux
 
 makedocs(
     sitename = "DiffEqFlux.jl",
