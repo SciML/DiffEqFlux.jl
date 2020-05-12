@@ -3,7 +3,7 @@
 As shown in the [stiff ODE tutorial](https://docs.juliadiffeq.org/latest/tutorials/advanced_ode_example/#Handling-Mass-Matrices-1),
 differential-algebraic equations (DAEs) can be used to impose physical
 constraints. One way to define a DAE is through an ODE with a singular mass
-matrix. For example, if we make `Mu = f(u)` where the last row of `M` is all
+matrix. For example, if we make `Mu' = f(u)` where the last row of `M` is all
 zeros, then we have a constraint defined by the right hand side. Using
 `NeuralODEMM`, we can use this to define a neural ODE where the sum of all 3
 terms must add to one. An example of this is as follows:
