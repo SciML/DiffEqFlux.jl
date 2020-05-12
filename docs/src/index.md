@@ -1,9 +1,5 @@
 # DiffEqFlux
 
-This is the documentation for `DiffEqFlux.jl`.
-
-## Problem Domain
-
 DiffEqFlux.jl is not just for neural ordinary differential equations.
 DiffEqFlux.jl is for universal differential equations. For an overview of the
 topic with applications, consult the paper [Universal Differential Equations for

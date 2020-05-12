@@ -19,7 +19,7 @@ u0 = Float32[2.0; 0.0] |> gpu
 prob_gpu = ODEProblem(dudt!, u0, tspan, p)
 
 # Runs on a GPU
-sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)
+sol_gpu = concrete_solve(prob_gpu, Tsit5(), saveat = tsteps)
 ```
 
 and `concrete_solve` works similarly. Or we could directly use the neural ODE
@@ -39,4 +39,22 @@ dudt2 = FastChain((x,p) -> x.^3,
 
 u0 = Float32[2.; 0.] |> gpu
 p = initial_params(dudt2) |> gpu
+
+dudt2_(u, p, t) = dudt2(u,p)
+
+# Simulation interval and intermediary points
+tspan = (0.0, 10.0)
+tsteps = 0.0:0.1:10.0
+
+prob_gpu = ODEProblem(dudt2_, u0, tspan, p)
+
+# Runs on a GPU
+sol_gpu = concrete_solve(prob_gpu, Tsit5(), saveat = tsteps)
+```
+
+or via the NeuralODE struct:
+
+```julia
+prob_neuralode_gpu = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
+sol_gpu = concrete_solve(prob_neuralode_gpu, Tsit5(), saveat = tsteps)
 ```
