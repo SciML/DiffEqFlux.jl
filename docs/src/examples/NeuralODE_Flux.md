@@ -1,4 +1,4 @@
-# Neural Ordinary Differential Equations with Flux
+# Neural Ordinary Differential Equations with Flux.train!
 
 The following is the same neural ODE example as before, but now using Flux.jl
 directly with `Flux.train!`. Notice that the only difference is that we have to

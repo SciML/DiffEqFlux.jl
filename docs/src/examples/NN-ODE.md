@@ -1,4 +1,4 @@
-# Neural Ordinary Differential Equations
+# Neural Ordinary Differential Equations with sciml_train
 
 Next we define a single layer neural network that using the [AD-compatible
 `concrete_solve`
