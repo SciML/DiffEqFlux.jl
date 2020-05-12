@@ -1,4 +1,4 @@
-# Enforcing Physical Constraints Neural Differential-Algebraic Equations
+# Enforcing Physical Constraints via Neural Differential-Algebraic Equations
 
 As shown in the [stiff ODE tutorial](https://docs.juliadiffeq.org/latest/tutorials/advanced_ode_example/#Handling-Mass-Matrices-1),
 differential-algebraic equations (DAEs) can be used to impose physical
