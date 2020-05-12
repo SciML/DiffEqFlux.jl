@@ -1,7 +1,10 @@
 # Neural Differential Equation Layer Functions
 
 The following layers are helper functions for easily building neural differential
-equation architectures in the current most efficient way.
+equation architectures in the current most efficient way. As demonstrated in the
+tutorials, they do not have to be used since automatic differentiation will
+just work over `concrete_solve`, but these cover common use cases and choose
+what's known to be the optimal mode of AD for the respective equation type.
 
 ```@docs
 NeuralODE
