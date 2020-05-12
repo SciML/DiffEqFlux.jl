@@ -24,7 +24,9 @@ the documentation which contains the un-released features.
 ## Problem Domain
 
 DiffEqFlux.jl is not just for neural ordinary differential equations.
-DiffEqFlux.jl is for universal differential equations. Neural networks can
+DiffEqFlux.jl is for universal differential equations, where these can include
+delays, physical constraints, stochasticity, events, and all other kinds of
+interesting behavior that shows up in scientific simulations. Neural networks can
 be all or part of the model. They can be around the differential equation,
 in the cost function, or inside of the differential equation. Neural networks
 representing unknown portions of the model or functions can go anywhere you
