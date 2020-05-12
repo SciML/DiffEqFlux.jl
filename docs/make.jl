@@ -14,9 +14,9 @@ makedocs(
         "Home" => "index.md",
         "Tutorials" => Any[
             "examples/LV-ODE.md",
+            "examples/LV-stochastic.md",
             "examples/LV-Flux.md",
             "examples/LV-delay.md",
-            "examples/LV-stochastic.md",
             "examples/NN-ODE.md",
             "examples/NeuralODE_Flux.md",
             "examples/NN-SDE.md",
