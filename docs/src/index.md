@@ -35,6 +35,40 @@ explore various ways to integrate the two methodologies:
 - ODEs can be defined where some terms are neural networks
 - Cost functions on ODEs can define neural networks
 
+## Basics
+
+The basics are all provided by the
+[DifferentialEquations.jl](https://docs.sciml.ai/latest/) package. Specifically,
+[the `concrete_solve` function is automatically compatible with AD systems like Zygote.jl](https://docs.sciml.ai/latest/analysis/sensitivity/)
+and thus there is no machinery that is necessary to use DifferentialEquations.jl
+package. For example, the following computes the solution to an ODE and computes
+the gradient of a loss function (the sum of the ODE's output at each timepoint
+with dt=0.1) via the adjoint method:
+
+```julia
+using DiffEqSensitivity, OrdinaryDiffEq, Zygote
+
+function fiip(du,u,p,t)
+  du[1] = dx = p[1]*u[1] - p[2]*u[1]*u[2]
+  du[2] = dy = -p[3]*u[2] + p[4]*u[1]*u[2]
+end
+p = [1.5,1.0,3.0,1.0]; u0 = [1.0;1.0]
+prob = ODEProblem(fiip,u0,(0.0,10.0),p)
+sol = concrete_solve(prob,Tsit5())
+loss(u0,p) = sum(concrete_solve(prob,Tsit5(),u0,p,saveat=0.1))
+du01,dp1 = Zygote.gradient(loss,u0,p)
+```
+
+Thus what DiffEqFlux.jl provides is:
+
+- A bunch of tutorials, documentation, and test cases for this combination
+  with neural network libraries and GPUs.
+- Pre-built layer functions for common use cases like neural ODEs
+- Specailized layer functions (`FastDense`) to improve neural differential equation
+  training performance.
+- A specialized optimization function `sciml_train` with a training loop that
+  allows non-machine learning libraries to be easily utilized.
+
 ## Citation
 
 If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond
