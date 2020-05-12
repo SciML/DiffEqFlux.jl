@@ -5,9 +5,8 @@ more details, [see the DifferentialEquations.jl documentation](http://docs.julia
 
 ```math
 \begin{aligned}
-\frac{dx}{dt} &= \sigma \left( y - x \right)      \\
-\frac{dy}{dt} &= x \left( \rho - z \right) - y    \\
-\frac{dz}{dt} &= x y - \beta z                    \\
+\frac{dx}{dt} &= \alpha x - \beta x y      \\
+\frac{dy}{dt} &= -\delta*y + \gamma*x*y    \\
 \end{aligned}
 ```
 
