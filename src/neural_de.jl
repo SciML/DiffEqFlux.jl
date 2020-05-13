@@ -1,6 +1,17 @@
 abstract type NeuralDELayer <: Function end
 basic_tgrad(u,p,t) = zero(u)
 
+struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
+    model::M
+    p::P
+    re::RE
+    tspan::T
+    solver::S
+    args::A
+    kwargs::K
+
+end
+
 """
 Constructs a continuous-time recurrant neural network, also known as a neural
 ordinary differential equation (neural ODE), with a fast gradient calculation
@@ -34,17 +45,6 @@ Ref
 [1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
 
 """
-struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
-    model::M
-    p::P
-    re::RE
-    tspan::T
-    solver::S
-    args::A
-    kwargs::K
-
-end
-
 function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
     p,re = Flux.destructure(model)
     NeuralODE(model,p,re,tspan,solver,args;kwargs)
@@ -75,6 +75,19 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
                                 n.kwargs...)
 end
 
+struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
+    p::P
+    len::Int
+    model1::M
+    re1::RE
+    model2::M2
+    re2::RE2
+    tspan::T
+    solver::S
+    args::A
+    kwargs::K
+end
+
 """
 Constructs a neural stochastic differential equation (neural SDE) with diagonal noise.
 
@@ -100,19 +113,6 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
-    p::P
-    len::Int
-    model1::M
-    re1::RE
-    model2::M2
-    re2::RE2
-    tspan::T
-    solver::S
-    args::A
-    kwargs::K
-end
-
 function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
     p1,re1 = Flux.destructure(model1)
     p2,re2 = Flux.destructure(model2)
@@ -147,6 +147,20 @@ function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
+struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
+    p::P
+    len::Int
+    model1::M
+    re1::RE
+    model2::M2
+    re2::RE2
+    tspan::T
+    nbrown::Int
+    solver::S
+    args::A
+    kwargs::K
+end
+
 """
 Constructs a neural stochastic differential equation (neural SDE).
 
@@ -173,20 +187,6 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
-    p::P
-    len::Int
-    model1::M
-    re1::RE
-    model2::M2
-    re2::RE2
-    tspan::T
-    nbrown::Int
-    solver::S
-    args::A
-    kwargs::K
-end
-
 function NeuralSDE(model1,model2,tspan,nbrown,solver=nothing,args...;kwargs...)
     p1,re1 = Flux.destructure(model1)
     p2,re2 = Flux.destructure(model2)
@@ -221,6 +221,18 @@ function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
+struct NeuralCDDE{P,M,RE,H,L,T,S,A,K} <: NeuralDELayer
+    p::P
+    model::M
+    re::RE
+    hist::H
+    lags::L
+    tspan::T
+    solver::S
+    args::A
+    kwargs::K
+end
+
 """
 Constructs a neural delay differential equation (neural DDE) with constant
 delays.
@@ -250,18 +262,6 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralCDDE{P,M,RE,H,L,T,S,A,K} <: NeuralDELayer
-    p::P
-    model::M
-    re::RE
-    hist::H
-    lags::L
-    tspan::T
-    solver::S
-    args::A
-    kwargs::K
-end
-
 function NeuralCDDE(model,tspan,hist,lags,solver=nothing,args...;kwargs...)
     p,re = Flux.destructure(model)
     NeuralCDDE(p,model,re,hist,lags,tspan,solver,args,kwargs)
@@ -295,6 +295,19 @@ function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
+struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
+    model::M
+    constraints_model::M2
+    p::P
+    du0::D
+    re::RE
+    tspan::T
+    solver::S
+    differential_vars::DV
+    args::A
+    kwargs::K
+end
+
 """
 Constructs a neural differential-algebraic equation (neural DAE).
 
@@ -322,19 +335,6 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
-    model::M
-    constraints_model::M2
-    p::P
-    du0::D
-    re::RE
-    tspan::T
-    solver::S
-    differential_vars::DV
-    args::A
-    kwargs::K
-end
-
 function NeuralDAE(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
     p,re = Flux.destructure(model)
     NeuralDAE(model,constraints_model,p,du0,re,tspan,solver,differential_vars,args,kwargs)
@@ -359,6 +359,18 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     dudt_(du,u,p,t) = f
     prob = DAEProblem(dudt_,du0,x,n.tspan,p,differential_vars=n.differential_vars)
     concrete_solve(prob,n.solver,x,p,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
+end
+
+struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
+    model::M
+    constraints_model::M2
+    p::P
+    re::RE
+    tspan::T
+    solver::S
+    mass_matrix::MM
+    args::A
+    kwargs::K
 end
 
 """
@@ -401,18 +413,6 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
-    model::M
-    constraints_model::M2
-    p::P
-    re::RE
-    tspan::T
-    solver::S
-    mass_matrix::MM
-    args::A
-    kwargs::K
-end
-
 function NeuralODEMM(model,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
     p,re = Flux.destructure(model)
     NeuralODEMM(model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
