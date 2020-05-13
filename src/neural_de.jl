@@ -43,20 +43,17 @@ struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
     args::A
     kwargs::K
 
-    function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
-        p,re = Flux.destructure(model)
-        new{typeof(model),typeof(p),typeof(re),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
-            model,p,re,tspan,solver,args,kwargs)
-    end
+end
 
-    function NeuralODE(model::FastChain,tspan,solver=nothing,args...;kwargs...)
-        p = initial_params(model)
-        re = nothing
-        new{typeof(model),typeof(p),typeof(re),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
-            model,p,re,tspan,solver,args,kwargs)
-    end
+function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
+    p,re = Flux.destructure(model)
+    NeuralODE(model,p,re,tspan,solver,args;kwargs)
+end
+
+function NeuralODE(model::FastChain,tspan,solver=nothing,args...;kwargs...)
+    p = initial_params(model)
+    re = nothing
+    NeuralODE(model,p,re,tspan,solver,args;kwargs)
 end
 
 Flux.@functor NeuralODE
@@ -114,25 +111,22 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     solver::S
     args::A
     kwargs::K
-    function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
-        p1,re1 = Flux.destructure(model1)
-        p2,re2 = Flux.destructure(model2)
-        p = [p1;p2]
-        new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
-            length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
-    end
+end
 
-    function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,solver=nothing,args...;kwargs...)
-        p1 = initial_params(model1)
-        p2 = initial_params(model2)
-        re1 = nothing
-        re2 = nothing
-        p = [p1;p2]
-        new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
-            length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
-    end
+function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
+    p1,re1 = Flux.destructure(model1)
+    p2,re2 = Flux.destructure(model2)
+    p = [p1;p2]
+    NeuralDSDE(p,length(p1),model1,re1,model2,re2,tspan,solver,args;kwargs)
+end
+
+function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,solver=nothing,args...;kwargs...)
+    p1 = initial_params(model1)
+    p2 = initial_params(model2)
+    re1 = nothing
+    re2 = nothing
+    p = [p1;p2]
+    NeuralDSDE(p,length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
 end
 
 Flux.@functor NeuralDSDE
@@ -191,27 +185,23 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     solver::S
     args::A
     kwargs::K
-    function NeuralSDE(model1,model2,tspan,nbrown,solver=nothing,args...;kwargs...)
-        p1,re1 = Flux.destructure(model1)
-        p2,re2 = Flux.destructure(model2)
-        p = [p1;p2]
-        new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
-            p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
-    end
-
-    function NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,solver=nothing,args...;kwargs...)
-        p1 = initial_params(model1)
-        p2 = initial_params(model2)
-        re1 = nothing
-        re2 = nothing
-        p = [p1;p2]
-        new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
-            p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
-    end
 end
 
+function NeuralSDE(model1,model2,tspan,nbrown,solver=nothing,args...;kwargs...)
+    p1,re1 = Flux.destructure(model1)
+    p2,re2 = Flux.destructure(model2)
+    p = [p1;p2]
+    NeuralSDE(p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
+end
+
+function NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,solver=nothing,args...;kwargs...)
+    p1 = initial_params(model1)
+    p2 = initial_params(model2)
+    re1 = nothing
+    re2 = nothing
+    p = [p1;p2]
+    NeuralSDE(p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
+end
 
 Flux.@functor NeuralSDE
 
@@ -343,13 +333,11 @@ struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
     differential_vars::DV
     args::A
     kwargs::K
+end
 
-    function NeuralDAE(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
-        p,re = Flux.destructure(model)
-        new{typeof(p),typeof(model),typeof(constraints_model),typeof(du0),typeof(re),
-            typeof(tspan),typeof(solver),typeof(differential_vars),typeof(args),typeof(kwargs)}(
-            model,constraints_model,p,du0,re,tspan,solver,differential_vars,args,kwargs)
-    end
+function NeuralDAE(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
+    p,re = Flux.destructure(model)
+    NeuralDAE(model,constraints_model,p,du0,re,tspan,solver,differential_vars,args,kwargs)
 end
 
 Flux.@functor NeuralDAE
@@ -423,21 +411,17 @@ struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
     mass_matrix::MM
     args::A
     kwargs::K
+end
 
-    function NeuralODEMM(model,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
-        p,re = Flux.destructure(model)
-        new{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
-            typeof(tspan),typeof(solver),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
-            model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
-    end
+function NeuralODEMM(model,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
+    p,re = Flux.destructure(model)
+    NeuralODEMM(model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
+end
 
-    function NeuralODEMM(model::FastChain,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
-        p = initial_params(model)
-        re = nothing
-        new{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
-            typeof(tspan),typeof(solver),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
-            model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
-    end
+function NeuralODEMM(model::FastChain,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
+    p = initial_params(model)
+    re = nothing
+    NeuralODEMM(model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
 end
 
 Flux.@functor NeuralODEMM
