@@ -1,4 +1,5 @@
-using Documenter, DiffEqFlux
+push!(LOAD_PATH, "../src/")
+using Documenter, DocStringExtensions, DiffEqFlux
 
 makedocs(
     sitename = "DiffEqFlux.jl",

@@ -23,7 +23,7 @@ paramlength(c::FastChain) = sum(paramlength(x) for x in c.layers)
 initial_params(c::FastChain) = vcat(initial_params.(c.layers)...)
 
 """
-FastDense(in,out,activation=identity;
+    FastDense(in,out,activation=identity;
           initW = Flux.glorot_uniform, initb = Flux.zeros)
 
 A Dense layer `activation.(W*x + b)` with input size `in` and output size `out`.
@@ -73,7 +73,7 @@ paramlength(f::FastDense) = f.out*(f.in + 1)
 initial_params(f::FastDense) = f.initial_params()
 
 """
-StaticDense(in,out,activation=identity;
+    StaticDense(in,out,activation=identity;
           initW = Flux.glorot_uniform, initb = Flux.zeros)
 
 A Dense layer `activation.(W*x + b)` with input size `in` and output size `out`.

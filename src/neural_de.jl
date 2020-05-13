@@ -13,11 +13,11 @@ struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
 end
 
 """
-Constructs a continuous-time recurrant neural network, also known as a neural
-ordinary differential equation (neural ODE), with a fast gradient calculation
-via adjoints [1]. At a high level this corresponds to solving the forward
-differential equation, using a second differential equation that propagates the
-derivatives of the loss backwards in time.
+    Constructs a continuous-time recurrant neural network, also known as a neural
+    ordinary differential equation (neural ODE), with a fast gradient calculation
+    via adjoints [1]. At a high level this corresponds to solving the forward
+    differential equation, using a second differential equation that propagates the
+    derivatives of the loss backwards in time.
 
 ```julia
 NeuralODE(model,tspan,alg=nothing,args...;kwargs...)
@@ -89,7 +89,7 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
 end
 
 """
-Constructs a neural stochastic differential equation (neural SDE) with diagonal noise.
+    Constructs a neural stochastic differential equation (neural SDE) with diagonal noise.
 
 ```julia
 NeuralDSDE(model1,model2,tspan,alg=nothing,args...;
@@ -162,7 +162,7 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
 end
 
 """
-Constructs a neural stochastic differential equation (neural SDE).
+    Constructs a neural stochastic differential equation (neural SDE).
 
 ```julia
 NeuralSDE(model1,model2,tspan,nbrown,alg=nothing,args...;
@@ -234,8 +234,8 @@ struct NeuralCDDE{P,M,RE,H,L,T,S,A,K} <: NeuralDELayer
 end
 
 """
-Constructs a neural delay differential equation (neural DDE) with constant
-delays.
+    Constructs a neural delay differential equation (neural DDE) with constant
+    delays.
 
 ```julia
 NeuralCDDE(model,tspan,hist,lags,alg=nothing,args...;
@@ -309,7 +309,7 @@ struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
 end
 
 """
-Constructs a neural differential-algebraic equation (neural DAE).
+    Constructs a neural differential-algebraic equation (neural DAE).
 
 ```julia
 NeuralDAE(model,constraints_model,tspan,alg=nothing,args...;
@@ -374,10 +374,10 @@ struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
 end
 
 """
-Constructs a physically-constrained continuous-time recurrant neural network,
-also known as a neural differential-algebraic equation (neural DAE), with a
-mass matrix and a fast gradient calculation via adjoints [1]. The mass matrix
-formulation is:
+    Constructs a physically-constrained continuous-time recurrant neural network,
+    also known as a neural differential-algebraic equation (neural DAE), with a
+    mass matrix and a fast gradient calculation via adjoints [1]. The mass matrix
+    formulation is:
 
 ```math
 Mu' = f(u,p,t)
