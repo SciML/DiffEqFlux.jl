@@ -132,9 +132,3 @@ remade_solution = solve(remake(prob_ode, p = result_ode.minimizer), Tsit5(),
 ```
 
 ![Final plot](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
-
-This shows the evolution of the solutions:
-
-```@example ode
-animate(list_plots) # hide
-```
