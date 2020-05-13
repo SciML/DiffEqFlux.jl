@@ -1,4 +1,4 @@
-# Universal Differential Equations for Neural Optimal Control
+# Universal Differential Equations for Neural Feedback Control
 
 You can also mix a known differential equation and a neural differential
 equation, so that the parameters and the neural network are estimated
@@ -6,8 +6,9 @@ simultaneously!
 
 Here's an example of doing this with both reverse-mode autodifferentiation and
 with adjoints. We will assume that we know the dynamics of the second equation
-(linear dynamics), and our goal is to find a neural network that will control
-the second equation to stay close to 1.
+(linear dynamics), and our goal is to find a neural network that is dependent
+on the current state of the dynamical system that will control the second
+equation to stay close to 1.
 
 ```julia
 using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, Plots
