@@ -20,6 +20,7 @@ makedocs(
             "examples/NN-ODE.md",
             "examples/NeuralODE_Flux.md",
             "examples/NN-SDE.md",
+            "examples/NeuralOptimalControl.md",
             "examples/LV-Univ.md",
             "examples/LV-NN-Stiff.md",
             "examples/LV-Jump.md",
