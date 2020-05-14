@@ -11,7 +11,7 @@ where we want to optimize our controller `u(t)` such that the following is
 minimized:
 
 ```math
-L(\theta) = \sum_i \Vert 4 - x(t_i) \Vert + 2 \Vert x^\prime(t_i) + \Vert u(t_i) \Vert
+L(\theta) = \sum_i \Vert 4 - x(t_i) \Vert + 2 \Vert x^\prime(t_i) \Vert + \Vert u(t_i) \Vert
 ```
 
 where ``i`` is measured on (0,8) at 0.01 intervals. To do this, we rewrite the
@@ -27,7 +27,7 @@ v^′ &= u^3(t) \\
 and thus
 
 ```math
-L(\theta) = \sum_i \Vert 4 - x(t_i) \Vert + 2 \Vert v(t_i) + \Vert u(t_i) \Vert
+L(\theta) = \sum_i \Vert 4 - x(t_i) \Vert + 2 \Vert v(t_i) \Vert + \Vert u(t_i) \Vert
 ```
 
 is our loss function on the first order system. We thus choose a neural network
