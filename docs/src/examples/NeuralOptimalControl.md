@@ -11,15 +11,17 @@ where we want to optimize our controller `u(t)` such that the following is
 minimized:
 
 ```math
-L(\theta) = \sum_i \Vert 4 - x(t_i) \Vert + 2 \Vert x^\prime(t_i) + \Vert u(t_i) \Vert / 10
+L(\theta) = \sum_i \Vert 4 - x(t_i) \Vert + 2 \Vert x^\prime(t_i) + \Vert u(t_i) \Vert
 ```
 
 where ``i`` is measured on (0,8) at 0.01 intervals. To do this, we rewrite the
 ODE in first order form:
 
 ```math
-x^\prime = v
-v^′ = u(t)
+\begin{aligned}
+x^\prime &= v \\
+v^′ &= u(t)
+\end{aligned}
 ```
 
 and thus
