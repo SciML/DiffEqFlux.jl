@@ -6,7 +6,7 @@ more details, [see the DifferentialEquations.jl documentation](http://docs.julia
 ```math
 \begin{aligned}
 \frac{dx}{dt} &= \alpha x - \beta x y      \\
-\frac{dy}{dt} &= -\delta*y + \gamma*x*y    \\
+\frac{dy}{dt} &= -\delta y + \gamma x y    \\
 \end{aligned}
 ```
 
