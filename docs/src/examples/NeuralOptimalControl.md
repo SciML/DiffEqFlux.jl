@@ -4,7 +4,7 @@ Here we will solve a classic optimal control problem with a unviersal differenti
 equation. Let
 
 ```math
-x^′′ = u(t)
+x^{′′} = u(t)
 ```
 
 where we want to optimize our controller `u(t)` such that the following is
