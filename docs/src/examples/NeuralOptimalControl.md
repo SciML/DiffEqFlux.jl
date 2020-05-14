@@ -20,7 +20,7 @@ ODE in first order form:
 ```math
 \begin{aligned}
 x^\prime &= v \\
-v^′ &= u(t)
+v^′ &= u(t) \\
 \end{aligned}
 ```
 
