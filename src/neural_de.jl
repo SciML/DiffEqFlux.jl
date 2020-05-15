@@ -47,7 +47,7 @@ Ref
 """
 function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
     p,re = Flux.destructure(model)
-    NeuralODE(model,p,re,tspan,solver,args;kwargs)
+    NeuralODE(model,p,re,tspan,solver,args,kwargs)
 end
 function NeuralODE(model::FastChain,tspan,solver=nothing,args...;kwargs...)
     p = initial_params(model)
