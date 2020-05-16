@@ -1,5 +1,6 @@
 abstract type NeuralDELayer <: Function end
 basic_tgrad(u,p,t) = zero(u)
+Flux.trainable(m::NeuralDELayer) = (m.p,)
 
 """
 Constructs a continuous-time recurrant neural network, also known as a neural
