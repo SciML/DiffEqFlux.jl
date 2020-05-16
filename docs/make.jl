@@ -19,6 +19,7 @@ makedocs(
             "examples/LV-delay.md",
             "examples/NN-ODE.md",
             "examples/NeuralODE_Flux.md",
+            "examples/Supervised-NN-ODE-MNIST.md",
             "examples/local_minima.md",
             "examples/NN-SDE.md",
             "examples/NeuralOptimalControl.md",
