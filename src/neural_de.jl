@@ -52,7 +52,7 @@ end
 function NeuralODE(model::FastChain,tspan,solver=nothing,args...;kwargs...)
     p = initial_params(model)
     re = nothing
-    NeuralODE(model,p,re,tspan,solver,args;kwargs)
+    NeuralODE(model,p,re,tspan,solver,args,kwargs)
 end
 
 Flux.@functor NeuralODE
@@ -116,7 +116,7 @@ function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
     p1,re1 = Flux.destructure(model1)
     p2,re2 = Flux.destructure(model2)
     p = [p1;p2]
-    NeuralDSDE(p,length(p1),model1,re1,model2,re2,tspan,solver,args;kwargs)
+    NeuralDSDE(p,length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
 end
 
 function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,solver=nothing,args...;kwargs...)
