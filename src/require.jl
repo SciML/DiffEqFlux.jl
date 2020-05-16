@@ -1,3 +1,4 @@
+isgpu(x) = false
 function __init__()
     @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin
         gpu_or_cpu(x::CuArrays.CuArray) = CuArrays.CuArray
@@ -6,6 +7,12 @@ function __init__()
         gpu_or_cpu(x::Adjoint{<:Any,<:CuArrays.CuArray}) = CuArrays.CuArray
         gpu_or_cpu(x::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.CuArray
         gpu_or_cpu(x::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.CuArray
+        isgpu(::CuArrays.CuArray) = true
+        isgpu(::TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}) = true
+        isgpu(::Transpose{<:Any,<:CuArrays.CuArray}) = true
+        isgpu(::Adjoint{<:Any,<:CuArrays.CuArray}) = true
+        isgpu(::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = true
+        isgpu(::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = true
     end
 
     @require NLopt="76087f3c-5699-56af-9a33-bf431cd00edd" begin
@@ -62,7 +69,7 @@ function __init__()
                                                     NaN,
                                                     _time-t0,)
         end
-      
+
         function sciml_train(loss, θ, opt::NLopt.Opt, lower_bounds, upper_bounds, data = DEFAULT_DATA; maxeval=100, nstart=1)
           local x, cur, state
           cur,state = iterate(data)
