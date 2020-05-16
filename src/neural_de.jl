@@ -137,7 +137,8 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     end
 
     function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,solver=nothing,args...;
-                        p = [initial_params(model1);initial_params(model2)], kwargs...)
+                        p1 = initial_params(model1),
+                        p = [p1;initial_params(model2)], kwargs...)
         re1 = nothing
         re2 = nothing
         new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
@@ -219,7 +220,8 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     end
 
     function NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,solver=nothing,args...;
-                       p = [initial_params(model1);initial_params(model2)], kwargs...)
+                       p1 = initial_params(model1),
+                       p = [p1;initial_params(model2)], kwargs...)
         re1 = nothing
         re2 = nothing
         new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
