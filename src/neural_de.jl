@@ -292,19 +292,23 @@ struct NeuralCDDE{P,M,RE,H,L,T,S,A,K} <: NeuralDELayer
     solver::S
     args::A
     kwargs::K
-end
 
-function NeuralCDDE(model,tspan,hist,lags,solver=nothing,args...;p=nothing,kwargs...)
-    _p,re = Flux.destructure(model)
-    if p === nothing
-        p = _p
+    function NeuralCDDE(model,tspan,hist,lags,solver=nothing,args...;p=nothing,kwargs...)
+        _p,re = Flux.destructure(model)
+        if p === nothing
+            p = _p
+        end
+        new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,model,
+            re,hist,lags,tspan,solver,args,kwargs)
     end
-    NeuralCDDE(p,model,re,hist,lags,tspan,solver,args,kwargs)
-end
 
-function NeuralCDDE(model::FastChain,tspan,hist,lags,solver=nothing,args...;p = initial_params(model),kwargs...)
-    re = nothing
-    NeuralCDDE(p,model,re,hist,lags,tspan,solver,args,kwargs)
+    function NeuralCDDE(model::FastChain,tspan,hist,lags,solver=nothing,args...;p = initial_params(model),kwargs...)
+        re = nothing
+        new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
+            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,model,
+            re,hist,lags,tspan,solver,args,kwargs)
+    end
 end
 
 function Flux.functor(::Type{<:NeuralCDDE}, x)
