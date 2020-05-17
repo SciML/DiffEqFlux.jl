@@ -1,4 +1,4 @@
-# GPU-based Neural ODE Classifier for MNIST
+# GPU-based Neural ODE Classifier for MNIST with Minibatching
 
 The following is an example of training a classifier for MNIST using a neural
 ordinary differential equation on GPUs. Note that a few things are demonstrated
