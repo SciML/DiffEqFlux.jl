@@ -7,6 +7,7 @@ xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))
 tspan = (0.0f0,1.0f0)
 dudt = Chain(Dense(2,50,tanh),Dense(50,2))
 fastdudt = FastChain(FastDense(2,50,tanh),FastDense(50,2))
+staticdudt = FastChain(StaticDense(2,50,tanh),StaticDense(50,2))
 
 NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)(x)
 NeuralODE(dudt,tspan,Tsit5(),saveat=0.1)(x)
@@ -45,6 +46,15 @@ grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @test ! iszero(grads[xs])
 @test ! iszero(grads[node.p])
 
+node = NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint(autojacvec=ZygoteVJP()))
+grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
+@test ! iszero(grads[x])
+@test ! iszero(grads[node.p])
+
+grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
+@test ! iszero(grads[xs])
+@test ! iszero(grads[node.p])
+
 ## Fast
 
 @info "Test some fast layers"
@@ -67,14 +77,26 @@ grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @test ! iszero(grads[xs])
 @test ! iszero(grads[node.p])
 
-node = NeuralODE(fastdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint())
+goodgrad = grads[node.p]
+p = node.p
+
+node = NeuralODE(fastdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint(),p=p)
 grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
 @test ! iszero(grads[x])
 @test ! iszero(grads[node.p])
 
-@test_broken grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node)) isa Tuple
-#@test ! iszero(grads[xs])
-#@test ! iszero(grads[node.p])
+grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
+@test ! iszero(grads[xs])
+@test ! iszero(grads[node.p])
+goodgrad2 = grads[node.p]
+@test goodgrad ≈ goodgrad2 # Make sure adjoint overloads are correct
+
+node = NeuralODE(staticdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint(),p=p)
+grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
+@test ! iszero(grads[x])
+@test ! iszero(grads[node.p])
+
+@test_throws ErrorException grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 
 @info "Test some adjoints"
 

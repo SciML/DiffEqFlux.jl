@@ -73,8 +73,7 @@ function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,getfield(n,:tspan),p)
-    sense = isgpu(x) ? InterpolatingAdjoint(autojacvec=ZygoteVJP()) :
-               InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP())
+    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
     concrete_solve(prob,n.solver,x,p,n.args...;sense=sense,n.kwargs...)
 end
 
@@ -82,8 +81,7 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     dudt_(u,p,t) = n.model(u,p)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,n.tspan,p)
-    sense = isgpu(x) ? InterpolatingAdjoint(autojacvec=ZygoteVJP()) :
-               InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true))
+    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
     concrete_solve(prob,n.solver,x,p,n.args...;
                                 sensealg=sense,
                                 n.kwargs...)
@@ -504,9 +502,7 @@ function (n::NeuralODEMM)(x,p=n.p)
     dudt_= ODEFunction{false}(f,mass_matrix=n.mass_matrix)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
 
-    sense = isgpu(x) ? InterpolatingAdjoint(autojacvec=ZygoteVJP()) :
-               InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP())
-
+    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
     concrete_solve(prob,n.solver,x,p,n.args...;sensealg=sense,n.kwargs...)
 end
 
@@ -519,9 +515,7 @@ function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
     dudt_= ODEFunction{false}(f;mass_matrix=n.mass_matrix)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
 
-    sense = isgpu(x) ? InterpolatingAdjoint(autojacvec=ZygoteVJP()) :
-               InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true))
-
+    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
     concrete_solve(prob,n.solver,x,p,n.args...;
                    sensealg=sense,n.kwargs...)
 end
