@@ -23,6 +23,13 @@ end
 end
 
 if !is_APPVEYOR && GROUP == "GPU"
+  if is_TRAVIS
+      using Pkg
+      Pkg.add("MLDataUtils")
+      Pkg.add("NNlib")
+      Pkg.add("MLDatasets")
+      Pkg.add("CuArrays")
+  end
   @safetestset "odenet GPU" begin include("odenet_gpu.jl") end
   @safetestset "Neural DE GPU Tests" begin include("neural_de_gpu.jl") end
 end
