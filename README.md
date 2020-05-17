@@ -32,7 +32,7 @@ in the cost function, or inside of the differential equation. Neural networks
 representing unknown portions of the model or functions can go anywhere you
 have uncertainty in the form of the scientific simulator. For an overview of the
 topic with applications, consult the paper [Universal Differential Equations for
-Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
+Scientific Machine Learning](https://arxiv.org/abs/2001.04385).
 
 As such, it is the first package to support and demonstrate:
 
