@@ -45,7 +45,6 @@ grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @test ! iszero(grads[xs])
 @test ! iszero(grads[node.p])
 
-## Fast
 
 @info "Test some fast layers"
 

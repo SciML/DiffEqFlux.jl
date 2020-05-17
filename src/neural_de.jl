@@ -1,15 +1,14 @@
 abstract type NeuralDELayer <: Function end
 basic_tgrad(u,p,t) = zero(u)
 
-struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
-    model::M
+struct NeuralODE{P,RE,T,S,M,A,K} <: NeuralDELayer
     p::P
     re::RE
     tspan::T
     solver::S
+    model::M
     args::A
     kwargs::K
-
 end
 
 """
@@ -20,7 +19,7 @@ end
     derivatives of the loss backwards in time.
 
 ```julia
-NeuralODE(model,tspan,alg=nothing,args...;kwargs...)
+NeuralODE(model::Chain,tspan,alg=nothing,args...;kwargs...)
 NeuralODE(model::FastChain,tspan,alg=nothing,args...;
           sensealg=InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
           kwargs...)
@@ -43,30 +42,29 @@ Arguments:
 
 Ref
 [1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-
 """
-function NeuralODE(model,tspan,solver=nothing,args...;kwargs...)
+function NeuralODE(model::Chain,tspan,solver=nothing,args...;kwargs...)
     p,re = Flux.destructure(model)
-    NeuralODE(model,p,re,tspan,solver,args,kwargs)
+    NeuralODE(p,re,tspan,solver,model,args,kwargs)
 end
 function NeuralODE(model::FastChain,tspan,solver=nothing,args...;kwargs...)
     p = initial_params(model)
     re = nothing
-    NeuralODE(model,p,re,tspan,solver,args,kwargs)
+    NeuralODE(p,re,tspan,solver,model,args,kwargs)
 end
 
 Flux.@functor NeuralODE
 
-function (n::NeuralODE)(x,p=n.p)
+function (n::NeuralODE{P,RE,T,S,M,A,K})(x,p=n.p) where {P,RE,T,S,M<:Chain,A,K}
     dudt_(u,p,t) = n.re(p)(u)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;n.kwargs...)
 end
 
-function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
-    dudt_(u,p,t) = n.model(u,p)
-    ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
+function (n::NeuralODE{P,RE,T,S,M,A,K})(x,p=n.p) where {P,RE,T,S,M<:FastChain,A,K}
+    fastdudt_(u,p,t) = n.model(u,p)
+    ff = ODEFunction{false}(fastdudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,n.tspan,p)
     concrete_solve(prob,n.solver,x,p,n.args...;
                                 sensealg=InterpolatingAdjoint(
@@ -112,13 +110,12 @@ Arguments:
   documentation for more details.
 
 """
-function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;kwargs...)
+function NeuralDSDE(model1::Chain,model2::Chain,tspan,solver=nothing,args...;kwargs...)
     p1,re1 = Flux.destructure(model1)
     p2,re2 = Flux.destructure(model2)
     p = [p1;p2]
     NeuralDSDE(p,length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
 end
-
 function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,solver=nothing,args...;kwargs...)
     p1 = initial_params(model1)
     p2 = initial_params(model2)
@@ -186,13 +183,12 @@ Arguments:
   documentation for more details.
 
 """
-function NeuralSDE(model1,model2,tspan,nbrown,solver=nothing,args...;kwargs...)
+function NeuralSDE(model1::Chain,model2::Chain,tspan,nbrown,solver=nothing,args...;kwargs...)
     p1,re1 = Flux.destructure(model1)
     p2,re2 = Flux.destructure(model2)
     p = [p1;p2]
     NeuralSDE(p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
 end
-
 function NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,solver=nothing,args...;kwargs...)
     p1 = initial_params(model1)
     p2 = initial_params(model2)
@@ -261,11 +257,10 @@ Arguments:
   documentation for more details.
 
 """
-function NeuralCDDE(model,tspan,hist,lags,solver=nothing,args...;kwargs...)
+function NeuralCDDE(model::Chain,tspan,hist,lags,solver=nothing,args...;kwargs...)
     p,re = Flux.destructure(model)
     NeuralCDDE(p,model,re,hist,lags,tspan,solver,args,kwargs)
 end
-
 function NeuralCDDE(model::FastChain,tspan,hist,lags,solver=nothing,args...;kwargs...)
     p = initial_params(model)
     re = nothing
@@ -334,7 +329,7 @@ Arguments:
   documentation for more details.
 
 """
-function NeuralDAE(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
+function NeuralDAE(model::Chain,constraints_model,tspan,solver=nothing,du0=nothing,args...;differential_vars=nothing,kwargs...)
     p,re = Flux.destructure(model)
     NeuralDAE(model,constraints_model,p,du0,re,tspan,solver,differential_vars,args,kwargs)
 end
@@ -412,11 +407,10 @@ Arguments:
   documentation for more details.
 
 """
-function NeuralODEMM(model,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
+function NeuralODEMM(model::Chain,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
     p,re = Flux.destructure(model)
     NeuralODEMM(model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
 end
-
 function NeuralODEMM(model::FastChain,constraints_model,tspan,mass_matrix,solver=nothing,args...;kwargs...)
     p = initial_params(model)
     re = nothing
