@@ -65,7 +65,10 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     Wbar = zbar * x'
     bbar = zbar
     xbar = W' * zbar
-    nothing,xbar,vcat(vec(Wbar),bbar)
+    pbar = typeof(bbar) <: AbstractVector ?
+                             vec(vcat(vec(Wbar),bbar)) :
+                             vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+    nothing,xbar,pbar
   end
   y,FastDense_adjoint
 end
@@ -116,11 +119,16 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
     else
       σbar = ForwardDiff.derivative.(f.σ,r)
     end
+    if typeof(ȳ) <: AbstractMatrix
+      error("StaticDense only supports vector data")
+    end
     zbar = SVector{out}(ȳ) .* σbar
     Wbar = zbar * SVector{in}(x)'
     bbar = zbar
     xbar = W' * zbar
-    pbar = vcat(vec(Wbar),bbar)
+    pbar = typeof(bbar) <: AbstractVector ?
+                             vec(vcat(vec(Wbar),bbar)) :
+                             vec(vcat(vec(Wbar),sum(bbar,dims=2)))
     xbar_out = x isa SArray ? xbar : adapt(typeof(x),xbar)
     pbar_out = p isa SArray ? pbar : adapt(typeof(p),pbar)
     nothing,xbar_out,pbar_out
