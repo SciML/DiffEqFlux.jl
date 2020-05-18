@@ -1,6 +1,6 @@
 # Solving Optimal Control Problems with Universal Differential Equations
 
-Here we will solve a classic optimal control problem with a unviersal differential
+Here we will solve a classic optimal control problem with a universal differential
 equation. Let
 
 ```math
