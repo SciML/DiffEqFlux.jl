@@ -87,7 +87,7 @@ situation:
 list_plots = []
 iter = 0
 callback = function (p, l, pred)
-  global iter
+  global iter, list_plots
 
   if iter == 0
     list_plots = []
