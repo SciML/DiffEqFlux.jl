@@ -52,16 +52,19 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   else
     W = p[reshape(1:(f.out*f.in),f.out,f.in)]
   end
-  b = p[(f.out*f.in+1):end]
-  r = W*x .+ b
+
+  #b = p[(f.out*f.in+1):end]
+  #r = W*x .+ b
+  r = p[(f.out*f.in+1):end]
+  mul!(r,W,x,one(eltype(x)),one(eltype(x)))
+
   y = f.σ.(r)
   function FastDense_adjoint(ȳ)
     if typeof(f.σ) <: typeof(tanh)
-      σbar = 1 .- y.^2
+      zbar = ȳ .* (1 .- y.^2)
     else
-      σbar = ForwardDiff.derivative.(f.σ,r)
+      zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
     end
-    zbar = ȳ .* σbar
     Wbar = zbar * x'
     bbar = zbar
     xbar = W' * zbar
@@ -115,14 +118,13 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   y = f.σ.(r)
   function StaticDense_adjoint(ȳ)
     if typeof(f.σ) <: typeof(tanh)
-      σbar = 1 .- y.^2
+      zbar = SVector{out}(ȳ) .* 1 .- y.^2
     else
-      σbar = ForwardDiff.derivative.(f.σ,r)
+      zbar = SVector{out}(ȳ) .* ForwardDiff.derivative.(f.σ,r)
     end
     if typeof(ȳ) <: AbstractMatrix
       error("StaticDense only supports vector data")
     end
-    zbar = SVector{out}(ȳ) .* σbar
     Wbar = zbar * SVector{in}(x)'
     bbar = zbar
     xbar = W' * zbar
