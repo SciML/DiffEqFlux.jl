@@ -137,13 +137,13 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   r = W*x .+ b
   y = f.σ.(r)
   function StaticDense_adjoint(ȳ)
+    if typeof(ȳ) <: AbstractMatrix
+      error("StaticDense only supports vector data")
+    end
     if typeof(f.σ) <: typeof(tanh)
       zbar = SVector{out}(ȳ) .* 1 .- y.^2
     else
       zbar = SVector{out}(ȳ) .* ForwardDiff.derivative.(f.σ,r)
-    end
-    if typeof(ȳ) <: AbstractMatrix
-      error("StaticDense only supports vector data")
     end
     Wbar = zbar * SVector{in}(x)'
     bbar = zbar
