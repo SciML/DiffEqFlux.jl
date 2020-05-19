@@ -50,7 +50,11 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   @static if VERSION >= v"1.5"
     W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
   else
-    W = p[reshape(1:(f.out*f.in),f.out,f.in)]
+    if typeof(x) <: AbstractVector
+      W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
+    else
+      W = p[reshape(1:(f.out*f.in),f.out,f.in)]
+    end
   end
 
   if typeof(x) <: AbstractVector
@@ -69,7 +73,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     else
       zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
     end
-    ifgpufree(y); ifgpufree(r); ifgpufree(̄ȳ)
+    ifgpufree(y); ifgpufree(r); ifgpufree(ȳ)
 
     Wbar = zbar * x'
     bbar = zbar
