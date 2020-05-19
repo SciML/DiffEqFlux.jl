@@ -141,7 +141,7 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
       error("StaticDense only supports vector data")
     end
     if typeof(f.σ) <: typeof(tanh)
-      zbar = SVector{out}(ȳ) .* 1 .- y.^2
+      zbar = SVector{out}(ȳ) .* (1 .- y.^2)
     else
       zbar = SVector{out}(ȳ) .* ForwardDiff.derivative.(f.σ,r)
     end
