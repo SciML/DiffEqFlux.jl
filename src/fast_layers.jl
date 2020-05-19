@@ -50,24 +50,48 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   @static if VERSION >= v"1.5"
     W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
   else
-    W = p[reshape(1:(f.out*f.in),f.out,f.in)]
+    W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
   end
+
   b = p[(f.out*f.in+1):end]
   r = W*x .+ b
+  ifgpufree(b)
+
+  #=
+  if typeof(x) <: AbstractVector
+    r = p[(f.out*f.in+1):end]
+    mul!(r,W,x,one(eltype(x)),one(eltype(x)))
+  else
+    b = @view p[(f.out*f.in+1):end]
+    r = reshape(repeat(b,outer=size(x,2)),length(b),size(x,2))
+    mul!(r,W,x,one(eltype(x)),one(eltype(x)))
+  end
+  =#
+
   y = f.σ.(r)
+
+  if typeof(f.σ) <: typeof(tanh)
+    ifgpufree(r)
+  end
+
   function FastDense_adjoint(ȳ)
     if typeof(f.σ) <: typeof(tanh)
-      σbar = 1 .- y.^2
+      zbar = ȳ .* (1 .- y.^2)
+    elseif typeof(f.σ) <: typeof(identity)
+      zbar = ȳ
+      ifgpufree(r)
     else
-      σbar = ForwardDiff.derivative.(f.σ,r)
+      zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+      ifgpufree(r)
     end
-    zbar = ȳ .* σbar
+    ifgpufree(y)
     Wbar = zbar * x'
     bbar = zbar
     xbar = W' * zbar
     pbar = typeof(bbar) <: AbstractVector ?
                              vec(vcat(vec(Wbar),bbar)) :
                              vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+    ifgpufree(Wbar); ifgpufree(bbar); ifgpufree(ȳ)
     nothing,xbar,pbar
   end
   y,FastDense_adjoint
