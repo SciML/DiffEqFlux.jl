@@ -54,8 +54,8 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   end
 
   if typeof(x) <: AbstractVector
-  r = p[(f.out*f.in+1):end]
-  mul!(r,W,x,one(eltype(x)),one(eltype(x)))
+    r = p[(f.out*f.in+1):end]
+    mul!(r,W,x,one(eltype(x)),one(eltype(x)))
   else
     b = p[(f.out*f.in+1):end]
     r = W*x .+ b
