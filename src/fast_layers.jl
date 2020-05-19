@@ -57,16 +57,24 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     end
   end
 
+  #r = W*x .+ b
+  #ifgpufree(b)
+
   if typeof(x) <: AbstractVector
     r = p[(f.out*f.in+1):end]
     mul!(r,W,x,one(eltype(x)),one(eltype(x)))
   else
-    b = p[(f.out*f.in+1):end]
-    r = W*x .+ b
-    ifgpufree(b)
+    b = @view p[(f.out*f.in+1):end]
+    r = reshape(repeat(b,outer=size(x,2)),length(b),size(x,2))
+    mul!(r,W,x,one(eltype(x)),one(eltype(x)))
   end
 
   y = f.σ.(r)
+
+  if typeof(f.σ) <: typeof(tanh)
+    ifgpufree(r)
+  end
+
   function FastDense_adjoint(ȳ)
     if typeof(f.σ) <: typeof(tanh)
       zbar = ȳ .* (1 .- y.^2)
