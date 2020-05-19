@@ -1,7 +1,7 @@
 using Flux, DiffEqFlux, Test, StaticArrays
 
 fd = FastDense(2,25,tanh)
-pd = initial_params(fd)
+pd = Float64.(initial_params(fd))
 fd(ones(2),pd)
 
 f1 = FastDense(2,25,tanh)
