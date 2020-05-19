@@ -59,6 +59,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   else
     b = p[(f.out*f.in+1):end]
     r = W*x .+ b
+    ifgpufree(b)
   end
 
   y = f.σ.(r)
@@ -68,12 +69,16 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     else
       zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
     end
+    ifgpufree(y); ifgpufree(r); ifgpufree(̄ȳ)
+
     Wbar = zbar * x'
     bbar = zbar
     xbar = W' * zbar
+    ifgpufree(W)
     pbar = typeof(bbar) <: AbstractVector ?
                              vec(vcat(vec(Wbar),bbar)) :
                              vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+    ifgpufree(Wbar); ifgpufree(bbar)
     nothing,xbar,pbar
   end
   y,FastDense_adjoint
