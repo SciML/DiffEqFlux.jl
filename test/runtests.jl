@@ -17,6 +17,7 @@ if GROUP == "All"
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
     @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
+    @safetestset "Neural Second Order ODE Tests" begin include("second_order_ode.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
 end

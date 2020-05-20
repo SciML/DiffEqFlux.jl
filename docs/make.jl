@@ -24,7 +24,9 @@ makedocs(
             "examples/NN-SDE.md",
             "examples/NeuralOptimalControl.md",
             "examples/LV-Univ.md",
+            "examples/SecondOrderNeural.md",
             "examples/LV-NN-Stiff.md",
+            "examples/NewtonSecondOrderAdjoints.md",
             "examples/LV-Jump.md",
             "examples/universaldiffeq.md"
         ],

@@ -61,7 +61,6 @@ end
 
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
-nothing # hide
 ```
 
 Now let's define a neural network with a `NeuralODE` layer. First we define
@@ -73,7 +72,6 @@ dudt2 = FastChain((x, p) -> x.^3,
                   FastDense(2, 50, tanh),
                   FastDense(50, 2))
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
-nothing
 ```
 
 Note that we can directly use `Chain`s from Flux.jl as well, for example:
@@ -103,7 +101,6 @@ function loss_neuralode(p)
     loss = sum(abs2, ode_data .- pred)
     return loss, pred
 end
-nothing
 ```
 
 We define a callback function.
@@ -132,7 +129,6 @@ callback = function (p, l, pred; doplot = false)
 
   return false
 end
-nothing
 ```
 
 We then train the neural network to learn the ODE.
