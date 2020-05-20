@@ -24,6 +24,7 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "NeuralDE"
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
 end
+end
 
 if !is_APPVEYOR && GROUP == "GPU"
   if is_TRAVIS
