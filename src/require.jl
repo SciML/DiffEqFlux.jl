@@ -1,4 +1,5 @@
 isgpu(x) = false
+ifgpufree(x) = nothing
 function __init__()
     @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin
         gpu_or_cpu(x::CuArrays.CuArray) = CuArrays.CuArray
@@ -13,6 +14,12 @@ function __init__()
         isgpu(::Adjoint{<:Any,<:CuArrays.CuArray}) = true
         isgpu(::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = true
         isgpu(::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = true
+        ifgpufree(x::CuArrays.CuArray) = CuArrays.unsafe_free!(x)
+        ifgpufree(x::TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}) = CuArrays.unsafe_free!(x.data)
+        ifgpufree(x::Transpose{<:Any,<:CuArrays.CuArray}) = CuArrays.unsafe_free!(x.parent)
+        ifgpufree(x::Adjoint{<:Any,<:CuArrays.CuArray}) = CuArrays.unsafe_free!(x.parent)
+        ifgpufree(x::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.unsafe_free!((x.data).parent)
+        ifgpufree(x::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.unsafe_free!((x.data).parent)
     end
 
     @require NLopt="76087f3c-5699-56af-9a33-bf431cd00edd" begin
