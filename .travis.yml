@@ -12,6 +12,9 @@ julia:
 # matrix:
 #  allow_failures:
 #    - julia: nightly
+env:
+  - GROUP=Layers
+  - GROUP=NeuralDE
 notifications:
   email: false
 after_success:
