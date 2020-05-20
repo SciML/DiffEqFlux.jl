@@ -188,6 +188,6 @@ pmin = DiffEqFlux.sciml_train(loss_adjoint, p, NewtonTrustRegion())
 loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
 
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Optim.KrylovTrustRegion())
+pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Optim.KrylovTrustRegion(), maxiters = 100)
 loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
