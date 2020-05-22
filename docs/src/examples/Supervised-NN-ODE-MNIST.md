@@ -1,7 +1,9 @@
 # GPU-based MNIST Neural ODE Classifier
 
-Training a classifier for **MNIST** using a neural
-ordinary differential equation on **GPUs** with **Minibatching**. (Step-by-step details below)
+Training a classifier for **MNIST** using a neural ordinary differential equation **NN-ODE**
+on **GPUs** with **Minibatching**.
+
+(Step-by-step description below)
 
 ```julia
 using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
@@ -124,8 +126,7 @@ CuArrays.allowscalar(false)
 ensures that only optimized kernels are called when using the GPU.
 Additionally, the `gpu` function is shown as a way to translate models and data over to the GPU.
 Note that this function is CPU-safe, so if the GPU is disabled or unavailable, this
-code will fallback to the CPU. If the CPU fallback results in an error, we can also replace
-gpu(...) with Array(...).
+code will fallback to the CPU.
 
 ### Load MNIST Dataset into Minibatches
 
@@ -155,7 +156,7 @@ function loadmnist(batchsize = bs)
 end
 ```
 
-and then loaded from main
+and then loaded from main:
 ```
 #Main
 const bs = 128
@@ -166,8 +167,8 @@ x_train, y_train = loadmnist(bs)
 ### Layers
 
 The Neural Network requires passing inputs sequentially through multiple layers. We use
-`Chain` which allows inputs to functions to come from previous layer and send the outputs
-to the next. Four different sets of layers are used here.
+`Chain` which allows inputs to functions to come from previous layer and sends the outputs
+to the next. Four different sets of layers are used here:
 
 
 ```julia
@@ -206,8 +207,8 @@ layer with `tanh` activation
 
 ### Array Conversion
 
-When using `NeuralODE`, we can use thie following function as a cheap conversion of `DiffEqArray`
-from ODE solver into a Matrix that can be used for the following layer.
+When using `NeuralODE`, we can use the following function as a cheap conversion of `DiffEqArray`
+from the ODE solver into a Matrix that can be used in the following layer:
 
 ```julia
 function DiffEqArray_to_Array(x)
@@ -216,9 +217,13 @@ function DiffEqArray_to_Array(x)
 end
 ```
 
+For CPU: If this function does not automatically fallback to CPU when no GPU is present, we can
+change `gpu(x)` with `Array(x)`.
+
+
 ### Build Topology
 
-Next we connect all layers together in a single chain
+Next we connect all layers together in a single chain:
 
 ```julia
 #Build our over-all model topology
@@ -226,7 +231,10 @@ m = Chain(down,
           nn_ode,
           DiffEqArray_to_Array,
           fc) |> gpu
+```
+There are a few things we can do to examine the inner workings of our neural network:
 
+```julia
 #To understand the intermediate NN-ODE layer, we can examine it's dimensionality
 x_d = down(x_train[1])
 
@@ -234,7 +242,7 @@ x_d = down(x_train[1])
 x_m = m(x_train[1])
 ```
 
-This can also be built without the NN-ODE by replacing nn-ode with a simple nn.
+This can also be built without the NN-ODE by replacing `nn-ode` with a simple `nn`:
 
 ```julia
 #We can also build the model topology without a NN-ODE
@@ -247,7 +255,7 @@ x_m = m_no_ode(x_train[1])
 
 ### Prediction
 
-To convert the classification back into a readable format, we use `classify` which returns the prediction by taking the arg max of the output for each column of the minibatch.
+To convert the classification back into readable numbers, we use `classify` which returns the prediction by taking the arg max of the output for each column of the minibatch:
 
 ```julia
 classify(x) = argmax.(eachcol(x))
@@ -255,7 +263,7 @@ classify(x) = argmax.(eachcol(x))
 
 ### Accuracy
 
-We then evaluate the accuracy on 100 batches through the entire network at a time.
+We then evaluate the accuracy on 100 batches at a time through the entire network:
 
 ```julia
 function accuracy(model,data; n_batches=100)
@@ -273,8 +281,17 @@ end
 #burn in accuracy
 accuracy(m, zip(x_train,y_train))
 ```
+### Training Parameters
 
-### Loss
+Once we have our model, we can train our neural network by backpropagation using `Flux.train!`.
+This function requires **Loss**, **Optimizer** and **Callback** functions.
+
+#### Loss
+
+**Cross Entropy** is the loss function computed here which applies a **Softmax** operation on the
+final output of our model. `logitcrossentropy` takes in the prediction from our
+model `m(x)` and compares it to actual output `y`:
+
 ```julia
 loss(x,y) = logitcrossentropy(m(x),y)
 
@@ -282,15 +299,21 @@ loss(x,y) = logitcrossentropy(m(x),y)
 loss(x_train[1],y_train[1])
 ```
 
-### Optimizer
+#### Optimizer
+
+`ADAM` is specified here as our optimizer with a **learning rate of 0.05**:
+
 ```julia
 opt = ADAM(0.05)
-iter = 0
 ```
 
-### CallBack
+#### CallBack
+
+This callback function is used to print (`@show`) the accuracy after 10 training iterations:
 
 ```julia
+iter = 0
+
 cb() = begin
        global iter += 1
        #Monitor that the weights do infact update
@@ -301,10 +324,16 @@ end
 ```
 
 ### Train
+
+To train our model, we select the appropriate trainable parameters of our network with `params`.
+In our case, backpropagation is required for `down`, `nn_ode` and `fc`. Notice that the parameters
+for Neural ODE is given by `nn_ode.p`:
+
 ```julia
 # Train the NN-ODE and monitor the loss and weights.
 Flux.train!(loss, params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb)
 ```
+
 
 ### Expected Output
 
