@@ -113,9 +113,9 @@ Flux.train!( loss, params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb
 ```
 
 
-## Step-by-Step
+## Step-by-Step Description
 
-### Packages
+### Load Packages
 
 ```julia
 using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
