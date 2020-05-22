@@ -1,17 +1,7 @@
-### Documentation changes:
-
-* Short Title with keywords
-* Code first, explanation second
-* Minimal wording where appropriate
-* Less of a Pytorch documentation feel, more of a tutorial feel
-* Moved the part without NN-ODE to the step-by-step
-* Should make the variables more verbose?
-
-
 # GPU-based MNIST Neural ODE Classifier
 
-Training a classifier for <b>MNIST</b> using a neural
-ordinary differential equation on <b>GPUs</b> with <b>Minibatching</b>. (Step-by-step details below)
+Training a classifier for **MNIST** using a neural
+ordinary differential equation on **GPUs** with **Minibatching**. (Step-by-step details below)
 
 ```julia
 using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
@@ -113,16 +103,15 @@ Flux.train!( loss, params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb
 ```
 
 
-## Step-by-Step
+## Step-by-Step Description
 
-### Packages
+### Load Packages
 
 ```julia
 using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
 using Flux: logitcrossentropy
 using MLDatasets: MNIST
 ```
-
 
 ### GPU
 A good trick used here:
@@ -135,8 +124,8 @@ CuArrays.allowscalar(false)
 ensures that only optimized kernels are called when using the GPU.
 Additionally, the `gpu` function is shown as a way to translate models and data over to the GPU.
 Note that this function is CPU-safe, so if the GPU is disabled or unavailable, this
-code will fallback to the CPU. <mark><-- Change to "Should fallback to the CPU
-otherwise use Array( x )" ? </mark>
+code will fallback to the CPU. If the CPU fallback results in an error, we can also replace
+gpu(...) with Array(...).
 
 ### Load MNIST Dataset into Minibatches
 
@@ -145,7 +134,7 @@ and labels `y_train` by specifying batchsize `bs`. The function `convertlabel` w
 the current labels (`labels_raw`) from numbers 0 to 9 (`LabelEnc.NativeLabels(collect(0:9))`) into
 one hot encoding (`LabelEnc.OneOfK`).
 
-Features are reshaped into format <b>[Height, Width, Color, BatchSize]</b> or in this case <b>[28, 28, 1, 128]</b>
+Features are reshaped into format **[Height, Width, Color, BatchSize]** or in this case **[28, 28, 1, 128]**
 meaning that every minibatch will contain 128 images with a single color channel of 28x28 pixels.
 The entire dataset of 60,000 images is then split into these batches with `batchview` resulting in
 468 different batches (60,000 / 128) for both features and labels.
@@ -166,9 +155,9 @@ function loadmnist(batchsize = bs)
 end
 ```
 
-And then loaded from main
+and then loaded from main
 ```
-# Main
+#Main
 const bs = 128
 x_train, y_train = loadmnist(bs)
 ```
@@ -176,8 +165,8 @@ x_train, y_train = loadmnist(bs)
 
 ### Layers
 
-The Neural Network requires passing inputs sequentially through multiple layers.
-`Chain` allows inputs to functions to come from the previous layer and send the outputs
+The Neural Network requires passing inputs sequentially through multiple layers. We use
+`Chain` which allows inputs to functions to come from previous layer and send the outputs
 to the next. Four different sets of layers are used here.
 
 
@@ -203,16 +192,22 @@ nfe = 0
 ```
 
 `down`: Takes a 28x28 image, flattens it, then passes it through a fully connected
-layer with `tanh` activation<br>
-`nn`: Neural network chain three layers deep, `tanh` activation <br>
-`nn_ode`: ODE solver for neural network <mark><-- Should add more explanation </mark><br>
-`fc`: Final fully connected layer <br>
-`nfe`: <mark><-- not sure </mark><br>
-`|> gpu`: sends to GPU
+layer with `tanh` activation
+
+`nn`: Neural network chain three layers deep with `tanh` activation
+
+`nn_ode`: ODE solver layer
+
+`fc`: Final fully connected layer
+
+`nfe`: <mark><-- not sure </mark>
+
+`|> gpu`: Sends to GPU
 
 ### Array Conversion
 
-Cheap conversion of `DiffEqArray` from ODE solver into Matrix.
+When using `NeuralODE`, we can use thie following function as a cheap conversion of `DiffEqArray`
+from ODE solver into a Matrix that can be used for the following layer.
 
 ```julia
 function DiffEqArray_to_Array(x)
@@ -221,11 +216,9 @@ function DiffEqArray_to_Array(x)
 end
 ```
 
-This is required to convert the output of the Neural Network ODE.
-
 ### Build Topology
 
-Connect all layers together in a single chain
+Next we connect all layers together in a single chain
 
 ```julia
 #Build our over-all model topology
@@ -254,8 +247,7 @@ x_m = m_no_ode(x_train[1])
 
 ### Prediction
 
-Function that returns the prediction by taking the arg max of the output for each column
-of the minibatch.
+To convert the classification back into a readable format, we use `classify` which returns the prediction by taking the arg max of the output for each column of the minibatch.
 
 ```julia
 classify(x) = argmax.(eachcol(x))
@@ -263,8 +255,7 @@ classify(x) = argmax.(eachcol(x))
 
 ### Accuracy
 
-Check accuracy by running the network through 100 batches at a time.
-Use the `classify` function created above
+We then evaluate the accuracy on 100 batches through the entire network at a time.
 
 ```julia
 function accuracy(model,data; n_batches=100)
@@ -297,7 +288,7 @@ opt = ADAM(0.05)
 iter = 0
 ```
 
-### <mark>Unsure</mark>
+### CallBack
 
 ```julia
 cb() = begin
