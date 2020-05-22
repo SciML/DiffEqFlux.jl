@@ -33,6 +33,7 @@ dudt2 = FastChain((x, p) -> x.^3,
                   FastDense(2, 50, tanh),
                   FastDense(50, 2))
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
+p = prob_neuralode.p
 
 function predict_neuralode(p)
   Array(prob_neuralode(u0, p))
