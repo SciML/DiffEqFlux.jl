@@ -41,8 +41,6 @@ nn_ode = NeuralODE( nn, (0.f0, 1.f0), Tsit5(),
 
 fc  = Chain(Dense(20,10)) |&gt; gpu
 
-nfe = 0
-
 function DiffEqArray_to_Array(x)
     xarr = gpu(x)
     return reshape(xarr, size(xarr)[1:2])
@@ -90,7 +88,6 @@ cb() = begin
        #Monitor that the weights do infact update
        #Every 10 training iterations show accuracy
        (iter%10 == 0) &amp;&amp; @show accuracy(m, zip(x_train,y_train))
-       global nfe=0
 end
 
 # Train the NN-ODE and monitor the loss and weights.
@@ -126,9 +123,7 @@ nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                         reltol = 1e-3, abstol = 1e-3,
                         save_start = false) |&gt; gpu
 
-fc  = Chain(Dense(20,10)) |&gt; gpu
-
-nfe = 0</code></pre><p><code>down</code>: Takes a 28x28 image, flattens it, then passes it through a fully connected layer with <code>tanh</code> activation</p><p><code>nn</code>: Neural network chain three layers deep with <code>tanh</code> activation</p><p><code>nn_ode</code>: ODE solver layer</p><p><code>fc</code>: Final fully connected layer</p><p><code>nfe</code>: &lt;mark&gt;&lt;– not sure &lt;/mark&gt;</p><p><code>|&gt; gpu</code>: Sends to GPU</p><h3 id="Array-Conversion-1"><a class="docs-heading-anchor" href="#Array-Conversion-1">Array Conversion</a><a class="docs-heading-anchor-permalink" href="#Array-Conversion-1" title="Permalink"></a></h3><p>When using <code>NeuralODE</code>, we can use the following function as a cheap conversion of <code>DiffEqArray</code> from the ODE solver into a Matrix that can be used in the following layer:</p><pre><code class="language-julia">function DiffEqArray_to_Array(x)
+fc  = Chain(Dense(20,10)) |&gt; gpu</code></pre><p><code>down</code>: Takes a 28x28 image, flattens it, then passes it through a fully connected layer with <code>tanh</code> activation</p><p><code>nn</code>: Neural network chain three layers deep with <code>tanh</code> activation</p><p><code>nn_ode</code>: ODE solver layer</p><p><code>fc</code>: Final fully connected layer</p><p><code>|&gt; gpu</code>: Sends to GPU</p><h3 id="Array-Conversion-1"><a class="docs-heading-anchor" href="#Array-Conversion-1">Array Conversion</a><a class="docs-heading-anchor-permalink" href="#Array-Conversion-1" title="Permalink"></a></h3><p>When using <code>NeuralODE</code>, we can use the following function as a cheap conversion of <code>DiffEqArray</code> from the ODE solver into a Matrix that can be used in the following layer:</p><pre><code class="language-julia">function DiffEqArray_to_Array(x)
     xarr = gpu(x)
     return reshape(xarr, size(xarr)[1:2])
 end</code></pre><p>For CPU: If this function does not automatically fallback to CPU when no GPU is present, we can change <code>gpu(x)</code> with <code>Array(x)</code>.</p><h3 id="Build-Topology-1"><a class="docs-heading-anchor" href="#Build-Topology-1">Build Topology</a><a class="docs-heading-anchor-permalink" href="#Build-Topology-1" title="Permalink"></a></h3><p>Next we connect all layers together in a single chain:</p><pre><code class="language-julia">#Build our over-all model topology
@@ -167,7 +162,6 @@ cb() = begin
        #Monitor that the weights do infact update
        #Every 10 training iterations show accuracy
        (iter%10 == 0) &amp;&amp; @show accuracy(m, zip(x_train,y_train))
-       global nfe=0
 end</code></pre><h3 id="Train-1"><a class="docs-heading-anchor" href="#Train-1">Train</a><a class="docs-heading-anchor-permalink" href="#Train-1" title="Permalink"></a></h3><p>To train our model, we select the appropriate trainable parameters of our network with <code>params</code>. In our case, backpropagation is required for <code>down</code>, <code>nn_ode</code> and <code>fc</code>. Notice that the parameters for Neural ODE is given by <code>nn_ode.p</code>:</p><pre><code class="language-julia"># Train the NN-ODE and monitor the loss and weights.
 Flux.train!(loss, params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb)</code></pre><h3 id="Expected-Output-1"><a class="docs-heading-anchor" href="#Expected-Output-1">Expected Output</a><a class="docs-heading-anchor-permalink" href="#Expected-Output-1" title="Permalink"></a></h3><pre><code class="language-julia">accuracy(m, zip(x_train, y_train)) = 0.651015625
 accuracy(m, zip(x_train, y_train)) = 0.72375
@@ -214,4 +208,4 @@ accuracy(m, zip(x_train, y_train)) = 0.869375
 accuracy(m, zip(x_train, y_train)) = 0.87734375
 accuracy(m, zip(x_train, y_train)) = 0.888515625
 accuracy(m, zip(x_train, y_train)) = 0.88578125
-accuracy(m, zip(x_train, y_train)) = 0.8790625</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../NeuralODE_Flux/">« Neural Ordinary Differential Equations with Flux.train!</a><a class="docs-footer-nextpage" href="../local_minima/">Strategies to Avoid Local Minima »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 23 May 2020 14:18">Saturday 23 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+accuracy(m, zip(x_train, y_train)) = 0.8790625</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../NeuralODE_Flux/">« Neural Ordinary Differential Equations with Flux.train!</a><a class="docs-footer-nextpage" href="../local_minima/">Strategies to Avoid Local Minima »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 23 May 2020 21:09">Saturday 23 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
