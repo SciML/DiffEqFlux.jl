@@ -48,8 +48,6 @@ nn_ode = NeuralODE( nn, (0.f0, 1.f0), Tsit5(),
 
 fc  = Chain(Dense(20,10)) |> gpu
 
-nfe = 0
-
 function DiffEqArray_to_Array(x)
     xarr = gpu(x)
     return reshape(xarr, size(xarr)[1:2])
@@ -97,7 +95,6 @@ cb() = begin
        #Monitor that the weights do infact update
        #Every 10 training iterations show accuracy
        (iter%10 == 0) && @show accuracy(m, zip(x_train,y_train))
-       global nfe=0
 end
 
 # Train the NN-ODE and monitor the loss and weights.
@@ -188,8 +185,6 @@ nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                         save_start = false) |> gpu
 
 fc  = Chain(Dense(20,10)) |> gpu
-
-nfe = 0
 ```
 
 `down`: Takes a 28x28 image, flattens it, then passes it through a fully connected
@@ -200,8 +195,6 @@ layer with `tanh` activation
 `nn_ode`: ODE solver layer
 
 `fc`: Final fully connected layer
-
-`nfe`: <mark><-- not sure </mark>
 
 `|> gpu`: Sends to GPU
 
@@ -319,7 +312,6 @@ cb() = begin
        #Monitor that the weights do infact update
        #Every 10 training iterations show accuracy
        (iter%10 == 0) && @show accuracy(m, zip(x_train,y_train))
-       global nfe=0
 end
 ```
 
