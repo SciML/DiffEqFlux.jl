@@ -62,13 +62,6 @@ struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
     end
 end
 
-function Flux.functor(::Type{<:NeuralODE}, x)
-    function reconstruct_NeuralODE(xs)
-        return NeuralODE(xs.model, xs.tspan, xs.solver, xs.args...;p=xs.p, xs.kwargs...)
-    end
-    return (p = x.p,), reconstruct_Foo
-end
-
 function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
@@ -143,13 +136,6 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
             typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
             length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
     end
-end
-
-function Flux.functor(::Type{<:NeuralDSDE}, x)
-    function reconstruct_NeuralDSDE(xs)
-        return NeuralODE(xs.model1, xs.model2, xs.tspan, xs.solver, xs.args...;p=xs.p, xs.kwargs...)
-    end
-    return (p = x.p,), reconstruct_Foo
 end
 
 function (n::NeuralDSDE)(x,p=n.p)
@@ -228,13 +214,6 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     end
 end
 
-function Flux.functor(::Type{<:NeuralSDE}, x)
-    function reconstruct_NeuralSDE(xs)
-        return NeuralSDE(xs.model1, xs.model2, xs.tspan, xs.nbrown, xs.solver, xs.args...;p=xs.p, xs.kwargs...)
-    end
-    return (p = x.p,), reconstruct_Foo
-end
-
 function (n::NeuralSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
@@ -309,13 +288,6 @@ struct NeuralCDDE{P,M,RE,H,L,T,S,A,K} <: NeuralDELayer
     end
 end
 
-function Flux.functor(::Type{<:NeuralCDDE}, x)
-    function reconstruct_NeuralCDDE(xs)
-        return NeuralCDDE(xs.model, xs.tspan, xs.hist, xs.lags, xs.solver, xs.args...;p=xs.p, xs.kwargs...)
-    end
-    return (p = x.p,), reconstruct_Foo
-end
-
 function (n::NeuralCDDE)(x,p=n.p)
     function dudt_(u,h,p,t)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
@@ -386,13 +358,6 @@ struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
             typeof(tspan),typeof(solver),typeof(differential_vars),typeof(args),typeof(kwargs)}(
             model,constraints_model,p,du0,re,tspan,solver,differential_vars,args,kwargs)
     end
-end
-
-function Flux.functor(::Type{<:NeuralDAE}, x)
-    function reconstruct_NeuralDAE(xs)
-        return NeuralDAE(xs.model, xs.constraints, xs.tspan, xs.solver, xs.du0, xs.args...;p=xs.p, differential_vars = xs.differential_vars, xs.kwargs...)
-    end
-    return (p = x.p,), reconstruct_Foo
 end
 
 function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
@@ -484,13 +449,6 @@ struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
             typeof(tspan),typeof(solver),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
             model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
     end
-end
-
-function Flux.functor(::Type{<:NeuralODEMM}, x)
-    function reconstruct_NeuralODEMM(xs)
-        return NeuralODEMM(xs.model, xs.constraints, xs.tspan, xs.mass_matrix, xs.solver, xs.args...;p=xs.p, xs.kwargs...)
-    end
-    return (p = x.p,), reconstruct_Foo
 end
 
 function (n::NeuralODEMM)(x,p=n.p)
