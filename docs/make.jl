@@ -29,7 +29,7 @@ makedocs(
             "examples/NewtonSecondOrderAdjoints.md",
             "examples/LV-Jump.md",
             "examples/universaldiffeq.md", 
-            "examples/test.md"
+            "examples/minibatch.md"
         ],
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
         "Use with Flux Chain and train!" => "Flux.md",
