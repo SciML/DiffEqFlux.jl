@@ -50,7 +50,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   @static if VERSION >= v"1.5"
     W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
   else
-    W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
+    W = p[reshape(1:(f.out*f.in),f.out,f.in)]
   end
 
   b = p[(f.out*f.in+1):end]
