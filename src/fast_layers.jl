@@ -50,14 +50,13 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   @static if VERSION >= v"1.5"
     W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
   else
-    W = p[reshape(1:(f.out*f.in),f.out,f.in)]
+    W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
   end
 
-  b = p[(f.out*f.in+1):end]
-  r = W*x .+ b
-  ifgpufree(b)
+  #b = p[(f.out*f.in+1):end]
+  #r = W*x .+ b
+  #ifgpufree(b)
 
-  #=
   if typeof(x) <: AbstractVector
     r = p[(f.out*f.in+1):end]
     mul!(r,W,x,one(eltype(x)),one(eltype(x)))
@@ -66,7 +65,6 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     r = reshape(repeat(b,outer=size(x,2)),length(b),size(x,2))
     mul!(r,W,x,one(eltype(x)),one(eltype(x)))
   end
-  =#
 
   y = f.σ.(r)
 
