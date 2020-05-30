@@ -11,9 +11,6 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
     @safetestset "Layers SciML Tests" begin include("layers_sciml.jl") end
     @safetestset "Layers SDE" begin include("layers_sde.jl") end
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
-    @safetestset "Size Handling in Adjoint Tests" begin include("size_handling_adjoint.jl") end
-    @safetestset "odenet" begin include("odenet.jl") end
-    @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
 end
 
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "NeuralDE"
@@ -22,7 +19,14 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "NeuralDE"
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
     @safetestset "Neural Second Order ODE Tests" begin include("second_order_ode.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
+end
+
+if GROUP == "All" || GROUP == "Integration"
+    @safetestset "Stiff Nested AD Tests" begin include("stiff_nested_ad.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
+    @safetestset "Size Handling in Adjoint Tests" begin include("size_handling_adjoint.jl") end
+    @safetestset "odenet" begin include("odenet.jl") end
+    @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
 end
 end
 
