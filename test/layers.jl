@@ -1,4 +1,6 @@
-using DiffEqFlux, DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, Test #using Plots
+using Flux, OrdinaryDiffEq, Zygote, Test #using Plots
+println("Starting tests")
+using DiffEqFlux, DiffEqSensitivity
 
 function lotka_volterra(du,u,p,t)
   x, y = u
