@@ -41,7 +41,7 @@ explore various ways to integrate the two methodologies:
 
 The basics are all provided by the
 [DifferentialEquations.jl](https://docs.sciml.ai/latest/) package. Specifically,
-[the `concrete_solve` function is automatically compatible with AD systems like Zygote.jl](https://docs.sciml.ai/latest/analysis/sensitivity/)
+[the `solve` function is automatically compatible with AD systems like Zygote.jl](https://docs.sciml.ai/latest/analysis/sensitivity/)
 and thus there is no machinery that is necessary to use DifferentialEquations.jl
 package. For example, the following computes the solution to an ODE and computes
 the gradient of a loss function (the sum of the ODE's output at each timepoint
@@ -56,8 +56,8 @@ function fiip(du,u,p,t)
 end
 p = [1.5,1.0,3.0,1.0]; u0 = [1.0;1.0]
 prob = ODEProblem(fiip,u0,(0.0,10.0),p)
-sol = concrete_solve(prob,Tsit5())
-loss(u0,p) = sum(concrete_solve(prob,Tsit5(),u0,p,saveat=0.1))
+sol = solve(prob,Tsit5())
+loss(u0,p) = sum(solve(prob,Tsit5(),u0=u0,p=p,saveat=0.1))
 du01,dp1 = Zygote.gradient(loss,u0,p)
 ```
 

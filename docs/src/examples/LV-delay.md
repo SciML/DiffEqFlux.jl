@@ -31,8 +31,8 @@ prob_dde = DDEProblem(delay_lotka_volterra!, u0, h, (0.0, 10.0),
                       constant_lags = [0.1])
 
 function predict_dde(p)
-  return Array(concrete_solve(prob_dde, MethodOfSteps(Tsit5()),
-                              u0, p, saveat = 0.1,
+  return Array(solve(prob_dde, MethodOfSteps(Tsit5()),
+                              u0=u0, p=p, saveat = 0.1,
                               sensealg = TrackerAdjoint()))
 end
 

@@ -26,7 +26,7 @@ ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
 [compat]
 Adapt = "1"
 BlackBoxOptim = "0.5"
-DiffEqBase = "6.22"
+DiffEqBase = "6.36"
 DiffEqSensitivity = "6.7"
 DiffResults = "0.0.4, 1.0"
 Flux = "0.10.1"

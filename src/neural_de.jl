@@ -35,30 +35,29 @@ Ref
 [1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
 
 """
-struct NeuralODE{M,P,RE,T,S,A,K} <: NeuralDELayer
+struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
     model::M
     p::P
     re::RE
     tspan::T
-    solver::S
     args::A
     kwargs::K
 
-    function NeuralODE(model,tspan,solver=nothing,args...;p = nothing,kwargs...)
+    function NeuralODE(model,tspan,args...;p = nothing,kwargs...)
         _p,re = Flux.destructure(model)
         if p === nothing
             p = _p
         end
         new{typeof(model),typeof(p),typeof(re),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
-            model,p,re,tspan,solver,args,kwargs)
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,args,kwargs)
     end
 
-    function NeuralODE(model::FastChain,tspan,solver=nothing,args...;p = initial_params(model),kwargs...)
+    function NeuralODE(model::FastChain,tspan,args...;p = initial_params(model),kwargs...)
         re = nothing
         new{typeof(model),typeof(p),typeof(re),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
-            model,p,re,tspan,solver,args,kwargs)
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,args,kwargs)
     end
 end
 
@@ -67,7 +66,7 @@ function (n::NeuralODE)(x,p=n.p)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,getfield(n,:tspan),p)
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    concrete_solve(prob,n.solver,x,p,n.args...;sense=sense,n.kwargs...)
+    solve(prob,n.args...;sense=sense,n.kwargs...)
 end
 
 function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
@@ -75,9 +74,7 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,n.tspan,p)
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    concrete_solve(prob,n.solver,x,p,n.args...;
-                                sensealg=sense,
-                                n.kwargs...)
+    solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
 """
@@ -105,7 +102,7 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
+struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralDELayer
     p::P
     len::Int
     model1::M
@@ -113,28 +110,27 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     model2::M2
     re2::RE2
     tspan::T
-    solver::S
     args::A
     kwargs::K
-    function NeuralDSDE(model1,model2,tspan,solver=nothing,args...;p = nothing, kwargs...)
+    function NeuralDSDE(model1,model2,tspan,args...;p = nothing, kwargs...)
         p1,re1 = Flux.destructure(model1)
         p2,re2 = Flux.destructure(model2)
         if p === nothing
             p = [p1;p2]
         end
         new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
-            length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
+            typeof(tspan),typeof(args),typeof(kwargs)}(p,
+            length(p1),model1,re1,model2,re2,tspan,args,kwargs)
     end
 
-    function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,solver=nothing,args...;
+    function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,args...;
                         p1 = initial_params(model1),
                         p = [p1;initial_params(model2)], kwargs...)
         re1 = nothing
         re2 = nothing
         new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,
-            length(p1),model1,re1,model2,re2,tspan,solver,args,kwargs)
+            typeof(tspan),typeof(args),typeof(kwargs)}(p,
+            length(p1),model1,re1,model2,re2,tspan,args,kwargs)
     end
 end
 
@@ -143,7 +139,7 @@ function (n::NeuralDSDE)(x,p=n.p)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
@@ -151,7 +147,7 @@ function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     g(u,p,t) = n.model2(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 """
@@ -180,7 +176,7 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
+struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralDELayer
     p::P
     len::Int
     model1::M
@@ -189,28 +185,27 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,S,A,K} <: NeuralDELayer
     re2::RE2
     tspan::T
     nbrown::Int
-    solver::S
     args::A
     kwargs::K
-    function NeuralSDE(model1,model2,tspan,nbrown,solver=nothing,args...;p=nothing,kwargs...)
+    function NeuralSDE(model1,model2,tspan,nbrown,args...;p=nothing,kwargs...)
         p1,re1 = Flux.destructure(model1)
         p2,re2 = Flux.destructure(model2)
         if p === nothing
             p = [p1;p2]
         end
         new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
-            p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+            p,length(p1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
     end
 
-    function NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,solver=nothing,args...;
+    function NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,args...;
                        p1 = initial_params(model1),
                        p = [p1;initial_params(model2)], kwargs...)
         re1 = nothing
         re2 = nothing
         new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(
-            p,length(p1),model1,re1,model2,re2,tspan,nbrown,solver,args,kwargs)
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+            p,length(p1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
     end
 end
 
@@ -219,7 +214,7 @@ function (n::NeuralSDE)(x,p=n.p)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
@@ -227,7 +222,7 @@ function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     g(u,p,t) = n.model2(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 """
@@ -259,32 +254,31 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralCDDE{P,M,RE,H,L,T,S,A,K} <: NeuralDELayer
+struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
     p::P
     model::M
     re::RE
     hist::H
     lags::L
     tspan::T
-    solver::S
     args::A
     kwargs::K
 
-    function NeuralCDDE(model,tspan,hist,lags,solver=nothing,args...;p=nothing,kwargs...)
+    function NeuralCDDE(model,tspan,hist,lags,args...;p=nothing,kwargs...)
         _p,re = Flux.destructure(model)
         if p === nothing
             p = _p
         end
         new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,model,
-            re,hist,lags,tspan,solver,args,kwargs)
+            typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
+            re,hist,lags,tspan,args,kwargs)
     end
 
-    function NeuralCDDE(model::FastChain,tspan,hist,lags,solver=nothing,args...;p = initial_params(model),kwargs...)
+    function NeuralCDDE(model::FastChain,tspan,hist,lags,args...;p = initial_params(model),kwargs...)
         re = nothing
         new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
-            typeof(tspan),typeof(solver),typeof(args),typeof(kwargs)}(p,model,
-            re,hist,lags,tspan,solver,args,kwargs)
+            typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
+            re,hist,lags,tspan,args,kwargs)
     end
 end
 
@@ -295,7 +289,7 @@ function (n::NeuralCDDE)(x,p=n.p)
     end
     ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
-    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
@@ -305,7 +299,7 @@ function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     end
     ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
-    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 """
@@ -335,28 +329,29 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralDAE{P,M,M2,D,RE,T,S,DV,A,K} <: NeuralDELayer
+struct NeuralDAE{P,M,M2,D,RE,T,DV,A,K} <: NeuralDELayer
     model::M
     constraints_model::M2
     p::P
     du0::D
     re::RE
     tspan::T
-    solver::S
     differential_vars::DV
     args::A
     kwargs::K
 
-    function NeuralDAE(model,constraints_model,tspan,solver=nothing,du0=nothing,args...;p=nothing,differential_vars=nothing,kwargs...)
+    function NeuralDAE(model,constraints_model,tspan,du0=nothing,args...;p=nothing,differential_vars=nothing,kwargs...)
         _p,re = Flux.destructure(model)
 
         if p === nothing
             p = _p
         end
 
-        new{typeof(p),typeof(model),typeof(constraints_model),typeof(du0),typeof(re),
-            typeof(tspan),typeof(solver),typeof(differential_vars),typeof(args),typeof(kwargs)}(
-            model,constraints_model,p,du0,re,tspan,solver,differential_vars,args,kwargs)
+        new{typeof(p),typeof(model),typeof(constraints_model),
+            typeof(du0),typeof(re),typeof(tspan),
+            typeof(differential_vars),typeof(args),typeof(kwargs)}(
+            model,constraints_model,p,du0,re,tspan,differential_vars,
+            args,kwargs)
     end
 end
 
@@ -376,7 +371,7 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     end
     dudt_(du,u,p,t) = f
     prob = DAEProblem(dudt_,du0,x,n.tspan,p,differential_vars=n.differential_vars)
-    concrete_solve(prob,n.solver,x,p,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
 end
 
 """
@@ -419,18 +414,17 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
+struct NeuralODEMM{M,M2,P,RE,T,MM,A,K} <: NeuralDELayer
     model::M
     constraints_model::M2
     p::P
     re::RE
     tspan::T
-    solver::S
     mass_matrix::MM
     args::A
     kwargs::K
 
-    function NeuralODEMM(model,constraints_model,tspan,mass_matrix,solver=nothing,args...;
+    function NeuralODEMM(model,constraints_model,tspan,mass_matrix,args...;
                          p = nothing, kwargs...)
         _p,re = Flux.destructure(model)
 
@@ -438,16 +432,16 @@ struct NeuralODEMM{M,M2,P,RE,T,S,MM,A,K} <: NeuralDELayer
             p = _p
         end
         new{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
-            typeof(tspan),typeof(solver),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
-            model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
+            typeof(tspan),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
+            model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
     end
 
-    function NeuralODEMM(model::FastChain,constraints_model,tspan,mass_matrix,solver=nothing,args...;
+    function NeuralODEMM(model::FastChain,constraints_model,tspan,mass_matrix,args...;
                          p = initial_params(model), kwargs...)
         re = nothing
         new{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
-            typeof(tspan),typeof(solver),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
-            model,constraints_model,p,re,tspan,solver,mass_matrix,args,kwargs)
+            typeof(tspan),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
+            model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
     end
 end
 
@@ -461,7 +455,7 @@ function (n::NeuralODEMM)(x,p=n.p)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
 
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    concrete_solve(prob,n.solver,x,p,n.args...;sensealg=sense,n.kwargs...)
+    solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
 function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
@@ -474,6 +468,5 @@ function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
 
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    concrete_solve(prob,n.solver,x,p,n.args...;
-                   sensealg=sense,n.kwargs...)
+    solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end

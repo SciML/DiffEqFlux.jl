@@ -23,7 +23,7 @@ p = [2.2 1.0;2.0 0.4] # Tweaked Initial Parameter Array
 ps = Flux.params(p)
 
 function predict_adjoint() # Our 1-layer neural network
-  Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=0.0:0.1:10.0))
+  Array(solve(prob,Tsit5(),p=p,saveat=0.0:0.1:10.0))
 end
 
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())

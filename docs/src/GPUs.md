@@ -19,11 +19,10 @@ u0 = Float32[2.0; 0.0] |> gpu
 prob_gpu = ODEProblem(dudt!, u0, tspan, p)
 
 # Runs on a GPU
-sol_gpu = concrete_solve(prob_gpu, Tsit5(), saveat = tsteps)
+sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)
 ```
 
-and `concrete_solve` works similarly. Or we could directly use the neural ODE
-layer function, like:
+Or we could directly use the neural ODE layer function, like:
 
 ```julia
 prob_neuralode_gpu = NeuralODE(gpu(dudt2), tspan, Tsit5(), saveat = tsteps)
@@ -49,14 +48,14 @@ tsteps = 0.0:0.1:10.0
 prob_gpu = ODEProblem(dudt2_, u0, tspan, p)
 
 # Runs on a GPU
-sol_gpu = concrete_solve(prob_gpu, Tsit5(), saveat = tsteps)
+sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)
 ```
 
 or via the NeuralODE struct:
 
 ```julia
 prob_neuralode_gpu = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
-sol_gpu = concrete_solve(prob_neuralode_gpu, Tsit5(), saveat = tsteps)
+sol_gpu = solve(prob_neuralode_gpu, Tsit5(), saveat = tsteps)
 ```
 
 ## Neural ODE Example
