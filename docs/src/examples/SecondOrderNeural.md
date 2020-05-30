@@ -34,7 +34,7 @@ ff(du,u,p,t) = model(u,p)
 prob = SecondOrderODEProblem{false}(ff, du0, u0, tspan, p)
 
 function predict(p)
-    Array(concrete_solve(prob, Tsit5(), ArrayPartition(du0,u0), p, saveat=t))
+    Array(solve(prob, Tsit5(), p=p, saveat=t))
 end
 
 correct_pos = Float32.(transpose(hcat(collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end])))

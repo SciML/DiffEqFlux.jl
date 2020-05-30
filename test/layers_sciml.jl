@@ -14,7 +14,7 @@ prob = ODEProblem(lotka_volterra,u0,(0.0,10.0),p)
 # Reverse-mode
 
 function predict_rd(p)
-  Array(concrete_solve(prob,Tsit5(),u0,p,saveat=0.1,reltol=1e-4))
+  Array(solve(prob,Tsit5(),p=p,saveat=0.1,reltol=1e-4))
 end
 function loss_rd(p)
   sum(abs2,x-1 for x in predict_rd(p))
@@ -68,7 +68,7 @@ loss2 = loss_rd(pmin.minimizer)
 
 p = [2.2, 1.0, 2.0, 0.4]
 function predict_fd(p)
-  vec(Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=0.0:0.1:1.0,reltol=1e-4,sensealg=ForwardDiffSensitivity())))
+  vec(Array(solve(prob,Tsit5(),p=p,saveat=0.0:0.1:1.0,reltol=1e-4,sensealg=ForwardDiffSensitivity())))
 end
 loss_fd(p) = sum(abs2,x-1 for x in predict_fd(p))
 loss_fd(p)
@@ -113,7 +113,7 @@ loss2 = loss_fd(pmin.minimizer)
 p = [2.2, 1.0, 2.0, 0.4]
 ps = Flux.params(p)
 function predict_adjoint(p)
-    vec(Array(concrete_solve(prob,Tsit5(),eltype(p).(prob.u0),p,saveat=0.1,reltol=1e-4)))
+    vec(Array(solve(prob,Tsit5(),u0=eltype(p).(prob.u0),p=p,saveat=0.1,reltol=1e-4)))
 end
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint(p) = loss_reduction(predict_adjoint(p))
@@ -175,7 +175,7 @@ p = [2.2, 1.0, 2.0, 0.4]
 u0 = [1.0,1.0]
 prob = ODEProblem{false}(lotka_volterra2,u0,(0.0,10.0),p)
 function predict_adjoint(p)
-    vec(Array(concrete_solve(prob,Tsit5(),eltype(p).(prob.u0),p,saveat=0.1,reltol=1e-4)))
+    vec(Array(solve(prob,Tsit5(),p=p,saveat=0.1,reltol=1e-4)))
 end
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint(p) = loss_reduction(predict_adjoint(p))

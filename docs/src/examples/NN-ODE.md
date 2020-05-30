@@ -1,7 +1,7 @@
 # Neural Ordinary Differential Equations with sciml_train
 
 Next we define a single layer neural network that using the [AD-compatible
-`concrete_solve`
+`solve`
 function](https://docs.juliadiffeq.org/latest/analysis/sensitivity/) function
 that takes the parameters and an initial condition and returns the solution of
 the differential equation as a
@@ -21,7 +21,7 @@ p, re = Flux.destructure(model)
 dudt!(u, p, t) = re(p)(u)
 u0 = rand(2)
 prob = ODEProblem(dudt!, u0, tspan, p)
-my_neural_ode_prob = concrete_solve(prob, Tsit5(), u0, p, args...; kwargs...)
+my_neural_ode_prob = solve(prob, Tsit5(), args...; kwargs...)
 nothing
 ```
 

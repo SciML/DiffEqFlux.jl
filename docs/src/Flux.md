@@ -6,7 +6,7 @@ can be changed to the `Chain` and `Flux.train!` workflow.
 
 ## Using Flux `Chain` neural networks with Flux.train!
 
-This should work almost automatically by using `concrete_solve`. Here is an
+This should work almost automatically by using `solve`. Here is an
 example of optimizing `u0` and `p`.
 
 ```julia
@@ -31,7 +31,7 @@ dudt(u,p,t) = dudt2(u)
 prob = ODEProblem(dudt,u0,tspan)
 
 function predict_n_ode()
-  Array(concrete_solve(prob,Tsit5(),u0,p,saveat=t))
+  Array(solve(prob,Tsit5(),u0=u0,p=p,saveat=t))
 end
 
 function loss_n_ode()
@@ -105,7 +105,7 @@ prob = ODEProblem(dudt,u0,tspan)
 θ = [u0;p] # the parameter vector to optimize
 
 function predict_n_ode(θ)
-  Array(concrete_solve(prob,Tsit5(),θ[1:2],θ[3:end],saveat=t))
+  Array(solve(prob,Tsit5(),u0=θ[1:2],p=θ[3:end],saveat=t))
 end
 
 function loss_n_ode(θ)

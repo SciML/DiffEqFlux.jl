@@ -48,9 +48,9 @@ end
 x0 = [-4f0,0f0]
 ts = Float32.(collect(0.0:0.01:tspan[2]))
 prob = ODEProblem(dxdt_,x0,tspan,θ)
-concrete_solve(prob,Vern9(),x0,θ,abstol=1e-10,reltol=1e-10)
+solve(prob,Vern9(),x0,θ,abstol=1e-10,reltol=1e-10)
 function predict_adjoint(θ)
-  Array(concrete_solve(prob,Vern9(),x0,θ,saveat=ts,sensealg=InterpolatingAdjoint(autojacvec=ReverseDiffVJP(true))))
+  Array(solve(prob,Vern9(),p=θ,saveat=ts,sensealg=InterpolatingAdjoint(autojacvec=ReverseDiffVJP(true))))
 end
 function loss_adjoint(θ)
   x = predict_adjoint(θ)

@@ -11,7 +11,7 @@ ff(du,u,p,t) = model(u,p)
 prob = SecondOrderODEProblem{false}(ff, du0, u0, tspan, p)
 
 function predict(p)
-    Array(concrete_solve(prob, Tsit5(), ArrayPartition(du0,u0), p, saveat=t, sensealg = InterpolatingAdjoint(autojacvec=ZygoteVJP())))
+    Array(solve(prob, Tsit5(), p=p, saveat=t, sensealg = InterpolatingAdjoint(autojacvec=ZygoteVJP())))
 end
 
 correct_pos = Float32.(transpose(hcat(collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end])))
@@ -36,7 +36,7 @@ l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
 function predict(p)
-    Array(concrete_solve(prob, Tsit5(), ArrayPartition(du0,u0), p, saveat=t, sensealg = QuadratureAdjoint(autojacvec=ZygoteVJP())))
+    Array(solve(prob, Tsit5(), p=p, saveat=t, sensealg = QuadratureAdjoint(autojacvec=ZygoteVJP())))
 end
 
 correct_pos = Float32.(transpose(hcat(collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end])))
@@ -61,7 +61,7 @@ l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
 function predict(p)
-    Array(concrete_solve(prob, Tsit5(), ArrayPartition(du0,u0), p, saveat=t, sensealg = BacksolveAdjoint(autojacvec=ZygoteVJP())))
+    Array(solve(prob, Tsit5(), p=p, saveat=t, sensealg = BacksolveAdjoint(autojacvec=ZygoteVJP())))
 end
 
 correct_pos = Float32.(transpose(hcat(collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end])))

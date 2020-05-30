@@ -11,7 +11,7 @@ import Logging
 gpu_or_cpu(x) = Array
 
 function diffeq_fd(p,f,n,prob,solver=nothing,args...;u0=prob.u0,kwargs...)
-  @warn("diffeq_fd has been deprecated in the update of DiffEqFlux to Zygote support. Use the concrete_solve function with sensealg=ForwardDiffSensitivity() to recover the same functionality. See https://docs.juliadiffeq.org/latest/analysis/sensitivity/ for more details")
+  @warn("diffeq_fd has been deprecated in the update of DiffEqFlux to Zygote support. Use the solve function with sensealg=ForwardDiffSensitivity() to recover the same functionality. See https://docs.juliadiffeq.org/latest/analysis/sensitivity/ for more details")
   f(concrete_solve(prob,solver,u0,p,args...;kwargs...))
 end
 

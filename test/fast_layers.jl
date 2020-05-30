@@ -21,7 +21,7 @@ x = rand(2)
 fdgrad = Flux.Zygote.gradient((x,p)->sum(fd(x,p)),x,pd)
 fsgrad = Flux.Zygote.gradient((x,p)->sum(fs(x,p)),x,pd)
 @test fdgrad[1] ≈ fsgrad[1]
-@test fdgrad[2] ≈ fsgrad[2]
+@test fdgrad[2] ≈ fsgrad[2] rtol=1e-5
 
 # Now test vs Zygote
 struct TestDense{F,F2} <: DiffEqFlux.FastLayer
@@ -39,7 +39,7 @@ end
 ts = StaticDense(2,25,tanh)
 testgrad = Flux.Zygote.gradient((x,p)->sum(ts(x,p)),x,pd)
 @test fdgrad[1] ≈ testgrad[1]
-@test fdgrad[2] ≈ testgrad[2]
+@test fdgrad[2] ≈ testgrad[2] rtol=1e-5
 
 fsgrad = Flux.Zygote.gradient((x,p)->sum(fs(x,p)),SVector{2}(x),SVector{75}(pd))
 @test fsgrad[1] isa SArray

@@ -17,7 +17,7 @@ else ## false crashes. that is when i am tracking the initial conditions
     prob = ODEProblem(monomial,u0,tspan,p)
 end
 function predict_rd() # Our 1-layer neural network
-  Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=1.0:1.0:59.0,reltol=1e-4,sensealg=TrackerAdjoint()))
+  Array(solve(prob,Tsit5(),p=p,saveat=1.0:1.0:59.0,reltol=1e-4,sensealg=TrackerAdjoint()))
 end
 
 function loss_rd() ##L2 norm biases the newer times unfairly
@@ -63,7 +63,7 @@ else ## false crashes. that is when i am tracking the initial conditions
     prob = ODEProblem(monomial,u0,tspan,p)
 end
 function predict_adjoint() # Our 1-layer neural network
-  Array(concrete_solve(prob,Tsit5(),prob.u0,p,saveat=1.0,reltol=1e-4))
+  Array(solve(prob,Tsit5(),p=p,saveat=1.0,reltol=1e-4))
 end
 
 function loss_adjoint() ##L2 norm biases the newer times unfairly

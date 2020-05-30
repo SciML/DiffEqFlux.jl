@@ -29,7 +29,7 @@ prob_sde = SDEProblem(lotka_volterra!, lotka_volterra_noise!, u0, tspan)
 
 
 function predict_sde(p)
-  return Array(concrete_solve(prob_sde, SOSRI(), u0, p,
+  return Array(solve(prob_sde, SOSRI(), p=p,
                sensealg = ForwardDiffSensitivity(), saveat = 0.1))
 end
 
