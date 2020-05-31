@@ -139,7 +139,7 @@ function (n::NeuralDSDE)(x,p=n.p)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=ReverseDiffAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
@@ -147,7 +147,7 @@ function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     g(u,p,t) = n.model2(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=ReverseDiffAdjoint(),n.kwargs...)
 end
 
 """
@@ -289,7 +289,7 @@ function (n::NeuralCDDE)(x,p=n.p)
     end
     ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=ReverseDiffAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
@@ -299,7 +299,7 @@ function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     end
     ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=ReverseDiffAdjoint(),n.kwargs...)
 end
 
 """
@@ -371,7 +371,7 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     end
     dudt_(du,u,p,t) = f
     prob = DAEProblem(dudt_,du0,x,n.tspan,p,differential_vars=n.differential_vars)
-    solve(prob,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensalg=ReverseDiffAdjoint(),n.kwargs...)
 end
 
 """
