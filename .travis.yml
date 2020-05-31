@@ -15,6 +15,7 @@ julia:
 env:
   - GROUP=Layers
   - GROUP=NeuralDE
+  - GROUP=Integration
 notifications:
   email: false
 after_success:
