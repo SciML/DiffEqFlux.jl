@@ -74,7 +74,7 @@ callback = function (θ, l)
 
   println(l)
 
-  plt = plot(predict_univ(θ), ylim = (0, 6))
+  plt = plot(predict_univ(θ)', ylim = (0, 6))
   push!(list_plots, plt)
   display(plt)
   return false
