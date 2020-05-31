@@ -49,7 +49,7 @@ function dudt_univ!(du, u, p, t)
     du[2] = dsystem_output
 end
 
-prob_univ = ODEProblem(dudt_univ!, u0, tspan, p_all)
+prob_univ = ODEProblem(dudt_univ!, [0f0, u0], tspan, p_all)
 sol_univ = solve(prob_univ, Tsit5(),abstol = 1e-8, reltol = 1e-6)
 
 function predict_univ(θ)
