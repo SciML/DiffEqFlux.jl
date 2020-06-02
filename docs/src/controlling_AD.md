@@ -6,7 +6,7 @@ and universal differential equations to be fit in the manner that is most
 appropriate.
 
 To use the automatic differentiation overloads, the differential equation
-just needs to be solved with `solve`. Thus for example,
+just needs to be solved with `solve`. Thus, for example,
 
 ```julia
 using DiffEqSensitivity, OrdinaryDiffEq, Zygote
@@ -22,7 +22,7 @@ loss(u0,p) = sum(solve(prob,Tsit5(),u0=u0,p=p,saveat=0.1))
 du0,dp = Zygote.gradient(loss,u0,p)
 ```
 
-this will compute the gradient of the loss function "sum of the values of the
+will compute the gradient of the loss function "sum of the values of the
 solution to the ODE at timepoints dt=0.1" using an adjoint method, where `du0`
 is the derivative of the loss function with respect to the initial condition
 and `dp` is the derivative of the loss function with respect to the parameters.

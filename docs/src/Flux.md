@@ -135,6 +135,6 @@ res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), cb = cb)
 cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 ```
 
-Notice that the advantage of this format is we can use Optim's optimizers like
-`LBFGS` with a full `Chain` object for all of Flux's neural networks like
+Notice that the advantage of this format is that we can use Optim's optimizers, like
+`LBFGS` with a full `Chain` object for all of Flux's neural networks, like
 convolutional neural networks.

@@ -4,11 +4,11 @@
 
     `sciml_train` is planned to be replaced by [GalacticOptim.jl](https://github.com/SciML/GalacticOptim.jl)
     when it is ready. This optimizer library will have a feature superset of `sciml_train`
-    but will have a slightly different interface to allow for backprpogation over
+    but will have a slightly different interface to allow for backpropagation over
     the optimization and handling constrained optimization in a nicer manner. Translation
     from `sciml_train` to GalacticOptim's style will be fairly trivial since the internals
     are largely the same, and deprecation warnings will help you update when the time
-    comes, so do not worry about using this functionalty.
+    comes, so do not worry about using this functionality.
 
 `sciml_train` is a multi-package optimization setup. It currently allows for using
 the following nonlinear optimization packages as the backend:
@@ -20,7 +20,7 @@ the following nonlinear optimization packages as the backend:
 - [MultistartOptimization.jl](https://github.com/tpapp/MultistartOptimization.jl)
 - [Evolutionary.jl](https://github.com/wildart/Evolutionary.jl)
 
-Thus it allows for local and global optimization, both derivative-based and
+Thus, it allows for local and global optimization, both derivative-based and
 derivative-free, with first and second order methods, in an easy and optimized
 fashion over the scientific machine learning layer functions provided by
 DiffEqFlux.jl. These functions come complete with integration with automatic
@@ -28,7 +28,7 @@ differentiation to allow for ease of use with first and second order optimizatio
 methods, where Hessians are derived via forward-over-reverse second order
 sensitivity analysis.
 
-To use an optimizer from any of these libraries, one must `using` the appropriate
+To use an optimizer from any of these libraries, one must be `using` the appropriate
 library first.
 
 ## API
@@ -58,6 +58,6 @@ For example, if one returns `(1.0,[2.0])`, then the value the optimizer will
 see is `1.0`. The other values are passed to the callback function. The callback
 function is `cb(p,args...)` where the arguments are the extra returns from the
 loss. This allows for reusing instead of recalculating. The callback function
-must return a boolean where if `true` then the optimizer will prematurely end
+must return a boolean where if `true`, then the optimizer will prematurely end
 the optimization. It is called after every successful step, something that is
 defined in an optimizer-dependent manner.

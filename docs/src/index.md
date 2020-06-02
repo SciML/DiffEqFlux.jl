@@ -32,7 +32,7 @@ Do not limit yourself to the current neuralization. With this package, you can
 explore various ways to integrate the two methodologies:
 
 - Neural networks can be defined where the “activations” are nonlinear functions
-  described by differential equations.
+  described by differential equations
 - Neural networks can be defined where some layers are ODE solves
 - ODEs can be defined where some terms are neural networks
 - Cost functions on ODEs can define neural networks
@@ -61,15 +61,15 @@ loss(u0,p) = sum(solve(prob,Tsit5(),u0=u0,p=p,saveat=0.1))
 du01,dp1 = Zygote.gradient(loss,u0,p)
 ```
 
-Thus what DiffEqFlux.jl provides is:
+Thus, what DiffEqFlux.jl provides is:
 
 - A bunch of tutorials, documentation, and test cases for this combination
-  with neural network libraries and GPUs.
-- Pre-built layer functions for common use cases like neural ODEs
-- Specailized layer functions (`FastDense`) to improve neural differential equation
-  training performance.
+  with neural network libraries and GPUs
+- Pre-built layer functions for common use cases, like neural ODEs
+- Specialized layer functions (`FastDense`) to improve neural differential equation
+  training performance
 - A specialized optimization function `sciml_train` with a training loop that
-  allows non-machine learning libraries to be easily utilized.
+  allows non-machine learning libraries to be easily utilized
 
 ## Citation
 

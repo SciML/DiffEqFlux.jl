@@ -19,7 +19,7 @@ to add physical information into traditional machine learning.
 For information on using the package,
 [see the stable documentation](https://diffeqflux.sciml.ai/stable/). Use the
 [in-development documentation](https://diffeqflux.sciml.ai/dev/) for the version of
-the documentation which contains the un-released features.
+the documentation, which contains the unreleased features.
 
 ## Problem Domain
 
@@ -48,14 +48,14 @@ methods. For examples, please refer to
 [the release blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
 Additional demonstrations, like neural
 PDEs and neural jump SDEs, can be found
-[at this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
+[in this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
 (among many others!).
 
 Do not limit yourself to the current neuralization. With this package, you can
 explore various ways to integrate the two methodologies:
 
 - Neural networks can be defined where the “activations” are nonlinear functions
-  described by differential equations.
+  described by differential equations
 - Neural networks can be defined where some layers are ODE solves
 - ODEs can be defined where some terms are neural networks
 - Cost functions on ODEs can define neural networks
