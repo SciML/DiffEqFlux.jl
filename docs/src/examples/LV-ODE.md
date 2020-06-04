@@ -57,7 +57,6 @@ without the interpolations).
 function predict_adjoint(p)
   return Array(solve(prob_ode, Tsit5(), p=p, saveat = tsteps))
 end
-nothing
 ```
 
 Next we choose a square loss function. Our goal will be to find parameter that
@@ -72,7 +71,6 @@ function loss_adjoint(p)
   loss = sum(abs2, x-1 for x in prediction)
   return loss, prediction
 end
-nothing
 ```
 
 Lastly, we use the `sciml_train` function to train the parameters using BFGS to
@@ -107,7 +105,6 @@ callback = function (p, l, pred)
   # optimization stops.
   return false
 end
-nothing
 ```
 
 Let's optimise the model.
