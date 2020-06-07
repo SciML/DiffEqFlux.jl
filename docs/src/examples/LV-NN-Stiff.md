@@ -71,6 +71,10 @@ using Flux, DiffEqFlux, OrdinaryDiffEq, Optim, Test, Plots
 ```
 
 ### Differential Equation
+
+First, we define our differential equations as a highly stiff problem which makes the
+fitting difficult.
+
 ```Julia
 # A desired MWE for now, not a test yet.
 function f!(du, u, p, t)
@@ -84,6 +88,7 @@ end
 ```
 
 ### Parameters
+
 ```Julia
 u₀ = [1.0, 0, 0]
 
@@ -96,18 +101,35 @@ tspan = (0.0,1.0)
 p = [0.04, 3e7, 1e4]
 ```
 
+`u₀` = Initial Conditions
+
+`M` = Semi-explicit Mass Matrix (last row is the constraint equation and are therefore
+all zeros)
+
+`tspan` = Time span over which to evaluate
+
+`p` = parameters `k1`, `k2` and `k3` of the differential equation above
+
+
 ### ODE Function, Problem and Solution
+
+We define and solve our ODE problem to generate the "labeled" data which will be used to
+train our Neural Network.
+
 ```Julia
 stiff_func = ODEFunction(f!, mass_matrix = M)
 prob_stiff = ODEProblem(stiff_func, u₀, tspan, p)
 sol_stiff = solve(prob_stiff, Rodas5(), saveat = 0.1)
 ```
 
+Because this is a DAE we need to make sure to use a **compatible solver**.
+`Rodas5` works well for this example.
+
 ### Neural Network Layers
 
-This is a highly stiff problem, making the fitting difficult, but we have
-manually imposed that sum constraint via `(u,p,t) -> [u[1] + u[2] + u[3] - 1]`,
-making the fitting easier.
+Next, we create our layers using `FastChain`. We use this instead of `Chain` because it
+reduces the overhead making it faster for smaller NNs of <200 layers (similarly for
+`FastDense`). The input to our network will be the initial conditions fed in as `u₀`.
 
 ```Julia
 nn_dudt2 = FastChain(FastDense(3, 64, tanh),
@@ -118,7 +140,14 @@ model_stiff_ndae = NeuralODEMM(nn_dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
 model_stiff_ndae(u₀)
 ```
 
-### Prediction
+Because this is a stiff problem, we have manually imposed that sum constraint via
+`(u,p,t) -> [u[1] + u[2] + u[3] - 1]`, making the fitting easier.
+
+### Prediction Function
+
+For simplicity, we define a wrapper function that only takes in the model's parameters
+to make predictions.
+
 ```Julia
 function predict_stiff_ndae(p)
     return model_stiff_ndae(u₀, p)
@@ -127,7 +156,14 @@ end
 
 ### Train Parameters
 
+Training our network requires a **loss function**, an **optimizer** and a
+**callback function** to display the progress.
+
 #### Loss
+
+We first make our predictions based on the current parameters, then calculate the loss
+from these predictions. In this case, we use **least squares** as our loss.
+
 ```Julia
 function loss_stiff_ndae(p)
     pred = predict_stiff_ndae(p)
@@ -138,7 +174,18 @@ end
 l1 = first(loss_stiff_ndae(model_stiff_ndae.p))
 ```
 
+Notice that we are feeding the **parameters** of `model_stiff_ndae` to the `loss_stiff_ndae`
+function. `model_stiff_node.p` are the weights of our NN and is of size *386*
+(4 * 64 + 65 * 2) including the biases.
+
+#### Optimizer
+
+The optimizer `BFGS` is directly passed in the training step (see below).
+
 #### Callback
+
+The callback function displays the loss during training.
+
 ```Julia
 callback = function (p, l, pred) #callback function to observe training
   display(l)
@@ -148,9 +195,14 @@ end
 
 ### Train
 
+Finally, training with `sciml_train` by passing: *loss function*, *model parameters*,
+*optimizer*, *callback* and *maximum iteration*.
+
 ```Julia
 result_stiff = DiffEqFlux.sciml_train(loss_stiff_ndae, model_stiff_ndae.p,
                                       BFGS(initial_stepnorm = 0.001),
                                       cb = callback, maxiters = 100)
 ```
+
+### Expected Output
 
