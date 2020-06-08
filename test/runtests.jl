@@ -2,7 +2,7 @@ using DiffEqFlux, Test, SafeTestsets
 
 const GROUP = get(ENV, "GROUP", "All")
 const is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
-const is_TRAVIS = haskey(ENV,"TRAVIS")
+const is_CI = haskey(ENV,"CI")
 
 @time begin
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
@@ -31,7 +31,7 @@ end
 end
 
 if !is_APPVEYOR && GROUP == "GPU"
-  if is_TRAVIS
+  if is_CI
       using Pkg
       Pkg.add("MLDataUtils")
       Pkg.add("NNlib")
