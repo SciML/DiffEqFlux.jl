@@ -101,14 +101,11 @@ tspan = (0.0,1.0)
 p = [0.04, 3e7, 1e4]
 ```
 
-`u₀` = Initial Conditions
-
-`M` = Semi-explicit Mass Matrix (last row is the constraint equation and are therefore
+- `u₀` = Initial Conditions
+- `M` = Semi-explicit Mass Matrix (last row is the constraint equation and are therefore
 all zeros)
-
-`tspan` = Time span over which to evaluate
-
-`p` = parameters `k1`, `k2` and `k3` of the differential equation above
+- `tspan` = Time span over which to evaluate
+- `p` = parameters `k1`, `k2` and `k3` of the differential equation above
 
 
 ### ODE Function, Problem and Solution
@@ -205,4 +202,3 @@ result_stiff = DiffEqFlux.sciml_train(loss_stiff_ndae, model_stiff_ndae.p,
 ```
 
 ### Expected Output
-
