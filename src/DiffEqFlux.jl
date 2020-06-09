@@ -1,6 +1,6 @@
 module DiffEqFlux
 
-using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
+using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, Distributions, ForwardDiff,
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Optim,
       StaticArrays, Base.Iterators, Printf, BlackBoxOptim
 
