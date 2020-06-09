@@ -1,7 +1,7 @@
 abstract type CNFLayer <: Function end
 Flux.trainable(m::CNFLayer) = (m.p,)
 
-struct FFJORD{M,P,RE,ContinuousUnivariateDistribution,Bool,T,A,K} <: CNFLayer
+struct FFJORD{M,P,RE,Distribution,Bool,T,A,K} <: CNFLayer
     model::M
     p::P
     re::RE
