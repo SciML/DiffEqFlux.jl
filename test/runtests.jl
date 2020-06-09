@@ -1,8 +1,17 @@
-using DiffEqFlux, Test, SafeTestsets
+using DiffEqFlux
+using Pkg
+using SafeTestsets
+using Test
 
 const GROUP = get(ENV, "GROUP", "All")
 const is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
 const is_CI = haskey(ENV,"CI")
+
+function activate_gpu_env()
+    Pkg.activate("gpu")
+    Pkg.develop(PackageSpec(path=dirname(@__DIR__)))
+    Pkg.instantiate()
+end
 
 @time begin
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
@@ -31,13 +40,9 @@ end
 end
 
 if !is_APPVEYOR && GROUP == "GPU"
-  if is_CI
-      using Pkg
-      Pkg.add("MLDataUtils")
-      Pkg.add("NNlib")
-      Pkg.add("MLDatasets")
-      Pkg.add("CuArrays")
-  end
-  @safetestset "odenet GPU" begin include("odenet_gpu.jl") end
-  @safetestset "Neural DE GPU Tests" begin include("neural_de_gpu.jl") end
+    if is_CI
+        activate_gpu_env()
+    end
+    @safetestset "odenet GPU" begin include("odenet_gpu.jl") end
+    @safetestset "Neural DE GPU Tests" begin include("neural_de_gpu.jl") end
 end
