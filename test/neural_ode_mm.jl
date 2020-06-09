@@ -27,7 +27,7 @@ function predict_n_dae(p)
 end
 function loss(p)
     pred = predict_n_dae(p)
-    loss = sum(abs2,sol .- pred)
+    loss = sum(abs2,Array(sol) .- pred)
     loss,pred
 end
 

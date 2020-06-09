@@ -46,7 +46,7 @@ end
 
 function loss_stiff_ndae(p)
     pred = predict_stiff_ndae(p)
-    loss = sum(abs2, sol_stiff .- pred)
+    loss = sum(abs2, Array(sol_stiff) .- pred)
     return loss, pred
 end
 
