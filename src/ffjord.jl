@@ -5,7 +5,7 @@ struct FFJORD{M,P,RE,ContinuousUnivariateDistribution,Bool,T,A,K} <: CNFLayer
     model::M
     p::P
     re::RE
-    basedist::Union{ContinuousUnivariateDistribution,ContinuousMultivariateDistribution}
+    basedist::Distribution
     monte_carlo::Bool
     tspan::T
     args::A
