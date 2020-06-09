@@ -5,7 +5,7 @@ using Zygote, Tracker
 using Test
 using Distances
 
-#test for default distribution and monte_carlo = false
+#test for default base distribution and monte_carlo = true
 nn = Chain(Dense(1, 1, tanh))
 data_train = [Float32(rand(Beta(7,7))) for i in 1:100]
 tspan = (0.0,10.0)
@@ -28,7 +28,7 @@ learned_pdf = [exp(ffjord_test_mc(r,θopt,false)) for r in data_validate]
 
 @test totalvariation(learned_pdf, actual_pdf)/100 < 0.3
 
-#test for alternative distribution and monte_carlo = false
+#test for alternative base distribution and monte_carlo = false
 nn = Chain(Dense(1, 1, tanh))
 data_train = [Float32(rand(Normal(6.0,0.7))) for i in 1:100]
 tspan = (0.0,10.0)
