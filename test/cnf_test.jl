@@ -1,3 +1,6 @@
+using Pkg
+Pkg.add("Distributions")
+Pkg.add("Distances")
 using Distributions
 using DifferentialEquations
 using Flux, DiffEqFlux
