@@ -1,5 +1,5 @@
 using Distributions
-using DifferentialEquations
+using OrdinaryDiffEq
 using Flux, DiffEqFlux
 using Zygote, Tracker
 using Test
