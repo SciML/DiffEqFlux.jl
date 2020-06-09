@@ -65,6 +65,7 @@ ZygoteRules.@adjoint ZygoteRules.literal_getproperty(d::ForwardDiff.Dual{T}, ::V
 ZygoteRules.@adjoint ZygoteRules.literal_getproperty(d::ForwardDiff.Dual{T}, ::Val{:value}) where T =
   d.value, ẋ -> (ForwardDiff.Dual{T}(0, ẋ),)
 
+include("ffjord.jl")
 include("train.jl")
 include("fast_layers.jl")
 include("neural_de.jl")
