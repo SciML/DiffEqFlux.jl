@@ -1,6 +1,4 @@
-using Pkg
-Pkg.add("Distributions")
-Pkg.add("Distances")
+println("Testing CNF")
 using Distributions
 using DifferentialEquations
 using Flux, DiffEqFlux
