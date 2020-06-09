@@ -3,6 +3,7 @@ using OrdinaryDiffEq
 using Flux, DiffEqFlux
 using Zygote, Tracker
 using Test
+using Distributions
 using Distances
 
 #test for default base distribution and monte_carlo = true
