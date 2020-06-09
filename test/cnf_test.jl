@@ -1,4 +1,3 @@
-println("Testing CNF")
 using Distributions
 using DifferentialEquations
 using Flux, DiffEqFlux
