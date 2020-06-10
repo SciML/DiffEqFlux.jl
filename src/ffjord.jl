@@ -27,17 +27,10 @@ struct FFJORD{M,P,RE,Distribution,Bool,T,A,K} <: CNFLayer
 end
 
 function jacobian_fn(f, x::AbstractVector)
-<<<<<<< HEAD
    y::AbstractVector, back = Zygote.pullback(f, x)
    ȳ(i) = [i == j for j = 1:length(y)]
    vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
  end
-=======
-  y::AbstractVector, back = Zygote.pullback(f, x)
-  ȳ(i) = [i == j for j = 1:length(y)]
-  vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
-end
->>>>>>> FFJORD_jacobian
 
 function ffjord(du,u,p,t,re,monte_carlo,e)
     z = @view u[1:end-1]
