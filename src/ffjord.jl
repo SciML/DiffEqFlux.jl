@@ -11,10 +11,14 @@ struct FFJORD{M,P,RE,Distribution,Bool,T,A,K} <: CNFLayer
     args::A
     kwargs::K
 
-    function FFJORD(model,tspan,args...;p = nothing,basedist=MvNormal(zeros(size(model[1].W)[2]),I+zeros(size(model[1].W)[2],size(model[1].W)[2])),monte_carlo=false,kwargs...)
+    function FFJORD(model,tspan,args...;p = nothing,basedist=nothing,monte_carlo=false,kwargs...)
         _p,re = Flux.destructure(model)
         if p === nothing
             p = _p
+        end
+        if basedist === nothing
+            size_input = size(model[1].W)[2]
+            basedist = MvNormal(zeros(size_input), I + zeros(size_input,size_input))
         end
         new{typeof(model),typeof(p),typeof(re),typeof(basedist),
             typeof(monte_carlo),typeof(tspan),typeof(args),typeof(kwargs)}(
@@ -23,22 +27,24 @@ struct FFJORD{M,P,RE,Distribution,Bool,T,A,K} <: CNFLayer
 end
 
 function jacobian_fn(f, x::AbstractVector)
-  y::AbstractVector, back = Zygote.pullback(f, x)
-  ȳ(i) = [i == j for j = 1:length(y)]
-  vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
-end
+   y::AbstractVector, back = Zygote.pullback(f, x)
+   ȳ(i) = [i == j for j = 1:length(y)]
+   vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
+ end
 
 function ffjord(du,u,p,t,re,monte_carlo,e)
     z = @view u[1:end-1]
     m = re(p)
-    J = jacobian_fn(m,z)
     if monte_carlo
-        trace_jac = length(z) == 1 ? -(e.*J.*e)[1] : -(e'*J*e)[1]
+        _, back = Zygote.pullback(m,z)
+        eJ = back(e)[1]
+        trace_jac = (eJ.*e)[1]
     else
-        trace_jac = length(z) == 1 ?  -J[1] : -tr(J)
+        J = jacobian_fn(m, z)
+        trace_jac = length(z) == 1 ? sum(J) : tr(J)
     end
-    du[1:end-1] .= m(z)
-    du[end] = trace_jac
+    du[1:end-1] = m(z)
+    du[end] = -trace_jac
 end
 
 function (n::FFJORD)(x,p=n.p,monte_carlo=n.monte_carlo)
@@ -49,7 +55,7 @@ function (n::FFJORD)(x,p=n.p,monte_carlo=n.monte_carlo)
     pz = n.basedist
     z = pred[1:end-1]
     delta_logp = pred[end]
-    logpz = log(pdf(pz, z))
-    logpx = logpz - delta_logp
-    return logpx
+    logpz = log.(pdf(pz, z))
+    logpx = logpz .- delta_logp
+    return logpx[1]
 end
