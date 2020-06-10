@@ -1,8 +1,8 @@
 module DiffEqFlux
 
-using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, ForwardDiff,
-      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Optim,
-      StaticArrays, Base.Iterators, Printf, BlackBoxOptim
+using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, Distributions, ForwardDiff,
+      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Optim, OrdinaryDiffEq,
+      StaticArrays, Base.Iterators, Printf, BlackBoxOptim, Zygote
 
 import ProgressLogging, ZygoteRules, ReverseDiff
 
@@ -65,6 +65,7 @@ ZygoteRules.@adjoint ZygoteRules.literal_getproperty(d::ForwardDiff.Dual{T}, ::V
 ZygoteRules.@adjoint ZygoteRules.literal_getproperty(d::ForwardDiff.Dual{T}, ::Val{:value}) where T =
   d.value, ẋ -> (ForwardDiff.Dual{T}(0, ẋ),)
 
+include("ffjord.jl")
 include("train.jl")
 include("fast_layers.jl")
 include("neural_de.jl")
@@ -72,7 +73,7 @@ include("require.jl")
 
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
-export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM
+export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM
 export neural_ode, neural_ode_rd
 export neural_dmsde
 export FastDense, StaticDense, FastChain, initial_params

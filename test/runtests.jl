@@ -23,6 +23,7 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
 end
 
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "NeuralDE"
+    @safetestset "CNF Layer Tests" begin include("cnf_test.jl") end
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
     @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end

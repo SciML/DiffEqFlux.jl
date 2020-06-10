@@ -47,7 +47,6 @@ peek()
 
 function monomial(dcGDP, cGDP, parameters, t)
     α1, β1, nu1, nu2, δ, δ2 = parameters
-
     dcGDP[1] = α1 * ((cGDP[1]))^β1
 end
 
@@ -63,7 +62,7 @@ else ## false crashes. that is when i am tracking the initial conditions
     prob = ODEProblem(monomial,u0,tspan,p)
 end
 function predict_adjoint() # Our 1-layer neural network
-  Array(solve(prob,Tsit5(),p=p,saveat=1.0,reltol=1e-4))
+  Array(solve(prob,Tsit5(),p=p,saveat=1.0,reltol=1e-4,sensealg=InterpolatingAdjoint(autojacvec=ReverseDiffVJP(true))))
 end
 
 function loss_adjoint() ##L2 norm biases the newer times unfairly
