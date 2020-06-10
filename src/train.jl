@@ -275,7 +275,8 @@ end
 function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
                      data = DEFAULT_DATA;
                      lower_bounds, upper_bounds,
-                     cb = (args...) -> (false), maxiters = get_maxiters(data))
+                     cb = (args...) -> (false), maxiters = get_maxiters(data),
+                     kwargs...)
   local x, cur, state
   cur,state = iterate(data)
 
@@ -306,8 +307,8 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
   end
 
   Optim.optimize(Optim.only_fg!(optim_fg!), lower_bounds, upper_bounds, θ, opt,
-           Optim.Options(extended_trace=true,callback = _cb,
-                         f_calls_limit = maxiters))
+           Optim.Options(;extended_trace=true,callback = _cb,
+                         f_calls_limit = maxiters, kwargs...))
 end
 
 struct BBO
