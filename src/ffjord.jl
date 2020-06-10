@@ -25,7 +25,7 @@ end
 function ffjord(du,u,p,t,re,monte_carlo,e)
     z = @view u[1:end-1]
     m = re(p)
-    fz, back = Flux.Zygote.pullback(m,z')
+    fz, back = Zygote.pullback(m,z')
     if monte_carlo
         eJ = back(e)[1]
         jac = -(eJ.*e)[1]
