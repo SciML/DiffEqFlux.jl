@@ -39,8 +39,8 @@ end
 function (n::FFJORD)(x,p=n.p,monte_carlo=n.monte_carlo)
     e = monte_carlo ? randn(Float32,size(p)[1]) : nothing
     ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,monte_carlo,e)
-    prob = ODEProblem{true}(ffjord_,nothing,n.tspan,nothing)
-    pred = concrete_solve(prob,Tsit5(),[x,0f0],p,n.args...;n.kwargs...)[:,end]
+    prob = ODEProblem{true}(ffjord_,[x,0f0],n.tspan,p)
+    pred = solve(prob,Tsit5(),n.args...;n.kwargs...)[:,end]
     pz = n.basedist
     z = pred[1]
     delta_logp = pred[2]
