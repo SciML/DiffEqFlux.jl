@@ -138,3 +138,78 @@ cb(res2.minimizer,loss_n_ode(res2.minimizer)...;doplot=true)
 Notice that the advantage of this format is that we can use Optim's optimizers, like
 `LBFGS` with a full `Chain` object for all of Flux's neural networks, like
 convolutional neural networks.
+
+
+## Using ComponentArrays for neural network layers
+
+We can also create the dense layers from scratch using [ComponentArrays.jl](https://github.com/jonniedie/ComponentArrays.jl). Flux is used here just for the `glorot_uniform` function and the `ADAM` optimizer.
+
+```julia
+using ComponentArrays, DiffEqFlux, Optim, OrdinaryDiffEq, Plots, UnPack
+using Flux: glorot_uniform, ADAM
+```
+
+Again, let's create the truth data.
+```julia
+u0 = Float32[2.; 0.]
+datasize = 30
+tspan = (0.0f0, 1.5f0)
+
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u.^3)'true_A)'
+end
+
+t = range(tspan[1], tspan[2], length = datasize)
+prob = ODEProblem(trueODEfunc, u0, tspan)
+ode_data = Array(solve(prob, Tsit5(), saveat = t))
+```
+
+Now, we'll make a function that creates dense neural layer components. It is similar to `Flux.Dense`, except it doesn't handle the activation function. We'll do that separately.
+```julia
+dense_layer(in, out) = ComponentArray(W=glorot_uniform(out, in), b=zeros(out))
+```
+
+Our parameter vector will be a `ComponentArray` that holds the ODE initial conditions and the dense neural layers. This enables it to pass through the solver as a flat array while giving us the convenience of struct-like access to the components.
+```julia
+layers = (L1=dense_layer(2, 50), L2=dense_layer(50, 2))
+θ = ComponentArray(u=u0, p=layers)
+
+function dudt(u, p, t)
+    @unpack L1, L2 = p
+    return L2.W * tanh.(L1.W * u.^3 .+ L1.b) .+ L2.b
+end
+
+prob = ODEProblem(dudt, u0, tspan)
+```
+
+As before, we'll define prediction and loss functions as well as a callback function to observe training.
+```julia
+predict_n_ode(θ) = Array(solve(prob, Tsit5(), u0=θ.u, p=θ.p, saveat=t))
+
+function loss_n_ode(θ)
+    pred = predict_n_ode(θ)
+    loss = sum(abs2, ode_data .- pred)
+    return loss, pred
+end
+loss_n_ode(θ)
+
+cb = function (θ, loss, pred; doplot=false)
+    display(loss)
+    # plot current prediction against data
+    pl = scatter(t, ode_data[1,:], label = "data")
+    scatter!(pl, t, pred[1,:], label = "prediction")
+    display(plot(pl))
+    return false
+end
+
+cb(θ, loss_n_ode(θ)...)
+
+data = Iterators.repeated((), 1000)
+
+res1 = DiffEqFlux.sciml_train(loss_n_ode, θ, ADAM(0.05); cb=cb, maxiters=100)
+cb(res1.minimizer, loss_n_ode(res1.minimizer)...; doplot=true)
+
+res2 = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(); cb=cb)
+cb(res2.minimizer, loss_n_ode(res2.minimizer)...; doplot=true)
+```
