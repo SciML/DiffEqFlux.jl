@@ -27,7 +27,6 @@ Ref
 [3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
-
 abstract type CNFLayer <: Function end
 Flux.trainable(m::CNFLayer) = (m.p,)
 
