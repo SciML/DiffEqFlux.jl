@@ -3,7 +3,7 @@ using Flux, DiffEqFlux
 using Test
 using Distributions
 using Distances
-using LinearAlgebra, Tracker
+using LinearAlgebra, Tracker, Zygote
 
 ##callback to be used by all tests
 function cb(p,l)
