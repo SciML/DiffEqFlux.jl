@@ -6,11 +6,9 @@ normalizing flows (CNF) [2]. At a high level this corresponds to the following s
 
 1. Parametrize the variable of interest x(t) as a function f(z,θ,t) of a base variable z(t) with known density p_z;
 2. Use the transformation of variables formula to predict the density p_x as a function of the density p_z and the trace of the Jacobian of f;
-3. Choose the parameter θ to minimize a loss function of p_x (usually the negative likelihood
-of the data);
+3. Choose the parameter θ to minimize a loss function of p_x (usually the negative likelihood of the data);
 
-After these steps one may the NN model and the learned θ to predict the density p_z for new
-values of z.
+After these steps one may the NN model and the learned θ to predict the density p_z for new values of z.
 
 ```julia
 NeuralODE(model,basedist,monte_carlo,tspan,args...;kwargs...)
@@ -27,11 +25,8 @@ presented in [3] to provide an unbiased estimate for the trace.
   documentation for more details.
 Ref
 [1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-[2]R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud.
-Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
-[3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud.
-FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models.
-arXiv preprint at ar1810.01367, 2018.
+[2]R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
+[3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at ar1810.01367, 2018.
 
 """
 
