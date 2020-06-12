@@ -5,8 +5,7 @@ via adjoints [1] and specialized for density estimation based on continuous
 normalizing flows (CNF) [2]. At a high level this corresponds to the following steps:
 
 1. Parametrize the variable of interest x(t) as a function f(z,θ,t) of a base variable z(t) with known density p_z;
-2. Use the transformation of variables formula to predict the density p_x as a function
-of the density p_z and the trace of the Jacobian of f;
+2. Use the transformation of variables formula to predict the density p_x as a function of the density p_z and the trace of the Jacobian of f;
 3. Choose the parameter θ to minimize a loss function of p_x (usually the negative likelihood
 of the data);
 
