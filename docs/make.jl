@@ -28,9 +28,10 @@ makedocs(
             "examples/LV-NN-Stiff.md",
             "examples/NewtonSecondOrderAdjoints.md",
             "examples/LV-Jump.md",
-            "examples/universaldiffeq.md", 
+            "examples/universaldiffeq.md",
             "examples/minibatch.md"
         ],
+        "Continuous Normalizing Flows Layer" => "CNFLayer.md"
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
         "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
