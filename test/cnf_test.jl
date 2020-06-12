@@ -76,7 +76,7 @@ ffjord_test = FFJORD(nn,tspan)
 
 function loss_adjoint(θ)
     logpx = [ffjord_test(x,θ) for x in data_train]
-    loss = -mean(logpx) + 2.5*norm(θ)
+    loss = -mean(logpx)
 end
 
 res = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test.p,
