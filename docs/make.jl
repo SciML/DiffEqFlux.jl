@@ -13,6 +13,7 @@ makedocs(
     pages=[
         "Home" => "index.md",
         "Tutorials" => Any[
+            "NN-CNF.md",
             "examples/LV-ODE.md",
             "examples/LV-stochastic.md",
             "examples/LV-Flux.md",
@@ -31,7 +32,7 @@ makedocs(
             "examples/universaldiffeq.md",
             "examples/minibatch.md"
         ],
-        "Continuous Normalizing Flows Layer" => "CNFLayer.md"
+        "Continuous Normalizing Flows Layer" => "CNFLayer.md",
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
         "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
