@@ -4,7 +4,7 @@ Now, we study a single layer neural network that can estimate the density p_x of
 of interest x by re-parametrizing a base variable z with known density p_z through the Neural
 Network model passed to the layer.
 
-We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network  that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be
+We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be
 
 ```julia
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
