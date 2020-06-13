@@ -36,7 +36,7 @@ end
 In this example, we wish to choose the parameters of the network such that the likelihood
 of the re-parametrized variable is maximized. Other loss functions may be used depending on the application. Furthermore, the CNF layer gives the log of the density of the variable x, as one may guess from the code above.
 
-We then train the neural network to learn the ODE.
+We then train the neural network to learn the distribution of x.
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a
 minimum, and then honing in on the minimum by using `LBFGS`.
