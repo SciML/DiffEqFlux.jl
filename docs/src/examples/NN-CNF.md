@@ -14,7 +14,7 @@ ffjord_test = FFJORD(nn,tspan)
 
 where we also pass as an input the desired timespan for which the differential equation that defines log p_x and z(t) will be solved.
 
-### Training a Neural Ordinary Differential Equation
+### Training a CNF layer
 
 Let's get an array from a normal distribution as the training data
 
