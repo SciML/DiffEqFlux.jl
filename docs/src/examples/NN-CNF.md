@@ -9,7 +9,7 @@ using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Distributions, Zygote
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0,10.0)
-ffjord_test = FFJORD(nn,tspan)
+ffjord_test = FFJORD(nn,tspan, Tsit5())
 ```
 
 where we also pass as an input the desired timespan for which the differential equation that defines `log p_x` and `z(t)` will be solved.

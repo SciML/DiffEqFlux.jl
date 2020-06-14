@@ -22,21 +22,24 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
 end
 
-if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "NeuralDE"
-    @safetestset "CNF Layer Tests" begin include("cnf_test.jl") end
+if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
-    @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
-    @safetestset "Neural Second Order ODE Tests" begin include("second_order_ode.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
 end
 
+if GROUP == "All" || GROUP == "AdvancedNeuralDE"
+    @safetestset "CNF Layer Tests" begin include("cnf_test.jl") end
+    @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
+    @safetestset "Neural Second Order ODE Tests" begin include("second_order_ode.jl") end
+end
+
 if GROUP == "All" || GROUP == "Integration"
-    @safetestset "Stiff Nested AD Tests" begin include("stiff_nested_ad.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
     @safetestset "Size Handling in Adjoint Tests" begin include("size_handling_adjoint.jl") end
     @safetestset "odenet" begin include("odenet.jl") end
     @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
+    @safetestset "Stiff Nested AD Tests" begin include("stiff_nested_ad.jl") end
 end
 end
 
