@@ -32,11 +32,11 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "NeuralDE"
 end
 
 if GROUP == "All" || GROUP == "Integration"
-    @safetestset "Stiff Nested AD Tests" begin include("stiff_nested_ad.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
     @safetestset "Size Handling in Adjoint Tests" begin include("size_handling_adjoint.jl") end
     @safetestset "odenet" begin include("odenet.jl") end
     @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
+    @safetestset "Stiff Nested AD Tests" begin include("stiff_nested_ad.jl") end
 end
 end
 
