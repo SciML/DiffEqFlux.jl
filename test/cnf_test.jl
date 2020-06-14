@@ -18,7 +18,7 @@ end
 nn = Chain(Dense(1, 1, tanh))
 data_train = [Float32(rand(Beta(7,7))) for i in 1:100]
 tspan = (0.0,10.0)
-ffjord_test_mc = FFJORD(nn,tspan,monte_carlo=true)
+ffjord_test_mc = FFJORD(nn,tspan,Tsit5(),monte_carlo=true)
 
 function loss_adjoint(θ)
     logpx = [ffjord_test_mc(x,θ) for x in data_train]
@@ -44,7 +44,7 @@ learned_pdf = [exp(ffjord_test_mc(r,θopt,false)) for r in data_validate]
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 data_train = [Float32(rand(Normal(6.0,0.7))) for i in 1:100]
 tspan = (0.0,10.0)
-ffjord_test = FFJORD(nn,tspan,base_dist=Normal(0,2))
+ffjord_test = FFJORD(nn,tspan,Tsit5(),base_dist=Normal(0,2))
 
 function loss_adjoint(θ)
     logpx = [ffjord_test(x,θ) for x in data_train]
