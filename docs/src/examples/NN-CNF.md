@@ -1,30 +1,28 @@
-# Continuous normalizing flows with sciml_train
+# Continuous Normalizing Flows with sciml_train
 
-Now, we study a single layer neural network that can estimate the density p_x of a variable
-of interest x by re-parametrizing a base variable z with known density p_z through the Neural
-Network model passed to the layer.
+Now, we study a single layer neural network that can estimate the density `p_x` of a variable of interest `x` by re-parameterizing a base variable `z` with known density `p_z` through the Neural Network model passed to the layer.
 
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be
 
 ```julia
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Distributions, Zygote
+
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0,10.0)
 ffjord_test = FFJORD(nn,tspan, Tsit5())
 ```
 
-where we also pass as an input the desired timespan for which the differential equation that defines log p_x and z(t) will be solved.
+where we also pass as an input the desired timespan for which the differential equation that defines `log p_x` and `z(t)` will be solved.
 
 ### Training a CNF layer
 
-Let's get an array from a normal distribution as the training data
+First, let's get an array from a normal distribution as the training data
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Distributions, Zygote
-
 data_train = [Float32(rand(Normal(6.0,0.7))) for i in 1:100]
 ```
 
-Now let's define a loss function that we wish to minimize
+Now we define a loss function that we wish to minimize
 
 ```julia
 function loss_adjoint(θ)
@@ -33,13 +31,11 @@ function loss_adjoint(θ)
 end
 ```
 
-In this example, we wish to choose the parameters of the network such that the likelihood
-of the re-parametrized variable is maximized. Other loss functions may be used depending on the application. Furthermore, the CNF layer gives the log of the density of the variable x, as one may guess from the code above.
+In this example, we wish to choose the parameters of the network such that the likelihood of the re-parameterized variable is maximized. Other loss functions may be used depending on the application. Furthermore, the CNF layer gives the log of the density of the variable x, as one may guess from the code above.
 
-We then train the neural network to learn the distribution of x.
+We then train the neural network to learn the distribution of `x`.
 
-Here we showcase starting the optimization with `ADAM` to more quickly find a
-minimum, and then honing in on the minimum by using `LBFGS`.
+Here we showcase starting the optimization with `ADAM` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
 ```julia
 # Train using the ADAM optimizer
@@ -71,8 +67,7 @@ res1 = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test.p,
    ∇f(x) calls:   100
 ```
 
-We then complete the training using a different optimizer starting from where
-`ADAM` stopped.
+We then complete the training using a different optimizer starting from where `ADAM` stopped.
 
 ```julia
 # Retrain using the LBFGS optimizer
@@ -103,6 +98,6 @@ res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer,
    ∇f(x) calls:   244
 ```
 
-References:
+`References`:
 
-[1]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
+[1] W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
