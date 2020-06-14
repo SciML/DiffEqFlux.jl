@@ -13,7 +13,6 @@ makedocs(
     pages=[
         "Home" => "index.md",
         "Tutorials" => Any[
-            "NN-CNF.md",
             "examples/LV-ODE.md",
             "examples/LV-stochastic.md",
             "examples/LV-Flux.md",
@@ -21,6 +20,7 @@ makedocs(
             "examples/NN-ODE.md",
             "examples/NeuralODE_Flux.md",
             "examples/Supervised-NN-ODE-MNIST.md",
+            "examples/NN-CNF.md",
             "examples/local_minima.md",
             "examples/NN-SDE.md",
             "examples/NeuralOptimalControl.md",
