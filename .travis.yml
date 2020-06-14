@@ -14,7 +14,8 @@ julia:
 #    - julia: nightly
 env:
   - GROUP=Layers
-  - GROUP=NeuralDE
+  - GROUP=BasicNeuralDE
+  - GROUP=AdvancedNeuralDE
   - GROUP=Integration
 notifications:
   email: false

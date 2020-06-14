@@ -1,3 +1,6 @@
+abstract type CNFLayer <: Function end
+Flux.trainable(m::CNFLayer) = (m.p,)
+
 """
 Constructs a continuous-time recurrant neural network, also known as a neural
 ordinary differential equation (neural ODE), with a fast gradient calculation
@@ -27,9 +30,6 @@ Ref
 [3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
-abstract type CNFLayer <: Function end
-Flux.trainable(m::CNFLayer) = (m.p,)
-
 struct FFJORD{M,P,RE,Distribution,Bool,T,A,K} <: CNFLayer
     model::M
     p::P
@@ -80,7 +80,7 @@ function (n::FFJORD)(x,p=n.p,monte_carlo=n.monte_carlo)
     e = monte_carlo ? randn(Float32,length(x)) : nothing
     ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,monte_carlo,e)
     prob = ODEProblem{true}(ffjord_,vcat(x,0f0),n.tspan,p)
-    pred = solve(prob,Tsit5(),n.args...;n.kwargs...)[:,end]
+    pred = solve(prob,n.args...;n.kwargs...)[:,end]
     pz = n.basedist
     z = pred[1:end-1]
     delta_logp = pred[end]
