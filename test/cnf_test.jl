@@ -72,7 +72,7 @@ nn = Chain(Dense(2, 2, tanh))
 mv_normal = MvNormal(μ, Σ)
 data_train = [Float32.(rand(mv_normal)) for i in 1:100]
 tspan = (0.0,10.0)
-ffjord_test = FFJORD(nn,tspan)
+ffjord_test = FFJORD(nn,tspan,Tsit5())
 
 function loss_adjoint(θ)
     logpx = [ffjord_test(x,θ) for x in data_train]
