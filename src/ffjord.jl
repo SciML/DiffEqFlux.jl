@@ -2,8 +2,8 @@ abstract type CNFLayer <: Function end
 Flux.trainable(m::CNFLayer) = (m.p,)
 
 """
-Constructs a continuous-time recurrant neural network, also known as a neural
-ordinary differential equation (neural ODE), with a fast gradient calculation
+Constructs a continuous-time recurrent neural network, also known as a neural
+ordinary differential equation (neural ODE), with fast gradient calculation
 via adjoints [1] and specialized for density estimation based on continuous
 normalizing flows (CNF) [2]. At a high level this corresponds to the following steps:
 
