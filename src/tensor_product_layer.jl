@@ -1,12 +1,12 @@
-abstract type TensorProducLayer <: Function end
+abstract type AbstractTensorProductLayer <: Function end
 
-struct TPLayer{Array{TensorProductBasis},S<:AbstractArray,b<:AbstractArray,Int} <: TensorProducLayer
+struct TensorProductLayer{Array{TensorProductBasis},S<:AbstractArray,b<:AbstractArray,Int} <: TensorProductLayer
     model::Array{TensorProductBasis}
     W::S
     b::T
     in::Int
     out::Int
-    function TPLayer(in, out, model,W=nothing,b=nothing)
+    function TPLayer(in, out,model,W=nothing,b=nothing)
         number_of_weights = 1
         for basis in model:
             number_of_weights = number_of_weights*basis.n
@@ -25,5 +25,6 @@ function (layer::TPLayer)(x)
     end
     for i in 1:out
         push!(z, sum(W[i].*tensor_prod)+b[i])
+    end
     return z
 end
