@@ -38,5 +38,5 @@ struct PolynomialBasis{Int} <: TensorProductBasis
 end
 
 function (basis::PolynomialBasis)(x)
-    return [evalpoly(x, (I+zeros(basis.n,basis.n))[k, :]) for k in 1:basis.n]
+    return [evalpoly(x, (I+zeros(basis.n,basis.n))[k,:]) for k in 1:basis.n]
 end
