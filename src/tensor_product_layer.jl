@@ -6,7 +6,7 @@ struct TensorProductLayer{Array{TensorProductBasis},S<:AbstractArray,b<:Abstract
     b::T
     in::Int
     out::Int
-    function TPLayer(in, out,model,W=nothing,b=nothing)
+    function TensorProductLayer(in, out,model,W=nothing,b=nothing)
         number_of_weights = 1
         for basis in model
             number_of_weights = number_of_weights*basis.n
@@ -17,7 +17,7 @@ struct TensorProductLayer{Array{TensorProductBasis},S<:AbstractArray,b<:Abstract
     end
 end
 
-function (layer::TPLayer)(x)
+function (layer::TensorProductLayer)(x)
     z = []
     tensor_prod = model[1](x)
     for i in 2:end
