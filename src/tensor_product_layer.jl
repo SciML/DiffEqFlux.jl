@@ -1,7 +1,7 @@
 abstract type TensorProducLayer <: Function end
 
-struct TPLayer{Array({TensorProductBasis}),S<:AbstractArray,b<:AbstractArray,Int} <: TensorProducLayer
-    model::Array({TensorProductBasis})
+struct TPLayer{Array{TensorProductBasis},S<:AbstractArray,b<:AbstractArray,Int} <: TensorProducLayer
+    model::Array{TensorProductBasis}
     W::S
     b::T
     in::Int
