@@ -1,6 +1,6 @@
 abstract type AbstractTensorProductLayer <: Function end
 
-struct TensorProductLayer{Array{TensorProductBasis},S<:AbstractArray,b<:AbstractArray,Int} <: TensorProductLayer
+struct TensorProductLayer{Array{TensorProductBasis},S<:AbstractArray,b<:AbstractArray,Int} <: AbstractTensorProductLayer
     model::Array{TensorProductBasis}
     W::S
     b::T
