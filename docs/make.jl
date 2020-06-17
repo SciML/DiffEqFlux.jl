@@ -18,6 +18,7 @@ makedocs(
             "examples/LV-Flux.md",
             "examples/LV-delay.md",
             "examples/NN-ODE.md",
+            "examples/Augmented-NN-ODE.md",
             "examples/NeuralODE_Flux.md",
             "examples/Supervised-NN-ODE-MNIST.md",
             "examples/NN-CNF.md",

@@ -470,3 +470,36 @@ function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
     solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
+
+"""
+Constructs an Augmented Neural Differential Equation Layer.
+
+```julia
+AugmentedNDELayer(nde, adim::Int)
+```
+
+Arguments:
+
+- `nde`: Any Neural Differential Equation Layer
+- `adim`: The number of dimensions the initial conditions should be lifted
+
+References:
+
+[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural odes." Advances in Neural Information Processing Systems. 2019.
+"""
+struct AugmentedNDELayer{DE<:NeuralDELayer} <: NeuralDELayer
+    nde::DE
+    adim::Int
+end
+
+Flux.@functor AugmentedNDELayer (nde,)
+
+(ande::AugmentedNDELayer)(x, p=ande.nde.p) = ande.nde(augment(x, ande.adim), p)
+
+augment(x::AbstractVector{S}, augment_dim::Int) where S =
+    cat(x, zeros(S, (augment_dim,)), dims = 1)
+
+augment(x::AbstractArray{S, T}, augment_dim::Int) where {S, T} =
+    cat(x, zeros(S, (size(x)[1:(T - 2)]..., augment_dim, size(x, T))), dims = T - 1)
+
+Base.getproperty(ande::AugmentedNDELayer, sym::Symbol) = sym === :p ? ande.nde.p : getfield(ande, sym)
