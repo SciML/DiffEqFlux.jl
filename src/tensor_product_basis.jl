@@ -14,7 +14,7 @@ end
 struct ChebyshevPolyBasis{Int, AbstractArray} <: TensorProductBasis
     n::Int
     poly_matrix::AbstractArray
-    function LegendrePolyBasis(n)
+    function ChebyshevPolyBasis(n)
         poly_matrix = create_legendre_poly(n)
         new{typeof(n), typeof(poly_matrix)}(n, poly_matrix)
     end

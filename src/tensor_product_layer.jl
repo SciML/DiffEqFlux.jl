@@ -1,29 +1,29 @@
 abstract type AbstractTensorProductLayer <: Function end
-struct TensorProductLayer{M<:Array{TensorProductBasis},ComponentArray,Int} <: AbstractTensorProductLayer
+struct TensorLayer{M<:Array{TensorProductBasis},ComponentArray,Int} <: AbstractTensorProductLayer
     model::M
-    component::ComponentArray
+    p::ComponentArray
     in::Int
     out::Int
-    function TensorProductLayer(model,out,W=nothing,b=nothing)
+    function TensorLayer(model,out,W=nothing,b=nothing)
         number_of_weights = 1
         for basis in model
             number_of_weights *= basis.n
         end
-        w = zeros(out, number_of_weights)
+        W = zeros(out, number_of_weights)
         b = zeros(out)
-        component = ComponentArray(W = w, B = b)
-        new{typeof(model),typeof(component),Int}(model,component,length(model),out)
+        p = ComponentArray(W = W, b = b)
+        new{typeof(model),typeof(component),Int}(model,p,length(model),out)
     end
 end
 
-function (layer::TensorProductLayer)(x,component=layer.component)
+function (layer::TensorLayer)(x,p=layer.p)
     model,out = layer.model,layer.out
-    w = @view component.W[:,:]
-    b = @view component.B[:,:]
+    W = @view p.W[:,:]
+    b = @view p.b[:,:]
     tensor_prod = model[1](x[1])
     for i in 2:length(model)
         tensor_prod = kron(tensor_prod,model[i](x[i]))
     end
-    z = [sum(w[i,:].*tensor_prod).+b[i] for i in 1:out]
+    z = [sum(W[i,:].*tensor_prod).+b[i] for i in 1:out]
     return Float32.(z)
 end
