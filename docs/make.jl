@@ -25,7 +25,7 @@ makedocs(
             "examples/neural_sde.md",
             "examples/optimal_control.md",
             "examples/feedback_control.md",
-            "examples/SecondOrderNeural.md",
+            "examples/second_order_neural.md",
             "examples/physical_constraints.md",
             "examples/second_order_adjoints.md",
             "examples/jump.md",
