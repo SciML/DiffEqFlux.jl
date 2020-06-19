@@ -25,5 +25,5 @@ function (layer::TensorLayer)(x,p=layer.p)
         tensor_prod = kron(tensor_prod,model[i](x[i]))
     end
     z = [sum(W[i,:].*tensor_prod).+b[i] for i in 1:out]
-    return Float32.(z)
+    return z
 end

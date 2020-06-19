@@ -9,13 +9,34 @@ function (basis::ChebyshevBasis)(x)
     return [cos(j*acos(x)) for j in 1:basis.n]
 end
 
-##Fourier basis of the form F_j(x) = j is odd ? cos((j÷2)*x) : sin((j÷2)*x) => [F_0(x), F_1(x), ..., F_n(x)]
+##Sine basis of the form [sin(x), sin(2*x), ..., sin(n*x)]
+struct SinBasis <: TensorProductBasis
+    n::Int
+end
+
+function (basis::SinBasis)(x)
+    return [sin(i*x) for i in 1:basis.n]
+end
+
+##Cosine basis of the form [cos(x), cos(2*x), ..., cos(n*x)]
+struct CosBasis <: TensorProductBasis
+    n::Int
+end
+
+function (basis::CosBasis)(x)
+    return [cos(i*x) for i in 1:basis.n]
+end
+
+##Fourier basis of the form F_j(x) = j is even ? cos((j÷2)*x) : sin((j÷2)*x) => [F_0(x), F_1(x), ..., F_n(x)]
 struct FourierBasis <: TensorProductBasis
     n::Int
 end
 
+function fourier(i, x)
+    return mod(i,2) == 0? cos(i*x/2) : sin(i*x/2)
+
 function (basis::FourierBasis)(x)
-    return [sin(i*x) for i in 1:basis.n]
+    return [fourier(i, x) for i in 1:basis.n]
 end
 
 ##Legendre basis of the form [P_0(x), P_1(x), ..., P_n(x)]
