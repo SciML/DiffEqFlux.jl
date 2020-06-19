@@ -12,7 +12,7 @@ struct TensorLayer{M<:Array{TensorProductBasis},ComponentArray,Int} <: AbstractT
         W = zeros(out, number_of_weights)
         b = zeros(out)
         p = ComponentArray(W = W, b = b)
-        new{typeof(model),typeof(component),Int}(model,p,length(model),out)
+        new{Array{TensorProductBasis},typeof(p),Int}(model,p,length(model),out)
     end
 end
 
