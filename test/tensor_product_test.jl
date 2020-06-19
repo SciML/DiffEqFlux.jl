@@ -134,7 +134,7 @@ end
 
 res = DiffEqFlux.sciml_train(loss_function, layer.p, ADAM(0.1), cb=cb, maxiters = 100)
 opt = res.minimizer
-res = DiffEqFlux.sciml_train(loss_function, opt, LBFGS(), cb=cb)
+res = DiffEqFlux.sciml_train(loss_function, opt, LBFGS(), cb=cb, maxiters = 1000)
 opt = res.minimizer
 
 data_validate_vals = []

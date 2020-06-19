@@ -58,7 +58,6 @@ end
 ##Polynomial basis of them form [x, x^2, ..., x^n]
 struct PolynomialBasis{Int} <: TensorProductBasis
     n::Int
-
     function PolynomialBasis(n)
         new{typeof(n)}(n)
     end
