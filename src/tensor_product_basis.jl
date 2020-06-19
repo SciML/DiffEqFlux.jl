@@ -15,7 +15,6 @@ end
 ##Fourier basis of the form F_j(x) = j is odd ? cos((j÷2)*x) : sin((j÷2)*x) => [F_0(x), F_1(x), ..., F_n(x)]
 struct FourierBasis{Int} <: TensorProductBasis
     n::Int
-
     function FourierBasis(n)
         new{typeof(n)}(n)
     end
@@ -33,10 +32,27 @@ struct LegendreBasis{Int} <: TensorProductBasis
     end
 end
 
+##Source: https://github.com/ranocha/PolynomialBases.jl/blob/master/src/legendre.jl
+function legendre_poly(x, p::Integer)
+    a::typeof(x) = one(x)
+    b::typeof(x) = x
+
+    if p <= 0
+        return a
+    elseif p == 1
+        return b
+    end
+
+    for j in 2:p
+        a, b = b, ( (2j-1)*x*b - (j-1)*a ) / j
+    end
+
+    b
+end
+
 function (basis::LegendreBasis)(x)
-    #TODO: fix Legendre Basis
-    A = ones(basis.n)
-    return A
+    f = k -> legendre_poly(x,k)
+    return map(f, 1:basis.n)
 end
 
 ##Polynomial basis of them form [x, x^2, ..., x^n]
