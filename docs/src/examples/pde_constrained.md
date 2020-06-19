@@ -57,7 +57,7 @@ plot!(x, sol.u[end],lw=3, ls=:dash, label="tMax")
 ps  = [0.1, 0.2];   # Initial guess for model parameters
 # Defining Neural Net for HRT
 function predict(θ)  # Our 1-layer neural network
-    Array(concrete_solve(prob,Tsit5(),u0,θ,dt=dt,saveat=t))
+    Array(solve(prob,Tsit5(),p=θ,dt=dt,saveat=t))
 end
 
 ## Defining Loss function
@@ -344,4 +344,3 @@ res.minimizer = [0.999999999999975, 1.0000000000000213]
  0.999999999999975
  1.0000000000000213
 ```
-
