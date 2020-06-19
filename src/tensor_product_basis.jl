@@ -33,7 +33,8 @@ struct FourierBasis <: TensorProductBasis
 end
 
 function fourier(i, x)
-    return mod(i,2) == 0? cos(i*x/2) : sin(i*x/2)
+    return mod(i,2) == 0 ? cos(i*x/2) : sin(i*x/2)
+end
 
 function (basis::FourierBasis)(x)
     return [fourier(i, x) for i in 1:basis.n]
