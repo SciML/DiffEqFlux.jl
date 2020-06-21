@@ -1,7 +1,7 @@
 abstract type AbstractTensorProductLayer <: Function end
-struct TensorLayer{M<:Array{TensorProductBasis},ComponentArray,Int} <: AbstractTensorProductLayer
+struct TensorLayer{M<:Array{TensorProductBasis},P<:AbstractArray,Int} <: AbstractTensorProductLayer
     model::M
-    p::AbstractArray
+    p::P
     in::Int
     out::Int
     function TensorLayer(model,out,p=nothing)
