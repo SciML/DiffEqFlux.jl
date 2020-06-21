@@ -73,7 +73,7 @@ include("require.jl")
 
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
-export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM
+export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer
 export neural_ode, neural_ode_rd
 export neural_dmsde
 export FastDense, StaticDense, FastChain, initial_params
