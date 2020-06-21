@@ -6,7 +6,6 @@ using Test
 function run_test(f, layer::TensorLayer, atol)
 
     data_train_vals = []
-
     for i in 1:100
         x = [rand() for k in 1:length(layer.model)]
         push!(data_train_vals, x)
