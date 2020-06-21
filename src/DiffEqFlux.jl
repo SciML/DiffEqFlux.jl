@@ -70,6 +70,7 @@ include("train.jl")
 include("fast_layers.jl")
 include("neural_de.jl")
 include("require.jl")
+include("tensor_product_layer.jl")
 
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint

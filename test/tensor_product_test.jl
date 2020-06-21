@@ -1,4 +1,4 @@
-using DiffEqFlux, Flux, Random
+using DiffEqFlux, Flux
 using LinearAlgebra, Distributions
 using Optim
 using Test
@@ -53,5 +53,5 @@ layer = TensorLayer([ChebyshevBasis(10), PolynomialBasis(10)], 2)
 A = rand(2,2)
 b = rand(2)
 f = x -> A*x*norm(x)+ b/norm(x)
-layer = TensorLayer([LegendreBasis(10), FourierBasis(10)], 2)
+layer = TensorLayer([LegendreBasis(5), FourierBasis(5)], 2)
 @test run_test(f, layer, 0.20)
