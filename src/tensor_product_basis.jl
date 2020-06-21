@@ -64,11 +64,11 @@ function legendre_poly(x, p::Integer)
 end
 
 function (basis::LegendreBasis)(x)
-    f = k -> legendre_poly(x,k)
+    f = k -> legendre_poly(x,k-1)
     return map(f, 1:basis.n)
 end
 
-##Polynomial basis of them form [x, x^2, ..., x^n]
+##Polynomial basis of them form [1, x, x^2, ..., x^(n-1)]
 struct PolynomialBasis <: TensorProductBasis
     n::Int
 end

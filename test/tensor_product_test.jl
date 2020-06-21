@@ -3,7 +3,7 @@ using LinearAlgebra, Distributions
 using Optim
 using Test
 
-function run_test(f, layer::TensorLayer, atol)
+function run_test(f, layer::TLayer, atol)
 
     data_train_vals = []
     for i in 1:100
@@ -47,11 +47,11 @@ A = rand(2,2)
 b = rand(2)
 f = x -> A*x + b
 layer = TensorLayer([ChebyshevBasis(10), PolynomialBasis(10)], 2)
-@test run_test(f, layer, 0.15)
+@test run_test(f, layer, 0.10)
 
 ##test 02: non-linear function, Legendre and Fourier basis
 A = rand(2,2)
 b = rand(2)
 f = x -> A*x*norm(x)+ b/norm(x)
-layer = TensorLayer([LegendreBasis(5), FourierBasis(5)], 2)
+layer = TensorLayer([LegendreBasis(10), FourierBasis(10)], 2)
 @test run_test(f, layer, 0.20)
