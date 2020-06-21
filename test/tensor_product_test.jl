@@ -3,7 +3,7 @@ using LinearAlgebra, Distributions
 using Optim
 using Test
 
-function run_test(f, layer::TLayer, atol)
+function run_test(f, layer::TensorLayer, atol)
 
     data_train_vals = []
     for i in 1:100
