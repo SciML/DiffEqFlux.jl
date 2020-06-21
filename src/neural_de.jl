@@ -494,7 +494,7 @@ end
 
 Flux.@functor AugmentedNDELayer (nde,)
 
-(ande::AugmentedNDELayer)(x, p=ande.nde.p) = ande.nde(augment(x, ande.adim), p)
+(ande::AugmentedNDELayer)(x, args...) = ande.nde(augment(x, ande.adim), args...)
 
 augment(x::AbstractVector{S}, augment_dim::Int) where S =
     cat(x, zeros(S, (augment_dim,)), dims = 1)
@@ -502,4 +502,5 @@ augment(x::AbstractVector{S}, augment_dim::Int) where S =
 augment(x::AbstractArray{S, T}, augment_dim::Int) where {S, T} =
     cat(x, zeros(S, (size(x)[1:(T - 2)]..., augment_dim, size(x, T))), dims = T - 1)
 
-Base.getproperty(ande::AugmentedNDELayer, sym::Symbol) = sym === :p ? ande.nde.p : getfield(ande, sym)
+Base.getproperty(ande::AugmentedNDELayer, sym::Symbol) =
+    hasproperty(ande, sym) ? getfield(ande, sym) : getfield(ande.nde, sym)

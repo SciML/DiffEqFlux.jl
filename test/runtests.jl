@@ -24,6 +24,7 @@ end
 
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
+    @safetestset "Augmented Neural DE Tests" begin include("fast_neural_ode.jl") end
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
 end
