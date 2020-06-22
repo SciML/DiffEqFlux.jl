@@ -1,6 +1,14 @@
 abstract type TensorProductBasis <: Function end
 
-##Chebyshev basis of the form [T_0(x), T_1(x), ..., T_n(x)] where T is the Chebyshev polynomial of the first kind
+"""
+Constructs a Chebyshev basis of the form [T_{0}(x), T_{1}(x), ..., T_{n-1}(x)] where T is the Chebyshev polynomial of the first kind.
+
+```julia
+ChebyshevBasis(n)
+```
+Arguments:
+- `n`: number of terms in the polynomial expansion.
+"""
 struct ChebyshevBasis <: TensorProductBasis
     n::Int
 end
@@ -9,7 +17,17 @@ function (basis::ChebyshevBasis)(x)
     return [cos(j*acos(x)) for j in 1:basis.n]
 end
 
-##Sine basis of the form [sin(x), sin(2*x), ..., sin(n*x)]
+
+"""
+Constructs a sine basis of the form [sin(x), sin(2*x), ..., sin(n*x).
+
+```julia
+SinBasis(n)
+```
+Arguments:
+- `n`: number of terms in the sine expansion.
+"""
+
 struct SinBasis <: TensorProductBasis
     n::Int
 end
@@ -18,7 +36,15 @@ function (basis::SinBasis)(x)
     return [sin(i*x) for i in 1:basis.n]
 end
 
-##Cosine basis of the form [cos(x), cos(2*x), ..., cos(n*x)]
+"""
+Constructs a cosine basis of the form [cos(x), cos(2*x), ..., cos(n*x).
+
+```julia
+CosBasis(n)
+```
+Arguments:
+- `n`: number of terms in the cosine expansion.
+"""
 struct CosBasis <: TensorProductBasis
     n::Int
 end
@@ -27,7 +53,15 @@ function (basis::CosBasis)(x)
     return [cos(i*x) for i in 1:basis.n]
 end
 
-##Fourier basis of the form F_j(x) = j is even ? cos((j÷2)*x) : sin((j÷2)*x) => [F_0(x), F_1(x), ..., F_n(x)]
+"""
+Constructs a cosine basis of the form F_j(x) = j is even ? cos((j÷2)*x) : sin((j÷2)*x) => [F_0(x), F_1(x), ..., F_n(x)].
+
+```julia
+FourierBasis(n)
+```
+Arguments:
+- `n`: number of terms in the Fourier expansion.
+"""
 struct FourierBasis <: TensorProductBasis
     n::Int
 end
@@ -40,7 +74,15 @@ function (basis::FourierBasis)(x)
     return [fourier(i, x) for i in 1:basis.n]
 end
 
-##Legendre basis of the form [P_0(x), P_1(x), ..., P_n(x)]
+"""
+Constructs a Chebyshev basis of the form [P_{0}(x), P_{1}(x), ..., P_{n-1}(x)] where P is the Legendre polynomial.
+
+```julia
+LegendreBasis(n)
+```
+Arguments:
+- `n`: number of terms in the polynomial expansion.
+"""
 struct LegendreBasis <: TensorProductBasis
     n::Int
 end
@@ -68,7 +110,15 @@ function (basis::LegendreBasis)(x)
     return map(f, 1:basis.n)
 end
 
-##Polynomial basis of them form [1, x, x^2, ..., x^(n-1)]
+"""
+Constructs a Polynomial basis of the form [1, x, ..., x^(n-1)].
+
+```julia
+PolynomialBasis(n)
+```
+Arguments:
+- `n`: number of terms in the polynomial expansion.
+"""
 struct PolynomialBasis <: TensorProductBasis
     n::Int
 end
