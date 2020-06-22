@@ -1,6 +1,6 @@
 # Partial Differential Equation Constrained Optimization
 
-This example uses a 1-layer neural network to optimize the one-dimensional Burgers' Equation.
+This example uses a prediction model to optimize the one-dimensional Burgers' Equation.
 (Step-by-step description below)
 
 ```julia
@@ -55,8 +55,7 @@ plot(x, sol.u[1], lw=3, label="t0", size=(800,500))
 plot!(x, sol.u[end],lw=3, ls=:dash, label="tMax")
 
 ps  = [0.1, 0.2];   # Initial guess for model parameters
-# Defining Neural Net for HRT
-function predict(θ)  # Our 1-layer neural network
+function predict(θ)
     Array(solve(prob,Tsit5(),p=θ,dt=dt,saveat=t))
 end
 
@@ -190,24 +189,23 @@ plot(x, sol.u[1], lw=3, label="t0", size=(800,500))
 plot!(x, sol.u[end],lw=3, ls=:dash, label="tMax")
 ```
 
-### Using Neural Network for Predictions
+### Building the Prediction Model
 
-Now we start building our NN to try and predict the values of `p`. We make an initial guess
-for the parameters and name it `ps` here. The `predict` function is a non-linear
-transformation in one layer using `solve`. If unfamiliar with the concept, refer to
-[here](https://julialang.org/blog/2019/01/fluxdiffeq/).
+Now we start building our prediction model to try to obtain the values `p`. We make an
+initial guess for the parameters and name it `ps` here. The `predict` function is a
+non-linear transformation in one layer using `solve`. If unfamiliar with the concept,
+refer to [here](https://julialang.org/blog/2019/01/fluxdiffeq/).
 
 ```
 ps  = [0.1, 0.2];   # Initial guess for model parameters
-# Defining Neural Net for HRT
-function predict(θ)  # Our 1-layer neural network
+function predict(θ)
     Array(solve(prob,Tsit5(),p=θ,dt=dt,saveat=t))
 end
 ```
 
 ### Train Parameters
 
-Training our network requires a **loss function**, an **optimizer** and a **callback
+Training our model requires a **loss function**, an **optimizer** and a **callback
 function** to display the progress.
 
 #### Loss
