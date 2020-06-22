@@ -265,7 +265,7 @@ cb(ps,loss(ps)...) # Testing callback function
 
 The scatter points plotted here are the ground truth obtained from the actual solution we
 solved for above. The solid line represents our prediction. The goal is for both to overlap
-almost perfectly when the NN finishes its training and the loss is close to 0.
+almost perfectly when the PDE finishes its training and the loss is close to 0.
 
 ```
 # Let see prediction vs. Truth
@@ -405,4 +405,3 @@ res.minimizer = [0.999999999999975, 1.0000000000000213]
  0.999999999999975
  1.0000000000000213
 ```
-
