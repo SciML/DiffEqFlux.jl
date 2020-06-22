@@ -127,23 +127,17 @@ tspan    = (t0,tMax)
 t        = t0:dt:tMax;
 ```
 
-`x` (to `Lx`) spans the specified 1D space
+In plain terms, the quantities that were defined are:
 
-`dx` = distance between two points
-
-`Nx` = total size of space
-
-`u0` = initial condition
-
-`p` = true solution
-
-`xtrs` = convenient grouping of `dx` and `Nx` into Array
-
-`dt` = time distane between two points
-
-`t` (`t0` to `tMax`) spans the specified time frame
-
-`tspan` = span of `t`
+- `x` (to `Lx`) spans the specified 1D space
+- `dx` = distance between two points
+- `Nx` = total size of space
+- `u0` = initial condition
+- `p` = true solution
+- `xtrs` = convenient grouping of `dx` and `Nx` into Array
+- `dt` = time distane between two points
+- `t` (`t0` to `tMax`) spans the specified time frame
+- `tspan` = span of `t`
 
 ### Auxiliary Functions
 
