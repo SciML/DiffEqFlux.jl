@@ -275,8 +275,8 @@ plot!(PRED[end][:,end], lw=2, label="Prediction")
 
 ### Train
 
-The network is trained using `sciml_train` via backpropagation. The specifics of our
-1-layer NN is stored in `res` and `res.minimizer` returns the parameters that
+The parameters are trained using `sciml_train` and adjoint sensitivities. The resulting
+best parameters are stored in `res` and `res.minimizer` returns the parameters that
 minimizes the cost function.
 
 ```
