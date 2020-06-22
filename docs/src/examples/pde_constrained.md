@@ -1,7 +1,7 @@
 # Partial Differential Equation Constrained Optimization
 
-This example uses a 1-layer neural network to optimize Burgers' Equation. (Step-by-step description below)
-
+This example uses a prediction model to optimize the one-dimensional Burgers' Equation.
+(Step-by-step description below)
 
 ```julia
 using DelimitedFiles,Plots
@@ -34,17 +34,17 @@ end
 
 function d2dx(u,dx)
     """
-    2nd order Central difference for 1st degree derivative
+    2nd order Central difference for 2nd degree derivative
     """
     return [[zero(eltype(u))]; (u[3:end] - 2.0.*u[2:end-1] + u[1:end-2]) ./ (dx^2); [zero(eltype(u))]]
 end
 
-## ODE descrition of the Physics:
+## ODE description of the Physics:
 function burgers(u,p,t)
     # Model parameters
     a0, a1 = p
     dx,Nx = xtrs #[1.0,3.0,0.125,100]
-    return 2.0*a0 .* u +  a1 .* d2dx(u, dx) #.*ddx(ddx(u, dx) ,dx)
+    return 2.0*a0 .* u +  a1 .* d2dx(u, dx)
 end
 
 # Testing Solver on linear PDE
@@ -55,8 +55,7 @@ plot(x, sol.u[1], lw=3, label="t0", size=(800,500))
 plot!(x, sol.u[end],lw=3, ls=:dash, label="tMax")
 
 ps  = [0.1, 0.2];   # Initial guess for model parameters
-# Defining Neural Net for HRT
-function predict(θ)  # Our 1-layer neural network
+function predict(θ)
     Array(solve(prob,Tsit5(),p=θ,dt=dt,saveat=t))
 end
 
@@ -105,6 +104,10 @@ using DiffEqSensitivity, OrdinaryDiffEq, Zygote, Flux, DiffEqFlux, Optim
 
 ### Parameters
 
+First, we setup the 1-dimensional space over which our equations will be evaluated.
+`x` spans **from 0.0 to 10.0** in steps of **0.01**; `t` spans **from 0.00 to 0.04** in
+steps of **4.0e-5**.
+
 ```
 # Problem setup parameters:
 Lx = 10.0
@@ -123,7 +126,22 @@ tspan    = (t0,tMax)
 t        = t0:dt:tMax;
 ```
 
+In plain terms, the quantities that were defined are:
+
+- `x` (to `Lx`) spans the specified 1D space
+- `dx` = distance between two points
+- `Nx` = total size of space
+- `u0` = initial condition
+- `p` = true solution
+- `xtrs` = convenient grouping of `dx` and `Nx` into Array
+- `dt` = time distane between two points
+- `t` (`t0` to `tMax`) spans the specified time frame
+- `tspan` = span of `t`
+
 ### Auxiliary Functions
+
+We then define two functions to compute the derivatives numerically. The **Central
+Difference** is used in both the 1st and 2nd degree derivatives.
 
 ```
 ## Definition of Auxiliary functions
@@ -137,48 +155,65 @@ end
 
 function d2dx(u,dx)
     """
-    2nd order Central difference for 1st degree derivative
+    2nd order Central difference for 2nd degree derivative
     """
     return [[zero(eltype(u))]; (u[3:end] - 2.0.*u[2:end-1] + u[1:end-2]) ./ (dx^2); [zero(eltype(u))]]
 end
 ```
 
-### Burgers' Equation
+### Burgers' Differential Equation
+
+Next, we setup our desired set of equations in order to define our problem.
 
 ```
-## ODE descrition of the Physics:
+## ODE description of the Physics:
 function burgers(u,p,t)
-    # Model paramters
+    # Model parameters
     a0, a1 = p
     dx,Nx = xtrs #[1.0,3.0,0.125,100]
-    return 2.0*a0 .* u +  a1 .* d2dx(u, dx) #.*ddx(ddx(u, dx) ,dx)
+    return 2.0*a0 .* u +  a1 .* d2dx(u, dx)
 end
 ```
 
 ### Solve and Plot Ground Truth
 
+We then solve and plot our partial differential equation. This is the true solution which we
+will compare to further on.
+
 ```
 # Testing Solver on linear PDE
 prob = ODEProblem(burgers,u0,tspan,p)
-sol = concrete_solve(prob,Tsit5(), dt=dt,saveat=t);
+sol = solve(prob,Tsit5(), dt=dt,saveat=t);
 
 plot(x, sol.u[1], lw=3, label="t0", size=(800,500))
 plot!(x, sol.u[end],lw=3, ls=:dash, label="tMax")
 ```
 
-### Using Neural Network for Predictions
+### Building the Prediction Model
+
+Now we start building our prediction model to try to obtain the values `p`. We make an
+initial guess for the parameters and name it `ps` here. The `predict` function is a
+non-linear transformation in one layer using `solve`. If unfamiliar with the concept,
+refer to [here](https://julialang.org/blog/2019/01/fluxdiffeq/).
 
 ```
 ps  = [0.1, 0.2];   # Initial guess for model parameters
-# Defining Neural Net for HRT
-function predict(θ)  # Our 1-layer neural network
-    Array(concrete_solve(prob,Tsit5(),u0,θ,dt=dt,saveat=t))
+function predict(θ)
+    Array(solve(prob,Tsit5(),p=θ,dt=dt,saveat=t))
 end
 ```
 
 ### Train Parameters
 
+Training our model requires a **loss function**, an **optimizer** and a **callback
+function** to display the progress.
+
 #### Loss
+
+We first make our predictions based on the current values of our parameters `ps`, then
+take the difference between the predicted solution and the truth above. For the loss, we
+use the **Mean squared error**.
+
 ```
 ## Defining Loss function
 function loss(θ)
@@ -189,17 +224,24 @@ end
 
 l,pred   = loss(ps)
 size(pred), size(sol), size(t) # Checking sizes
+```
 
+#### Optimizer
+
+The optimizers `ADAM` with a learning rate of 0.01 and `BFGS` are directly passed in
+training (see below)
+
+#### Callback
+
+The callback function displays the loss during training. We also keep a history of the
+loss, the previous predictions and the previous parameters with `LOSS`, `PRED` and `PARS`
+accumulators.
+
+```
 LOSS  = []                              # Loss accumulator
 PRED  = []                              # prediction accumulator
 PARS  = []                              # parameters accumulator
-```
-#### Optimizer
 
-The optimizers `ADAM` and `BFGS` are directly passed in the training step (see below)
-
-#### Callback
-```
 cb = function (θ,l,pred) #callback function to observe training
   display(l)
   append!(PRED, [pred])
@@ -213,6 +255,10 @@ cb(ps,loss(ps)...) # Testing callback function
 
 ### Plotting Prediction vs Ground Truth
 
+The scatter points plotted here are the ground truth obtained from the actual solution we
+solved for above. The solid line represents our prediction. The goal is for both to overlap
+almost perfectly when the PDE finishes its training and the loss is close to 0.
+
 ```
 # Let see prediction vs. Truth
 scatter(sol[:,end], label="Truth", size=(800,500))
@@ -221,12 +267,19 @@ plot!(PRED[end][:,end], lw=2, label="Prediction")
 
 ### Train
 
+The parameters are trained using `sciml_train` and adjoint sensitivities. The resulting
+best parameters are stored in `res` and `res.minimizer` returns the parameters that
+minimizes the cost function.
+
 ```
 res = DiffEqFlux.sciml_train(loss, ps, ADAM(0.01), cb = cb, maxiters = 100)  # Let check gradient propagation
 ps = res.minimizer
 res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100)  # Let check gradient propagation
 @show res.minimizer # returns [0.999999999999975, 1.0000000000000213]
 ```
+
+We successfully predict the final `ps` to be equal to **[0.999999999999975,
+1.0000000000000213]** vs the true solution of `p` = **[1.0, 1.0]**
 
 ### Expected Output
 
