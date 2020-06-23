@@ -33,14 +33,14 @@ makedocs(
             "examples/minibatch.md"
         ],
         "Basis" => "basis_docs.md",
+        "Tensor Product Layer" => "tensor_layer.md",
         "Continuous Normalizing Flows Layer" => "CNFLayer.md",
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
         "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
         "GPUs" => "GPUs.md",
         "sciml_train" => "Scimltrain.md",
-        "Benchmark" => "Benchmark.md",
-        "Tensor Product Layer" => "tensor_layer.md"
+        "Benchmark" => "Benchmark.md"
     ]
 )
 

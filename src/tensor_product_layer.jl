@@ -13,7 +13,7 @@ TensorLayer(model,out,p=nothing)
 Arguments:
 - `model`: Array of TensorProductBasis [B_1(n_1), ..., B_k(n_k)], where k corresponds to the dimension of the input.
 - `out`: Dimension of the output.
-- `p`: Optional initialization of the network layer. Initizalized to 0 by default.
+- `p`: Optional initialization of the layer's weight. Initizalized to 0 by default.
 """
 struct TensorLayer{M<:Array{TensorProductBasis},P<:AbstractArray,Int} <: AbstractTensorProductLayer
     model::M
