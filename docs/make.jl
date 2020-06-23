@@ -20,6 +20,7 @@ makedocs(
             "examples/neural_ode_sciml.md",
             "examples/neural_ode_flux.md",
             "examples/mnist_neural_ode.md",
+            "examples/augmented_neural_ode.md",
             "examples/normalizing_flows.md",
             "examples/local_minima.md",
             "examples/neural_sde.md",
