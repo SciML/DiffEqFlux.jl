@@ -20,8 +20,9 @@ function run_test(f, layer::TensorLayer, atol)
     end
 
     res = DiffEqFlux.sciml_train(loss_function, layer.p, ADAM(0.1), cb=cb, maxiters = 100)
-    opt = res.minimizer
-    res = DiffEqFlux.sciml_train(loss_function, opt, BFGS(), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, ADAM(0.005), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, ADAM(0.001), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, BFGS(), cb=cb, maxiters = 100)
     opt = res.minimizer
 
     data_validate_vals = [rand(length(layer.model)) for k in 1:100]
@@ -37,11 +38,11 @@ A = rand(2,2)
 b = rand(2)
 f = x -> A*x + b
 layer = TensorLayer([ChebyshevBasis(10), PolynomialBasis(10)], 2)
-@test run_test(f, layer, 0.10)
+@test run_test(f, layer, 0.05)
 
 ##test 02: non-linear function, Legendre and Fourier basis
 A = rand(2,2)
 b = rand(2)
 f = x -> A*x*norm(x)+ b/norm(x)
-layer = TensorLayer([LegendreBasis(10), PolynomialBasis(10)], 2)
-@time run_test(f, layer2, 0.20)
+layer = TensorLayer([LegendreBasis(20), ChebyshevBasis(20)], 2)
+@test run_test(f, layer2, 0.15)

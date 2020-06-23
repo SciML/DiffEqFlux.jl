@@ -15,7 +15,7 @@ struct ChebyshevBasis <: TensorProductBasis
 end
 
 function (basis::ChebyshevBasis)(x)
-    return [cos(k*acos(x)) for k in 1:basis.n]
+    return [cos(j*acos(x)) for j in 1:basis.n]
 end
 
 """
