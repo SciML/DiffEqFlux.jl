@@ -66,7 +66,7 @@ dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size
 
 cb = function()
     global iter += 1
-    if iter % 10 == 1
+    if iter % 10 == 0
         println("Iteration $iter || Loss = $(loss_node(dataloader.data[1], dataloader.data[2]))")
     end
 end
@@ -96,6 +96,179 @@ end
 
 plt_anode = plot_contour(model)
 ```
+
+# Step-by-Step Explaination
+
+## Loading required packages
+
+```julia
+using Flux, DiffEqFlux, DifferentialEquations
+using Statistics, LinearAlgebra, Plots
+import Flux.Data: DataLoader
+```
+
+## Generating a toy dataset
+
+In this example, we will be using data sampled uniformly in two concentric circles and then train our
+Neural ODEs to do regression on that values. We assign `1` to any point which lies inside the inner
+circle, and `-1` to any point which lies between the inner and outer circle. Our first function
+`random_point_in_sphere` samples points uniformly between 2 concentric circles/spheres of radii
+`min_radius` and `max_radius` respectively.
+
+```julia
+function random_point_in_sphere(dim, min_radius, max_radius)
+    distance = (max_radius - min_radius) .* (rand(1) .^ (1.0 / dim)) .+ min_radius
+    direction = randn(dim)
+    unit_direction = direction ./ norm(direction)
+    return distance .* unit_direction
+end
+```
+
+Next, we will construct a dataset of these points and use Flux's DataLoader to automatically minibatch
+and shuffle the data.
+
+```julia
+function concentric_sphere(dim, inner_radius_range, outer_radius_range,
+                           num_samples_inner, num_samples_outer; batch_size = 64)
+    data = []
+    labels = []
+    for _ in 1:num_samples_inner
+        push!(data, reshape(random_point_in_sphere(dim, inner_radius_range...), :, 1))
+        push!(labels, ones(1, 1))
+    end
+    for _ in 1:num_samples_outer
+        push!(data, reshape(random_point_in_sphere(dim, outer_radius_range...), :, 1))
+        push!(labels, -ones(1, 1))
+    end
+    data = cat(data..., dims=2)
+    labels = cat(labels..., dims=2)
+    return DataLoader(data, labels; batchsize=batch_size, shuffle=true, partial=false)
+end
+```
+
+## Models
+
+We consider 2 models in this tuturial. The first is a simple Neural ODE which is described in detail in
+[this tutorial](https://diffeqflux.sciml.ai/dev/examples/neural_ode_sciml/). The other one is an
+Augmented Neural ODE \[1]. The idea behind this layer is very simple. It augments the input to the Neural
+DE Layer by appending zeros. So in order to use any arbitrary DE Layer in combination with this layer,
+simply assume that the input to the DE Layer is of size `size(x, 1) + augment_dim` instead of `size(x, 1)`
+and construct that layer accordingly.
+
+```julia
+diffeqarray_to_array(x) = reshape(Array(x), size(x)[1:2])
+
+function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
+    input_dim = input_dim + augment_dim
+    node = NeuralODE(FastChain(FastDense(input_dim, hidden_dim, relu),
+                               FastDense(hidden_dim, hidden_dim, relu),
+                               FastDense(hidden_dim, input_dim)),
+                     (0.f0, 1.f0), Tsit5(), save_everystep = false,
+                     reltol = 1e-3, abstol = 1e-3, save_start = false)
+    node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
+    return Chain((x, p=node.p) -> node(x, p),
+                 diffeqarray_to_array,
+                 Dense(input_dim, out_dim)), node.p
+end
+```
+
+## Plotting the Results
+
+Here, we define an utility to plot our model regression results as a heatmap.
+
+```julia
+function plot_contour(model, npoints = 300)
+    grid_points = zeros(2, npoints ^ 2)
+    idx = 1
+    x = range(-4.0, 4.0, length = npoints)
+    y = range(-4.0, 4.0, length = npoints)
+    for x1 in x, x2 in y
+        grid_points[:, idx] .= [x1, x2]
+        idx += 1
+    end
+    sol = reshape(model(grid_points), npoints, npoints)
+    
+    return contour(x, y, sol, fill = true, linewidth=0.0)
+end
+```
+
+## Training Parameters
+
+### Loss Functions
+
+We use the L2 distance between the model prediction `model(x)` and the actual prediction `y` as the
+optimization objective.
+
+```julia
+loss_node(x, y) = mean((model(x) .- y) .^ 2)
+```
+
+### Dataset
+
+Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is easy to visualize.
+We sample a total of `4000` data points.
+
+```julia
+dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size = 256)
+```
+
+### Callback Function
+
+Additionally we define a callback function which displays the total loss at specific intervals.
+
+```julia
+cb = function()
+    global iter += 1
+    if iter % 10 == 1
+        println("Iteration $iter || Loss = $(loss_node(dataloader.data[1], dataloader.data[2]))")
+    end
+end
+```
+
+### Optimizer
+
+We use ADAM as the optimizer with a learning rate of 0.005
+
+```julia
+opt = ADAM(0.005)
+```
+
+## Training the Neural ODE
+
+To train our neural ode model, we need to pass the appropriate learnable parameters, `parameters` which is
+returned by the `construct_models` function. It is simply the `node.p` vector. We then train our model
+for `20` epochs.
+
+```julia
+model, parameters = construct_model(1, 2, 64, 0)
+
+for _ in 1:20
+    Flux.train!(loss_node, Flux.Params([parameters]), dataloader, opt, cb = cb)
+end
+```
+
+Here is what the contour plot should look for Neural ODE. Notice that the regression is not perfect due to
+the thin artifact which connects the circles.
+
+![node](https://user-images.githubusercontent.com/30564094/85356368-6d96a880-b52c-11ea-8f21-6f35df0d5c8c.png)
+
+## Training the Augmented Neural ODE
+
+Our training configuration will be same as that of Neural ODE. Only in this case we have augmented the
+input with a single zero. This makes the problem 3 dimensional and as such it is possible to find
+a function which can be expressed by the neural ode. For more details and proofs please refer to \[1].
+
+```julia
+model, parameters = construct_model(1, 2, 64, 1)
+
+for _ in 1:20
+    Flux.train!(loss_node, Flux.Params([parameters]), dataloader, opt, cb = cb)
+end
+```
+
+For the augmented Neural ODE we notice that the artifact is gone.
+
+![anode](https://user-images.githubusercontent.com/30564094/85356373-6f606c00-b52c-11ea-8431-fb74ff01dde5.png)
 
 # Expected Output
 
@@ -163,3 +336,7 @@ Iteration 270 || Loss = 0.014445097490699855
 Iteration 280 || Loss = 0.014170123422892231
 Iteration 290 || Loss = 0.01250998329088748
 ```
+
+# References
+
+\[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural odes." Advances in Neural Information Processing Systems. 2019.
