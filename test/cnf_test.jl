@@ -1,4 +1,5 @@
 using OrdinaryDiffEq
+println("Starting tests")
 using Flux, DiffEqFlux
 using Test
 using Distributions
