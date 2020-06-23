@@ -2,7 +2,7 @@ abstract type TensorProductBasis <: Function end
 
 
 """
-Constructs a Chebyshev basis of the form [T_{0}(x), T_{1}(x), ..., T_{n-1}(x)] where T is the Chebyshev polynomial of the first kind.
+Constructs a Chebyshev basis of the form [T_{0}(x), T_{1}(x), ..., T_{n-1}(x)] where T_j(.) is the j-th Chebyshev polynomial of the first kind.
 
 ```julia
 ChebyshevBasis(n)
@@ -75,7 +75,7 @@ function (basis::FourierBasis)(x)
 end
 
 """
-Constructs a Chebyshev basis of the form [P_{0}(x), P_{1}(x), ..., P_{n-1}(x)] where P is the Legendre polynomial.
+Constructs a Chebyshev basis of the form [P_{0}(x), P_{1}(x), ..., P_{n-1}(x)] where P_j(.) is the j-th Legendre polynomial.
 
 ```julia
 LegendreBasis(n)
