@@ -5,12 +5,7 @@ using Test
 
 function run_test(f, layer::TensorLayer, atol)
 
-    data_train_vals = []
-    for i in 1:100
-        x = [rand() for k in 1:length(layer.model)]
-        push!(data_train_vals, x)
-    end
-
+    data_train_vals = [rand(length(layer.model)) for k in 1:500]
     data_train_fn = f.(data_train_vals)
 
     function loss_function(component)
@@ -25,33 +20,28 @@ function run_test(f, layer::TensorLayer, atol)
     end
 
     res = DiffEqFlux.sciml_train(loss_function, layer.p, ADAM(0.1), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, ADAM(0.01), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, BFGS(), cb=cb, maxiters = 200)
     opt = res.minimizer
-    res = DiffEqFlux.sciml_train(loss_function, opt, LBFGS(), cb=cb, maxiters = 100)
-    opt = res.minimizer
 
-    data_validate_vals = []
-
-    for i in 1:100
-        x = [rand() for k in 1:length(layer.model)]
-        push!(data_validate_vals, x)
-    end
-
+    data_validate_vals = [rand(length(layer.model)) for k in 1:100]
     data_validate_fn = f.(data_validate_vals)
+
     data_validate_pred = [layer(x,opt) for x in data_validate_vals]
 
-    return sum(norm.(data_validate_pred.-data_validate_fn))/length(data_train_fn) < atol
+    return sum(norm.(data_validate_pred.-data_validate_fn))/length(data_validate_fn) < atol
 end
 
-##test 01: linear function, Chebyshev and Polynomial basis
+##test 01: affine function, Chebyshev and Polynomial basis
 A = rand(2,2)
 b = rand(2)
 f = x -> A*x + b
 layer = TensorLayer([ChebyshevBasis(10), PolynomialBasis(10)], 2)
-@test run_test(f, layer, 0.10)
+@test run_test(f, layer, 0.05)
 
-##test 02: non-linear function, Legendre and Fourier basis
+##test 02: non-linear function, Chebyshev and Legendre basis
 A = rand(2,2)
 b = rand(2)
-f = x -> A*x*norm(x)+ b/norm(x)
-layer = TensorLayer([LegendreBasis(10), FourierBasis(10)], 2)
-@test run_test(f, layer, 0.20)
+f = x -> A*x*norm(x)+ b*sin(norm(x))
+layer = TensorLayer([ChebyshevBasis(7), FourierBasis(7)], 2)
+@test run_test(f, layer, 0.10)
