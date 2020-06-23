@@ -5,12 +5,7 @@ using Test
 
 function run_test(f, layer::TensorLayer, atol)
 
-    data_train_vals = []
-    for i in 1:100
-        x = [rand() for k in 1:length(layer.model)]
-        push!(data_train_vals, x)
-    end
-
+    data_train_vals = [rand(length(layer.model)) for k in 1:100]
     data_train_fn = f.(data_train_vals)
 
     function loss_function(component)
@@ -26,23 +21,18 @@ function run_test(f, layer::TensorLayer, atol)
 
     res = DiffEqFlux.sciml_train(loss_function, layer.p, ADAM(0.1), cb=cb, maxiters = 100)
     opt = res.minimizer
-    res = DiffEqFlux.sciml_train(loss_function, opt, LBFGS(), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, opt, BFGS(), cb=cb, maxiters = 100)
     opt = res.minimizer
 
-    data_validate_vals = []
-
-    for i in 1:100
-        x = [rand() for k in 1:length(layer.model)]
-        push!(data_validate_vals, x)
-    end
-
+    data_validate_vals = [rand(length(layer.model)) for k in 1:100]
     data_validate_fn = f.(data_validate_vals)
+
     data_validate_pred = [layer(x,opt) for x in data_validate_vals]
 
     return sum(norm.(data_validate_pred.-data_validate_fn))/length(data_train_fn) < atol
 end
 
-##test 01: linear function, Chebyshev and Polynomial basis
+##test 01: affine function, Chebyshev and Polynomial basis
 A = rand(2,2)
 b = rand(2)
 f = x -> A*x + b
@@ -53,5 +43,5 @@ layer = TensorLayer([ChebyshevBasis(10), PolynomialBasis(10)], 2)
 A = rand(2,2)
 b = rand(2)
 f = x -> A*x*norm(x)+ b/norm(x)
-layer = TensorLayer([LegendreBasis(10), FourierBasis(10)], 2)
-@test run_test(f, layer, 0.20)
+layer = TensorLayer([LegendreBasis(10), PolynomialBasis(10)], 2)
+@time run_test(f, layer2, 0.20)

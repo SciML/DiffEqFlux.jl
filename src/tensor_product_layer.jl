@@ -9,7 +9,7 @@ struct TensorLayer{M<:Array{TensorProductBasis},P<:AbstractArray,Int} <: Abstrac
         for basis in model
             number_of_weights *= basis.n
         end
-        p = rand(out*number_of_weights)
+        p = zeros(out*number_of_weights)
         new{Array{TensorProductBasis},typeof(p),Int}(model,p,length(model),out)
     end
 end
