@@ -1,4 +1,5 @@
-using DifferentialEquations, Flux, Zygote, DiffEqFlux, Test
+using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq, Flux,
+      Zygote, DiffEqFlux, Test
 
 x = Float32[2.; 0.]
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))
