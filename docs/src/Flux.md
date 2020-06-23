@@ -167,7 +167,7 @@ ode_data = Array(solve(prob, Tsit5(), saveat = t))
 
 Now, we'll make a function that creates dense neural layer components. It is similar to `Flux.Dense`, except it doesn't handle the activation function. We'll do that separately.
 ```julia
-dense_layer(in, out) = ComponentArray(W=glorot_uniform(out, in), b=zeros(out))
+dense_layer(in, out) = ComponentArray{Float32}(W=glorot_uniform(out, in), b=zeros(out))
 ```
 
 Our parameter vector will be a `ComponentArray` that holds the ODE initial conditions and the dense neural layers. This enables it to pass through the solver as a flat array while giving us the convenience of struct-like access to the components.
