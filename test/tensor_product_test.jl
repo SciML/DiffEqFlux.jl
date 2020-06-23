@@ -5,7 +5,7 @@ using Test
 
 function run_test(f, layer::TensorLayer, atol)
 
-    data_train_vals = [rand(length(layer.model)) for k in 1:300]
+    data_train_vals = [rand(length(layer.model)) for k in 1:500]
     data_train_fn = f.(data_train_vals)
 
     function loss_function(component)
@@ -20,7 +20,8 @@ function run_test(f, layer::TensorLayer, atol)
     end
 
     res = DiffEqFlux.sciml_train(loss_function, layer.p, ADAM(0.1), cb=cb, maxiters = 100)
-    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, LBFGS(), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, ADAM(0.01), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, ADAM(0.001), cb=cb, maxiters = 200)
     opt = res.minimizer
 
     data_validate_vals = [rand(length(layer.model)) for k in 1:100]
@@ -28,7 +29,7 @@ function run_test(f, layer::TensorLayer, atol)
 
     data_validate_pred = [layer(x,opt) for x in data_validate_vals]
 
-    return sum(norm.(data_validate_pred.-data_validate_fn))/length(data_train_fn) < atol
+    return sum(norm.(data_validate_pred.-data_validate_fn))/length(data_validate_fn) < atol
 end
 
 ##test 01: affine function, Chebyshev and Polynomial basis
@@ -36,11 +37,11 @@ A = rand(2,2)
 b = rand(2)
 f = x -> A*x + b
 layer = TensorLayer([ChebyshevBasis(10), PolynomialBasis(10)], 2)
-@test run_test(f, layer, 0.10)
+@test run_test(f, layer, 0.05)
 
 ##test 02: non-linear function, Chebyshev and Legendre basis
 A = rand(2,2)
 b = rand(2)
 f = x -> A*x*norm(x)+ b/norm(x)
-layer = TensorLayer([ChebyshevBasis(10), LegendreBasis(10)], 2)
-@test run_test(f, layer, 0.10)
+layer = TensorLayer([ChebyshevBasis(8), LegendreBasis(8)], 2)
+@test run_test(f, layer, 0.20)
