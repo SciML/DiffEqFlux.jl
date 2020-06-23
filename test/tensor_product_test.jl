@@ -5,7 +5,7 @@ using Test
 
 function run_test(f, layer::TensorLayer, atol)
 
-    data_train_vals = [rand(length(layer.model)) for k in 1:100]
+    data_train_vals = [rand(length(layer.model)) for k in 1:300]
     data_train_fn = f.(data_train_vals)
 
     function loss_function(component)
@@ -36,11 +36,11 @@ A = rand(2,2)
 b = rand(2)
 f = x -> A*x + b
 layer = TensorLayer([ChebyshevBasis(10), PolynomialBasis(10)], 2)
-@test run_test(f, layer, 0.1)
+@test run_test(f, layer, 0.10)
 
 ##test 02: non-linear function, Chebyshev and Legendre basis
 A = rand(2,2)
 b = rand(2)
 f = x -> A*x*norm(x)+ b/norm(x)
 layer = TensorLayer([ChebyshevBasis(10), LegendreBasis(10)], 2)
-@test run_test(f, layer, 0.2)
+@test run_test(f, layer, 0.10)
