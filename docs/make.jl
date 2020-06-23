@@ -39,7 +39,8 @@ makedocs(
         "FastChain" => "FastChain.md",
         "GPUs" => "GPUs.md",
         "sciml_train" => "Scimltrain.md",
-        "Benchmark" => "Benchmark.md"
+        "Benchmark" => "Benchmark.md",
+        "Tensor Product Layer" => "tensor_layer.md"
     ]
 )
 
