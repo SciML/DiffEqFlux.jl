@@ -1,4 +1,4 @@
-# Basis
+# Tensor Product Layer
 
 The following is a helper function for easily constructing a TensorLayer, which
 take as input an array of n tensor product basis, [B_1, B_2, ..., B_2], a data
