@@ -92,9 +92,8 @@ function legendre_poly(x, p::Integer)
 
     b
 end
-
 """
-Constructs a Chebyshev basis of the form [P_{0}(x), P_{1}(x), ..., P_{n-1}(x)] where P_j(.) is the j-th Legendre polynomial.
+Constructs a Legendre basis of the form [P_{0}(x), P_{1}(x), ..., P_{n-1}(x)] where P_j(.) is the j-th Legendre polynomial.
 
 ```julia
 LegendreBasis(n)
