@@ -19,7 +19,7 @@ function (basis::ChebyshevBasis)(x)
 end
 
 """
-Constructs a sine basis of the form [sin(x), sin(2*x), ..., sin(n*x).
+Constructs a sine basis of the form [sin(x), sin(2*x), ..., sin(n*x)].
 
 ```julia
 SinBasis(n)
@@ -36,7 +36,7 @@ function (basis::SinBasis)(x)
 end
 
 """
-Constructs a cosine basis of the form [cos(x), cos(2*x), ..., cos(n*x).
+Constructs a cosine basis of the form [cos(x), cos(2*x), ..., cos(n*x)].
 
 ```julia
 CosBasis(n)
@@ -58,7 +58,7 @@ function fourier(i, x)
 end
 
 """
-Constructs a cosine basis of the form F_j(x) = j is even ? cos((j÷2)*x) : sin((j÷2)*x) => [F_0(x), F_1(x), ..., F_n(x)].
+Constructs a Fourier basis of the form F_j(x) = j is even ? cos((j÷2)*x) : sin((j÷2)*x) => [F_0(x), F_1(x), ..., F_n(x)].
 
 ```julia
 FourierBasis(n)
@@ -73,16 +73,6 @@ end
 function (basis::FourierBasis)(x)
     return [fourier(i, x) for i in 1:basis.n]
 end
-
-"""
-Constructs a Chebyshev basis of the form [P_{0}(x), P_{1}(x), ..., P_{n-1}(x)] where P_j(.) is the j-th Legendre polynomial.
-
-```julia
-LegendreBasis(n)
-```
-Arguments:
-- `n`: number of terms in the polynomial expansion.
-"""
 
 #auxiliary function
 ##Source: https://github.com/ranocha/PolynomialBases.jl/blob/master/src/legendre.jl
@@ -103,6 +93,15 @@ function legendre_poly(x, p::Integer)
     b
 end
 
+"""
+Constructs a Chebyshev basis of the form [P_{0}(x), P_{1}(x), ..., P_{n-1}(x)] where P_j(.) is the j-th Legendre polynomial.
+
+```julia
+LegendreBasis(n)
+```
+Arguments:
+- `n`: number of terms in the polynomial expansion.
+"""
 struct LegendreBasis <: TensorProductBasis
     n::Int
 end
