@@ -48,7 +48,7 @@ end
 θ = zeros(18)
 ```
 
-Note that we also introduced a "cap" in the neural network term to avoid instabilities
+Note that we introduced a "cap" in the neural network term to avoid instabilities
 in the solution of the ODE. We also initialized the vector of parameters to zero
 in order to obtain a faster convergence for this particular example.
 
