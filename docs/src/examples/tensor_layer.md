@@ -52,7 +52,7 @@ Note that we introduced a "cap" in the neural network term to avoid instabilitie
 in the solution of the ODE. We also initialized the vector of parameters to zero
 in order to obtain a faster convergence for this particular example.
 
-Finally, we introduce the corresponding loss functions:
+Finally, we introduce the corresponding loss function:
 
 ```julia
 
