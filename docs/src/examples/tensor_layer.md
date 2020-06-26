@@ -49,7 +49,7 @@ end
 ```
 
 Note that we also introduced a "cap" in the neural network term to avoid instabilities
-in the solution of the ODE. We also, initialize the vector of parameters to zero
+in the solution of the ODE. We also, initialized the vector of parameters to zero
 in order to obtain a faster convergence for this particular example.
 
 Finally, we introduce the corresponding loss functions:
