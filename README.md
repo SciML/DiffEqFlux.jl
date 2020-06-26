@@ -1,7 +1,7 @@
 # DiffEqFlux.jl
 
 [![Join the chat at https://gitter.im/JuliaDiffEq/Lobby](https://badges.gitter.im/JuliaDiffEq/Lobby.svg)](https://gitter.im/JuliaDiffEq/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/SciML/DiffEqFlux.jl.svg?branch=master)](https://travis-ci.org/SciML/DiffEqFlux.jl)
+[![Build Status](https://travis-ci.com/SciML/DiffEqFlux.jl.svg?branch=master)](https://travis-ci.com/SciML/DiffEqFlux.jl)
 [![GitlabCI](https://gitlab.com/JuliaGPU/DiffEqFlux.jl/badges/master/pipeline.svg)](https://gitlab.com/JuliaGPU/DiffEqFlux.jl/pipelines)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](http://diffeqflux.sciml.ai/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](http://diffeqflux.sciml.ai/dev/)
