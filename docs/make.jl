@@ -31,7 +31,8 @@ makedocs(
             "examples/second_order_adjoints.md",
             "examples/jump.md",
             "examples/universal_diffeq.md",
-            "examples/minibatch.md"
+            "examples/minibatch.md",
+            "examples/tensor_layer.md"
         ],
         "Basis" => "basis_docs.md",
         "Tensor Product Layer" => "tensor_layer.md",
