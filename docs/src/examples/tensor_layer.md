@@ -38,7 +38,7 @@ and we also instantiate the model we are trying to learn, "informing" the neural
 about the `∝x` and `∝v` dependencies in the equation of motion:
 
 ```julia
-f = x -> abs(x) > 30 ? sign(x)*30 : x
+f = x -> min(30one(x),x)
 
 function dxdt_pred(du,u,p,t)
   du[1] = u[2]
