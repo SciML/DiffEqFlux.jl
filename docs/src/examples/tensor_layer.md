@@ -40,6 +40,11 @@ about the `∝x` and `∝v` dependencies in the equation of motion:
 ```julia
 f = x -> min(30one(x),x)
 
+function dxdt_pred(du,u,p,t)
+  du[1] = u[2]
+  du[2] = -p[1]*u[1] - p[2]*u[2] + f(nn(u,p[3:end])[1])
+end
+
 α = zeros(102)
 
 prob_pred = ODEProblem{true}(dxdt_pred,u0,tspan,p=nothing)
