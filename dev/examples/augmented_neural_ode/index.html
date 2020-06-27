@@ -24,22 +24,23 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
     end
     data = cat(data..., dims=2)
     labels = cat(labels..., dims=2)
-    return DataLoader(data, labels; batchsize=batch_size, shuffle=true, partial=false)
+    return DataLoader(data |&gt; gpu, labels |&gt; gpu; batchsize=batch_size, shuffle=true,
+                      partial=false)
 end
 
-diffeqarray_to_array(x) = reshape(Array(x), size(x)[1:2])
+diffeqarray_to_array(x) = reshape(gpu(x), size(x)[1:2])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
-    node = NeuralODE(FastChain(FastDense(input_dim, hidden_dim, relu),
-                               FastDense(hidden_dim, hidden_dim, relu),
-                               FastDense(hidden_dim, input_dim)),
+    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
+                           Dense(hidden_dim, hidden_dim, relu),
+                           Dense(hidden_dim, input_dim)) |&gt; gpu,
                      (0.f0, 1.f0), Tsit5(), save_everystep = false,
-                     reltol = 1e-3, abstol = 1e-3, save_start = false)
+                     reltol = 1e-3, abstol = 1e-3, save_start = false) |&gt; gpu
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
     return Chain((x, p=node.p) -&gt; node(x, p),
                  diffeqarray_to_array,
-                 Dense(input_dim, out_dim)), node.p
+                 Dense(input_dim, out_dim) |&gt; gpu), node.p |&gt; gpu
 end
 
 function plot_contour(model, npoints = 300)
@@ -51,7 +52,7 @@ function plot_contour(model, npoints = 300)
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
-    sol = reshape(model(grid_points), npoints, npoints)
+    sol = reshape(model(grid_points |&gt; gpu), npoints, npoints) |&gt; cpu
     
     return contour(x, y, sol, fill = true, linewidth=0.0)
 end
@@ -75,8 +76,8 @@ iter = 0
 
 println(&quot;Training Neural ODE&quot;)
 
-for _ in 1:20
-    Flux.train!(loss_node, Flux.Params([parameters]), dataloader, opt, cb = cb)
+for _ in 1:10
+    Flux.train!(loss_node, Flux.params([parameters, model]), dataloader, opt, cb = cb)
 end
 
 plt_node = plot_contour(model)
@@ -88,8 +89,8 @@ iter = 0
 println()
 println(&quot;Training Augmented Neural ODE&quot;)
 
-for _ in 1:20
-    Flux.train!(loss_node, Flux.Params([parameters]), dataloader, opt, cb = cb)
+for _ in 1:10
+    Flux.train!(loss_node, Flux.params([parameters, model]), dataloader, opt, cb = cb)
 end
 
 plt_anode = plot_contour(model)</code></pre><h1 id="Step-by-Step-Explaination-1"><a class="docs-heading-anchor" href="#Step-by-Step-Explaination-1">Step-by-Step Explaination</a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Explaination-1" title="Permalink"></a></h1><h2 id="Loading-required-packages-1"><a class="docs-heading-anchor" href="#Loading-required-packages-1">Loading required packages</a><a class="docs-heading-anchor-permalink" href="#Loading-required-packages-1" title="Permalink"></a></h2><pre><code class="language-julia">using Flux, DiffEqFlux, DifferentialEquations
@@ -113,20 +114,21 @@ end</code></pre><p>Next, we will construct a dataset of these points and use Flu
     end
     data = cat(data..., dims=2)
     labels = cat(labels..., dims=2)
-    return DataLoader(data, labels; batchsize=batch_size, shuffle=true, partial=false)
-end</code></pre><h2 id="Models-1"><a class="docs-heading-anchor" href="#Models-1">Models</a><a class="docs-heading-anchor-permalink" href="#Models-1" title="Permalink"></a></h2><p>We consider 2 models in this tuturial. The first is a simple Neural ODE which is described in detail in <a href="https://diffeqflux.sciml.ai/dev/examples/neural_ode_sciml/">this tutorial</a>. The other one is an Augmented Neural ODE [1]. The idea behind this layer is very simple. It augments the input to the Neural DE Layer by appending zeros. So in order to use any arbitrary DE Layer in combination with this layer, simply assume that the input to the DE Layer is of size <code>size(x, 1) + augment_dim</code> instead of <code>size(x, 1)</code> and construct that layer accordingly.</p><pre><code class="language-julia">diffeqarray_to_array(x) = reshape(Array(x), size(x)[1:2])
+    return DataLoader(data |&gt; gpu, labels |&gt; gpu; batchsize=batch_size, shuffle=true,
+                      partial=false)
+end</code></pre><h2 id="Models-1"><a class="docs-heading-anchor" href="#Models-1">Models</a><a class="docs-heading-anchor-permalink" href="#Models-1" title="Permalink"></a></h2><p>We consider 2 models in this tuturial. The first is a simple Neural ODE which is described in detail in <a href="https://diffeqflux.sciml.ai/dev/examples/neural_ode_sciml/">this tutorial</a>. The other one is an Augmented Neural ODE [1]. The idea behind this layer is very simple. It augments the input to the Neural DE Layer by appending zeros. So in order to use any arbitrary DE Layer in combination with this layer, simply assume that the input to the DE Layer is of size <code>size(x, 1) + augment_dim</code> instead of <code>size(x, 1)</code> and construct that layer accordingly.</p><p>In order to run the models on GPU, we need to manually transfer the models to GPU. First one is the network predicting the derivatives inside the Neural ODE and the other one is the last layer in the Chain.</p><pre><code class="language-julia">diffeqarray_to_array(x) = reshape(gpu(x), size(x)[1:2])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
-    node = NeuralODE(FastChain(FastDense(input_dim, hidden_dim, relu),
-                               FastDense(hidden_dim, hidden_dim, relu),
-                               FastDense(hidden_dim, input_dim)),
+    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
+                           Dense(hidden_dim, hidden_dim, relu),
+                           Dense(hidden_dim, input_dim)) |&gt; gpu,
                      (0.f0, 1.f0), Tsit5(), save_everystep = false,
-                     reltol = 1e-3, abstol = 1e-3, save_start = false)
-    node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
+                     reltol = 1e-3, abstol = 1e-3, save_start = false) |&gt; gpu
+    node = augment_dim == 0 ? node : (AugmentedNDELayer(node, augment_dim) |&gt; gpu)
     return Chain((x, p=node.p) -&gt; node(x, p),
                  diffeqarray_to_array,
-                 Dense(input_dim, out_dim)), node.p
+                 Dense(input_dim, out_dim) |&gt; gpu), node.p |&gt; gpu
 end</code></pre><h2 id="Plotting-the-Results-1"><a class="docs-heading-anchor" href="#Plotting-the-Results-1">Plotting the Results</a><a class="docs-heading-anchor-permalink" href="#Plotting-the-Results-1" title="Permalink"></a></h2><p>Here, we define an utility to plot our model regression results as a heatmap.</p><pre><code class="language-julia">function plot_contour(model, npoints = 300)
     grid_points = zeros(2, npoints ^ 2)
     idx = 1
@@ -136,7 +138,7 @@ end</code></pre><h2 id="Plotting-the-Results-1"><a class="docs-heading-anchor" h
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
-    sol = reshape(model(grid_points), npoints, npoints)
+    sol = reshape(model(grid_points |&gt; gpu), npoints, npoints) |&gt; cpu
     
     return contour(x, y, sol, fill = true, linewidth=0.0)
 end</code></pre><h2 id="Training-Parameters-1"><a class="docs-heading-anchor" href="#Training-Parameters-1">Training Parameters</a><a class="docs-heading-anchor-permalink" href="#Training-Parameters-1" title="Permalink"></a></h2><h3 id="Loss-Functions-1"><a class="docs-heading-anchor" href="#Loss-Functions-1">Loss Functions</a><a class="docs-heading-anchor-permalink" href="#Loss-Functions-1" title="Permalink"></a></h3><p>We use the L2 distance between the model prediction <code>model(x)</code> and the actual prediction <code>y</code> as the optimization objective.</p><pre><code class="language-julia">loss_node(x, y) = mean((model(x) .- y) .^ 2)</code></pre><h3 id="Dataset-1"><a class="docs-heading-anchor" href="#Dataset-1">Dataset</a><a class="docs-heading-anchor-permalink" href="#Dataset-1" title="Permalink"></a></h3><p>Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is easy to visualize. We sample a total of <code>4000</code> data points.</p><pre><code class="language-julia">dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size = 256)</code></pre><h3 id="Callback-Function-1"><a class="docs-heading-anchor" href="#Callback-Function-1">Callback Function</a><a class="docs-heading-anchor-permalink" href="#Callback-Function-1" title="Permalink"></a></h3><p>Additionally we define a callback function which displays the total loss at specific intervals.</p><pre><code class="language-julia">cb = function()
@@ -146,71 +148,43 @@ end</code></pre><h2 id="Training-Parameters-1"><a class="docs-heading-anchor" hr
     end
 end</code></pre><h3 id="Optimizer-1"><a class="docs-heading-anchor" href="#Optimizer-1">Optimizer</a><a class="docs-heading-anchor-permalink" href="#Optimizer-1" title="Permalink"></a></h3><p>We use ADAM as the optimizer with a learning rate of 0.005</p><pre><code class="language-julia">opt = ADAM(0.005)</code></pre><h2 id="Training-the-Neural-ODE-1"><a class="docs-heading-anchor" href="#Training-the-Neural-ODE-1">Training the Neural ODE</a><a class="docs-heading-anchor-permalink" href="#Training-the-Neural-ODE-1" title="Permalink"></a></h2><p>To train our neural ode model, we need to pass the appropriate learnable parameters, <code>parameters</code> which is returned by the <code>construct_models</code> function. It is simply the <code>node.p</code> vector. We then train our model for <code>20</code> epochs.</p><pre><code class="language-julia">model, parameters = construct_model(1, 2, 64, 0)
 
-for _ in 1:20
-    Flux.train!(loss_node, Flux.Params([parameters]), dataloader, opt, cb = cb)
-end</code></pre><p>Here is what the contour plot should look for Neural ODE. Notice that the regression is not perfect due to the thin artifact which connects the circles.</p><p><img src="https://user-images.githubusercontent.com/30564094/85356368-6d96a880-b52c-11ea-8f21-6f35df0d5c8c.png" alt="node"/></p><h2 id="Training-the-Augmented-Neural-ODE-1"><a class="docs-heading-anchor" href="#Training-the-Augmented-Neural-ODE-1">Training the Augmented Neural ODE</a><a class="docs-heading-anchor-permalink" href="#Training-the-Augmented-Neural-ODE-1" title="Permalink"></a></h2><p>Our training configuration will be same as that of Neural ODE. Only in this case we have augmented the input with a single zero. This makes the problem 3 dimensional and as such it is possible to find a function which can be expressed by the neural ode. For more details and proofs please refer to [1].</p><pre><code class="language-julia">model, parameters = construct_model(1, 2, 64, 1)
+for _ in 1:10
+    Flux.train!(loss_node, Flux.params([model, parameters]), dataloader, opt, cb = cb)
+end</code></pre><p>Here is what the contour plot should look for Neural ODE. Notice that the regression is not perfect due to the thin artifact which connects the circles.</p><p><img src="https://user-images.githubusercontent.com/30564094/85916605-00f31500-b870-11ea-9857-5bf1f8c0477f.png" alt="node"/></p><h2 id="Training-the-Augmented-Neural-ODE-1"><a class="docs-heading-anchor" href="#Training-the-Augmented-Neural-ODE-1">Training the Augmented Neural ODE</a><a class="docs-heading-anchor-permalink" href="#Training-the-Augmented-Neural-ODE-1" title="Permalink"></a></h2><p>Our training configuration will be same as that of Neural ODE. Only in this case we have augmented the input with a single zero. This makes the problem 3 dimensional and as such it is possible to find a function which can be expressed by the neural ode. For more details and proofs please refer to [1].</p><pre><code class="language-julia">model, parameters = construct_model(1, 2, 64, 1)
 
-for _ in 1:20
-    Flux.train!(loss_node, Flux.Params([parameters]), dataloader, opt, cb = cb)
-end</code></pre><p>For the augmented Neural ODE we notice that the artifact is gone.</p><p><img src="https://user-images.githubusercontent.com/30564094/85356373-6f606c00-b52c-11ea-8431-fb74ff01dde5.png" alt="anode"/></p><h1 id="Expected-Output-1"><a class="docs-heading-anchor" href="#Expected-Output-1">Expected Output</a><a class="docs-heading-anchor-permalink" href="#Expected-Output-1" title="Permalink"></a></h1><pre><code class="language-julia">Generating Dataset
+for _ in 1:10
+    Flux.train!(loss_node, Flux.params([model, parameters]), dataloader, opt, cb = cb)
+end</code></pre><p>For the augmented Neural ODE we notice that the artifact is gone.</p><p><img src="https://user-images.githubusercontent.com/30564094/85916607-02bcd880-b870-11ea-84fa-d15e24295ea6.png" alt="anode"/></p><h1 id="Expected-Output-1"><a class="docs-heading-anchor" href="#Expected-Output-1">Expected Output</a><a class="docs-heading-anchor-permalink" href="#Expected-Output-1" title="Permalink"></a></h1><pre><code class="language-julia">Generating Dataset
 Training Neural ODE
-Iteration 10 || Loss = 1.120950346042287
-Iteration 20 || Loss = 0.7532827576978123
-Iteration 30 || Loss = 0.6553072657563143
-Iteration 40 || Loss = 0.5776224441286926
-Iteration 50 || Loss = 0.520220032887143
-Iteration 60 || Loss = 0.4720985558909219
-Iteration 70 || Loss = 0.40864928280982776
-Iteration 80 || Loss = 0.31852414526416173
-Iteration 90 || Loss = 0.2481226283169072
-Iteration 100 || Loss = 0.18494126827346924
-Iteration 110 || Loss = 0.1470610323283855
-Iteration 120 || Loss = 0.11047625817186725
-Iteration 130 || Loss = 0.08345815290524315
-Iteration 140 || Loss = 0.07403708346807107
-Iteration 150 || Loss = 0.07533284314926621
-Iteration 160 || Loss = 0.0807687251841976
-Iteration 170 || Loss = 0.07462567382624537
-Iteration 180 || Loss = 0.07620629179132667
-Iteration 190 || Loss = 0.053866679112776615
-Iteration 200 || Loss = 0.04878556792331758
-Iteration 210 || Loss = 0.04951108534243689
-Iteration 220 || Loss = 0.05219504247382631
-Iteration 230 || Loss = 0.04829135367843049
-Iteration 240 || Loss = 0.049767843225925146
-Iteration 250 || Loss = 0.053435584980049196
-Iteration 260 || Loss = 0.06330034970941116
-Iteration 270 || Loss = 0.0674349462469368
-Iteration 280 || Loss = 0.054646060311423855
-Iteration 290 || Loss = 0.058587195675343276
+Iteration 10 || Loss = 0.9802582
+Iteration 20 || Loss = 0.6727416
+Iteration 30 || Loss = 0.5862373
+Iteration 40 || Loss = 0.5278132
+Iteration 50 || Loss = 0.4867624
+Iteration 60 || Loss = 0.41630346
+Iteration 70 || Loss = 0.3325938
+Iteration 80 || Loss = 0.28235924
+Iteration 90 || Loss = 0.24069068
+Iteration 100 || Loss = 0.20503852
+Iteration 110 || Loss = 0.17608969
+Iteration 120 || Loss = 0.1491399
+Iteration 130 || Loss = 0.12711425
+Iteration 140 || Loss = 0.10686825
+Iteration 150 || Loss = 0.089558244
 
 Training Augmented Neural ODE
-Iteration 10 || Loss = 0.8052180670411724
-Iteration 20 || Loss = 0.6493323407007557
-Iteration 30 || Loss = 0.43219055806073575
-Iteration 40 || Loss = 0.17996087680619746
-Iteration 50 || Loss = 0.10677325033978695
-Iteration 60 || Loss = 0.06763209051354825
-Iteration 70 || Loss = 0.05557440341534089
-Iteration 80 || Loss = 0.05175036274021895
-Iteration 90 || Loss = 0.04598351412837163
-Iteration 100 || Loss = 0.043676742887634665
-Iteration 110 || Loss = 0.03984149571984987
-Iteration 120 || Loss = 0.0377291626995965
-Iteration 130 || Loss = 0.03618670060916931
-Iteration 140 || Loss = 0.034320209919086186
-Iteration 150 || Loss = 0.0336497946533457
-Iteration 160 || Loss = 0.031927051142359046
-Iteration 170 || Loss = 0.029903758740715262
-Iteration 180 || Loss = 0.027844496982240865
-Iteration 190 || Loss = 0.026784325989841085
-Iteration 200 || Loss = 0.024220633742520606
-Iteration 210 || Loss = 0.022410493158517744
-Iteration 220 || Loss = 0.021468741537086423
-Iteration 230 || Loss = 0.022414650405633993
-Iteration 240 || Loss = 0.018358236240712273
-Iteration 250 || Loss = 0.01700812985852846
-Iteration 260 || Loss = 0.01573442645516374
-Iteration 270 || Loss = 0.014445097490699855
-Iteration 280 || Loss = 0.014170123422892231
-Iteration 290 || Loss = 0.01250998329088748</code></pre><h1 id="References-1"><a class="docs-heading-anchor" href="#References-1">References</a><a class="docs-heading-anchor-permalink" href="#References-1" title="Permalink"></a></h1><p>[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. &quot;Augmented neural odes.&quot; Advances in Neural Information Processing Systems. 2019.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mnist_neural_ode/">« GPU-based MNIST Neural ODE Classifier</a><a class="docs-footer-nextpage" href="../normalizing_flows/">Continuous Normalizing Flows with sciml_train »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 27 June 2020 03:29">Saturday 27 June 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Iteration 10 || Loss = 1.3911372
+Iteration 20 || Loss = 0.7694144
+Iteration 30 || Loss = 0.5639633
+Iteration 40 || Loss = 0.33187616
+Iteration 50 || Loss = 0.14787851
+Iteration 60 || Loss = 0.094676435
+Iteration 70 || Loss = 0.07363529
+Iteration 80 || Loss = 0.060333826
+Iteration 90 || Loss = 0.04998395
+Iteration 100 || Loss = 0.044843454
+Iteration 110 || Loss = 0.042587914
+Iteration 120 || Loss = 0.042706195
+Iteration 130 || Loss = 0.040252227
+Iteration 140 || Loss = 0.037686247
+Iteration 150 || Loss = 0.036247417</code></pre><h1 id="References-1"><a class="docs-heading-anchor" href="#References-1">References</a><a class="docs-heading-anchor-permalink" href="#References-1" title="Permalink"></a></h1><p>[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. &quot;Augmented neural odes.&quot; Advances in Neural Information Processing Systems. 2019.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mnist_neural_ode/">« GPU-based MNIST Neural ODE Classifier</a><a class="docs-footer-nextpage" href="../normalizing_flows/">Continuous Normalizing Flows with sciml_train »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 27 June 2020 12:06">Saturday 27 June 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
