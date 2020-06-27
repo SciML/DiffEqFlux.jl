@@ -1,6 +1,6 @@
 # Physics Informed Machine Learning with TensorLayer
 
-In this tutorial, we show how to use the DiffEqFlux TensorLayer to solve problems
+In this tutorial, we show how to use the `DiffEqFlux` TensorLayer to solve problems
 in Physics Informed Machine Learning.
 
 Let's consider the anharmonic oscillator described by the ODE
@@ -13,24 +13,24 @@ solvers in `OrdinaryDiffEq`:
 ```julia
 using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, LinearAlgebra
 k, α, β, γ = 1, 0.1, 0.2, 0.3
-tspan = (0.0f0,10.0f0)
+tspan = (0.0,10.0)
 
 function dxdt_train(du,u,p,t)
   du[1] = u[2]
   du[2] = -k*u[1] - α*u[1]^3 - β*u[2] - γ*u[2]^3
 end
 
-u0 = [1f0,0f0]
-ts = Float32.(collect(0.0:0.1:tspan[2]))
+u0 = [1.0,0.0]
+ts = collect(0.0:0.1:tspan[2])
 prob_train = ODEProblem{true}(dxdt_train,u0,tspan,p=nothing)
 data_train = Array(solve(prob_train,Tsit5(),saveat=ts))
 ```
 
-Now, we create a TensorLayer that will be able to perform 4th order expansions in
+Now, we create a TensorLayer that will be able to perform 10th order expansions in
 a Legendre Basis:
 
 ```julia
-A = [LegendreBasis(4), LegendreBasis(4)]
+A = [LegendreBasis(10), LegendreBasis(10)]
 nn = TensorLayer(A, 1)
 ```
 
@@ -38,14 +38,11 @@ and we also instantiate the model we are trying to learn, "informing" the neural
 about the `∝x` and `∝v` dependencies in the equation of motion:
 
 ```julia
-f = x -> abs(x) > 30 ? sign(x)*30 : x
+f = x -> min(30one(x),x)
 
-function dxdt_pred(du,u,p,t)
-  du[1] = u[2]
-  du[2] = -p[1]*u[1] - p[2]*u[2] + f(nn(u,p[3:end])[1])
-end
+α = zeros(102)
 
-θ = zeros(18)
+prob_pred = ODEProblem{true}(dxdt_pred,u0,tspan,p=nothing)
 ```
 
 Note that we introduced a "cap" in the neural network term to avoid instabilities
@@ -62,7 +59,7 @@ end
 
 function loss_adjoint(θ)
   x = predict_adjoint(θ)
-  loss = sum(norm.(x - train_data))
+  loss = sum(norm.(x - data_train))
   return loss
 end
 
@@ -75,7 +72,20 @@ end
 and we train the network using two rounds of `ADAM`:
 
 ```julia
-res1 = DiffEqFlux.sciml_train(loss_adjoint, θ, ADAM(0.05), cb = cb,maxiters=200)
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer, ADAM(0.001), cb = cb,maxiters=300)
+res1 = DiffEqFlux.sciml_train(loss_adjoint, α, ADAM(0.05), cb = cb, maxiters = 150)
+res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer, ADAM(0.001), cb = cb,maxiters = 150)
 opt = res2.minimizer
 ```
+
+We plot the results and we obtain a fairly accurate learned model:
+
+```julia
+using Plots
+data_pred = predict_adjoint(opt)
+plot(ts, data_train[1,:], label = "X (ODE)")
+plot!(ts, data_train[2,:], label = "V (ODE)")
+plot!(ts, data_pred[1,:], label = "X (NN)")
+plot!(ts, data_pred[2,:],label = "V (NN)")
+```
+
+![plot_tutorial](https://user-images.githubusercontent.com/61364108/85925795-e2d5e680-b868-11ea-9816-29f8125c8cb5.png)
