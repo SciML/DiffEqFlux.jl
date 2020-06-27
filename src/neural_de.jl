@@ -492,8 +492,6 @@ struct AugmentedNDELayer{DE<:NeuralDELayer} <: NeuralDELayer
     adim::Int
 end
 
-Flux.@functor AugmentedNDELayer (nde,)
-
 (ande::AugmentedNDELayer)(x, args...) = ande.nde(augment(x, ande.adim), args...)
 
 augment(x::AbstractVector{S}, augment_dim::Int) where S =
