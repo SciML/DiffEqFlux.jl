@@ -92,7 +92,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
   local x, min_err
   min_err = typemax(eltype(_θ)) #dummy variables
   min_opt = 1
-  
+
   @withprogress progress name="Training" begin
     for (i,d) in enumerate(data)
       gs = Flux.Zygote.gradient(ps) do
@@ -130,17 +130,17 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                                         first(x), # pick_best_f(f_incr_pick, state, d),
                                         maxiters, #iteration,
                                         maxiters >= maxiters, #iteration == options.iterations,
-                                        false, # x_converged,
+                                        true, # x_converged,
                                         0.0,#T(options.x_tol),
                                         0.0,#T(options.x_tol),
                                         NaN,# x_abschange(state),
                                         NaN,# x_abschange(state),
-                                        false,# f_converged,
+                                        true,# f_converged,
                                         0.0,#T(options.f_tol),
                                         0.0,#T(options.f_tol),
                                         NaN,#f_abschange(d, state),
                                         NaN,#f_abschange(d, state),
-                                        false,#g_converged,
+                                        true,#g_converged,
                                         0.0,#T(options.g_tol),
                                         NaN,#g_residual(d),
                                         false, #f_increased,
@@ -311,7 +311,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
 end
 
 struct BBO
-  method::Symbol         
+  method::Symbol
 end
 
 BBO() = BBO(:adaptive_de_rand_1_bin)
@@ -346,17 +346,17 @@ function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;lower_boun
                                         best_fitness(bboptre), # pick_best_f(f_incr_pick, state, d),
                                         bboptre.iterations, #iteration,
                                         bboptre.iterations >= maxiters, #iteration == options.iterations,
-                                        false, # x_converged,
+                                        true, # x_converged,
                                         0.0,#T(options.x_tol),
                                         0.0,#T(options.x_tol),
                                         NaN,# x_abschange(state),
                                         NaN,# x_abschange(state),
-                                        false,# f_converged,
+                                        true,# f_converged,
                                         0.0,#T(options.f_tol),
                                         0.0,#T(options.f_tol),
                                         NaN,#f_abschange(d, state),
                                         NaN,#f_abschange(d, state),
-                                        false,#g_converged,
+                                        true,#g_converged,
                                         0.0,#T(options.g_tol),
                                         NaN,#g_residual(d),
                                         false, #f_increased,
