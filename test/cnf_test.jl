@@ -8,7 +8,6 @@ using LinearAlgebra, Tracker, Zygote
 
 ##callback to be used by all tests
 function cb(p,l)
-    @show p,l
     false
 end
 
@@ -28,7 +27,7 @@ end
 
 res = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test_mc.p,
                                         ADAM(0.1), cb=cb,
-                                        maxiters = 500)
+                                        maxiters = 300)
 
 θopt = res.minimizer
 data_validate = [Float32(rand(Beta(7,7))) for i in 1:100]
@@ -54,7 +53,7 @@ end
 
 res = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test.p,
                                           ADAM(0.1), cb = cb,
-                                          maxiters = 500)
+                                          maxiters = 300)
 
 θopt = res.minimizer
 data_validate = [Float32(rand(Normal(6.0,0.7))) for i in 1:100]
@@ -82,7 +81,7 @@ end
 
 res = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test.p,
                                           ADAM(0.1), cb = cb,
-                                          maxiters = 500)
+                                          maxiters = 300)
 
 θopt = res.minimizer
 data_validate = [Float32.(rand(mv_normal)) for i in 1:100]
