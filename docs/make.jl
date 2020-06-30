@@ -24,6 +24,7 @@ makedocs(
             "examples/normalizing_flows.md",
             "examples/local_minima.md",
             "examples/neural_sde.md",
+            "examples/pde_constrained.md",
             "examples/optimal_control.md",
             "examples/feedback_control.md",
             "examples/second_order_neural.md",
