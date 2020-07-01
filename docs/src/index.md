@@ -73,26 +73,13 @@ Thus, what DiffEqFlux.jl provides is:
 
 ## Citation
 
-If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond
-neural ODEs, please cite:
+If you use DiffEqFlux.jl or are influenced by its ideas, please cite:
 
 ```
-@article{DBLP:journals/corr/abs-1902-02376,
-  author    = {Christopher Rackauckas and
-               Mike Innes and
-               Yingbo Ma and
-               Jesse Bettencourt and
-               Lyndon White and
-               Vaibhav Dixit},
-  title     = {DiffEqFlux.jl - {A} Julia Library for Neural Differential Equations},
-  journal   = {CoRR},
-  volume    = {abs/1902.02376},
-  year      = {2019},
-  url       = {http://arxiv.org/abs/1902.02376},
-  archivePrefix = {arXiv},
-  eprint    = {1902.02376},
-  timestamp = {Tue, 21 May 2019 18:03:36 +0200},
-  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1902-02376},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+@article{rackauckas2020universal,
+  title={Universal differential equations for scientific machine learning},
+  author={Rackauckas, Christopher and Ma, Yingbo and Martensen, Julius and Warner, Collin and Zubov, Kirill and Supekar, Rohit and Skinner, Dominic and Ramadhan, Ali},
+  journal={arXiv preprint arXiv:2001.04385},
+  year={2020}
 }
 ```
