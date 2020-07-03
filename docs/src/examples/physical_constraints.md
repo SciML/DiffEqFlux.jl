@@ -75,7 +75,6 @@ First, we define our differential equations as a highly stiff problem which make
 fitting difficult.
 
 ```Julia
-# A desired MWE for now, not a test yet.
 function f!(du, u, p, t)
     y₁, y₂, y₃ = u
     k₁, k₂, k₃ = p
