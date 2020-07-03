@@ -11,7 +11,6 @@ terms must add to one. An example of this is as follows:
 ```julia
 using Flux, DiffEqFlux, OrdinaryDiffEq, Optim, Test, Plots
 
-# A desired MWE for now, not a test yet.
 function f!(du, u, p, t)
     y₁, y₂, y₃ = u
     k₁, k₂, k₃ = p
