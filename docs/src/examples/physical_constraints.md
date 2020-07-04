@@ -37,7 +37,7 @@ nn_dudt2 = FastChain(FastDense(3, 64, tanh),
                      FastDense(64, 2))
 
 model_stiff_ndae = NeuralODEMM(nn_dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
-                               tspan, M, Rodas5(), saveat = 0.1)
+                               tspan, M, Rodas5(autodiff=false), saveat = 0.1)
 model_stiff_ndae(u₀)
 
 function predict_stiff_ndae(p)
