@@ -30,7 +30,7 @@ end
 
 function (layer::TensorLayer)(x,p=layer.p)
     model,out = layer.model,layer.out
-    W = reshape(p, Int(length(p)/out), out)
+    W = reshape(p, out, Int(length(p)/out))
     tensor_prod = model[1](x[1])
     for i in 2:length(model)
         tensor_prod = kron(tensor_prod,model[i](x[i]))
