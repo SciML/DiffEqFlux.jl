@@ -32,7 +32,8 @@ makedocs(
             "examples/jump.md",
             "examples/universal_diffeq.md",
             "examples/minibatch.md",
-            "examples/tensor_layer.md"
+            "examples/tensor_layer.md",
+            "examples/graph_differential_equations.md"
         ],
         "Basis" => "basis_docs.md",
         "Tensor Product Layer" => "tensor_layer.md",
