@@ -15,7 +15,3 @@ end
 function (layer::SplineLayer)(t::Real,p=layer.saved_points)
     return layer.spline_basis(p,layer.time_span[1]:layer.time_step:layer.time_span[2])
 end
-
-A = SplineLayer((0.0,10.0), 0.1, QuadraticInterpolation)
-
-A(0.2)
