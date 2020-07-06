@@ -1,9 +1,7 @@
 abstract type TensorProductBasis <: Function end
 
-
 """
 Constructs a Chebyshev basis of the form [T_{0}(x), T_{1}(x), ..., T_{n-1}(x)] where T_j(.) is the j-th Chebyshev polynomial of the first kind.
-
 ```julia
 ChebyshevBasis(n)
 ```
@@ -15,12 +13,11 @@ struct ChebyshevBasis <: TensorProductBasis
 end
 
 function (basis::ChebyshevBasis)(x)
-    return [cos(j*acos(x)) for j in 1:basis.n]
+    return map(j -> cos(j*acos(x)), 1:basis.n)
 end
 
 """
 Constructs a sine basis of the form [sin(x), sin(2*x), ..., sin(n*x)].
-
 ```julia
 SinBasis(n)
 ```
@@ -32,12 +29,11 @@ struct SinBasis <: TensorProductBasis
 end
 
 function (basis::SinBasis)(x)
-    return [sin(i*x) for i in 1:basis.n]
+    return map(j -> sin(j*x), 1:basis.n)
 end
 
 """
 Constructs a cosine basis of the form [cos(x), cos(2*x), ..., cos(n*x)].
-
 ```julia
 CosBasis(n)
 ```
@@ -49,17 +45,16 @@ struct CosBasis <: TensorProductBasis
 end
 
 function (basis::CosBasis)(x)
-    return [cos(i*x) for i in 1:basis.n]
+    return map(j -> cos(j*x), 1:basis.n)
 end
 
 #auxiliary function
-function fourier(i, x)
+function fourier(i::Int, x::Real)
     return iseven(i) ? cos(i*x/2) : sin(i*x/2)
 end
 
 """
 Constructs a Fourier basis of the form F_j(x) = j is even ? cos((j÷2)*x) : sin((j÷2)*x) => [F_0(x), F_1(x), ..., F_n(x)].
-
 ```julia
 FourierBasis(n)
 ```
@@ -71,7 +66,7 @@ struct FourierBasis <: TensorProductBasis
 end
 
 function (basis::FourierBasis)(x)
-    return [fourier(i, x) for i in 1:basis.n]
+    return map(j -> fourier(j,x), 1:basis.n)
 end
 
 #auxiliary function
@@ -92,9 +87,9 @@ function legendre_poly(x, p::Integer)
 
     b
 end
+
 """
 Constructs a Legendre basis of the form [P_{0}(x), P_{1}(x), ..., P_{n-1}(x)] where P_j(.) is the j-th Legendre polynomial.
-
 ```julia
 LegendreBasis(n)
 ```
@@ -112,7 +107,6 @@ end
 
 """
 Constructs a Polynomial basis of the form [1, x, ..., x^(n-1)].
-
 ```julia
 PolynomialBasis(n)
 ```
