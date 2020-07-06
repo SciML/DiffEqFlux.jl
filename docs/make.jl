@@ -35,7 +35,7 @@ makedocs(
             "examples/minibatch.md",
             "examples/tensor_layer.md"
         ],
-        "Basis" => "basis_docs.md",
+        "Classical Basis Layers" => "basis_docs.md",
         "Tensor Product Layer" => "tensor_layer.md",
         "Continuous Normalizing Flows Layer" => "CNFLayer.md",
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
