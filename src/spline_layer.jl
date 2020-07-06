@@ -13,5 +13,5 @@ struct SplineLayer{T<:Tuple{Real, Real},R<:Real,S1<:AbstractVector,S2<:UnionAll}
 end
 
 function (layer::SplineLayer)(t::Real,p=layer.saved_points)
-    return layer.spline_basis(p,layer.time_span[1]:layer.time_step:layer.time_span[2])
+    return layer.spline_basis(p,layer.time_span[1]:layer.time_step:layer.time_span[2])(t)
 end
