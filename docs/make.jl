@@ -35,10 +35,12 @@ makedocs(
             "examples/minibatch.md",
             "examples/tensor_layer.md"
         ],
-        "Classical Basis Layers" => "basis_docs.md",
-        "Tensor Product Layer" => "tensor_layer.md",
+        Layers = Any[
+        "Classical Basis Layers" => "BasisLayers.md",
+        "Tensor Product Layer" => "TensorLayer.md",
         "Continuous Normalizing Flows Layer" => "CNFLayer.md",
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
+        ],
         "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
         "GPUs" => "GPUs.md",
