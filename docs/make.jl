@@ -35,7 +35,7 @@ makedocs(
             "examples/minibatch.md",
             "examples/tensor_layer.md"
         ],
-        Layers = Any[
+        "Layers" = Any[
         "Classical Basis Layers" => "BasisLayers.md",
         "Tensor Product Layer" => "TensorLayer.md",
         "Continuous Normalizing Flows Layer" => "CNFLayer.md",
