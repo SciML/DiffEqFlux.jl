@@ -59,4 +59,4 @@ StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["DelayDiffEq", "Distances", "OrdinaryDiffEq", "NLopt", "Pkg", "Random", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "MultistartOptimization"]
+test = ["DelayDiffEq", "Distances", "DataInterpolations", "OrdinaryDiffEq", "NLopt", "Pkg", "Random", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "MultistartOptimization"]
