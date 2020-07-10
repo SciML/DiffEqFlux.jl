@@ -55,7 +55,7 @@ f = x -> a*sin(b*x+c)
 layer = SplineLayer((0.0,1.0),0.1,QuadraticSpline)
 @test run_test(f, layer, 0.05)
 
-##test 03: non-linear function, Cubic Spline
+##test 04: non-linear function, Cubic Spline
 a, b, c = rand(3)
 f = x -> exp(x)*x^2
 layer = SplineLayer((0.0,1.0),0.1,CubicSpline)
