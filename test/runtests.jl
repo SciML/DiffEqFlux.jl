@@ -28,6 +28,7 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
     @safetestset "Tensor Product Layer" begin include("tensor_product_test.jl") end
+    @safetestset "Spline Layer" begin include("spline_layer_test.jl") end
 end
 
 if GROUP == "All" || GROUP == "AdvancedNeuralDE"
