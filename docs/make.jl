@@ -38,6 +38,7 @@ makedocs(
         "Classical Basis Layers" => "basis_docs.md",
         "Tensor Product Layer" => "tensor_layer.md",
         "Continuous Normalizing Flows Layer" => "CNFLayer.md",
+        "Spline Layer" => "spline_layer.md",
         "Neural Differential Equation Layers" => "NeuralDELayers.md",
         "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
