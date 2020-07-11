@@ -30,10 +30,11 @@ post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-ne
 
 Many different training techniques are supported by this package, including:
 
-- Optimize-then-discretize
-- Discretize-then-optimize
+- Optimize-then-discretize (backsolve adjoints, checkpointed adjoints, quadrature adjoints)
+- Discretize-then-optimize (forward and reverse mode discrete sensitivity analysis)
+  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://docs.sciml.ai/latest/solvers/ode_solve/)
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
-- Collocation approaches
+- Collocation approaches (two-stage methods, multiple shooting, etc.)
 
 With this package, you can explore various ways to integrate the two methodologies:
 
@@ -76,6 +77,25 @@ Thus, what DiffEqFlux.jl provides is:
   training performance
 - A specialized optimization function `sciml_train` with a training loop that
   allows non-machine learning libraries to be easily utilized
+
+## Applications
+
+The approach of this package is the efficient training of
+[Universal Differential Equations](https://arxiv.org/abs/2001.04385).
+Since this is a fairly general class of problems, the following
+applications are readily available as specific instances of this
+methodology, and are showcased in tutorials and layer functions:
+
+- Neural ODEs
+- Neural SDEs
+- Neural DAEs
+- Neural DDEs
+- Augmented Neural ODEs
+- Graph Neural ODEs
+- Hamiltonian Neural Networks (with specialized second order and symplectic integrators)
+- Legrangian Neural Networks
+- Continuous Normalizing Flows (CNF) and FFJORD
+- Galerkin Nerual ODEs
 
 ## Citation
 
