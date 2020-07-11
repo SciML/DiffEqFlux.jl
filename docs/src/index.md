@@ -9,7 +9,7 @@ in the cost function, or inside of the differential equation. Neural networks
 representing unknown portions of the model or functions can go anywhere you
 have uncertainty in the form of the scientific simulator. For an overview of the
 topic with applications, consult the paper [Universal Differential Equations for
-Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
+Scientific Machine Learning](https://arxiv.org/abs/2001.04385).
 
 As such, it is the first package to support and demonstrate:
 
@@ -28,8 +28,14 @@ PDEs and neural jump SDEs, can be found [at this blog
 post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
 (among many others!).
 
-Do not limit yourself to the current neuralization. With this package, you can
-explore various ways to integrate the two methodologies:
+Many different training techniques are supported by this package, including:
+
+- Optimize-then-discretize
+- Discretize-then-optimize
+- Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
+- Collocation approaches
+
+With this package, you can explore various ways to integrate the two methodologies:
 
 - Neural networks can be defined where the “activations” are nonlinear functions
   described by differential equations
