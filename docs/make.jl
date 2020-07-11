@@ -33,7 +33,8 @@ makedocs(
             "examples/jump.md",
             "examples/universal_diffeq.md",
             "examples/minibatch.md",
-            "examples/tensor_layer.md"
+            "examples/tensor_layer.md",
+            "examples/neural_gde.md"
         ],
         "Layers" => Any[
         "Classical Basis Layers" => "layers/BasisLayers.md",
