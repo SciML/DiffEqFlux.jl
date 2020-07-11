@@ -5,7 +5,9 @@ in Physics Informed Machine Learning.
 
 Let's consider the anharmonic oscillator described by the ODE
 
+```math
 ẍ = - kx - αx³ - βẋ -γẋ³.
+```
 
 To obtain the training data, we solve the equation of motion using one of the
 solvers in `OrdinaryDiffEq`:
