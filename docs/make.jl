@@ -36,11 +36,11 @@ makedocs(
             "examples/tensor_layer.md"
         ],
         "Layers" => Any[
-        "Classical Basis Layers" => "BasisLayers.md",
-        "Tensor Product Layer" => "TensorLayer.md",
-        "Continuous Normalizing Flows Layer" => "CNFLayer.md",
-        "Spline Layer" => "spline_layer.md",
-        "Neural Differential Equation Layers" => "NeuralDELayers.md",
+        "Classical Basis Layers" => "layers/BasisLayers.md",
+        "Tensor Product Layer" => "layers/TensorLayer.md",
+        "Continuous Normalizing Flows Layer" => "layers/CNFLayer.md",
+        "Spline Layer" => "layers/SplineLayer.md",
+        "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
         ],
         "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
