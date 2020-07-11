@@ -1,4 +1,4 @@
-using OrdinaryDiffEq, Flux, Test, GeometricFlux
+using OrdinaryDiffEq, DiffEqFlux, Flux, Test, GeometricFlux
 
 # Fully Connected Graph
 adj_mat = Float32.([0 1 1 1
