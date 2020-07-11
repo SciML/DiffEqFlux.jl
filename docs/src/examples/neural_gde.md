@@ -37,7 +37,7 @@ train_y = Float32.(labels)  # dim: target_catg * num_nodes
 adj_mat = Matrix{Float32}(adjacency_matrix(g))
 
 # Define the Neural GDE
-diffeqarray_to_array(x) = reshape(gpu(x), size(x)[1:2])
+diffeqarray_to_array(x) = reshape(cpu(x), size(x)[1:2])
 
 node = NeuralODE(
     GCNConv(adj_mat, hidden=>hidden),
@@ -49,8 +49,7 @@ model = Chain(GCNConv(adj_mat, num_features=>hidden, relu),
               Dropout(0.5),
               node,
               diffeqarray_to_array,
-              GCNConv(adj_mat, hidden=>target_catg),
-              softmax) 
+              GCNConv(adj_mat, hidden=>target_catg))
 
 # Loss
 loss(x, y) = logitcrossentropy(model(x), y)
@@ -141,8 +140,7 @@ model = Chain(GCNConv(adj_mat, num_features=>hidden, relu),
               Dropout(0.5),
               node,
               diffeqarray_to_array,
-              GCNConv(adj_mat, hidden=>target_catg),
-              softmax) 
+              GCNConv(adj_mat, hidden=>target_catg))
 ```
 
 ## Training Configuration

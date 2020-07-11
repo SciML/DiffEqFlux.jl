@@ -57,6 +57,7 @@ SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+GeometricFlux = "7e08b658-56d3-11e9-2997-919d5b31e4ea"
 
 [targets]
-test = ["DelayDiffEq", "Distances", "OrdinaryDiffEq", "NLopt", "Pkg", "Random", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "MultistartOptimization"]
+test = ["DelayDiffEq", "Distances", "OrdinaryDiffEq", "NLopt", "Pkg", "Random", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "MultistartOptimization", "GeometricFlux", "LightGraphs"]
