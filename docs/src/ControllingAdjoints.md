@@ -1,4 +1,4 @@
-# Controlling Choices of Adjoints
+# [Controlling Choices of Adjoints](@id adjoints)
 
 DiffEqFlux is capable of training neural networks embedded inside of
 differential equations with many different techniques. For all of the
@@ -42,7 +42,7 @@ where for models with less than 100 parameters these techniques are more
 efficient, but when there are more than 100 parameters (like in neural ODEs)
 these methods are less efficient than the adjoint methods.
 
-### Choices of Vector-Jacobian Products (autojacvec)
+## Choices of Vector-Jacobian Products (autojacvec)
 
 With each of these solvers, `autojacvec` can be utilized to choose how
 the internal vector-Jacobian products of the `f` function are computed.
@@ -72,7 +72,7 @@ should only be used on sufficiently small equations, and numerical
 autojacvecs should only be used if the `f` function is not differentiable
 (i.e. is a Fortran code).
 
-### Manual VJPs
+## Manual VJPs
 
 Note that when defining your differential equation the vjp can be
 manually overwritten by providing a `vjp(u,p,t)` that returns a tuple
@@ -166,12 +166,12 @@ on the solver via [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl).
 We note that many studies have suggested that [this approach produces
 more accurate gradients than the optimize-than-discretize approach](https://arxiv.org/abs/2005.13420)
 
-## Equation Types
+# Special Notes on Equation Types
 
 While all of the choices are compatible with ordinary differential
 equations, specific notices apply to other forms:
 
-### Differential-Algebraic Equations
+## Differential-Algebraic Equations
 
 We note that while all 3 are compatible with index-1 DAEs via the
 [derivation in the universal differential equations paper](https://arxiv.org/abs/2001.04385)
@@ -180,12 +180,12 @@ one DAEs because the stiffness inherent in these problems tends to
 cause major difficulties with the accuracy of the backwards solution
 due to reinitialization of the algebraic variables.
 
-### Stochastic Differential Equations
+## Stochastic Differential Equations
 
 We note that all of the adjoints except `QuadratureAdjoint` are applicable
 to stochastic differential equations.
 
-### Delay Differential Equations
+## Delay Differential Equations
 
 We note that only the discretize-then-optimize methods are applicable
 to delay differential equations. Constant lag and variable lag

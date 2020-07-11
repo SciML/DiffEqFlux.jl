@@ -1,5 +1,5 @@
 println("Starting tests")
-using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq,
+using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq
 println("Going to start!")
 using Flux, Zygote, Test
 println("Finally!")

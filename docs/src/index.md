@@ -36,6 +36,9 @@ Many different training techniques are supported by this package, including:
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
 
+For more details on the adjoint sensitivity analysis methods for computing
+fast gradients, see the [Adjoints page](@ref adjoints).
+
 With this package, you can explore various ways to integrate the two methodologies:
 
 - Neural networks can be defined where the “activations” are nonlinear functions
