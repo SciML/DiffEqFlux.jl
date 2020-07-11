@@ -11,7 +11,6 @@ terms must add to one. An example of this is as follows:
 ```julia
 using Flux, DiffEqFlux, OrdinaryDiffEq, Optim, Test, Plots
 
-# A desired MWE for now, not a test yet.
 function f!(du, u, p, t)
     y₁, y₂, y₃ = u
     k₁, k₂, k₃ = p
@@ -37,7 +36,7 @@ nn_dudt2 = FastChain(FastDense(3, 64, tanh),
                      FastDense(64, 2))
 
 model_stiff_ndae = NeuralODEMM(nn_dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
-                               tspan, M, Rodas5(), saveat = 0.1)
+                               tspan, M, Rodas5(autodiff=false), saveat = 0.1)
 model_stiff_ndae(u₀)
 
 function predict_stiff_ndae(p)
@@ -76,7 +75,6 @@ First, we define our differential equations as a highly stiff problem which make
 fitting difficult.
 
 ```Julia
-# A desired MWE for now, not a test yet.
 function f!(du, u, p, t)
     y₁, y₂, y₃ = u
     k₁, k₂, k₃ = p

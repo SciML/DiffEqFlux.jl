@@ -9,7 +9,7 @@ in the cost function, or inside of the differential equation. Neural networks
 representing unknown portions of the model or functions can go anywhere you
 have uncertainty in the form of the scientific simulator. For an overview of the
 topic with applications, consult the paper [Universal Differential Equations for
-Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
+Scientific Machine Learning](https://arxiv.org/abs/2001.04385).
 
 As such, it is the first package to support and demonstrate:
 
@@ -28,8 +28,18 @@ PDEs and neural jump SDEs, can be found [at this blog
 post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
 (among many others!).
 
-Do not limit yourself to the current neuralization. With this package, you can
-explore various ways to integrate the two methodologies:
+Many different training techniques are supported by this package, including:
+
+- Optimize-then-discretize (backsolve adjoints, checkpointed adjoints, quadrature adjoints)
+- Discretize-then-optimize (forward and reverse mode discrete sensitivity analysis)
+  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://docs.sciml.ai/latest/solvers/ode_solve/)
+- Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
+- Collocation approaches (two-stage methods, multiple shooting, etc.)
+
+For more details on the adjoint sensitivity analysis methods for computing
+fast gradients, see the [Adjoints page](@ref adjoints).
+
+With this package, you can explore various ways to integrate the two methodologies:
 
 - Neural networks can be defined where the “activations” are nonlinear functions
   described by differential equations
@@ -71,28 +81,34 @@ Thus, what DiffEqFlux.jl provides is:
 - A specialized optimization function `sciml_train` with a training loop that
   allows non-machine learning libraries to be easily utilized
 
+## Applications
+
+The approach of this package is the efficient training of
+[Universal Differential Equations](https://arxiv.org/abs/2001.04385).
+Since this is a fairly general class of problems, the following
+applications are readily available as specific instances of this
+methodology, and are showcased in tutorials and layer functions:
+
+- Neural ODEs
+- Neural SDEs
+- Neural DAEs
+- Neural DDEs
+- Augmented Neural ODEs
+- Graph Neural ODEs
+- Hamiltonian Neural Networks (with specialized second order and symplectic integrators)
+- Legrangian Neural Networks
+- Continuous Normalizing Flows (CNF) and FFJORD
+- Galerkin Nerual ODEs
+
 ## Citation
 
-If you use DiffEqFlux.jl or are influenced by its ideas for expanding beyond
-neural ODEs, please cite:
+If you use DiffEqFlux.jl or are influenced by its ideas, please cite:
 
 ```
-@article{DBLP:journals/corr/abs-1902-02376,
-  author    = {Christopher Rackauckas and
-               Mike Innes and
-               Yingbo Ma and
-               Jesse Bettencourt and
-               Lyndon White and
-               Vaibhav Dixit},
-  title     = {DiffEqFlux.jl - {A} Julia Library for Neural Differential Equations},
-  journal   = {CoRR},
-  volume    = {abs/1902.02376},
-  year      = {2019},
-  url       = {http://arxiv.org/abs/1902.02376},
-  archivePrefix = {arXiv},
-  eprint    = {1902.02376},
-  timestamp = {Tue, 21 May 2019 18:03:36 +0200},
-  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1902-02376},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+@article{rackauckas2020universal,
+  title={Universal differential equations for scientific machine learning},
+  author={Rackauckas, Christopher and Ma, Yingbo and Martensen, Julius and Warner, Collin and Zubov, Kirill and Supekar, Rohit and Skinner, Dominic and Ramadhan, Ali},
+  journal={arXiv preprint arXiv:2001.04385},
+  year={2020}
 }
 ```

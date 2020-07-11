@@ -1,3 +1,4 @@
+println("Starting precompilation")
 using OrdinaryDiffEq
 println("Starting tests")
 using Flux, DiffEqFlux

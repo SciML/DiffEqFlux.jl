@@ -1,6 +1,8 @@
-using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq, Flux,
-      Zygote, Test
 println("Starting tests")
+using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq
+println("Going to start!")
+using Flux, Zygote, Test
+println("Finally!")
 using DiffEqFlux, DiffEqSensitivity
 mp = Float32[0.1,0.1]
 x = Float32[2.; 0.]

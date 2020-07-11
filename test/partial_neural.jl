@@ -1,5 +1,8 @@
-using Flux, OrdinaryDiffEq, Test, Optim, DiffEqSensitivity
+println("Starting Precompilation")
+using Flux
 println("Starting Tests")
+using OrdinaryDiffEq, Test, Optim, DiffEqSensitivity
+println("Going to start tests!")
 using DiffEqFlux
 
 x = Float32[0.8; 0.8]
