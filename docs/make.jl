@@ -42,6 +42,7 @@ makedocs(
         "Spline Layer" => "layers/SplineLayer.md",
         "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
         ],
+        "Controlling Choices of Adjoints" => "ControllingAdjoints.md"
         "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
         "GPUs" => "GPUs.md",
