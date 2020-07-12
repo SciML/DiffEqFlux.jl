@@ -19,7 +19,7 @@ env:
   - GROUP=Integration
 notifications:
   email: false
-script: travis_wait 30 julia -e 'using Pkg; Pkg.build(); Pkg.test(coverage=true)'
+script: travis_wait 50 julia -e 'using Pkg; Pkg.build(); Pkg.test(coverage=true)'
 after_success:
   # push coverage results to Coveralls
   - julia -e 'import Pkg; cd(Pkg.dir("DiffEqFlux")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
