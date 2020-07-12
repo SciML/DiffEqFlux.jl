@@ -1,6 +1,6 @@
-# Training a Neural Ordinary Differntial Equation with Mini-Batching
+# Training a Neural Ordinary Differential Equation with Mini-Batching
 
-When training universal differential equations it is often helpful to batch our data. This is particularly useful when working with large sets of training data. Let us take a look at how this works with the Lotka-Volterra equation. 
+When training universal differential equations it is often helpful to batch our data. This is particularly useful when working with large sets of training data. Let us take a look at how this works with the Lotka-Volterra equation.
 
 We first get a time series array from the Lotka-Volterra equation as data:
 
@@ -39,13 +39,13 @@ From here we build a loss function around it. The `NeuralODE` has an optional se
 function predict_n_ode(p)
     n_ode(u0,p)
   end
-  
+
   function loss_n_ode(p, start, k)
       pred = predict_n_ode(p)
       loss = sum(abs2,ode_data[:,start:start+k] .- pred[:,start:start+k])
       loss,pred
   end
-  
+
 ```
 
 and then create a generator, that produces `MAX_BATCHES` random tuples `(start index, batch size)`:
@@ -71,11 +71,7 @@ and then train the neural network to learn the ODE:
   end
 
 
- 
+
 res = DiffEqFlux.sciml_train(loss_n_ode, res1.minimizer, LBFGS(), data, cb = cb)
 
 ```
-
-
-
-
