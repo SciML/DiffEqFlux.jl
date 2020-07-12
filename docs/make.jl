@@ -24,6 +24,7 @@ makedocs(
             "examples/normalizing_flows.md",
             "examples/local_minima.md",
             "examples/neural_sde.md",
+            "examples/collocation.md",
             "examples/pde_constrained.md",
             "examples/optimal_control.md",
             "examples/feedback_control.md",
@@ -46,6 +47,7 @@ makedocs(
         "Controlling Choices of Adjoints" => "ControllingAdjoints.md",
         "Use with Flux Chain and train!" => "Flux.md",
         "FastChain" => "FastChain.md",
+        "Smoothed Collocation" => "Collocation.md",
         "GPUs" => "GPUs.md",
         "sciml_train" => "Scimltrain.md",
         "Benchmark" => "Benchmark.md"
