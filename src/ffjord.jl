@@ -14,7 +14,7 @@ normalizing flows (CNF) [2]. At a high level this corresponds to the following s
 After these steps one may use the NN model and the learned θ to predict the density p_x for new values of x.
 
 ```julia
-NeuralODE(model,basedist=nothing,monte_carlo=false,tspan,args...;kwargs...)
+FFJORD(model,basedist=nothing,monte_carlo=false,tspan,args...;kwargs...)
 ```
 Arguments:
 - `model`: A Chain neural network that defines the ̇x.
