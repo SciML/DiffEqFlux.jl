@@ -10,7 +10,7 @@ ODEs](https://gist.github.com/ChrisRackauckas/cc6ac746e2dfd285c28e0584a2bfd320).
 
 Quick summary:
 
-- `BacksolveAdjoint` is the fastest (but use with caution!). About 25% faster.
+- `BacksolveAdjoint` is the fastest (but use with caution!); about 25% faster
 - Using `ZygoteVJP` is faster than other vjp choices with FastDense due to the overloads
 
 ```julia

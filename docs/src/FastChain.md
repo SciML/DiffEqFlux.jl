@@ -3,16 +3,16 @@
 The `FastChain` system is a Flux-like explicit parameter neural network
 architecture system for less overhead in smaller neural networks. For neural
 networks with layers of lengths >~200, these optimizations are overshadowed by
-the cost of matrix multiplication. However, for smaller layer operations this
+the cost of matrix multiplication. However, for smaller layer operations, this
 architecture can reduce a lot of the overhead traditionally seen in neural
 network architectures and thus is recommended in a lot of scientific machine
-learning usecaes.
+learning use cases.
 
 ## Basics
 
-The basic is that `FastChain` is a collection of functions of two values,
+The basic principle is that `FastChain` is a collection of functions of two values,
 `(x,p)`, and chains these functions to call one after the next. Each layer in
-this chain gets pre-defined amount of parameters sent to it. For example,
+this chain gets a pre-defined amount of parameters sent to it. For example,
 
 ```julia
 f = FastChain((x,p) -> x.^3,
@@ -22,7 +22,7 @@ f = FastChain((x,p) -> x.^3,
 
 `FastChain` here has a `2*50 + 50` length parameter `FastDense(2,50,tanh)` function
 and a `50*2 + 2` parameter function `FastDense(50,2)`. The first function gets
-the default number of parameters which is 0. Thus `f(x,p)` is equivalent to the
+the default number of parameters which is 0. Thus, `f(x,p)` is equivalent to the
 following code:
 
 ```julia
@@ -38,10 +38,10 @@ end
 is passed to it on each call, making the setup explicit in the passed parameters.
 
 To get initial parameters for the optimization of a function defined by a
-`FastChain`, one simply calls `initial_params(f)` which returns the concatenation
+`FastChain`, one simply calls `initial_params(f)`, which returns the concatenation
 of the initial parameters for each layer. Notice that since all parameters are
 explicit, constructing and reconstructing chains/layers can be a memory-free
-operation, since the only memory is the parameter vector itself which is handled
+operation, since the only memory is the parameter vector itself, which is handled
 by the user.
 
 ### FastChain Interface

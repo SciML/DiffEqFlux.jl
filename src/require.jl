@@ -22,6 +22,27 @@ function __init__()
         ifgpufree(x::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CuArrays.CuArray}}) = CuArrays.unsafe_free!((x.data).parent)
     end
 
+    @require CUDA="052768ef-5323-5732-b1bb-66c8b64840ba" begin
+        gpu_or_cpu(x::CUDA.CuArray) = CUDA.CuArray
+        gpu_or_cpu(x::TrackedArray{<:Any,<:Any,<:CUDA.CuArray}) = CUDA.CuArray
+        gpu_or_cpu(x::Transpose{<:Any,<:CUDA.CuArray}) = CUDA.CuArray
+        gpu_or_cpu(x::Adjoint{<:Any,<:CUDA.CuArray}) = CUDA.CuArray
+        gpu_or_cpu(x::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CUDA.CuArray}}) = CUDA.CuArray
+        gpu_or_cpu(x::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CUDA.CuArray}}) = CUDA.CuArray
+        isgpu(::CUDA.CuArray) = true
+        isgpu(::TrackedArray{<:Any,<:Any,<:CUDA.CuArray}) = true
+        isgpu(::Transpose{<:Any,<:CUDA.CuArray}) = true
+        isgpu(::Adjoint{<:Any,<:CUDA.CuArray}) = true
+        isgpu(::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CUDA.CuArray}}) = true
+        isgpu(::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CUDA.CuArray}}) = true
+        ifgpufree(x::CUDA.CuArray) = CUDA.unsafe_free!(x)
+        ifgpufree(x::TrackedArray{<:Any,<:Any,<:CUDA.CuArray}) = CUDA.unsafe_free!(x.data)
+        ifgpufree(x::Transpose{<:Any,<:CUDA.CuArray}) = CUDA.unsafe_free!(x.parent)
+        ifgpufree(x::Adjoint{<:Any,<:CUDA.CuArray}) = CUDA.unsafe_free!(x.parent)
+        ifgpufree(x::Adjoint{<:Any,TrackedArray{<:Any,<:Any,<:CUDA.CuArray}}) = CUDA.unsafe_free!((x.data).parent)
+        ifgpufree(x::Transpose{<:Any,TrackedArray{<:Any,<:Any,<:CUDA.CuArray}}) = CUDA.unsafe_free!((x.data).parent)
+    end
+
     @require NLopt="76087f3c-5699-56af-9a33-bf431cd00edd" begin
         function sciml_train(loss, θ, opt::NLopt.Opt, data = DEFAULT_DATA; maxeval=100)
             local x, cur, state
@@ -54,17 +75,17 @@ function __init__()
                                                     minf, # pick_best_f(f_incr_pick, state, d),
                                                     maxeval, #iteration,
                                                     maxeval >= maxeval, #iteration == options.iterations,
-                                                    false, # x_converged,
+                                                    true, # x_converged,
                                                     0.0,#T(options.x_tol),
                                                     0.0,#T(options.x_tol),
                                                     NaN,# x_abschange(state),
                                                     NaN,# x_abschange(state),
-                                                    false,# f_converged,
+                                                    true,# f_converged,
                                                     0.0,#T(options.f_tol),
                                                     0.0,#T(options.f_tol),
                                                     NaN,#f_abschange(d, state),
                                                     NaN,#f_abschange(d, state),
-                                                    false,#g_converged,
+                                                    true,#g_converged,
                                                     0.0,#T(options.g_tol),
                                                     NaN,#g_residual(d),
                                                     false, #f_increased,
@@ -118,17 +139,17 @@ function __init__()
                                                     minf, # pick_best_f(f_incr_pick, state, d),
                                                     maxeval, #iteration,
                                                     maxeval >= maxeval, #iteration == options.iterations,
-                                                    false, # x_converged,
+                                                    true, # x_converged,
                                                     0.0,#T(options.x_tol),
                                                     0.0,#T(options.x_tol),
                                                     NaN,# x_abschange(state),
                                                     NaN,# x_abschange(state),
-                                                    false,# f_converged,
+                                                    true,# f_converged,
                                                     0.0,#T(options.f_tol),
                                                     0.0,#T(options.f_tol),
                                                     NaN,#f_abschange(d, state),
                                                     NaN,#f_abschange(d, state),
-                                                    false,#g_converged,
+                                                    true,#g_converged,
                                                     0.0,#T(options.g_tol),
                                                     NaN,#g_residual(d),
                                                     false, #f_increased,
@@ -168,20 +189,20 @@ function __init__()
                                                 p.value, # pick_best_f(f_incr_pick, state, d),
                                                 0, #iteration,
                                                 false, #iteration == options.iterations,
-                                                false, # x_converged,
+                                                true, # x_converged,
                                                 0.0,#T(options.x_tol),
                                                 0.0,#T(options.x_tol),
                                                 NaN,# x_abschange(state),
                                                 NaN,# x_abschange(state),
-                                                false,# f_converged,
+                                                true,# f_converged,
                                                 0.0,#T(options.f_tol),
                                                 0.0,#T(options.f_tol),
                                                 NaN,#f_abschange(d, state),
                                                 NaN,#f_abschange(d, state),
-                                                false,#g_converged,
+                                                true,#g_converged,
                                                 0.0,#T(options.g_tol),
                                                 NaN,#g_residual(d),
-                                                false, #f_increased,
+                                                true, #f_increased,
                                                 nothing,
                                                 maxiters,
                                                 maxiters,
@@ -217,20 +238,20 @@ function __init__()
                                                 QuadDIRECT.minimum(root), # pick_best_f(f_incr_pick, state, d),
                                                 0, #iteration,
                                                 false, #iteration == options.iterations,
-                                                false, # x_converged,
+                                                true, # x_converged,
                                                 0.0,#T(options.x_tol),
                                                 0.0,#T(options.x_tol),
                                                 NaN,# x_abschange(state),
                                                 NaN,# x_abschange(state),
-                                                false,# f_converged,
+                                                true,# f_converged,
                                                 0.0,#T(options.f_tol),
                                                 0.0,#T(options.f_tol),
                                                 NaN,#f_abschange(d, state),
                                                 NaN,#f_abschange(d, state),
-                                                false,#g_converged,
+                                                true,#g_converged,
                                                 0.0,#T(options.g_tol),
                                                 NaN,#g_residual(d),
-                                                false, #f_increased,
+                                                true, #f_increased,
                                                 nothing,
                                                 maxiters,
                                                 maxiters,

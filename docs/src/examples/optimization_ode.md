@@ -43,7 +43,7 @@ savefig("LV_ode.png")
 ![LV Solution Plot](https://user-images.githubusercontent.com/1814174/51388169-9a07f300-1af6-11e9-8c6c-83c41e81d11c.png)
 
 For this first example, we do not yet include a neural network. We take
-[AD-compatible `concrete_solve`
+[AD-compatible `solve`
 function](https://docs.juliadiffeq.org/latest/analysis/sensitivity/) function
 that takes the parameters and an initial condition and returns the solution of
 the differential equation as a
@@ -55,9 +55,8 @@ without the interpolations).
 # Create a solution (prediction) for a given starting point u0 and set of
 # parameters p
 function predict_adjoint(p)
-  return Array(concrete_solve(prob_ode, Tsit5(), u0, p, saveat = tsteps))
+  return Array(solve(prob_ode, Tsit5(), p=p, saveat = tsteps))
 end
-nothing
 ```
 
 Next we choose a square loss function. Our goal will be to find parameter that
@@ -72,7 +71,6 @@ function loss_adjoint(p)
   loss = sum(abs2, x-1 for x in prediction)
   return loss, prediction
 end
-nothing
 ```
 
 Lastly, we use the `sciml_train` function to train the parameters using BFGS to
@@ -107,7 +105,6 @@ callback = function (p, l, pred)
   # optimization stops.
   return false
 end
-nothing
 ```
 
 Let's optimise the model.

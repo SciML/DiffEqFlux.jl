@@ -4,8 +4,7 @@ You can also mix a known differential equation and a neural differential
 equation, so that the parameters and the neural network are estimated
 simultaneously!
 
-Here's an example of doing this with both reverse-mode autodifferentiation and
-with adjoints. We will assume that we know the dynamics of the second equation
+We will assume that we know the dynamics of the second equation
 (linear dynamics), and our goal is to find a neural network that is dependent
 on the current state of the dynamical system that will control the second
 equation to stay close to 1.
@@ -50,12 +49,11 @@ function dudt_univ!(du, u, p, t)
     du[2] = dsystem_output
 end
 
-prob_univ = ODEProblem(dudt_univ!, u0, tspan, p_all)
-sol_univ = concrete_solve(prob_univ, Tsit5(),[0f0, u0], p_all,
-                          abstol = 1e-8, reltol = 1e-6)
+prob_univ = ODEProblem(dudt_univ!, [0f0, u0], tspan, p_all)
+sol_univ = solve(prob_univ, Tsit5(),abstol = 1e-8, reltol = 1e-6)
 
 function predict_univ(θ)
-  return Array(concrete_solve(prob_univ, Tsit5(), [0f0, θ[1]], θ[2:end],
+  return Array(solve(prob_univ, Tsit5(), u0=[0f0, θ[1]], p=θ[2:end],
                               saveat = tsteps))
 end
 
@@ -76,7 +74,7 @@ callback = function (θ, l)
 
   println(l)
 
-  plt = plot(predict_univ(θ), ylim = (0, 6))
+  plt = plot(predict_univ(θ)', ylim = (0, 6))
   push!(list_plots, plt)
   display(plt)
   return false

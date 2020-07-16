@@ -17,14 +17,15 @@ u0 = [1.0,1.0]
 prob = ODEProblem(lotka_volterra,u0,(0.0,10.0),p)
 ```
 
-Then we define our loss function with `concrete_solve` for the adjoint method:
+Then we define our loss function with `solve` for the adjoint method:
 
 ```julia
 function predict_rd()
-  Array(concrete_solve(prob,Tsit5(),u0,saveat=0.1,reltol=1e-4))
+  Array(solve(prob,Tsit5(),saveat=0.1,reltol=1e-4))
 end
-loss_rd() = sum(abs2,x-1 for x in predict_rd(p))
+loss_rd() = sum(abs2,x-1 for x in predict_rd())
 ```
+Note that the parameters `p` to be optimized are not passed as arguments to the `loss_rd` or `predict_rd` functions.  This is because `Flux.train!` below uses implicit globals.
 
 Now we setup the optimization. Here we choose the `ADAM` optimizer. To tell
 Flux what our parameters to optimize are, we use `Flux.params(p)`. To make the

@@ -1,4 +1,9 @@
-using DiffEqFlux, Flux, OrdinaryDiffEq, Test, Optim, DiffEqSensitivity
+println("Starting Precompilation")
+using Flux
+println("Starting Tests")
+using OrdinaryDiffEq, Test, Optim, DiffEqSensitivity
+println("Going to start tests!")
+using DiffEqFlux
 
 x = Float32[0.8; 0.8]
 tspan = (0.0f0,10.0f0)
@@ -15,10 +20,10 @@ function dudt2_(u,p,t)
 end
 
 prob = ODEProblem(dudt2_,x,tspan,_p)
-concrete_solve(prob,Tsit5(),x,_p)
+solve(prob,Tsit5())
 
 function predict_rd(θ)
-  Array(concrete_solve(prob,Tsit5(),θ[1:2],θ[3:end],abstol=1e-7,reltol=1e-5,sensealg=TrackerAdjoint()))
+  Array(solve(prob,Tsit5(),u0=θ[1:2],p=θ[3:end],abstol=1e-7,reltol=1e-5,sensealg=TrackerAdjoint()))
 end
 loss_rd(p) = sum(abs2,x-1 for x in predict_rd(p))
 l = loss_rd(θ)
@@ -55,10 +60,10 @@ function dudt_(du,u,p,t)
     du[2] = p[end-1]*y + p[end]*x
 end
 prob = ODEProblem(dudt_,u0,tspan,p3)
-concrete_solve(prob,Tsit5(),u0,p3,abstol=1e-8,reltol=1e-6)
+solve(prob,Tsit5(),abstol=1e-8,reltol=1e-6)
 
 function predict_adjoint(θ)
-  Array(concrete_solve(prob,Tsit5(),θ[1:2],θ[3:end],saveat=0.0:1:25.0))
+  Array(solve(prob,Tsit5(),u0=θ[1:2],p=θ[3:end],saveat=0.0:1:25.0))
 end
 loss_adjoint(θ) = sum(abs2,x-1 for x in predict_adjoint(θ))
 l = loss_adjoint(θ)

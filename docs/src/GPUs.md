@@ -1,7 +1,7 @@
 # Use with GPUs
 
 Note that the differential equation solvers will run on the GPU if the initial
-condition is a GPU array. Thus for example, we can define a neural ODE by hand
+condition is a GPU array. Thus, for example, we can define a neural ODE by hand
 that runs on the GPU (if no GPU is available, the calculation defaults back to the CPU):
 
 ```julia
@@ -19,11 +19,10 @@ u0 = Float32[2.0; 0.0] |> gpu
 prob_gpu = ODEProblem(dudt!, u0, tspan, p)
 
 # Runs on a GPU
-sol_gpu = concrete_solve(prob_gpu, Tsit5(), saveat = tsteps)
+sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)
 ```
 
-and `concrete_solve` works similarly. Or we could directly use the neural ODE
-layer function, like:
+Or we could directly use the neural ODE layer function, like:
 
 ```julia
 prob_neuralode_gpu = NeuralODE(gpu(dudt2), tspan, Tsit5(), saveat = tsteps)
@@ -49,19 +48,19 @@ tsteps = 0.0:0.1:10.0
 prob_gpu = ODEProblem(dudt2_, u0, tspan, p)
 
 # Runs on a GPU
-sol_gpu = concrete_solve(prob_gpu, Tsit5(), saveat = tsteps)
+sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)
 ```
 
 or via the NeuralODE struct:
 
 ```julia
 prob_neuralode_gpu = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
-sol_gpu = concrete_solve(prob_neuralode_gpu, Tsit5(), saveat = tsteps)
+sol_gpu = solve(prob_neuralode_gpu, Tsit5(), saveat = tsteps)
 ```
 
 ## Neural ODE Example
 
-Here is the full neural ODE example. Note we use the `gpu` function so that this
+Here is the full neural ODE example. Note that we use the `gpu` function so that the
 same code works on CPUs and GPUs, dependent on `using CuArrays`.
 
 ```julia

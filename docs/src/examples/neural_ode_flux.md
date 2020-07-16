@@ -28,7 +28,7 @@ dudt(u,p,t) = re(p)(u) # need to restrcture for backprop!
 prob = ODEProblem(dudt,u0,tspan)
 
 function predict_n_ode()
-  Array(concrete_solve(prob,Tsit5(),u0,p,saveat=t))
+  Array(solve(prob,Tsit5(),u0=u0,p=p,saveat=t))
 end
 
 function loss_n_ode()

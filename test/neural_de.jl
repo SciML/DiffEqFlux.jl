@@ -1,6 +1,9 @@
-using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq, Flux, DiffEqFlux,
-      Zygote, Test, DiffEqSensitivity
-
+println("Starting tests")
+using OrdinaryDiffEq, StochasticDiffEq, DelayDiffEq
+println("Going to start!")
+using Flux, Zygote, Test
+println("Finally!")
+using DiffEqFlux, DiffEqSensitivity
 mp = Float32[0.1,0.1]
 x = Float32[2.; 0.]
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))

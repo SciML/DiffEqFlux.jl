@@ -53,7 +53,6 @@ function true_noise_func(du, u, p, t)
 end
 
 prob_truesde = SDEProblem(trueSDEfunc, true_noise_func, u0, tspan)
-nothing
 ```
 
 For our dataset we will use DifferentialEquations.jl's [parallel ensemble
@@ -67,7 +66,6 @@ ensemble_sol = solve(ensemble_prob, SOSRI(), trajectories = 10000)
 ensemble_sum = EnsembleSummary(ensemble_sol)
 
 sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))
-nothing
 ```
 
 Now we build a neural SDE. For simplicity we will use the `NeuralDSDE`
@@ -81,7 +79,6 @@ diffusion_dudt = FastChain(FastDense(2, 2))
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
                        saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
-nothing
 ```
 
 Let's see what that looks like:
@@ -105,7 +102,6 @@ scatter!(plt1, tsteps, sde_data', lw = 3)
 
 scatter(tsteps, sde_data[1,:], label = "data")
 scatter!(tsteps, prediction0[1,:], label = "prediction")
-nothing
 ```
 
 Now just as with the neural ODE we define a loss function that calculates the
@@ -128,7 +124,6 @@ function loss_neuralsde(p; n = 100)
   loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
   return loss, means, vars
 end
-nothing
 ```
 
 ```julia
@@ -158,7 +153,6 @@ callback = function (p, loss, means, vars; doplot = false)
   end
   return false
 end
-nothing
 ```
 
 Now we train using this loss function. We can pre-train a little bit using a
