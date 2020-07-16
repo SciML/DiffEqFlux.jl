@@ -97,7 +97,7 @@ ode_data = Array(solve(true_prob, Tsit5(), saveat=t))
 
 ```
 
-Now we define a neural-network using a linear approximation with 8 hidden layers.  
+Now we define a neural-network using a linear approximation with 1 hidden layer of 8 neurons.  
 
 ```julia
 ann = FastChain(FastDense(1,8,tanh), FastDense(8,1,tanh))
@@ -175,7 +175,6 @@ res1 = DiffEqFlux.sciml_train(loss_adjoint, pp, ADAM(0.05), ncycle(eachbatch(tra
 cb(res1.minimizer,loss_adjoint(res1.minimizer, ode_data, t)...;doplot=true)
 
 ```
-
 
 
 
