@@ -35,6 +35,7 @@ DiffResults = "0.0.4, 1.0"
 Distributions = "0.23"
 Flux = "0.10.1"
 ForwardDiff = "0.10"
+MLDataUtils = "0.5"
 Optim = "0.20, 0.21, 0.22"
 ProgressLogging = "0.1"
 RecursiveArrayTools = "2"
@@ -47,8 +48,10 @@ ZygoteRules = "0.2"
 julia = "1"
 
 [extras]
+DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 DelayDiffEq = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+GeometricFlux = "7e08b658-56d3-11e9-2997-919d5b31e4ea"
 MultistartOptimization = "3933049c-43be-478e-a8bb-6e0f7fd53575"
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
@@ -58,8 +61,6 @@ SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-GeometricFlux = "7e08b658-56d3-11e9-2997-919d5b31e4ea"
-DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 
 [targets]
 test = ["DelayDiffEq", "Distances", "DataInterpolations", "OrdinaryDiffEq", "NLopt", "Pkg", "Random", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "MultistartOptimization", "GeometricFlux"]
