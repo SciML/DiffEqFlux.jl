@@ -26,10 +26,10 @@ function loadmnist(batchsize = bs, train_split = 0.9)
                                                          p = train_split)
     return (
         # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(gpu.(collect.((x_train, y_train)))...; batchsize = batchsize,
+        DataLoader(gpu.(collect.((x_train, y_train))); batchsize = batchsize,
                    shuffle = true),
         # Don't shuffle the test data
-        DataLoader(gpu.(collect.((x_test, y_test)))...; batchsize = batchsize,
+        DataLoader(gpu.(collect.((x_test, y_test))); batchsize = batchsize,
                    shuffle = false)
     )
 end
@@ -170,10 +170,10 @@ function loadmnist(batchsize = bs, train_split = 0.9)
                                                          p = train_split)
     return (
         # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(gpu.(collect.((x_train, y_train)))...; batchsize = batchsize,
+        DataLoader(gpu.(collect.((x_train, y_train))); batchsize = batchsize,
                    shuffle = true),
         # Don't shuffle the test data
-        DataLoader(gpu.(collect.((x_test, y_test)))...; batchsize = batchsize,
+        DataLoader(gpu.(collect.((x_test, y_test))); batchsize = batchsize,
                    shuffle = false)
     )
 end
