@@ -22,7 +22,7 @@ Arguments:
 - `monte_carlo`: Method for calculating the trace of the Jacobian. The default monte_carlo = false calculates the Jacobian and its trace directly. monte_carlo = true uses the stochastic approach presented in [3] to provide an unbiased estimate for the trace.
 - `tspan`: The timespan to be solved on.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
   documentation for more details.
 Ref
 [1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
