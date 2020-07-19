@@ -32,7 +32,7 @@ Many different training techniques are supported by this package, including:
 
 - Optimize-then-discretize (backsolve adjoints, checkpointed adjoints, quadrature adjoints)
 - Discretize-then-optimize (forward and reverse mode discrete sensitivity analysis)
-  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://docs.sciml.ai/latest/solvers/ode_solve/)
+  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
 
@@ -50,8 +50,8 @@ With this package, you can explore various ways to integrate the two methodologi
 ## Basics
 
 The basics are all provided by the
-[DifferentialEquations.jl](https://docs.sciml.ai/latest/) package. Specifically,
-[the `solve` function is automatically compatible with AD systems like Zygote.jl](https://docs.sciml.ai/latest/analysis/sensitivity/)
+[DifferentialEquations.jl](https://diffeq.sciml.ai/latest/) package. Specifically,
+[the `solve` function is automatically compatible with AD systems like Zygote.jl](https://diffeq.sciml.ai/latest/analysis/sensitivity/)
 and thus there is no machinery that is necessary to use DifferentialEquations.jl
 package. For example, the following computes the solution to an ODE and computes
 the gradient of a loss function (the sum of the ODE's output at each timepoint
