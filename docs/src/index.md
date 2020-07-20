@@ -1,4 +1,4 @@
-# DiffEqFlux
+# DiffEqFlux: Generalized Physics-Informed and Scientific Machine Learning (SciML)
 
 DiffEqFlux.jl is not just for neural ordinary differential equations.
 DiffEqFlux.jl is for universal differential equations, where these can include
