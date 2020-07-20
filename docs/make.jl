@@ -11,7 +11,7 @@ makedocs(
                              assets = ["assets/favicon.ico"],
                              canonical="https://diffeqflux.sciml.ai/stable/"),
     pages=[
-        "Home" => "index.md",
+        "DiffEqFlux.jl: Generalized Physics-Informed and Scientific Machine Learning (SciML)" => "index.md",
         "Tutorials" => Any[
             "examples/optimization_ode.md",
             "examples/optimization_sde.md",
