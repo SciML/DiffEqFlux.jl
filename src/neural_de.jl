@@ -502,3 +502,54 @@ augment(x::AbstractArray{S, T}, augment_dim::Int) where {S, T} =
 
 Base.getproperty(ande::AugmentedNDELayer, sym::Symbol) =
     hasproperty(ande, sym) ? getfield(ande, sym) : getfield(ande.nde, sym)
+
+
+struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
+    model::M
+    p::P
+    re::RE
+    tspan::T
+    args::A
+    kwargs::K
+
+    function NeuralHamiltonianDE(model,tspan,args...;p = nothing,kwargs...)
+        _p,re = Flux.destructure(model)
+        if p === nothing
+            p = _p
+        end
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,args,kwargs)
+    end
+
+    function NeuralHamiltonianDE(model::FastChain,tspan,args...;p = initial_params(model),kwargs...)
+        re = nothing
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,args,kwargs)
+    end
+end
+
+function (n::NeuralHamiltonianDE)(x,p=n.p)
+    function neural_hamiltonian!(du,u,p,t)
+        H = Flux.gradient(u -> n.re(p)(u)[1], u)[1]
+        n = size(x)[1] ÷ 2
+        du[1:n] .= -H[1:n]
+        du[(n + 1):end] .= H[(n + 1):end]
+    end
+    prob = ODEProblem(neural_hamiltonian!,x,n.tspan,p)
+    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
+    solve(prob,n.args...;sense=sense,n.kwargs...)
+end
+
+function (n::NeuralHamiltonianDE{M})(x,p=n.p) where {M<:FastChain}
+    function neural_hamiltonian!(du,u,p,t)
+        H = Flux.gradient(u -> n.model(u,p)[1], u)[1]
+        n = size(x)[1] ÷ 2
+        du[1:n] .= -H[1:n]
+        du[(n + 1):end] .= H[(n + 1):end]
+    end
+    prob = ODEProblem(neural_hamiltonian!,x,n.tspan,p)
+    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
+    solve(prob,n.args...;sensealg=sense,n.kwargs...)
+end
