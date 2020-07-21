@@ -443,6 +443,15 @@ struct NeuralODEMM{M,M2,P,RE,T,MM,A,K} <: NeuralDELayer
             typeof(tspan),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
             model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
     end
+
+    function NeuralODEMM(model::TensorLayer,constraints_model,tspan,mass_matrix,args...;
+                         p = nothing, kwargs...)
+        re = nothing
+        new{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
+            typeof(tspan),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
+            model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
+    end
+
 end
 
 function (n::NeuralODEMM)(x,p=n.p)
@@ -468,6 +477,19 @@ function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
 
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
+    solve(prob,n.args...;sensealg=sense,n.kwargs...)
+end
+
+function (n::NeuralODEMM{M})(x,p=n.p) where {M<:TensorLayer}
+    function f(u,p,t)
+        nn_out = n.model(u,p)
+        alg_out = n.constraints_model(u,p,t)
+        vcat(nn_out,alg_out)
+    end
+    dudt_= ODEFunction{false}(f,mass_matrix=n.mass_matrix,tgrad=basic_tgrad)
+    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
+
+    sense = InterpolatingAdjoint(autojacvec=ReverseDiffVJP())
     solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
