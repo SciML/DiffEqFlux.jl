@@ -530,26 +530,26 @@ struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     end
 end
 
-function (n::NeuralHamiltonianDE)(x,p=n.p)
+function (nhde::NeuralHamiltonianDE)(x,p=nhde.p)
     function neural_hamiltonian!(du,u,p,t)
-        H = Flux.gradient(u -> n.re(p)(u)[1], u)[1]
+        H = Flux.gradient(u -> nhde.re(p)(u)[1], u)[1]
         n = size(x)[1] ÷ 2
         du[1:n] .= -H[1:n]
         du[(n + 1):end] .= H[(n + 1):end]
     end
-    prob = ODEProblem(neural_hamiltonian!,x,n.tspan,p)
-    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sense=sense,n.kwargs...)
+    prob = ODEProblem(neural_hamiltonian!,x,nhde.tspan,p)
+    sense = InterpolatingAdjoint(autojacvec=false)  #ZygoteVJP())
+    solve(prob,nhde.args...;sense=sense,nhde.kwargs...)
 end
 
-function (n::NeuralHamiltonianDE{M})(x,p=n.p) where {M<:FastChain}
+function (nhde::NeuralHamiltonianDE{M})(x,p=nhde.p) where {M<:FastChain}
     function neural_hamiltonian!(du,u,p,t)
-        H = Flux.gradient(u -> n.model(u,p)[1], u)[1]
+        H = Flux.gradient(u -> nhde.model(u,p)[1], u)[1]
         n = size(x)[1] ÷ 2
         du[1:n] .= -H[1:n]
         du[(n + 1):end] .= H[(n + 1):end]
     end
-    prob = ODEProblem(neural_hamiltonian!,x,n.tspan,p)
+    prob = ODEProblem(neural_hamiltonian!,x,nhde.tspan,p)
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sensealg=sense,n.kwargs...)
+    solve(prob,nhde.args...;sensealg=sense,nhde.kwargs...)
 end
