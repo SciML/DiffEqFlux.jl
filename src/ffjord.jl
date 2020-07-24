@@ -91,12 +91,17 @@ function cnf(du,u,p,t,re)
     du[end] = -trace_jac
 end
 
-function ffjord(du,u,p,t,re,e)
+function ffjord(du,u,p,t,re,e,monte_carlo)
     z = @view u[1:end-3]
     m = re(p)
     _, back = Zygote.pullback(m,z)
     eJ = back(e)[1]
-    trace_jac = (eJ.*e)[1]
+    if monte_carlo
+        trace_jac = (eJ.*e)[1]
+    else
+        J = jacobian_fn(m, z)
+        trace_jac = length(z) == 1 ? sum(J) : tr(J)
+    end
     du[1:end-3] = m(z)
     du[end-2] = -trace_jac
     du[end-1] = norm(m(z))^2
@@ -115,9 +120,9 @@ function (n::DeterministicCNFLayer)(x,p=n.p)
     return logpx[1]
 end
 
-function (n::FFJORDLayer)(x,p=n.p)
+function (n::FFJORDLayer)(x,p=n.p,monte_carlo=true)
     e = randn(Float32,length(x))
-    ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e)
+    ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo)
     prob = ODEProblem{true}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
     pred = solve(prob,n.args...;n.kwargs...)[:,end]
     pz = n.basedist
