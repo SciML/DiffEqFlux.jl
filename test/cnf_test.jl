@@ -101,21 +101,21 @@ tspan = (0.0,10.0)
 ffjord_test = FFJORDLayer(nn,tspan,Tsit5())
 
 function loss_adjoint(θ)
-    logpx = [cnf_test(x,θ)[1] for x in data_train]
-    reg1 = [cnf_test(x,θ)[2] for x in data_train]
-    reg2 = [cnf_test(x,θ)[3] for x in data_train]
-    loss = -mean(logpx) + 0.1*mean(reg1) + 0.1*mean(reg2)
+    logpx = [ffjord_test(x,θ)[1] for x in data_train]
+    reg1 = [ffjord_test(x,θ)[2] for x in data_train]
+    reg2 = [ffjord_test(x,θ)[3] for x in data_train]
+    loss = -mean(logpx) + 0.01*mean(reg1) + 0.01*mean(reg2)
 end
 
 res = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test.p,
-                                        ADAM(0.1), cb=cb,
-                                        maxiters = 100)
+                                        ADAM(0.01), cb=cb,
+                                        maxiters = 50)
 
 
 θopt = res.minimizer
 data_validate = [Float32(rand(Beta(7,7))) for i in 1:100]
 actual_pdf = [pdf(Beta(7,7),r) for r in data_validate]
 #use direct trace calculation for predictions
-learned_pdf = [exp(cnf_test(r,θopt)[1]) for r in data_validate]
+learned_pdf = [exp(ffjord_test(r,θopt)[1]) for r in data_validate]
 
 @test totalvariation(learned_pdf, actual_pdf)/100 < 0.25
