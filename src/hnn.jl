@@ -55,7 +55,7 @@ function _hamiltonian_forward(re, p, x)
 end
 
 function _hamiltonian_forward(m::FastChain, p, x)
-    H = Flux.gradient(x -> sum(m(x, p), x))[1]
+    H = Flux.gradient(x -> sum(m(x, p)), x)[1]
     n = size(x, 1) ÷ 2
     return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
 end
