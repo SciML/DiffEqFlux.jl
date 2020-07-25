@@ -9,6 +9,10 @@ particles. It then returns the time derivatives for position and momentum.
     This doesn't solve the Hamiltonian Problem. Use [`NeuralHamiltonianDE`](@ref)
     for such applications.
 
+!!! note
+    This layer currently doesn't support GPU. The support will be added in future
+    with some AD fixes.
+
 ```julia
 HamiltonianNN(model; p = nothing)
 HamiltonianNN(model::FastChain; p = initial_params(model))
@@ -62,6 +66,23 @@ end
     _hamiltonian_forward(hnn.model, p, x)
 
 
+"""
+Contructs a Neural Hamiltonian DE Layer for solving Hamiltonian Problems
+parameterized by a Neural Network [`HamiltonianNN`](@ref).
+
+```julia
+NeuralHamiltonianDE(model, tspan, args...; kwargs...)
+```
+
+Arguments:
+
+- `model`: A Chain, FastChain or Hamiltonian Neural Network that predicts the
+           Hamiltonian of the system.
+- `tspan`: The timespan to be solved on.
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+            [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+            documentation for more details.
+"""
 struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     hnn::HamiltonianNN{M,RE,P}
     p::P
