@@ -44,6 +44,7 @@ makedocs(
         "Continuous Normalizing Flows Layer" => "layers/CNFLayer.md",
         "Spline Layer" => "layers/SplineLayer.md",
         "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
+        "Hamiltonian Neural Network Layer" => "layers/HamiltonianNN.md"
         ],
         "Controlling Choices of Adjoints" => "ControllingAdjoints.md",
         "Use with Flux Chain and train!" => "Flux.md",
