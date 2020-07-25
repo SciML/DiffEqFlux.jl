@@ -1,3 +1,28 @@
+"""
+Constructs a Hamiltonian Neural Network [1]. This neural network is useful for
+learning symmetries and conservation laws by supervision on the gradients
+of the trajectories. It takes as input a concatenated vector of length `2n`
+containing the position (of size `n`) and momentum (of size `n`) of the
+particles. It then returns the time derivatives for position and momentum.
+
+!!! note
+    This doesn't solve the Hamiltonian Problem. Use [`NeuralHamiltonianDE`](@ref)
+    for such applications.
+
+```julia
+HamiltonianNN(model; p = nothing)
+HamiltonianNN(model::FastChain; p = initial_params(model))
+```
+
+Arguments:
+1. `model`: A Chain or FastChain neural network that returns the Hamiltonian of the
+            system.
+2. `p`: The initial parameters of the neural network.
+
+References:
+[1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. "Hamiltonian neural networks."
+    Advances in Neural Information Processing Systems. 2019.
+"""
 struct HamiltonianNN{M, R, P}
     model::M
     re::R
