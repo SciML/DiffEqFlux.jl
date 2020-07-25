@@ -13,6 +13,11 @@ particles. It then returns the time derivatives for position and momentum.
     This layer currently doesn't support GPU. The support will be added in future
     with some AD fixes.
 
+To obtain the gradients to train this network, ReverseDiff.gradient is supposed to
+be used. This prevents the usage of `DiffEqFlux.sciml_train` or `Flux.train`. Follow
+this [tutorial](https://diffeqflux.sciml.ai/dev/examples/hamiltonian_nn/) to see how
+to define a training loop to circumvent this issue.
+
 ```julia
 HamiltonianNN(model; p = nothing)
 HamiltonianNN(model::FastChain; p = initial_params(model))
