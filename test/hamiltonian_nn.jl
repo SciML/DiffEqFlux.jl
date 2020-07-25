@@ -43,3 +43,19 @@ end
 final_loss = loss(data, target, p)
 
 @test initial_loss > final_loss
+
+# Test output and gradient of NeuralHamiltonianDE Layer
+tspan = (0.0f0, 1.0f0)
+
+model = NeuralHamiltonianDE(
+    hnn, tspan, Tsit5(),
+    save_everystep = false, save_start = true,
+    saveat = range(tspan[1], tspan[2], length=10)
+)
+sol = Array(model(data[:, 1]))
+@test size(sol) == (2, 10)
+
+ps = Flux.params(model)
+gs = Flux.gradient(() -> sum(Array(model(data[:, 1]))), ps)
+
+@test ! iszero(gs[model.p])
