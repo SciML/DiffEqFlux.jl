@@ -107,7 +107,7 @@ callback = function (p, l, pred)
 end
 ```
 
-Let's optimise the model.
+Let's optimize the model.
 
 ```julia
 result_ode = DiffEqFlux.sciml_train(loss_adjoint, p,
