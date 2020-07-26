@@ -107,26 +107,14 @@ We define a callback function.
 
 ```julia
 # Callback function to observe training
-list_plots = []
-iter = 0
 callback = function (p, l, pred; doplot = false)
-  global list_plots, iter
-
-  if iter == 0
-    list_plots = []
-  end
-  iter += 1
-
   display(l)
-
   # plot current prediction against data
   plt = scatter(tsteps, ode_data[1,:], label = "data")
   scatter!(plt, tsteps, pred[1,:], label = "prediction")
-  push!(list_plots, plt)
   if doplot
     display(plot(plt))
   end
-
   return false
 end
 ```

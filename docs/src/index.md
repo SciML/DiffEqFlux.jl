@@ -36,6 +36,7 @@ Many different training techniques are supported by this package, including:
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
 
+mixing forward mode and reverse mode approaches as appropriate for the most speed.
 For more details on the adjoint sensitivity analysis methods for computing
 fast gradients, see the [Adjoints page](@ref adjoints).
 
