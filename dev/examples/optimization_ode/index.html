@@ -20,7 +20,7 @@ p = [1.5, 1.0, 3.0, 1.0]
 
 # Setup the ODE problem, then solve
 prob = ODEProblem(lotka_volterra!, u0, tspan, p)
-sol = solve(prob_ode, Tsit5())
+sol = solve(prob, Tsit5())
 
 # Plot the solution
 using Plots
@@ -68,12 +68,12 @@ tsteps = 0.0:0.1:10.0
 p = [1.5, 1.0, 3.0, 1.0]
 
 # Setup the ODE problem, then solve
-prob_ode = ODEProblem(lotka_volterra!, u0, tspan, p)
-sol_ode = solve(prob_ode, Tsit5())
+prob = ODEProblem(lotka_volterra!, u0, tspan, p)
+sol = solve(prob, Tsit5())
 
 # Plot the solution
 using Plots
-plot(sol_ode)
+plot(sol)
 savefig(&quot;LV_ode.png&quot;)</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/51388169-9a07f300-1af6-11e9-8c6c-83c41e81d11c.png" alt="LV Solution Plot"/></p><p>For this first example, we do not yet include a neural network. We take <a href="https://docs.juliadiffeq.org/latest/analysis/sensitivity/">AD-compatible <code>solve</code> function</a> function that takes the parameters and an initial condition and returns the solution of the differential equation. Next we choose a loss function. Our goal will be to find parameters that make the Lotka-Volterra solution constant <code>x(t)=1</code>, so we define our loss as the squared distance from 1. Note that when using <code>sciml_train</code>, the first return is the loss value, and the other returns are sent to the callback for monitoring convergence.</p><pre><code class="language-julia">function loss(p)
   sol = solve(prob, Tsit5(), p=p, saveat = tsteps)
   loss = sum(abs2, sol.-1)
@@ -90,4 +90,4 @@ end</code></pre><p>Let&#39;s optimize the model.</p><pre><code class="language-j
                                     cb = callback,
                                     maxiters = 100)</code></pre><p>In just seconds we found parameters which give a relative loss of <code>1e-8</code>! We can get the final loss with <code>result_ode.minimum</code>, and get the optimal parameters with <code>result_ode.minimizer</code>. For example, we can plot the final outcome and show that we solved the control problem and successfully found parameters to make the ODE solution constant:</p><pre><code class="language-julia">remade_solution = solve(remake(prob, p = result_ode.minimizer), Tsit5(),      
                         saveat = tsteps)
-plot(remade_solution, ylim = (0, 6))</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif" alt="Final plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« DiffEqFlux.jl: Generalized Physics-Informed and Scientific Machine Learning (SciML)</a><a class="docs-footer-nextpage" href="../optimization_sde/">Optimization of Stochastic Differential Equations »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 27 July 2020 09:44">Monday 27 July 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot(remade_solution, ylim = (0, 6))</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif" alt="Final plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« DiffEqFlux.jl: Generalized Physics-Informed and Scientific Machine Learning (SciML)</a><a class="docs-footer-nextpage" href="../optimization_sde/">Optimization of Stochastic Differential Equations »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 27 July 2020 15:16">Monday 27 July 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
