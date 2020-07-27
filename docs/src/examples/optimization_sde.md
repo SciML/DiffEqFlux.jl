@@ -147,7 +147,6 @@ callback = function (p, l)
   display(plt)
   return false
 end
-nothing # hide
 ```
 
 Let's optimize
