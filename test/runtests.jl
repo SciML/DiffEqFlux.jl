@@ -40,6 +40,7 @@ if GROUP == "All" || GROUP == "AdvancedNeuralDE"
 end
 
 if GROUP == "All" || GROUP == "Integration"
+    @safetestset "Ensemble Tests" begin include("ensembles.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
     @safetestset "Size Handling in Adjoint Tests" begin include("size_handling_adjoint.jl") end
     @safetestset "odenet" begin include("odenet.jl") end
