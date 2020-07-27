@@ -27,7 +27,7 @@ p = [1.5, 1.0, 3.0, 1.0]
 
 # Setup the ODE problem, then solve
 prob = ODEProblem(lotka_volterra!, u0, tspan, p)
-sol = solve(prob_ode, Tsit5())
+sol = solve(prob, Tsit5())
 
 # Plot the solution
 using Plots
@@ -88,12 +88,12 @@ tsteps = 0.0:0.1:10.0
 p = [1.5, 1.0, 3.0, 1.0]
 
 # Setup the ODE problem, then solve
-prob_ode = ODEProblem(lotka_volterra!, u0, tspan, p)
-sol_ode = solve(prob_ode, Tsit5())
+prob = ODEProblem(lotka_volterra!, u0, tspan, p)
+sol = solve(prob, Tsit5())
 
 # Plot the solution
 using Plots
-plot(sol_ode)
+plot(sol)
 savefig("LV_ode.png")
 ```
 
