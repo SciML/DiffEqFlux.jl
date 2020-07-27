@@ -1,48 +1,70 @@
 # Neural Ordinary Differential Equations with sciml_train
 
-Next we define a single layer neural network that using the [AD-compatible
-`solve`
-function](https://docs.juliadiffeq.org/latest/analysis/sensitivity/) function
-that takes the parameters and an initial condition and returns the solution of
-the differential equation as a
-[`DiffEqArray`](https://github.com/JuliaDiffEq/RecursiveArrayTools.jl) (same
-array semantics as the standard differential equation solution object but
-without the interpolations).
-
 We can use DiffEqFlux.jl to define, solve, and train neural ordinary
 differential equations. A neural ODE is an ODE where a neural network defines
 its derivative function. Thus for example, with the multilayer perceptron neural
-network `Chain(Dense(2, 50, tanh), Dense(50, 2))`, the best way to define a
-neural ODE by hand would be to use non-mutating adjoints, which looks like:
+network `Chain(Dense(2, 50, tanh), Dense(50, 2))`,
+
+## Copy-Pasteable Code
+
+Before getting to the explanation, here's some code to start with. We will follow
+wil a full explanation of the definition and training process:
 
 ```julia
-model = Chain(Dense(2, 50, tanh), Dense(50, 2))
-p, re = Flux.destructure(model)
-dudt!(u, p, t) = re(p)(u)
-u0 = rand(2)
-prob = ODEProblem(dudt!, u0, tspan, p)
-my_neural_ode_prob = solve(prob, Tsit5(), args...; kwargs...)
-nothing
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+
+u0 = Float32[2.0; 0.0]
+datasize = 30
+tspan = (0.0f0, 1.5f0)
+tsteps = range(tspan[1], tspan[2], length = datasize)
+
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u.^3)'true_A)'
+end
+
+prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
+
+dudt2 = FastChain((x, p) -> x.^3,
+                  FastDense(2, 50, tanh),
+                  FastDense(50, 2))
+prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
+
+function predict_neuralode(p)
+  Array(prob_neuralode(u0, p))
+end
+
+function loss_neuralode(p)
+    pred = predict_neuralode(p)
+    loss = sum(abs2, ode_data .- pred)
+    return loss, pred
+end
+
+callback = function (p, l, pred; doplot = true)
+  display(l)
+  # plot current prediction against data
+  plt = scatter(tsteps, ode_data[1,:], label = "data")
+  scatter!(plt, tsteps, pred[1,:], label = "prediction")
+  if doplot
+    display(plot(plt))
+  end
+  return false
+end
+
+result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
+                                          ADAM(0.05), cb = callback,
+                                          maxiters = 300)
+
+result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
+                                           result_neuralode.minimizer,
+                                           LBFGS(),
+                                           cb = callback)
 ```
 
-(`Flux.restructure` and `Flux.destructure` are helper functions which transform
-the neural network to use parameters `p`)
+![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
 
-A convenience function which handles all of the details is `NeuralODE`. To use
-`NeuralODE`, you give it the initial condition, the internal neural network
-model to use, the timespan to solve on, and any ODE solver arguments. For
-example, this neural ODE would be defined as:
-
-```julia
-tspan = (0.0f0, 25.0f0)
-n_ode = NeuralODE(model, tspan, Tsit5(), saveat = 0.1)
-nothing
-```
-
-where here we made it a layer that takes in the initial condition and spits out
-an array for the time series saved at every 0.1 time steps.
-
-### Training a Neural Ordinary Differential Equation
+## Explanation
 
 Let's get a time series array from the Lotka-Volterra equation as data:
 
@@ -188,4 +210,85 @@ result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
    Iterations:    35
    f(x) calls:    336
    ∇f(x) calls:   336
+```
+
+## Usage without the layer
+
+Note that you can equivalently define the NeuralODE by hand instead of using
+the layer function. With `FastChain` this would look like:
+
+```julia
+dudt!(u, p, t) = dudt2(u, p)
+u0 = rand(2)
+prob = ODEProblem(dudt!, u0, tspan, p)
+my_neural_ode_prob = solve(prob, Tsit5(), args...; kwargs...)
+```
+
+and with `Chain` this would look like:
+
+```julia
+p, re = Flux.destructure(dudt2)
+neural_ode_f(u, p, t) = re(p)(u)
+u0 = rand(2)
+prob = ODEProblem(neural_ode_f, u0, tspan, p)
+my_neural_ode_prob = solve(prob, Tsit5(), args...; kwargs...)
+```
+
+and then one would use `solve` for the prediction like in other tutorials.
+
+In total, the from scratch form looks like:
+
+```julia
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+
+u0 = Float32[2.0; 0.0]
+datasize = 30
+tspan = (0.0f0, 1.5f0)
+tsteps = range(tspan[1], tspan[2], length = datasize)
+
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u.^3)'true_A)'
+end
+
+prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
+
+dudt2 = FastChain((x, p) -> x.^3,
+                  FastDense(2, 50, tanh),
+                  FastDense(50, 2))
+neural_ode_f(u,p,t) = dudt2(u,p)
+pinit = initial_params(dudt2)
+prob = ODEProblem(neural_ode_f, u0, tspan, pinit)
+
+function predict_neuralode(p)
+  tmp_prob = remake(prob,p=p)
+  Array(solve(tmp_prob,Tsit5(),saveat=tsteps))
+end
+
+function loss_neuralode(p)
+    pred = predict_neuralode(p)
+    loss = sum(abs2, ode_data .- pred)
+    return loss, pred
+end
+
+callback = function (p, l, pred; doplot = true)
+  display(l)
+  # plot current prediction against data
+  plt = scatter(tsteps, ode_data[1,:], label = "data")
+  scatter!(plt, tsteps, pred[1,:], label = "prediction")
+  if doplot
+    display(plot(plt))
+  end
+  return false
+end
+
+result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, pinit,
+                                          ADAM(0.05), cb = callback,
+                                          maxiters = 300)
+
+result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
+                                           result_neuralode.minimizer,
+                                           LBFGS(),
+                                           cb = callback)
 ```
