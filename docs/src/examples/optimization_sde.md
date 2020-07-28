@@ -47,7 +47,7 @@ scenario, we will generate 10,000 trajectories from the SDE to build our dataset
 ```julia
 using Statistics
 ensembleprob = EnsembleProblem(prob)
-@time sol = solve(ensembleprob,SOSRI(),EnsembleThreads(),saveat=0.1,trajectories=10_000)
+@time sol = solve(ensembleprob,SOSRI(),saveat=0.1,trajectories=10_000)
 truemean = mean(sol,dims=3)[:,:]
 truevar  = var(sol,dims=3)[:,:]
 ```
@@ -61,7 +61,7 @@ then plot the evolution of the means and variances to verify the fit. For exampl
 function loss(p)
   tmp_prob = remake(prob,p=p)
   ensembleprob = EnsembleProblem(tmp_prob)
-  tmp_sol = solve(ensembleprob,SOSRI(),EnsembleThreads(),saveat=0.1,trajectories=1000,sensealg=ForwardDiffSensitivity())
+  tmp_sol = solve(ensembleprob,SOSRI(),saveat=0.1,trajectories=1000,sensealg=ForwardDiffSensitivity())
   arrsol = Array(tmp_sol)
   sum(abs2,truemean - mean(arrsol,dims=3)) + 0.1sum(abs2,truevar - var(arrsol,dims=3)),arrsol
 end
@@ -98,6 +98,14 @@ stochastic portion (the diffusion equation) are fit through this process!**
 Also notice that the final fit of the moment equations is close:
 
 ![](https://user-images.githubusercontent.com/1814174/88511872-97bc0a00-cfb3-11ea-9d44-a3ed96a77df9.png)
+
+The time for the full fitting process was:
+
+```
+250.654845 seconds (4.69 G allocations: 104.868 GiB, 11.87% gc time)
+```
+
+approximately 4 minutes.
 
 ## Example 2: Controlling SDEs to an objective
 
