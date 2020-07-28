@@ -84,7 +84,7 @@ function (n::FFJORD)(x,p=n.p,monte_carlo=n.monte_carlo)
     pz = n.basedist
     z = pred[1:end-1]
     delta_logp = pred[end]
-    logpz = logpdf.(pz, z)
+    logpz = logpdf(pz, z)
     logpx = logpz .- delta_logp
     return logpx[1]
 end
