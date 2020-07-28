@@ -5,7 +5,8 @@ using Flux, DiffEqFlux
 using Test
 using Distributions
 using Distances
-using LinearAlgebra, Tracker, Zygote
+using Zygote
+using DistributionsAD
 
 ##callback to be used by all tests
 function cb(p,l)
@@ -25,6 +26,14 @@ function loss_adjoint(θ)
     logpx = [cnf_test(x,θ) for x in data_train]
     loss = -mean(logpx)
 end
+
+
+using LinearAlgebra
+dist = MvNormal(rand(1), I + zeros(1, 1))
+z = zeros(1)
+
+Zygote.gradient(z -> log(pdf(dist, z)), z) # fails
+Zygote.gradient(z -> logpdf(dist, z), z) # works
 
 res = DiffEqFlux.sciml_train(loss_adjoint, 0.01.*cnf_test.p,
                                         ADAM(0.01), cb=cb,

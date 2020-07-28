@@ -104,7 +104,7 @@ function ffjord(du,u,p,t,re,e,monte_carlo)
     end
     du[1:end-3] = m(z)
     du[end-2] = -trace_jac
-    du[end-1] = norm(m(z))^2
+    du[end-1] = sum(abs2, m(z))
     du[end] = norm(eJ)^2
 end
 
@@ -115,7 +115,7 @@ function (n::DeterministicCNFLayer)(x,p=n.p)
     pz = n.basedist
     z = pred[1:end-1]
     delta_logp = pred[end]
-    logpz = logpdf(pz, z)
+    logpz = logpdf.((pz,), z)
     logpx = logpz .- delta_logp
     return logpx[1]
 end
@@ -130,7 +130,7 @@ function (n::FFJORDLayer)(x,p=n.p,monte_carlo=true)
     delta_logp = pred[end-2]
     reg1 = pred[end-1]
     reg2 =  pred[end]
-    logpz = log.(pdf(pz, z))
+    logpz = logpdf.((pz,), z)
     logpx = logpz .- delta_logp
     return logpx[1], reg1, reg2
 end
