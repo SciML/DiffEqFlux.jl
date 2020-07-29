@@ -124,7 +124,8 @@ function (n::FFJORDLayer)(x,p=n.p,monte_carlo=true)
     e = randn(Float32,length(x))
     ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo)
     prob = ODEProblem{true}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
-    pred = solve(prob,n.args...;n.kwargs...)[:,end]
+    sense = InterpolatingAdjoint(autojacvec = false)
+    pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
     pz = n.basedist
     z = pred[1:end-3]
     delta_logp = pred[end-2]
