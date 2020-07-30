@@ -109,7 +109,7 @@ end
 
 res = DiffEqFlux.sciml_train(loss_adjoint, 0.01.*ffjord_test.p,
                                         ADAM(0.01), cb=cb,
-                                        maxiters = 25)
+                                        maxiters = 100)
 
 
 θopt = res.minimizer
