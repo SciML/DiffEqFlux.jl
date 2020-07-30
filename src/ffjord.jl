@@ -111,11 +111,12 @@ end
 function (n::DeterministicCNFLayer)(x,p=n.p)
     cnf_ = (du,u,p,t)->cnf(du,u,p,t,n.re)
     prob = ODEProblem{true}(cnf_,vcat(x,0f0),n.tspan,p)
-    pred = solve(prob,n.args...;n.kwargs...)[:,end]
+    sense = InterpolatingAdjoint(autojacvec = false)
+    pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
     pz = n.basedist
     z = pred[1:end-1]
     delta_logp = pred[end]
-    logpz = logpdf.((pz,), z)
+    logpz = logpdf(pz, z)
     logpx = logpz .- delta_logp
     return logpx[1]
 end
@@ -124,13 +125,14 @@ function (n::FFJORDLayer)(x,p=n.p,monte_carlo=true)
     e = randn(Float32,length(x))
     ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo)
     prob = ODEProblem{true}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
-    pred = solve(prob,n.args...;n.kwargs...)[:,end]
+    sense = InterpolatingAdjoint(autojacvec = false)
+    pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
     pz = n.basedist
     z = pred[1:end-3]
     delta_logp = pred[end-2]
     reg1 = pred[end-1]
     reg2 =  pred[end]
-    logpz = logpdf.((pz,), z)
+    logpz = logpdf(pz, z)
     logpx = logpz .- delta_logp
     return logpx[1], reg1, reg2
 end
