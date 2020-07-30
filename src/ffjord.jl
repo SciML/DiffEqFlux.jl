@@ -80,11 +80,12 @@ function (n::FFJORD)(x,p=n.p,monte_carlo=n.monte_carlo)
     e = monte_carlo ? randn(Float32,length(x)) : nothing
     ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,monte_carlo,e)
     prob = ODEProblem{true}(ffjord_,vcat(x,0f0),n.tspan,p)
-    pred = solve(prob,n.args...;n.kwargs...)[:,end]
+    sense = InterpolatingAdjoint(autojacvec = false)
+    pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
     pz = n.basedist
     z = pred[1:end-1]
     delta_logp = pred[end]
-    logpz = log.(pdf(pz, z))
+    logpz = logpdf(pz, z)
     logpx = logpz .- delta_logp
     return logpx[1]
 end
