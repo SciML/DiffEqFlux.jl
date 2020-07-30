@@ -7,9 +7,11 @@ using Distributions
 using Distances
 using Zygote
 using DistributionsAD
+using LinearAlgebra
 
 ##callback to be used by all tests
 function cb(p,l)
+    @show l
     false
 end
 
