@@ -11,7 +11,6 @@ using LinearAlgebra
 
 ##callback to be used by all tests
 function cb(p,l)
-    @show l
     false
 end
 
@@ -79,7 +78,7 @@ tspan = (0.0,10.0)
 cnf_test = DeterministicCNFLayer(nn,tspan,Tsit5())
 
 function loss_adjoint(θ)
-    logpx = [ffjord_test(x,θ) for x in data_train]
+    logpx = [cnf_test(x,θ) for x in data_train]
     loss = -mean(logpx)
 end
 
