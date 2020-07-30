@@ -37,6 +37,7 @@ if GROUP == "All" || GROUP == "AdvancedNeuralDE"
     @safetestset "CNF Layer Tests" begin include("cnf_test.jl") end
     @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
     @safetestset "Neural Second Order ODE Tests" begin include("second_order_ode.jl") end
+    @safetestset "Neural Hamiltonian ODE Tests" begin include("hamiltonian_nn.jl") end
 end
 
 if GROUP == "All" || GROUP == "Integration"

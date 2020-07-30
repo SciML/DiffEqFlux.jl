@@ -35,7 +35,8 @@ makedocs(
             "examples/universal_diffeq.md",
             "examples/minibatch.md",
             "examples/tensor_layer.md",
-            "examples/neural_gde.md"
+            "examples/neural_gde.md",
+            "examples/hamiltonian_nn.md"
         ],
         "Layers" => Any[
         "Classical Basis Layers" => "layers/BasisLayers.md",
@@ -43,6 +44,7 @@ makedocs(
         "Continuous Normalizing Flows Layer" => "layers/CNFLayer.md",
         "Spline Layer" => "layers/SplineLayer.md",
         "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
+        "Hamiltonian Neural Network Layer" => "layers/HamiltonianNN.md"
         ],
         "Controlling Choices of Adjoints" => "ControllingAdjoints.md",
         "Use with Flux Chain and train!" => "Flux.md",
