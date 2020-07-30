@@ -35,9 +35,15 @@ Many different training techniques are supported by this package, including:
   - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
+- Probabilistic programming and variational inference on ODEs/SDEs/DAEs/DDEs/hybrid
+  equations etc. is provided by integration with [Turing.jl](https://turing.ml/dev/)
+  and [Gen.jl](https://github.com/probcomp/Gen.jl). Reproduce
+  [variational loss functions](https://arxiv.org/abs/2001.01328) by plugging
+  [composible libraries together](https://turing.ml/dev/tutorials/9-variationalinference/).
 
-For more details on the adjoint sensitivity analysis methods for computing
-fast gradients, see the [Adjoints page](@ref adjoints).
+all while mixing forward mode and reverse mode approaches as appropriate for the
+most speed. For more details on the adjoint sensitivity analysis methods for
+computing fast gradients, see the [Adjoints page](@ref adjoints).
 
 With this package, you can explore various ways to integrate the two methodologies:
 

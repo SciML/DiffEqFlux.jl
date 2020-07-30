@@ -4,6 +4,7 @@ using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, Distributions, Forwar
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Optim,
       StaticArrays, Base.Iterators, Printf, BlackBoxOptim, Zygote
 
+using DistributionsAD
 import ProgressLogging, ZygoteRules, ReverseDiff
 
 import Logging

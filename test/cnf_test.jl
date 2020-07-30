@@ -27,6 +27,17 @@ function loss_adjoint(θ)
     loss = -mean(logpx)
 end
 
+<<<<<<< HEAD
+=======
+
+using LinearAlgebra
+dist = MvNormal(rand(1), I + zeros(1, 1))
+z = zeros(1)
+
+Zygote.gradient(z -> log(pdf(dist, z)), z) # fails
+Zygote.gradient(z -> logpdf(dist, z), z) # works
+
+>>>>>>> regularized_ffjord
 res = DiffEqFlux.sciml_train(loss_adjoint, 0.01.*cnf_test.p,
                                         ADAM(0.01), cb=cb,
                                         maxiters = 100)
