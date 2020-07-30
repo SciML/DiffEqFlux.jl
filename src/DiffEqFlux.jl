@@ -80,9 +80,12 @@ include("spline_layer.jl")
 include("tensor_product_basis.jl")
 include("tensor_product_layer.jl")
 include("collocation.jl")
+include("hnn.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
-export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer
+export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM,
+       TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
+export HamiltonianNN
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
 export neural_ode, neural_ode_rd
 export neural_dmsde
