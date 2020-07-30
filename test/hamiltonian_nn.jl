@@ -4,12 +4,14 @@ using DiffEqFlux, Flux, OrdinaryDiffEq, ReverseDiff
 u0 = rand(Float32, 6, 1)
 
 hnn = HamiltonianNN(Chain(Dense(6, 12, relu), Dense(12, 1)))
+p = hnn.p
 
 @test size(hnn(u0)) == (6, 1)
 
 @test ! iszero(ReverseDiff.gradient(p -> sum(hnn(u0, p)), p))
 
 hnn = HamiltonianNN(Chain(Dense(6, 12, relu), Dense(12, 1)))
+p = hnn.p
 
 @test size(hnn(u0)) == (6, 1)
 
