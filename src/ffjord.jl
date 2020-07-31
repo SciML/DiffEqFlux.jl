@@ -10,7 +10,7 @@ struct DeterministicCNF{M,P,RE,Distribution,T,A,K} <: CNFLayer
     args::A
     kwargs::K
 
-    function DeterministicCNFLayer(model,tspan,args...;p = nothing,basedist=nothing,kwargs...)
+    function DeterministicCNF(model,tspan,args...;p = nothing,basedist=nothing,kwargs...)
         _p,re = Flux.destructure(model)
         if p === nothing
             p = _p
