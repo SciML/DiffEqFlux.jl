@@ -22,7 +22,7 @@ end
 nn = Chain(Dense(1, 1, tanh))
 data_train = [Float32(rand(Beta(7,7))) for i in 1:100]
 tspan = (0.0,10.0)
-cnf_test = DeterministicCNFLayer(nn,tspan,Tsit5())
+cnf_test = DeterministicCNF(nn,tspan,Tsit5())
 
 function loss_adjoint(θ)
     logpx = [cnf_test(x,θ) for x in data_train]
@@ -48,7 +48,7 @@ learned_pdf = [exp(cnf_test(r,θopt)) for r in data_validate]
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 data_train = [Float32(rand(Normal(6.0,0.7))) for i in 1:100]
 tspan = (0.0,10.0)
-cnf_test = DeterministicCNFLayer(nn,tspan,Tsit5(),basedist=MvNormal([0.0],[2.0]))
+cnf_test = DeterministicCNF(nn,tspan,Tsit5(),basedist=MvNormal([0.0],[2.0]))
 
 function loss_adjoint(θ)
     logpx = [cnf_test(x,θ) for x in data_train]
@@ -76,7 +76,7 @@ nn = Chain(Dense(2, 2, tanh))
 mv_normal = MvNormal(μ, Σ)
 data_train = [Float32.(rand(mv_normal)) for i in 1:100]
 tspan = (0.0,10.0)
-cnf_test = DeterministicCNFLayer(nn,tspan,Tsit5())
+cnf_test = DeterministicCNF(nn,tspan,Tsit5())
 
 function loss_adjoint(θ)
     logpx = [cnf_test(x,θ) for x in data_train]
