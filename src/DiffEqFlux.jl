@@ -83,7 +83,7 @@ include("collocation.jl")
 include("hnn.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
-export DeterministicCNFLayer, FFJORDLayer, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
+export DeterministicCNF, FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
 export HamiltonianNN
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
 export neural_ode, neural_ode_rd
