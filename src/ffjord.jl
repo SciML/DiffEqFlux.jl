@@ -1,7 +1,7 @@
 abstract type CNFLayer <: Function end
 Flux.trainable(m::CNFLayer) = (m.p,)
 
-struct DeterministicCNFLayer{M,P,RE,Distribution,T,A,K} <: CNFLayer
+struct DeterministicCNF{M,P,RE,Distribution,T,A,K} <: CNFLayer
     model::M
     p::P
     re::RE
@@ -53,7 +53,7 @@ Ref
 [3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
-struct FFJORDLayer{M,P,RE,Distribution,T,A,K} <: CNFLayer
+struct FFJORD{M,P,RE,Distribution,T,A,K} <: CNFLayer
     model::M
     p::P
     re::RE
@@ -62,7 +62,7 @@ struct FFJORDLayer{M,P,RE,Distribution,T,A,K} <: CNFLayer
     args::A
     kwargs::K
 
-    function FFJORDLayer(model,tspan,args...;p = nothing,basedist=nothing,kwargs...)
+    function FFJORD(model,tspan,args...;p = nothing,basedist=nothing,kwargs...)
         _p,re = Flux.destructure(model)
         if p === nothing
             p = _p
@@ -91,24 +91,38 @@ function cnf(du,u,p,t,re)
     du[end] = -trace_jac
 end
 
-function ffjord(du,u,p,t,re,e,monte_carlo)
-    z = @view u[1:end-3]
+function ffjord(du,u,p,t,re,e,monte_carlo,regularize)
     m = re(p)
-    _, back = Zygote.pullback(m,z)
-    eJ = back(e)[1]
-    if monte_carlo
-        trace_jac = (eJ.*e)[1]
+    if regularize
+        z = @view u[1:end-3]
+        _, back = Zygote.pullback(m,z)
+        eJ = back(e)[1]
+        if monte_carlo
+            trace_jac = (eJ.*e)[1]
+        else
+            J = jacobian_fn(m, z)
+            trace_jac = length(z) == 1 ? sum(J) : tr(J)
+        end
+        du[1:end-3] = m(z)
+        du[end-2] = -trace_jac
+        du[end-1] = sum(abs2, m(z))
+        du[end] = norm(eJ)^2
     else
-        J = jacobian_fn(m, z)
-        trace_jac = length(z) == 1 ? sum(J) : tr(J)
+        z = @view u[1:end-1]
+        _, back = Zygote.pullback(m,z)
+        eJ = back(e)[1]
+        if monte_carlo
+            trace_jac = (eJ.*e)[1]
+        else
+            J = jacobian_fn(m, z)
+            trace_jac = length(z) == 1 ? sum(J) : tr(J)
+        end
+        du[1:end-1] = m(z)
+        du[end] = -trace_jac
     end
-    du[1:end-3] = m(z)
-    du[end-2] = -trace_jac
-    du[end-1] = sum(abs2, m(z))
-    du[end] = norm(eJ)^2
 end
 
-function (n::DeterministicCNFLayer)(x,p=n.p)
+function (n::DeterministicCNF)(x,p=n.p)
     cnf_ = (du,u,p,t)->cnf(du,u,p,t,n.re)
     prob = ODEProblem{true}(cnf_,vcat(x,0f0),n.tspan,p)
     sense = InterpolatingAdjoint(autojacvec = false)
@@ -121,18 +135,29 @@ function (n::DeterministicCNFLayer)(x,p=n.p)
     return logpx[1]
 end
 
-function (n::FFJORDLayer)(x,p=n.p,monte_carlo=true)
+function (n::FFJORD)(x,p=n.p,regularize=false,monte_carlo=true)
     e = randn(Float32,length(x))
-    ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo)
-    prob = ODEProblem{true}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
-    sense = InterpolatingAdjoint(autojacvec = false)
-    pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
     pz = n.basedist
-    z = pred[1:end-3]
-    delta_logp = pred[end-2]
-    reg1 = pred[end-1]
-    reg2 =  pred[end]
-    logpz = logpdf(pz, z)
-    logpx = logpz .- delta_logp
-    return logpx[1], reg1, reg2
+    sense = InterpolatingAdjoint(autojacvec = false)
+    if regularize
+        ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo,regularize)
+        prob = ODEProblem{true}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
+        pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
+        z = pred[1:end-3]
+        delta_logp = pred[end-2]
+        λ₁ = pred[end-1]
+        λ₂ =  pred[end]
+        logpz = logpdf(pz, z)
+        logpx = logpz .- delta_logp
+        return logpx[1], λ₁, λ₂
+    else
+        ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo,regularize)
+        prob = ODEProblem{true}(ffjord_,vcat(x,0f0),n.tspan,p)
+        pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
+        z = pred[1:end-1]
+        delta_logp = pred[end]
+        logpz = logpdf(pz, z)
+        logpx = logpz .- delta_logp
+        return logpx[1]
+    end
 end
