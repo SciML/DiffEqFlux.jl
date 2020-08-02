@@ -146,3 +146,27 @@ function collocate_data(data,tpoints,kernel=TriangularKernel())
   estimated_solution = reduce(hcat,transpose.(last.(x)))
   estimated_derivative,estimated_solution
 end
+
+# # FIXME: Dispatch using AbstractInterpolation not working :(
+# function collocate_data(data::AbstractVector,tpoints,tpoints_sample,interp,args...)
+#     u, du = collocate_data(reshape(data, :, 1),tpoints,tpoints_sample,interp,args...)
+#     return u[:, 1], du[:, 1]
+# end
+#
+# # FIXME: Dispatch using AbstractInterpolation not working :(
+# function collocate_data(data::AbstractMatrix{T},tpoints::AbstractVector{T},
+# 			tpoints_sample::AbstractVector{T},interp, args...) where T
+#     u = zeros(T, length(tpoints_sample), size(data, 1))
+#     du = zeros(T, length(tpoints_sample), size(data, 1))
+#     z = ones(T, size(data, 1))
+#     result = DiffResults.JacobianResult(u[:, 1])
+#     for batch in 1:size(data, 2)
+#         data_batch = data[:, batch]
+#         interpolation = interp(data_batch,tpoints,args...)
+#         interp_func(t) = interpolation.(t)
+#         ForwardDiff.jacobian!(result, interp_func, tpoints_sample)
+#         u[:, batch] .= DiffResults.value(result)
+#         du[:, batch] .= diag(DiffResults.jacobian(result))
+#     end
+#     return u, du
+# end
