@@ -2,11 +2,9 @@
 
 ## Vs Torchdiffeq on small ODEs
 
-A raw ODE solver benchmark showcases [a 30,000x performance advantage over
-torchdiffeq on small
-ODEs](https://gist.github.com/ChrisRackauckas/cc6ac746e2dfd285c28e0584a2bfd320).
-Further benchmarking is planned but was found to be computationally infeasible
-for the time being.
+A raw ODE solver benchmark showcases [>30x performance advantage for DifferentialEquations.jl](https://gist.github.com/ChrisRackauckas/cc6ac746e2dfd285c28e0584a2bfd320).
+for ODEs ranging in size from 3 to 200,000. Further benchmarking is planned 
+but was found to be computationally infeasible for the time being.
 
 ## Vs torchsde on small SDEs
 
