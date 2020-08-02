@@ -26,7 +26,8 @@ post](https://julialang.org/blog/2019/01/fluxdiffeq) (which we try to keep
 updated for changes to the libraries). Additional demonstrations, like neural
 PDEs and neural jump SDEs, can be found [at this blog
 post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
-(among many others!).
+(among many others!). All of these features are only part of the advantage, as this library
+[routinely benchmarks orders of magnitude faster than competing libraries like torchdiffeq](@ref Benchmarks)
 
 Many different training techniques are supported by this package, including:
 

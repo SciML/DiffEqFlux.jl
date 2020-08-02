@@ -1,10 +1,15 @@
 # Benchmarks
 
-## Vs Torchdiffeq on small ODEs
+## Vs Torchdiffeq 1 million and less ODEs
 
 A raw ODE solver benchmark showcases [>30x performance advantage for DifferentialEquations.jl](https://gist.github.com/ChrisRackauckas/cc6ac746e2dfd285c28e0584a2bfd320).
-for ODEs ranging in size from 3 to 200,000. Further benchmarking is planned 
+for ODEs ranging in size from 3 to nearly 1 million. Further benchmarking is planned 
 but was found to be computationally infeasible for the time being.
+
+## Vs Torchdiffeq on neural ODE training
+
+A training benchmark using the sprial ODE from the original neural ODE paper
+[demonstrates a 100x performance advantage for DiffEqFlux in training neural ODEs](https://gist.github.com/ChrisRackauckas/4a4d526c15cc4170ce37da837bfc32c4).
 
 ## Vs torchsde on small SDEs
 
