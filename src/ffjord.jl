@@ -1,6 +1,35 @@
 abstract type CNFLayer <: Function end
 Flux.trainable(m::CNFLayer) = (m.p,)
 
+"""
+Constructs a continuous-time recurrent neural network, also known as a neural
+ordinary differential equation (neural ODE), with fast gradient calculation
+via adjoints [1] and specialized for density estimation based on continuous
+normalizing flows (CNF) [2] with a direct computation of the trace
+of the dynamics' jacobian. At a high level this corresponds to the following steps:
+
+1. Parameterize the variable of interest x(t) as a function f(z,θ,t) of a base variable z(t) with known density p_z;
+2. Use the transformation of variables formula to predict the density p_x as a function of the density p_z and the trace of the Jacobian of f;
+3. Choose the parameter θ to minimize a loss function of p_x (usually the negative likelihood of the data);
+
+After these steps one may use the NN model and the learned θ to predict the density p_x for new values of x.
+
+```julia
+FFJORD(model,basedist=nothing,monte_carlo=false,tspan,args...;kwargs...)
+```
+Arguments:
+- `model`: A Chain neural network that defines the ̇x.
+- `basedist`: Distribution of the base variable. Set to the unit normal by default.
+- `tspan`: The timespan to be solved on.
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  documentation for more details.
+Ref
+[1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
+[2]R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
+[3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
+
+"""
 struct DeterministicCNF{M,P,RE,Distribution,T,A,K} <: CNFLayer
     model::M
     p::P
