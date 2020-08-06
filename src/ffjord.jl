@@ -15,7 +15,7 @@ of the dynamics' jacobian. At a high level this corresponds to the following ste
 After these steps one may use the NN model and the learned θ to predict the density p_x for new values of x.
 
 ```julia
-FFJORD(model,basedist=nothing,monte_carlo=false,tspan,args...;kwargs...)
+DeterministicCNF(model,tspan,basedist=nothing,monte_carlo=false,args...;kwargs...)
 ```
 Arguments:
 - `model`: A Chain neural network that defines the ̇x.
