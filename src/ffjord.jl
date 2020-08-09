@@ -18,7 +18,7 @@ After these steps one may use the NN model and the learned θ to predict the den
 DeterministicCNF(model,tspan,basedist=nothing,monte_carlo=false,args...;kwargs...)
 ```
 Arguments:
-- `model`: A Chain neural network that defines the ̇x.
+- `model`: A Chain neural network that defines the dynamics of the model.
 - `basedist`: Distribution of the base variable. Set to the unit normal by default.
 - `tspan`: The timespan to be solved on.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
@@ -70,7 +70,7 @@ After these steps one may use the NN model and the learned θ to predict the den
 FFJORD(model,basedist=nothing,monte_carlo=false,tspan,args...;kwargs...)
 ```
 Arguments:
-- `model`: A Chain neural network that defines the ̇x.
+- `model`: A Chain neural network that defines the dynamics of the model.
 - `basedist`: Distribution of the base variable. Set to the unit normal by default.
 - `tspan`: The timespan to be solved on.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
