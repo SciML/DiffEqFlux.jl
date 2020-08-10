@@ -46,13 +46,6 @@ pmin = DiffEqFlux.sciml_train(loss_rd, p, maxiters=100, lower_bounds = [0.0 for 
 loss2 = loss_rd(pmin.minimizer)
 @test 10loss2 < loss1
 
-pmin = DiffEqFlux.sciml_train(loss_rd, p, TikTak(100),
-                              local_method = NLopt.LN_BOBYQA,
-                              maxiters=100,
-                              lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
-loss2 = loss_rd(pmin.minimizer)
-@test 10loss2 < loss1
-
 #=
 using QuadDIRECT
 pmin = DiffEqFlux.sciml_train(loss_rd, p, QuadDIRECT(),
