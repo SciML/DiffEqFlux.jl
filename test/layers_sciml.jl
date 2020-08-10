@@ -1,5 +1,4 @@
 using DiffEqFlux, DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, Optim, NLopt, BlackBoxOptim, Test #using Plots
-using MultistartOptimization, NLopt
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -147,22 +146,6 @@ opt = Opt(:LD_MMA, 4)
 pmin = DiffEqFlux.sciml_train(loss_adjoint, p, opt)
 loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
-
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, TikTak(100),
-                              local_method = NLopt.LN_BOBYQA,
-                              maxiters=100,
-                              lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
-
-#=
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, QuadDIRECT(),
-                              splits = (),
-                              maxiters=100,
-                              lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
-=#
 
 function lotka_volterra2(u,p,t)
   x, y = u
