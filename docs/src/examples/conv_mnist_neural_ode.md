@@ -1,4 +1,4 @@
-# Simple Neural ODE MNIST Classifier on GPU
+# Convolutional Neural ODE MNIST Classifier on GPU
 
 Training a classifier for **MNIST** using a neural ordinary differential equation **NN-ODE**
 on **GPUs** with **Minibatching**.
@@ -6,10 +6,11 @@ on **GPUs** with **Minibatching**.
 (Step-by-step description below)
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, NNlib, MLDataUtils, Printf
+using DiffEqFlux, OrdinaryDiffEq, Flux, NNlib,  Printf
 using Flux: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDatasets
+using MLDataUtils:  LabelEnc, convertlabel, stratifiedobs
 using CUDA
 CUDA.allowscalar(false)
 
@@ -26,10 +27,10 @@ function loadmnist(batchsize = bs, train_split = 0.9)
                                                          p = train_split)
     return (
         # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(gpu.(collect.((x_train, y_train))); batchsize = batchsize,
+        DataLoader(gpu.(collect.([x_train, y_train])); batchsize = batchsize,
                    shuffle = true),
         # Don't shuffle the test data
-        DataLoader(gpu.(collect.((x_test, y_test))); batchsize = batchsize,
+        DataLoader(gpu.(collect.([x_test, y_test])); batchsize = batchsize,
                    shuffle = false)
     )
 end
@@ -37,32 +38,43 @@ end
 # Main
 const bs = 128
 const train_split = 0.9
-train_dataloader, test_dataloader = loadmnist(bs, train_split)
+train_dataloader, test_dataloader = loadmnist(bs, train_split);
 
-down = Chain(flatten, Dense(784, 20, tanh)) |> gpu
-
-nn = Chain(Dense(20, 10, tanh),
-           Dense(10, 10, tanh),
-           Dense(10, 20, tanh)) |> gpu
-
-
-nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
+down = Chain(
+             Conv((3,3),1=>64,relu,stride=1), GroupNorm(64,64),
+             Conv((4,4),64=>64,relu,stride=2,pad=1), GroupNorm(64,64),
+             Conv((4,4),64=>64,stride=2,pad=1),
+            )|>gpu;
+dudt = Chain(
+           Conv((3,3),64=>64,relu,stride=1,pad=1),
+           Conv((3,3),64=>64,relu,stride=1,pad=1)
+          ) |>gpu;
+          
+fc = Chain(GroupNorm(64,64),
+           x->relu.(x),
+           MeanPool((6,6)),
+           x -> reshape(x,(64,)),
+           Dense(64,10)
+          )|>gpu;
+          
+nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
                    save_start = false) |> gpu
 
-fc  = Chain(Dense(20, 10)) |> gpu
 
 function DiffEqArray_to_Array(x)
     xarr = gpu(x)
-    return reshape(xarr, size(xarr)[1:2])
+    return xarr[:,:,:,1,:]
 end
 
 # Build our over-all model topology
-model = Chain(down,
-              nn_ode,
+model = Chain(
+              down,             #(28,28,1,BS) -> (6,6,64,BS)
+              nn_ode,           #(6,6,64,BS) -> (6,6,64,BS)
               DiffEqArray_to_Array,
-              fc) |> gpu;
+              fc                #(6,6,64,BS) -> (10, BS)
+             )
 
 # To understand the intermediate NN-ODE layer, we can examine it's dimensionality
 img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
@@ -78,7 +90,7 @@ classify(x) = argmax.(eachcol(x))
 function accuracy(model, data; n_batches = 100)
     total_correct = 0
     total = 0
-    for (i, (x, y)) in enumerate(collect(data))
+    for (i, (x, y)) in enumerate(data)
         # Only evaluate accuracy for n_batches
         i > n_batches && break
         target_class = classify(cpu(y))
@@ -170,10 +182,10 @@ function loadmnist(batchsize = bs, train_split = 0.9)
                                                          p = train_split)
     return (
         # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(gpu.(collect.((x_train, y_train))); batchsize = batchsize,
+        DataLoader(gpu.(collect.([x_train, y_train])); batchsize = batchsize,
                    shuffle = true),
         # Don't shuffle the test data
-        DataLoader(gpu.(collect.((x_test, y_test))); batchsize = batchsize,
+        DataLoader(gpu.(collect.([x_test, y_test])); batchsize = batchsize,
                    shuffle = false)
     )
 end
