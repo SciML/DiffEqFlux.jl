@@ -6,6 +6,7 @@ using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, Distributions, Forwar
 
 using DistributionsAD
 import ProgressLogging, ZygoteRules, ReverseDiff
+import ConsoleProgressMonitor, TerminalLoggers, LoggingExtras
 
 import Logging
 
