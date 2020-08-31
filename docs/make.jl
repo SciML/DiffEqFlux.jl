@@ -20,6 +20,7 @@ makedocs(
             "examples/neural_ode_flux.md",
             "examples/mnist_neural_ode.md",
             "examples/delay_diffeq.md",
+            "examples/hybrid_diffeq.md",
             "examples/augmented_neural_ode.md",
             "examples/normalizing_flows.md",
             "examples/local_minima.md",
