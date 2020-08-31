@@ -59,6 +59,7 @@ if !is_APPVEYOR && GROUP == "GPU"
         activate_gpu_env()
     end
     @safetestset "odenet GPU" begin include("odenet_gpu.jl") end
+    @safetestset "mnist GPU" begin include("mnist_gpu.jl") end
     @safetestset "Neural DE GPU Tests" begin include("neural_de_gpu.jl") end
     @safetestset "MNIST GPU Tests" begin include("mnist_gpu.jl") end
 end
