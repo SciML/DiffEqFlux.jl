@@ -4,7 +4,7 @@ Other differential equation problem types from DifferentialEquations.jl are
 supported. For example, we can build a layer with a delay differential equation
 like:
 
-```
+```julia
 using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity
 
 
@@ -33,13 +33,25 @@ prob_dde = DDEProblem(delay_lotka_volterra!, u0, h, (0.0, 10.0),
 function predict_dde(p)
   return Array(solve(prob_dde, MethodOfSteps(Tsit5()),
                               u0=u0, p=p, saveat = 0.1,
-                              sensealg = TrackerAdjoint()))
+                              sensealg = ReverseDiffAdjoint()))
 end
 
 loss_dde(p) = sum(abs2, x-1 for x in predict_dde(p))
+
+#using Plots
+cb = function (p,l...)
+  display(loss_dde(p))
+  #display(plot(solve(remake(prob_dde,p=p),MethodOfSteps(Tsit5()),saveat=0.1),ylim=(0,6)))
+  return false
+end
+
+cb(p,loss_dde(p))
+
+result_dde = DiffEqFlux.sciml_train(loss_dde, p, ADAM(0.1),
+                                    cb = cb, maxiters = 100)
 ```
 
-Notice that we chose `sensealg = TrackerAdjoint()` to utilize the Tracker.jl
+Notice that we chose `sensealg = ReverseDiffAdjoint()` to utilize the ReverseDiff.jl
 reverse-mode to handle the delay differential equation.
 
 We define a callback to display the solution at the current parameters for each step of the training:
