@@ -61,11 +61,11 @@ sol_gpu = solve(prob_neuralode_gpu, Tsit5(), saveat = tsteps)
 ## Neural ODE Example
 
 Here is the full neural ODE example. Note that we use the `gpu` function so that the
-same code works on CPUs and GPUs, dependent on `using CuArrays`.
+same code works on CPUs and GPUs, dependent on `using CUDA`.
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, CuArrays, DiffEqSensitivity
-CuArrays.allowscalar(false) # Makes sure no slow operations are occuring
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, CUDA, DiffEqSensitivity
+CUDA.allowscalar(false) # Makes sure no slow operations are occuring
 
 # Generate Data
 u0 = Float32[2.0; 0.0]
