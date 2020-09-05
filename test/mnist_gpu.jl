@@ -1,7 +1,7 @@
 using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
 using Flux: logitcrossentropy
 using MLDatasets: MNIST
-using CUDA
+using CUDA, Test
 CUDA.allowscalar(false)
 
 function loadmnist(batchsize = bs)
@@ -97,3 +97,4 @@ end
 
 # Train the NN-ODE and monitor the loss and weights.
 Flux.train!( loss, params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb )
+@test accuracy(m, zip(x_train,y_train)) > 0.8
