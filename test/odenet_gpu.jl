@@ -1,8 +1,8 @@
-using DiffEqFlux, Flux, Test, OrdinaryDiffEq, CuArrays
+using DiffEqFlux, Flux, Test, OrdinaryDiffEq, CUDA
 using Statistics
 #= using Plots =#
 
-CuArrays.allowscalar(false)
+CUDA.allowscalar(false)
 
 ## True Solution
 u0 = [2.; 0.] |> gpu

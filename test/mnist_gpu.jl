@@ -1,8 +1,8 @@
 using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
 using Flux: logitcrossentropy
 using MLDatasets: MNIST
-using CuArrays
-CuArrays.allowscalar(false)
+using CUDA
+CUDA.allowscalar(false)
 
 function loadmnist(batchsize = bs)
 	# Use MLDataUtils LabelEnc for natural onehot conversion

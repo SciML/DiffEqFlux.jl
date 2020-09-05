@@ -1,5 +1,5 @@
-using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqSensitivity, DiffEqFlux, Zygote, Test, CuArrays
-CuArrays.allowscalar(false)
+using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqSensitivity, DiffEqFlux, Zygote, Test, CUDA
+CUDA.allowscalar(false)
 
 mp = Chain(Dense(2,2)) |> gpu
 x = Float32[2.; 0.] |> gpu
