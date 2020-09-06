@@ -10,6 +10,7 @@ variables:
     - .test
   tags:
     - nvidia
+    - fastcpu
 
 test-GPU:
   extends: .base
