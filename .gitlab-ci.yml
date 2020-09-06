@@ -16,3 +16,4 @@ test-GPU:
   extends: .base
   variables:
     GROUP: GPU
+    DATADEPS_ALWAYS_ACCEPT: true
