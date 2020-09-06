@@ -1,4 +1,4 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, DiffEqSensitivity
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, DiffEqSensitivity
 u0 = Float32[2.; 0.]
 datasize = 100
 tspan = (0.0f0,10.5f0)
@@ -46,9 +46,9 @@ cba = function (;doplot=false) #callback function to observe training
   pred = predict_n_ode()
   display(sum(abs2,ode_data .- pred))
   # plot current prediction against data
-  pl = scatter(t,ode_data[1,:],label="data")
-  scatter!(pl,t,pred[1,:],label="prediction")
-  display(plot(pl))
+  #pl = scatter(t,ode_data[1,:],label="data")
+  #scatter!(pl,t,pred[1,:],label="prediction")
+  #display(plot(pl))
   return false
 end
 cba()
