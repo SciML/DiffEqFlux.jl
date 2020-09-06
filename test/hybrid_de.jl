@@ -1,4 +1,4 @@
-using DiffEqFlux, DifferentialEquations, Flux, Optim, Plots, DiffEqSensitivity
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, DiffEqSensitivity
 u0 = Float32[2.; 0.]
 datasize = 100
 tspan = (0.0f0,10.5f0)
