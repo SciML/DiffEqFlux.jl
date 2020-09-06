@@ -171,7 +171,8 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                                         0,
                                         true,
                                         NaN,
-                                        _time-t0)
+                                        _time-t0,
+                                        NamedTuple())
 end
 
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
@@ -387,5 +388,6 @@ function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;lower_boun
                                         0,
                                         true,
                                         NaN,
-                                        bboptre.elapsed_time)
+                                        bboptre.elapsed_time,
+                                        NamedTuple())
 end
