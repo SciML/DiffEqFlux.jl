@@ -140,11 +140,11 @@ end
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint(p) = loss_reduction(predict_adjoint(p))
 
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Newton())
+pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Newton(), maxiters = 100)
 loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
 
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, NewtonTrustRegion())
+pmin = DiffEqFlux.sciml_train(loss_adjoint, p, NewtonTrustRegion(), maxiters = 100)
 loss2 = loss_adjoint(pmin.minimizer)
 @test 10loss2 < loss1
 
