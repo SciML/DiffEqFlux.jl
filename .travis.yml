@@ -17,7 +17,7 @@ env:
   - GROUP=BasicNeuralDE
   - GROUP=AdvancedNeuralDE
   - GROUP=Integration
-  - GROUP=Hamiltonain
+  - GROUP=Newton
 notifications:
   email: false
 script: travis_wait 50 julia -e 'using Pkg; Pkg.build(); Pkg.test(coverage=false)'

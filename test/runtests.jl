@@ -37,10 +37,11 @@ end
 if GROUP == "All" || GROUP == "AdvancedNeuralDE"
     @safetestset "CNF Layer Tests" begin include("cnf_test.jl") end
     @safetestset "Neural Second Order ODE Tests" begin include("second_order_ode.jl") end
+    @safetestset "Neural Hamiltonian ODE Tests" begin include("hamiltonian_nn.jl") end
 end
 
-if GROUP == "All" || GROUP == "Hamiltonian"
-    @safetestset "Neural Hamiltonian ODE Tests" begin include("hamiltonian_nn.jl") end
+if GROUP == "All" || GROUP == "Newton"
+    @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
 end
 
 if GROUP == "All" || GROUP == "Integration"
@@ -48,7 +49,6 @@ if GROUP == "All" || GROUP == "Integration"
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
     @safetestset "Size Handling in Adjoint Tests" begin include("size_handling_adjoint.jl") end
     @safetestset "odenet" begin include("odenet.jl") end
-    @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
     @safetestset "GDP Regression Tests" begin include("gdp_regression_test.jl") end
     @safetestset "Stiff Nested AD Tests" begin include("stiff_nested_ad.jl") end
 end
