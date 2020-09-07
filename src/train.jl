@@ -181,7 +181,8 @@ decompose_trace(trace) = trace
 
 function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA;
                       cb = (args...) -> (false), maxiters = get_maxiters(data),
-                      diffmode = ZygoteDiffMode(), kwargs...)
+                      diffmode = ZygoteDiffMode(), allow_f_increases = false,
+                      kwargs...)
   local x, cur, state
   cur,state = iterate(data)
 
@@ -290,14 +291,18 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
   end
   Optim.optimize(optim_f, θ, opt,
            Optim.Options(;extended_trace=true,callback = _cb,
-                         f_calls_limit = maxiters, kwargs...))
+                         f_calls_limit = maxiters,
+                         allow_f_increases=allow_f_increases,
+                         kwargs...))
 end
 
 
 function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
                      data = DEFAULT_DATA;
                      lower_bounds, upper_bounds,
-                     cb = (args...) -> (false), maxiters = get_maxiters(data))
+                     cb = (args...) -> (false), maxiters = get_maxiters(data),
+                     allow_f_increases = false,
+                     kwargs...)
   local x, cur, state
   cur,state = iterate(data)
 
@@ -329,7 +334,8 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
 
   Optim.optimize(Optim.only_fg!(optim_fg!), lower_bounds, upper_bounds, θ, opt,
            Optim.Options(extended_trace=true,callback = _cb,
-                         f_calls_limit = maxiters))
+                         f_calls_limit = maxiters, allow_f_increases=allow_f_increases,
+                         kwargs...))
 end
 
 struct BBO

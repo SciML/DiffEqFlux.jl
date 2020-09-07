@@ -84,7 +84,8 @@ end
 ```julia
 result_univ = DiffEqFlux.sciml_train(loss_univ, θ,
                                      BFGS(initial_stepnorm = 0.01),
-                                     cb = callback)
+                                     cb = callback,
+                                     allow_f_increases = false)
 ```
 
 ```

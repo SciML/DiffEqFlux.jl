@@ -117,7 +117,7 @@ function loss(p)
 end
 ```
 
-Lastly, we use the `sciml_train` function to train the parameters using BFGS to
+Lastly, we use the `sciml_train` function to train the parameters using `ADAM` to
 arrive at parameters which optimize for our goal. `sciml_train` allows defining
 a callback that will be called at each step of our training loop. It takes in
 the current parameter vector and the returns of the last call to the loss

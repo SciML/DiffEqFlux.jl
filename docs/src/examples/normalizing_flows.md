@@ -72,7 +72,8 @@ We then complete the training using a different optimizer starting from where `A
 ```julia
 # Retrain using the LBFGS optimizer
 res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer,
-                                        LBFGS())
+                                        LBFGS(),
+                                        allow_f_increases = false)
 
 * Status: success
 
