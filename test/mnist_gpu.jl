@@ -1,13 +1,14 @@
 using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
 using Flux: logitcrossentropy
 using MLDatasets: MNIST
-using CuArrays
-CuArrays.allowscalar(false)
+using CUDA, Test
+CUDA.allowscalar(false)
 
 function loadmnist(batchsize = bs)
 	# Use MLDataUtils LabelEnc for natural onehot conversion
   	onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
 	# Load MNIST
+	MNIST.download(i_accept_the_terms_of_use=true)
 	imgs, labels_raw = MNIST.traindata();
 	# Process images into (H,W,C,BS) batches
 	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |> gpu
@@ -97,3 +98,4 @@ end
 
 # Train the NN-ODE and monitor the loss and weights.
 Flux.train!( loss, params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb )
+@test accuracy(m, zip(x_train,y_train)) > 0.8

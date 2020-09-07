@@ -1,11 +1,12 @@
-using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqSensitivity, DiffEqFlux, Zygote, Test, CuArrays
-CuArrays.allowscalar(false)
+using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqSensitivity, DiffEqFlux, Zygote, Test, CUDA
+CUDA.allowscalar(false)
 
 mp = Chain(Dense(2,2)) |> gpu
 x = Float32[2.; 0.] |> gpu
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.])) |> gpu
 tspan = (0.0f0,25.0f0)
 dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
+dudt_tracker = Chain(Dense(2,50,CUDA.tanh),Dense(50,2)) |> gpu
 
 NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)(x)
 NeuralODE(dudt,tspan,Tsit5(),saveat=0.1)(x)
@@ -24,7 +25,7 @@ grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @test ! iszero(grads[xs])
 @test ! iszero(grads[node.p])
 
-node = NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=TrackerAdjoint())
+node = NeuralODE(dudt_tracker,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=TrackerAdjoint())
 grads = Zygote.gradient(()->sum(Array(node(x))),Flux.params(x,node))
 @test ! iszero(grads[x])
 @test ! iszero(grads[node.p])
