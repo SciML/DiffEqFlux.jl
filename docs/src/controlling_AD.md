@@ -34,5 +34,5 @@ keyword argument `sensealg` to `solve`. The default choice is dependent
 on the type of differential equation and the choice of neural network architecture.
 
 The full listing of differentiation methods is described in the
-[DifferentialEquations.jl documentation](https://docs.sciml.ai/latest/analysis/sensitivity/#Sensitivity-Algorithms-1).
+[DifferentialEquations.jl documentation](https://diffeq.sciml.ai/latest/analysis/sensitivity/#Sensitivity-Algorithms-1).
 That page also has guidelines on how to make the right choice.

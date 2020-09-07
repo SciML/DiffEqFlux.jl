@@ -11,15 +11,16 @@ makedocs(
                              assets = ["assets/favicon.ico"],
                              canonical="https://diffeqflux.sciml.ai/stable/"),
     pages=[
-        "Home" => "index.md",
+        "DiffEqFlux.jl: Generalized Physics-Informed and Scientific Machine Learning (SciML)" => "index.md",
         "Tutorials" => Any[
             "examples/optimization_ode.md",
             "examples/optimization_sde.md",
             "examples/lotka_volterra.md",
-            "examples/delay_diffeq.md",
             "examples/neural_ode_sciml.md",
             "examples/neural_ode_flux.md",
             "examples/mnist_neural_ode.md",
+            "examples/delay_diffeq.md",
+            "examples/hybrid_diffeq.md",
             "examples/augmented_neural_ode.md",
             "examples/normalizing_flows.md",
             "examples/local_minima.md",
@@ -35,7 +36,8 @@ makedocs(
             "examples/universal_diffeq.md",
             "examples/minibatch.md",
             "examples/tensor_layer.md",
-            "examples/neural_gde.md"
+            "examples/neural_gde.md",
+            "examples/hamiltonian_nn.md"
         ],
         "Layers" => Any[
         "Classical Basis Layers" => "layers/BasisLayers.md",
@@ -43,6 +45,7 @@ makedocs(
         "Continuous Normalizing Flows Layer" => "layers/CNFLayer.md",
         "Spline Layer" => "layers/SplineLayer.md",
         "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
+        "Hamiltonian Neural Network Layer" => "layers/HamiltonianNN.md"
         ],
         "Controlling Choices of Adjoints" => "ControllingAdjoints.md",
         "Use with Flux Chain and train!" => "Flux.md",

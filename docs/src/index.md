@@ -1,4 +1,4 @@
-# DiffEqFlux
+# DiffEqFlux: Generalized Physics-Informed and Scientific Machine Learning (SciML)
 
 DiffEqFlux.jl is not just for neural ordinary differential equations.
 DiffEqFlux.jl is for universal differential equations, where these can include
@@ -26,18 +26,25 @@ post](https://julialang.org/blog/2019/01/fluxdiffeq) (which we try to keep
 updated for changes to the libraries). Additional demonstrations, like neural
 PDEs and neural jump SDEs, can be found [at this blog
 post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
-(among many others!).
+(among many others!). All of these features are only part of the advantage, as this library
+[routinely benchmarks orders of magnitude faster than competing libraries like torchdiffeq](@ref Benchmarks)
 
 Many different training techniques are supported by this package, including:
 
 - Optimize-then-discretize (backsolve adjoints, checkpointed adjoints, quadrature adjoints)
 - Discretize-then-optimize (forward and reverse mode discrete sensitivity analysis)
-  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://docs.sciml.ai/latest/solvers/ode_solve/)
+  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
+- Probabilistic programming and variational inference on ODEs/SDEs/DAEs/DDEs/hybrid
+  equations etc. is provided by integration with [Turing.jl](https://turing.ml/dev/)
+  and [Gen.jl](https://github.com/probcomp/Gen.jl). Reproduce
+  [variational loss functions](https://arxiv.org/abs/2001.01328) by plugging
+  [composible libraries together](https://turing.ml/dev/tutorials/9-variationalinference/).
 
-For more details on the adjoint sensitivity analysis methods for computing
-fast gradients, see the [Adjoints page](@ref adjoints).
+all while mixing forward mode and reverse mode approaches as appropriate for the
+most speed. For more details on the adjoint sensitivity analysis methods for
+computing fast gradients, see the [Adjoints page](@ref adjoints).
 
 With this package, you can explore various ways to integrate the two methodologies:
 
@@ -50,8 +57,8 @@ With this package, you can explore various ways to integrate the two methodologi
 ## Basics
 
 The basics are all provided by the
-[DifferentialEquations.jl](https://docs.sciml.ai/latest/) package. Specifically,
-[the `solve` function is automatically compatible with AD systems like Zygote.jl](https://docs.sciml.ai/latest/analysis/sensitivity/)
+[DifferentialEquations.jl](https://diffeq.sciml.ai/latest/) package. Specifically,
+[the `solve` function is automatically compatible with AD systems like Zygote.jl](https://diffeq.sciml.ai/latest/analysis/sensitivity/)
 and thus there is no machinery that is necessary to use DifferentialEquations.jl
 package. For example, the following computes the solution to an ODE and computes
 the gradient of a loss function (the sum of the ODE's output at each timepoint

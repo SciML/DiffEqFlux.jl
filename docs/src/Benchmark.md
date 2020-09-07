@@ -1,16 +1,27 @@
 # Benchmarks
 
-## Vs Torchdiffeq on small ODEs
+## Vs Torchdiffeq 1 million and less ODEs
 
-A raw ODE solver benchmark showcases [a 30,000x performance advantage over
-torchdiffeq on small
-ODEs](https://gist.github.com/ChrisRackauckas/cc6ac746e2dfd285c28e0584a2bfd320).
+A raw ODE solver benchmark showcases [>30x performance advantage for DifferentialEquations.jl](https://gist.github.com/ChrisRackauckas/cc6ac746e2dfd285c28e0584a2bfd320)
+for ODEs ranging in size from 3 to nearly 1 million.
+
+## Vs Torchdiffeq on neural ODE training
+
+A training benchmark using the sprial ODE from the original neural ODE paper
+[demonstrates a 100x performance advantage for DiffEqFlux in training neural ODEs](https://gist.github.com/ChrisRackauckas/4a4d526c15cc4170ce37da837bfc32c4).
+
+## Vs torchsde on small SDEs
+
+Using the code from torchsde's README we demonstrated a [>70,000x performance
+advantage over torchsde](https://gist.github.com/ChrisRackauckas/6a03e7b151c86b32d74b41af54d495c6).
+Further benchmarking is planned but was found to be computationally infeasible
+for the time being.
 
 ## A bunch of adjoint choices on neural ODEs
 
 Quick summary:
 
-- `BacksolveAdjoint` is the fastest (but use with caution!); about 25% faster
+- `BacksolveAdjoint` can be the fastest (but use with caution!); about 25% faster
 - Using `ZygoteVJP` is faster than other vjp choices with FastDense due to the overloads
 
 ```julia

@@ -8,7 +8,7 @@
 
 DiffEqFlux.jl fuses the world of differential equations with machine learning
 by helping users put diffeq solvers into neural networks. This package utilizes
-[DifferentialEquations.jl](http://docs.sciml.ai/dev/) and
+[DifferentialEquations.jl](http://diffeq.sciml.ai/dev/) and
 [Flux.jl](https://fluxml.ai/) as its building blocks to support research in
 [Scientific Machine Learning](http://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/),
 specifically neural differential equations and universal differential equations,
@@ -60,4 +60,4 @@ explore various ways to integrate the two methodologies:
 - ODEs can be defined where some terms are neural networks
 - Cost functions on ODEs can define neural networks
 
-![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
+![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)

@@ -4,7 +4,9 @@ using DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, Distributions, Forwar
       Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Optim,
       StaticArrays, Base.Iterators, Printf, BlackBoxOptim, Zygote
 
+using DistributionsAD
 import ProgressLogging, ZygoteRules, ReverseDiff
+import ConsoleProgressMonitor, TerminalLoggers, LoggingExtras
 
 import Logging
 
@@ -54,16 +56,16 @@ end
 
 # ForwardDiff integration
 
-ZygoteRules.@adjoint function ForwardDiff.Dual{T}(x, ẋ::Tuple) where T
-  @assert length(ẋ) == 1
-  ForwardDiff.Dual{T}(x, ẋ), ḋ -> (ḋ.partials[1], (ḋ.value,))
+ZygoteRules.@adjoint function ForwardDiff.Dual{T}(x, ẋ::Tuple) where T
+  @assert length(ẋ) == 1
+  ForwardDiff.Dual{T}(x, ẋ), ḋ -> (ḋ.partials[1], (ḋ.value,))
 end
 
 ZygoteRules.@adjoint ZygoteRules.literal_getproperty(d::ForwardDiff.Dual{T}, ::Val{:partials}) where T =
-  d.partials, ṗ -> (ForwardDiff.Dual{T}(ṗ[1], 0),)
+  d.partials, ṗ -> (ForwardDiff.Dual{T}(ṗ[1], 0),)
 
 ZygoteRules.@adjoint ZygoteRules.literal_getproperty(d::ForwardDiff.Dual{T}, ::Val{:value}) where T =
-  d.value, ẋ -> (ForwardDiff.Dual{T}(0, ẋ),)
+  d.value, ẋ -> (ForwardDiff.Dual{T}(0, ẋ),)
 
 ZygoteRules.@adjoint ZygoteRules.literal_getproperty(A::Tridiagonal, ::Val{:dl}) = A.dl,y -> Tridiagonal(dl,zeros(length(d)),zeros(length(du)),)
 ZygoteRules.@adjoint ZygoteRules.literal_getproperty(A::Tridiagonal, ::Val{:d}) = A.d,y -> Tridiagonal(zeros(length(dl)),d,zeros(length(du)),)
@@ -79,9 +81,11 @@ include("spline_layer.jl")
 include("tensor_product_basis.jl")
 include("tensor_product_layer.jl")
 include("collocation.jl")
+include("hnn.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
-export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer
+export DeterministicCNF, FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
+export HamiltonianNN
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
 export neural_ode, neural_ode_rd
 export neural_dmsde

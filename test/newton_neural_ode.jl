@@ -1,12 +1,19 @@
-using DiffEqFlux, Flux, Optim, OrdinaryDiffEq
+using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, Test
 
-n = 5  # number of ODEs
+n = 2  # number of ODEs
 tspan = (0.0, 1.0)
 
 d = 5  # number of data pairs
-x_data = rand(n, 5)
-y_data = rand(n, 5)
-training_data = Iterators.cycle([(x_data[:, i], y_data[:, i]) for i in 1:d])
+x = rand(n, 5)
+y = rand(n, 5)
+
+cb = function (p,l)
+  @show l
+  false
+end
+
+using Random
+Random.seed!(100)
 
 NN = Chain(Dense(n, 10n, tanh),
            Dense(10n, n))
@@ -14,9 +21,14 @@ NN = Chain(Dense(n, 10n, tanh),
 @info "ROCK4"
 nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
-loss_function(θ, x, y) = Flux.mse(y, nODE(x, θ))
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), training_data)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), training_data)
+loss_function(θ) = Flux.mse(y, nODE(x, θ))
+l1 = loss_function(nODE.p)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1
 
 NN = FastChain(FastDense(n, 10n, tanh),
                FastDense(10n, n))
@@ -24,13 +36,23 @@ NN = FastChain(FastDense(n, 10n, tanh),
 @info "ROCK2"
 nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1e-4, saveat=[tspan[end]])
 
-loss_function(θ, x, y) = Flux.mse(y, nODE(x, θ))
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), training_data)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), training_data)
+loss_function(θ) = Flux.mse(y, nODE(x, θ))
+l1 = loss_function(nODE.p)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1
 
 @info "ROCK4"
 nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
-loss_function(θ, x, y) = Flux.mse(y, nODE(x, θ))
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), training_data)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), training_data)
+loss_function(θ) = Flux.mse(y, nODE(x, θ))
+l1 = loss_function(nODE.p)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 200, cb=cb)
+@test 10loss_function(res.minimizer) < l1

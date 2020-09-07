@@ -36,10 +36,31 @@ struct TrackerDiffMode <: DiffMode end
 struct ReverseDiffMode <: DiffMode end
 struct ZygoteDiffMode <: DiffMode end
 
+maybe_with_logger(f, logger) = logger === nothing ? f() : Logging.with_logger(f, logger)
+
+function default_logger(logger)
+  Logging.min_enabled_level(logger) ≤ ProgressLogging.ProgressLevel && return nothing
+
+  if Sys.iswindows() || (isdefined(Main, :IJulia) && Main.IJulia.inited)
+    progresslogger = ConsoleProgressMonitor.ProgressLogger()
+  else
+    progresslogger = TerminalLoggers.TerminalLogger()
+  end
+
+  logger1 = LoggingExtras.EarlyFilteredLogger(progresslogger) do log
+    log.level == ProgressLogging.ProgressLevel
+  end
+  logger2 = LoggingExtras.EarlyFilteredLogger(logger) do log
+    log.level != ProgressLogging.ProgressLevel
+  end
+
+  LoggingExtras.TeeLogger(logger1, logger2)
+end
+
 macro withprogress(progress, exprs...)
   quote
     if $progress
-      $DiffEqBase.maybe_with_logger($DiffEqBase.default_logger($Logging.current_logger())) do
+      $maybe_with_logger($default_logger($Logging.current_logger())) do
         $ProgressLogging.@withprogress $(exprs...)
       end
     else
@@ -150,7 +171,8 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                                         0,
                                         true,
                                         NaN,
-                                        _time-t0)
+                                        _time-t0,
+                                        NamedTuple())
 end
 
 decompose_trace(trace::Optim.OptimizationTrace) = last(trace)
@@ -366,5 +388,6 @@ function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;lower_boun
                                         0,
                                         true,
                                         NaN,
-                                        bboptre.elapsed_time)
+                                        bboptre.elapsed_time,
+                                        NamedTuple())
 end

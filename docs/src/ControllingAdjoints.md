@@ -3,7 +3,7 @@
 DiffEqFlux is capable of training neural networks embedded inside of
 differential equations with many different techniques. For all of the
 details, see the
-[DifferentialEquations.jl local sensitivity analysis](https://docs.sciml.ai/latest/analysis/sensitivity/)
+[DifferentialEquations.jl local sensitivity analysis](https://diffeq.sciml.ai/latest/analysis/sensitivity/)
 documentation. Here we will summarize these methodologies in the
 context of neural differential equations and scientific machine learning.
 
@@ -20,7 +20,7 @@ sets the adjoint sensitivity analysis so that, when this call is
 encountered in the gradient calculation of any of the Julia reverse-mode
 AD frameworks, the differentiation will be replaced with the `BacksolveAdjoint`
 method where internal vector-Jacobian products are performed using
-Zygote.jl. From the [DifferentialEquations.jl local sensitivity analysis](https://docs.sciml.ai/latest/analysis/sensitivity/)
+Zygote.jl. From the [DifferentialEquations.jl local sensitivity analysis](https://diffeq.sciml.ai/latest/analysis/sensitivity/)
 page, we note that the following choices for `sensealg` exist:
 
 - `BacksolveAdjoint`
@@ -114,7 +114,7 @@ practice.
 
 To avoid the issues of backwards solving the ODE, `InterpolatingAdjoint`
 and `QuadratureAdjoint` utilize information from the forward pass.
-By default these methods utilize the [continuous solution](https://docs.sciml.ai/latest/basics/solution/#Interpolations-1)
+By default these methods utilize the [continuous solution](https://diffeq.sciml.ai/latest/basics/solution/#Interpolations-1)
 provided by DifferentialEquations.jl in the calculations of the
 adjoint pass. `QuadratureAdjoint` uses this to build a continuous
 function for the solution of adjoint equation and then performs an
