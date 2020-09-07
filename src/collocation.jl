@@ -93,7 +93,7 @@ end
 
 function construct_w(t,tpoints,h,kernel)
     W = @. calckernel((kernel,),(tpoints-t)/h)/h
-    Matrix(Diagonal(W))
+    Diagonal(W)
 end
 
 
