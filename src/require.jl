@@ -95,7 +95,8 @@ function __init__()
                                                     0,
                                                     ret,
                                                     NaN,
-                                                    _time-t0,)
+                                                    _time-t0,
+                                                    NamedTuple())
         end
 
         function sciml_train(loss, θ, opt::NLopt.Opt, lower_bounds, upper_bounds, data = DEFAULT_DATA; maxeval=100, nstart=1)
@@ -159,7 +160,8 @@ function __init__()
                                                     0,
                                                     ret,
                                                     NaN,
-                                                    _time-t0,)
+                                                    _time-t0,
+                                                    NamedTuple())
         end
     end
 
@@ -209,7 +211,8 @@ function __init__()
                                                 0,
                                                 true,
                                                 NaN,
-                                                t1 - t0)
+                                                t1 - t0,
+                                                NamedTuple())
         end
     end
     @require QuadDIRECT = "dae52e8d-d666-5120-a592-9e15c33b8d7a" begin
@@ -258,7 +261,8 @@ function __init__()
                                                 0,
                                                 true,
                                                 NaN,
-                                                t1 - t0)
+                                                t1 - t0,
+                                                NamedTuple())
         end
     end
 end
