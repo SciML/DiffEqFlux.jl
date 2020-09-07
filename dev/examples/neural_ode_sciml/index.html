@@ -47,7 +47,8 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
 result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
                                            result_neuralode.minimizer,
                                            LBFGS(),
-                                           cb = callback)</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif" alt="Neural ODE"/></p><h2 id="Explanation-1"><a class="docs-heading-anchor" href="#Explanation-1">Explanation</a><a class="docs-heading-anchor-permalink" href="#Explanation-1" title="Permalink"></a></h2><p>Let&#39;s get a time series array from the Lotka-Volterra equation as data:</p><pre><code class="language-julia">using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+                                           cb = callback,
+                                           allow_f_increases = false)</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif" alt="Neural ODE"/></p><h2 id="Explanation-1"><a class="docs-heading-anchor" href="#Explanation-1">Explanation</a><a class="docs-heading-anchor-permalink" href="#Explanation-1" title="Permalink"></a></h2><p>Let&#39;s get a time series array from the Lotka-Volterra equation as data:</p><pre><code class="language-julia">using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 30
@@ -109,11 +110,12 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
    Seconds run:   5  (vs limit Inf)
    Iterations:    300
    f(x) calls:    300
-   ∇f(x) calls:   300</code></pre><p>We then complete the training using a different optimizer starting from where <code>ADAM</code> stopped.</p><pre><code class="language-julia"># Retrain using the LBFGS optimizer
+   ∇f(x) calls:   300</code></pre><p>We then complete the training using a different optimizer starting from where <code>ADAM</code> stopped. We do <code>allow_f_increases=false</code> to make the optimization automatically halt when near the minimum.</p><pre><code class="language-julia"># Retrain using the LBFGS optimizer
 result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
                                            result_neuralode.minimizer,
                                            LBFGS(),
-                                           cb = callback)
+                                           cb = callback,
+                                           allow_f_increases = false)
 
 * Status: success
 
@@ -194,4 +196,5 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, pinit,
 result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
                                            result_neuralode.minimizer,
                                            LBFGS(),
-                                           cb = callback)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lotka_volterra/">« Lotka-Volterra with Flux.train!</a><a class="docs-footer-nextpage" href="../neural_ode_flux/">Neural Ordinary Differential Equations with Flux.train! »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 7 September 2020 16:25">Monday 7 September 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+                                           cb = callback,
+                                           allow_f_increases = false)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lotka_volterra/">« Lotka-Volterra with Flux.train!</a><a class="docs-footer-nextpage" href="../neural_ode_flux/">Neural Ordinary Differential Equations with Flux.train! »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 7 September 2020 17:52">Monday 7 September 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
