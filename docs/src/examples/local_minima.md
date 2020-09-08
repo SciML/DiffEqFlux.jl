@@ -5,9 +5,25 @@ there are many strategies to avoid local minima:
 
 1. Insert stochasticity into the loss function through minibatching
 2. Weigh the loss function to allow for fitting earlier portions first
-3. Iteratively grow the fit
+3. Changing the optimizers to `allow_f_increases`
+4. Iteratively grow the fit
 
-In this example we will show how to use strategy (3) in order to increase the
+## `allow_f_increases=true`
+
+With Optim.jl optimizers, you can set `allow_f_increases=true` in order to let
+increases in the loss function not cause an automatic halt of the optimization
+process. Using a method like BFGS or NewtonTrustRegion is not guaranteed to
+have monotonic convergence and so this can stop early exits which can result
+in local minima. This looks like:
+
+```julia
+pmin = DiffEqFlux.sciml_train(loss_neuralode, pstart, NewtonTrustRegion(), cb=cb,
+                              maxiters = 200, allow_f_increases = true)
+```
+
+## Iterative Growing Of Fits to Reduce
+
+In this example we will show how to use strategy (4) in order to increase the
 robustness of the fit. Let's start with the same neural ODE example we've used
 before except with one small twist: we wish to find the neural ODE that fits
 on `(0,5.0)`. Naively, we use the same training strategy as before:
