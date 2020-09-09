@@ -76,7 +76,7 @@ function (n::NeuralODE)(x,p=n.p)
     solve(prob,n.args...;sense=sense,n.kwargs...)
 end
 
-function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
+function (n::NeuralODE{M})(x,p=n.p) where {M<:Union{FastChain,TensorLayer}}
     dudt_(u,p,t) = n.model(u,p)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,n.tspan,p)
