@@ -75,11 +75,11 @@ ZygoteRules.@adjoint Tridiagonal(dl, d, du) = Tridiagonal(dl, d, du), p̄ -> (di
 include("ffjord.jl")
 include("train.jl")
 include("fast_layers.jl")
+include("tensor_product_basis.jl")
+include("tensor_product_layer.jl")
 include("neural_de.jl")
 include("require.jl")
 include("spline_layer.jl")
-include("tensor_product_basis.jl")
-include("tensor_product_layer.jl")
 include("collocation.jl")
 include("hnn.jl")
 

@@ -59,6 +59,13 @@ struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
             typeof(tspan),typeof(args),typeof(kwargs)}(
             model,p,re,tspan,args,kwargs)
     end
+
+    function NeuralODE(model::TensorLayer,tspan,args...;p = model.p,kwargs...)
+        re = nothing
+        new{typeof(model),typeof(p),typeof(re),
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+            model,p,re,tspan,args,kwargs)
+    end
 end
 
 function (n::NeuralODE)(x,p=n.p)
