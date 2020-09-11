@@ -105,6 +105,14 @@ struct FFJORD{M,P,RE,Distribution,T,A,K} <: CNFLayer
     end
 end
 
+function _norm_batched(x::AbstractMatrix)
+    res = similar(x, 1, size(x, 2))
+    for i in 1:size(x, 2)
+        res[1, i] = norm(@view x[:, i])
+    end
+    return res
+end
+
 function jacobian_fn(f, x::AbstractVector)
    y::AbstractVector, back = Zygote.pullback(f, x)
    ȳ(i) = [i == j for j = 1:length(y)]
@@ -120,34 +128,21 @@ function cnf(du,u,p,t,re)
     du[end] = -trace_jac
 end
 
-function ffjord(du,u,p,t,re,e,monte_carlo,regularize)
+function ffjord(u,p,t,re,e,regularize,monte_carlo)
     m = re(p)
     if regularize
-        z = @view u[1:end-3]
-        _, back = Zygote.pullback(m,z)
+        z = u[1:end - 3, :]
+        mz, back = Zygote.pullback(m, z)
         eJ = back(e)[1]
-        if monte_carlo
-            trace_jac = (eJ.*e)[1]
-        else
-            J = jacobian_fn(m, z)
-            trace_jac = length(z) == 1 ? sum(J) : tr(J)
-        end
-        du[1:end-3] = m(z)
-        du[end-2] = -trace_jac
-        du[end-1] = sum(abs2, m(z))
-        du[end] = norm(eJ)^2
+        trace_jac = sum(eJ .* e, dims = 1)
+        return cat(mz, -trace_jac, sum(abs2, mz, dims=1),
+                   _norm_batched(eJ), dims = 1)
     else
-        z = @view u[1:end-1]
-        _, back = Zygote.pullback(m,z)
+        z = u[1:end - 1, :]
+        mz, back = Zygote.pullback(m, z)
         eJ = back(e)[1]
-        if monte_carlo
-            trace_jac = (eJ.*e)[1]
-        else
-            J = jacobian_fn(m, z)
-            trace_jac = length(z) == 1 ? sum(J) : tr(J)
-        end
-        du[1:end-1] = m(z)
-        du[end] = -trace_jac
+        trace_jac = sum(eJ .* e, dims = 1)
+        return cat(mz, -trace_jac, dims = 1)
     end
 end
 
@@ -164,29 +159,36 @@ function (n::DeterministicCNF)(x,p=n.p)
     return logpx[1]
 end
 
-function (n::FFJORD)(x,p=n.p,regularize=false,monte_carlo=true)
-    e = randn(Float32,length(x))
+# When running on GPU e needs to be passed separately
+function (n::FFJORD)(x,p=n.p,regularize=false,e=randn(eltype(x),size(x)),
+                     monte_carlo=true)
+    # TODO: Extend the code to world for non monte carlo
+    @assert monte_carlo
     pz = n.basedist
-    sense = InterpolatingAdjoint(autojacvec = false)
+    sense = InterpolatingAdjoint()
+    ffjord_ = (u, p, t) -> ffjord(u, p, t, n.re, e, regularize)
     if regularize
-        ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo,regularize)
-        prob = ODEProblem{true}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
-        pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
-        z = pred[1:end-3]
-        delta_logp = pred[end-2]
-        λ₁ = pred[end-1]
-        λ₂ =  pred[end]
-        logpz = logpdf(pz, z)
-        logpx = logpz .- delta_logp
-        return logpx[1], λ₁, λ₂
+        _z = Zygote.@ignore similar(x, 3, size(x, 2))
+        Zygote.@ignore fill!(_z, 0.0f0)
+        prob = ODEProblem{false}(ffjord_, vcat(x, _z), n.tspan, p)
+        pred = solve(prob, n.args...; sensealg = sense, n.kwargs...)[:, :, end]
+        z = pred[1:end - 3, :]
+        delta_logp = reshape(pred[end - 2, :], 1, size(pred, 2))
+        λ₁ = pred[end - 1, :]
+        λ₂ = pred[end, :]
     else
-        ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo,regularize)
-        prob = ODEProblem{true}(ffjord_,vcat(x,0f0),n.tspan,p)
-        pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
-        z = pred[1:end-1]
-        delta_logp = pred[end]
-        logpz = logpdf(pz, z)
-        logpx = logpz .- delta_logp
-        return logpx[1]
+        _z = Zygote.@ignore similar(x, 1, size(x, 2))
+        Zygote.@ignore fill!(_z, 0.0f0)
+        prob = ODEProblem{false}(ffjord_, vcat(x, _z), n.tspan, p)
+        pred = solve(prob, n.args...; sensealg = sense, n.kwargs...)[:, :, end]
+        z = pred[1:end - 1, :]
+        delta_logp = reshape(pred[end, :], 1, size(pred, 2))
+        λ₁ = λ₂ = _z[1, :]
     end
+
+    # logpdf promotes the type to Float64 by default
+    logpz = eltype(x).(reshape(logpdf(pz, z), 1, size(x, 2)))
+    logpx = logpz .- delta_logp
+
+    return logpx, λ₁, λ₂
 end
