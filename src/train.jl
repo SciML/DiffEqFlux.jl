@@ -188,7 +188,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
 
   function _cb(trace)
     if typeof(opt) <: NelderMead
-      cur_l = decompose_trace(trace).metadata["x_centroid"]
+      cur_l = decompose_trace(trace).metadata["centroid"]
     else
       cur_l = decompose_trace(trace).metadata["x"]
     end
