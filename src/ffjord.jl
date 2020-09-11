@@ -166,7 +166,7 @@ function (n::FFJORD)(x,p=n.p,regularize=false,e=randn(eltype(x),size(x)),
     @assert monte_carlo
     pz = n.basedist
     sense = InterpolatingAdjoint()
-    ffjord_ = (u, p, t) -> ffjord(u, p, t, n.re, e, regularize)
+    ffjord_ = (u, p, t) -> ffjord(u, p, t, n.re, e, regularize, monte_carlo)
     if regularize
         _z = Zygote.@ignore similar(x, 3, size(x, 2))
         Zygote.@ignore fill!(_z, 0.0f0)
