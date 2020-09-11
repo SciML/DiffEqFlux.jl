@@ -187,7 +187,12 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
   cur,state = iterate(data)
 
   function _cb(trace)
-    cb_call = cb(decompose_trace(trace).metadata["x"],x...)
+    if typeof(opt) <: NelderMead
+      cur_l = decompose_trace(trace).metadata["x_centroid"]
+    else
+      cur_l = decompose_trace(trace).metadata["x"]
+    end
+    cb_call = cb(cur_l,x...)
     if !(typeof(cb_call) <: Bool)
       error("The callback should return a boolean `halt` for whether to stop the optimization process. Please see the sciml_train documentation for information.")
     end
