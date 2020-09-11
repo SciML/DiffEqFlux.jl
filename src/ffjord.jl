@@ -149,7 +149,7 @@ end
 function (n::DeterministicCNF)(x,p=n.p)
     cnf_ = (u,p,t)->cnf(u,p,t,n.re)
     prob = ODEProblem{false}(cnf_,vcat(x,0f0),n.tspan,p)
-    sense = InterpolatingAdjoint(autojacvec = false)
+    sense = InterpolatingAdjoint(autojacvec = ReverseDiffVJP())
     pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
     pz = n.basedist
     z = pred[1:end-1]
@@ -162,7 +162,7 @@ end
 function (n::FFJORD)(x,p=n.p,regularize=false,monte_carlo=true)
     e = randn(Float32,length(x))
     pz = n.basedist
-    sense = InterpolatingAdjoint(autojacvec = false)
+    sense = InterpolatingAdjoint(autojacvec = ReverseDiffVJP())
     if regularize
         ffjord_ = (u,p,t)->ffjord(u,p,t,n.re,e,monte_carlo,regularize)
         prob = ODEProblem{false}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
