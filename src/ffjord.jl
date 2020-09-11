@@ -111,16 +111,15 @@ function jacobian_fn(f, x::AbstractVector)
    vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
  end
 
-function cnf(du,u,p,t,re)
+function cnf(u,p,t,re)
     z = @view u[1:end-1]
     m = re(p)
     J = jacobian_fn(m, z)
     trace_jac = length(z) == 1 ? sum(J) : tr(J)
-    du[1:end-1] = m(z)
-    du[end] = -trace_jac
+    [m(z),-trace_jac]
 end
 
-function ffjord(du,u,p,t,re,e,monte_carlo,regularize)
+function ffjord(u,p,t,re,e,monte_carlo,regularize)
     m = re(p)
     if regularize
         z = @view u[1:end-3]
@@ -132,10 +131,7 @@ function ffjord(du,u,p,t,re,e,monte_carlo,regularize)
             J = jacobian_fn(m, z)
             trace_jac = length(z) == 1 ? sum(J) : tr(J)
         end
-        du[1:end-3] = m(z)
-        du[end-2] = -trace_jac
-        du[end-1] = sum(abs2, m(z))
-        du[end] = norm(eJ)^2
+        [m(z);-trace_jac;sum(abs2, m(z));norm(eJ)^2]
     else
         z = @view u[1:end-1]
         _, back = Zygote.pullback(m,z)
@@ -146,14 +142,13 @@ function ffjord(du,u,p,t,re,e,monte_carlo,regularize)
             J = jacobian_fn(m, z)
             trace_jac = length(z) == 1 ? sum(J) : tr(J)
         end
-        du[1:end-1] = m(z)
-        du[end] = -trace_jac
+        [m(z);-trace_jac]
     end
 end
 
 function (n::DeterministicCNF)(x,p=n.p)
-    cnf_ = (du,u,p,t)->cnf(du,u,p,t,n.re)
-    prob = ODEProblem{true}(cnf_,vcat(x,0f0),n.tspan,p)
+    cnf_ = (u,p,t)->cnf(u,p,t,n.re)
+    prob = ODEProblem{false}(cnf_,vcat(x,0f0),n.tspan,p)
     sense = InterpolatingAdjoint(autojacvec = false)
     pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
     pz = n.basedist
@@ -169,8 +164,8 @@ function (n::FFJORD)(x,p=n.p,regularize=false,monte_carlo=true)
     pz = n.basedist
     sense = InterpolatingAdjoint(autojacvec = false)
     if regularize
-        ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo,regularize)
-        prob = ODEProblem{true}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
+        ffjord_ = (u,p,t)->ffjord(u,p,t,n.re,e,monte_carlo,regularize)
+        prob = ODEProblem{false}(ffjord_,vcat(x,0f0,0f0,0f0),n.tspan,p)
         pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
         z = pred[1:end-3]
         delta_logp = pred[end-2]
@@ -180,8 +175,8 @@ function (n::FFJORD)(x,p=n.p,regularize=false,monte_carlo=true)
         logpx = logpz .- delta_logp
         return logpx[1], λ₁, λ₂
     else
-        ffjord_ = (du,u,p,t)->ffjord(du,u,p,t,n.re,e,monte_carlo,regularize)
-        prob = ODEProblem{true}(ffjord_,vcat(x,0f0),n.tspan,p)
+        ffjord_ = (u,p,t)->ffjord(u,p,t,n.re,e,monte_carlo,regularize)
+        prob = ODEProblem{false}(ffjord_,vcat(x,0f0),n.tspan,p)
         pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
         z = pred[1:end-1]
         delta_logp = pred[end]
