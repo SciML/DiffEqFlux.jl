@@ -99,23 +99,24 @@ learned_pdf = [exp(cnf_test(r, θopt)) for r in data_validate]
 ###
 
 nn = Chain(Dense(1, 1, tanh))
-data_train = [Float32(rand(Beta(7,7))) for i in 1:100]
+data_train = Float32.(rand(Beta(7,7), 1, 100))
 tspan = (0.0,10.0)
 ffjord_test = FFJORD(nn,tspan,Tsit5())
 
 function loss_adjoint(θ)
-    logpx = [-ffjord_test(x,θ,true)[1] + 0.1*(ffjord_test(x,θ,true)[2]+ffjord_test(x,θ,true)[3]) for x in data_train]
-    loss = mean(logpx)
+    logpx, λ₁, λ₂ = ffjord_test(data_train,θ,true)
+    return mean(@. -logpx + 0.1 * λ₁ + λ₂)
 end
-res = DiffEqFlux.sciml_train(loss_adjoint, 0.01.*ffjord_test.p,
-                                        ADAM(0.01), cb=cb,
-                                        maxiters = 100)
+
+res = DiffEqFlux.sciml_train(loss_adjoint, 0.01f0 .* ffjord_test.p,
+                             ADAM(0.01), cb = cb,
+                             maxiters = 100)
 
 
 θopt = res.minimizer
-data_validate = [Float32(rand(Beta(7,7))) for i in 1:100]
+data_validate = Float32.(rand(Beta(7,7), 1, 100))
 actual_pdf = [pdf(Beta(7,7),r) for r in data_validate]
 #use direct trace calculation for predictions
-learned_pdf = [exp(ffjord_test(r,θopt,false,false)[1]) for r in data_validate]
+learned_pdf = exp.(ffjord_test(data_validate,θopt,false,randn(Float32,size(data_validate)),false)[1])
 
 @test totalvariation(learned_pdf, actual_pdf)/100 < 0.25
