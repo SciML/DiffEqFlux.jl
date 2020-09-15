@@ -130,11 +130,17 @@ function collocate_data(data,tpoints,kernel=TriangularKernel())
   n = length(tpoints)
   h = (n^(-1/5))*(n^(-3/35))*((log(n))^(-1/16))
 
+  Wd = similar(data, n, size(data,1))
+  WT1 = similar(data, n, 2)
+  WT2 = similar(data, n, 3)
   x = map(tpoints) do _t
       T1 = construct_t1(_t,tpoints)
       T2 = construct_t2(_t,tpoints)
       W = construct_w(_t,tpoints,h,kernel)
-      e2'*inv(T2'*W*T2)T2'*W*data',e1'*inv(T1'*W*T1)*T1'*W*data'
+      mul!(Wd,W,data')
+      mul!(WT1,W,T1)
+      mul!(WT2,W,T2)
+      (e2'*((T2'*WT2)\T2'))*Wd,(e1'*((T1'*WT1)\T1'))*Wd
   end
   estimated_derivative = reduce(hcat,transpose.(first.(x)))
   estimated_solution = reduce(hcat,transpose.(last.(x)))
