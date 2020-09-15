@@ -12,6 +12,9 @@ of the dynamics' jacobian. At a high level this corresponds to the following ste
 2. Use the transformation of variables formula to predict the density p_x as a function of the density p_z and the trace of the Jacobian of f;
 3. Choose the parameter θ to minimize a loss function of p_x (usually the negative likelihood of the data);
 
+!!!note
+    This layer has been deprecated in favor of `FFJORD`. Use FFJORD with `monte_carlo = false` instead.
+
 After these steps one may use the NN model and the learned θ to predict the density p_x for new values of x.
 
 ```julia
@@ -48,9 +51,33 @@ struct DeterministicCNF{M,P,RE,Distribution,T,A,K} <: CNFLayer
             size_input = size(model[1].W)[2]
             basedist = MvNormal(zeros(size_input), I + zeros(size_input,size_input))
         end
+        @warn("This layer has been deprecated in favor of `FFJORD`. Use FFJORD with `monte_carlo = false` instead.")
         new{typeof(model),typeof(p),typeof(re),typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
             model,p,re,basedist,tspan,args,kwargs)
     end
+end
+
+# FIXME: To be removed in future releases
+function cnf(du,u,p,t,re)
+    z = @view u[1:end-1]
+    m = re(p)
+    J = jacobian_fn(m, z)
+    trace_jac = length(z) == 1 ? sum(J) : tr(J)
+    du[1:end-1] = m(z)
+    du[end] = -trace_jac
+end
+
+function (n::DeterministicCNF)(x,p=n.p)
+    cnf_ = (du,u,p,t)->cnf(du,u,p,t,n.re)
+    prob = ODEProblem{true}(cnf_,vcat(x,0f0),n.tspan,p)
+    sense = InterpolatingAdjoint(autojacvec = false)
+    pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
+    pz = n.basedist
+    z = pred[1:end-1]
+    delta_logp = pred[end]
+    logpz = logpdf(pz, z)
+    logpx = logpz .- delta_logp
+    return logpx[1]
 end
 
 """
@@ -117,22 +144,13 @@ function jacobian_fn(f, x::AbstractMatrix)
     y, back = Zygote.pullback(f, x)
     z = Zygote.@ignore similar(y)
     Zygote.@ignore fill!(z, zero(eltype(x)))
-    vec = Vector(undef, size(y, 1))
+    vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
     for i in 1:size(y, 1)
         Zygote.@ignore z[i, :] .+= one(eltype(x))
-        vec[i] = reshape(back(z)[1], 1, size(x)...)
+        vec[i, :, :] = back(z)[1]
     end
-    return vcat(vec...)
+    return copy(vec)
  end
-
-function cnf(du,u,p,t,re)
-    z = @view u[1:end-1]
-    m = re(p)
-    J = jacobian_fn(m, z)
-    trace_jac = length(z) == 1 ? sum(J) : tr(J)
-    du[1:end-1] = m(z)
-    du[end] = -trace_jac
-end
 
 _trace_batched(x::AbstractArray{T, 3}) where T =
     reshape([tr(x[:, :, i]) for i in 1:size(x, 3)], 1, size(x, 3))
@@ -165,21 +183,8 @@ function ffjord(u,p,t,re,e,regularize,monte_carlo)
     end
 end
 
-function (n::DeterministicCNF)(x,p=n.p)
-    cnf_ = (du,u,p,t)->cnf(du,u,p,t,n.re)
-    prob = ODEProblem{true}(cnf_,vcat(x,0f0),n.tspan,p)
-    sense = InterpolatingAdjoint(autojacvec = false)
-    pred = solve(prob,n.args...;sensealg=sense,n.kwargs...)[:,end]
-    pz = n.basedist
-    z = pred[1:end-1]
-    delta_logp = pred[end]
-    logpz = logpdf(pz, z)
-    logpx = logpz .- delta_logp
-    return logpx[1]
-end
-
 # When running on GPU e needs to be passed separately
-function (n::FFJORD)(x,p=n.p,regularize=false,e=randn(eltype(x),size(x)),
+function (n::FFJORD)(x,p=n.p,e=randn(eltype(x),size(x));regularize=false,
                      monte_carlo=true)
     pz = n.basedist
     sense = InterpolatingAdjoint()
