@@ -21,7 +21,7 @@ pmin = DiffEqFlux.sciml_train(loss_neuralode, pstart, NewtonTrustRegion(), cb=cb
                               maxiters = 200, allow_f_increases = true)
 ```
 
-## Iterative Growing Of Fits to Reduce
+## Iterative Growing Of Fits to Reduce Probability of Bad Local Minima
 
 In this example we will show how to use strategy (4) in order to increase the
 robustness of the fit. Let's start with the same neural ODE example we've used
