@@ -122,17 +122,6 @@ function loss_adjoint(fullp, batch, time_batch)
     pred = predict_adjoint(fullp,time_batch)
     sum(abs2, batch - pred), pred
 end
-
-function predict_n_ode(p)
-    n_ode(u0,p)
-  end
-
-  function loss_n_ode(p, start, k)
-      pred = predict_n_ode(p)
-      loss = sum(abs2,ode_data[:,start:start+k] .- pred[:,start:start+k])
-      loss,pred
-  end
-
 ```
 
 To add support for batches of size `k` we use `Flux.Data.DataLoader`. To use this we pass in the `ode_data` and `t` as the 'x' and 'y' data to batch respectively. The parameter `batchsize` controls the size of our batches. We check our implementation by iterating over the batched data. 
