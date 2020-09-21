@@ -92,18 +92,7 @@ end
 function loss_adjoint(fullp, batch, time_batch)
     pred = predict_adjoint(fullp,time_batch)
     sum(abs2, batch - pred), pred
-end
-
-function predict_n_ode(p)
-    n_ode(u0,p)
-  end
-
-  function loss_n_ode(p, start, k)
-      pred = predict_n_ode(p)
-      loss = sum(abs2,ode_data[:,start:start+k] .- pred[:,start:start+k])
-      loss,pred
-  end
-</code></pre><p>To add support for batches of size <code>k</code> we use <code>Flux.Data.DataLoader</code>. To use this we pass in the <code>ode_data</code> and <code>t</code> as the &#39;x&#39; and &#39;y&#39; data to batch respectively. The parameter <code>batchsize</code> controls the size of our batches. We check our implementation by iterating over the batched data. </p><pre><code class="language-julia">k = 10
+end</code></pre><p>To add support for batches of size <code>k</code> we use <code>Flux.Data.DataLoader</code>. To use this we pass in the <code>ode_data</code> and <code>t</code> as the &#39;x&#39; and &#39;y&#39; data to batch respectively. The parameter <code>batchsize</code> controls the size of our batches. We check our implementation by iterating over the batched data. </p><pre><code class="language-julia">k = 10
 train_loader = Flux.Data.DataLoader(ode_data, t, batchsize = k)
 for (x, y) in train_loader
     @show x
@@ -135,4 +124,4 @@ train_loader, _, _ = kfolds((ode_data, t))
 
 res1 = DiffEqFlux.sciml_train(loss_adjoint, pp, ADAM(0.05), ncycle(eachbatch(train_loader[1], k), numEpochs), cb = cb, maxiters = numEpochs)
 cb(res1.minimizer,loss_adjoint(res1.minimizer, ode_data, t)...;doplot=true)
-</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../universal_diffeq/">« Universal Ordinary, Stochastic, and Partial Diffrential Equation Examples</a><a class="docs-footer-nextpage" href="../tensor_layer/">Physics Informed Machine Learning with TensorLayer »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 21 September 2020 06:29">Monday 21 September 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../universal_diffeq/">« Universal Ordinary, Stochastic, and Partial Diffrential Equation Examples</a><a class="docs-footer-nextpage" href="../tensor_layer/">Physics Informed Machine Learning with TensorLayer »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 21 September 2020 06:46">Monday 21 September 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
