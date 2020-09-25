@@ -119,8 +119,9 @@ use and swap out the ODE solver between any common interface compatible library,
 - Sundials.jl
 - OrdinaryDiffEq.jl
 - LSODA.jl
-- DASKR.jl
-- ... etc. many other choices!
+- [IRKGaussLegendre.jl](https://github.com/mikelehu/IRKGaussLegendre.jl)
+- [SciPyDiffEq.jl](https://github.com/SciML/SciPyDiffEq.jl)
+- [... etc. many other choices!](https://diffeq.sciml.ai/stable/solvers/ode_solve/)
 
 In addition, due to the composability of the system, none of the components are directly
 tied to the Flux.jl machine learning framework. For example, you can [use DiffEqFlux.jl
