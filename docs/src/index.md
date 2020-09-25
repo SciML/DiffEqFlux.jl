@@ -126,7 +126,7 @@ use and swap out the ODE solver between any common interface compatible library,
 In addition, due to the composability of the system, none of the components are directly
 tied to the Flux.jl machine learning framework. For example, you can [use DiffEqFlux.jl
 to generate TensorFlow graphs and train the nueral network with TensorFlow.jl](https://youtu.be/n2MwJ1guGVQ?t=284),
-[utilize PyTorch arrays via torch.jl](https://github.com/FluxML/Torch.jl), and more all with
+[utilize PyTorch arrays via Torch.jl](https://github.com/FluxML/Torch.jl), and more all with
 single line code changes by utilizing the underlying code generation. The tutorials shown here
 are thus mostly a guide on how to use the ecosystem as a whole, only showing a small snippet
 of the possible ways to compose the thousands of differentiable libraries together! Swap out
