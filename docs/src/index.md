@@ -36,6 +36,7 @@ Many different training techniques are supported by this package, including:
   - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
+- [Continuous adjoints for integral loss functions](https://diffeq.sciml.ai/stable/analysis/sensitivity/#Example-continuous-adjoints-on-an-energy-functional)
 - Probabilistic programming and variational inference on ODEs/SDEs/DAEs/DDEs/hybrid
   equations etc. is provided by integration with [Turing.jl](https://turing.ml/dev/)
   and [Gen.jl](https://github.com/probcomp/Gen.jl). Reproduce
