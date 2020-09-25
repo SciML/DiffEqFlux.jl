@@ -107,6 +107,28 @@ methodology, and are showcased in tutorials and layer functions:
 - Continuous Normalizing Flows (CNF) and FFJORD
 - Galerkin Nerual ODEs
 
+## Modularity and Composability
+
+Note that DiffEqFlux.jl purely built on composable and modular infrustructure. In fact, 
+DiffEqFlux.jl's functions are not even directly required for performing many of these operations! 
+DiffEqFlux provides high level helper functions and documentation for the user, but the 
+code generation stack is modular and composes in many different ways. For example, one can 
+use and swap out the ODE solver between any common interface compatible library, like:
+
+- Sundials.jl
+- OrdinaryDiffEq.jl
+- LSODA.jl
+- DASKR.jl
+- ... etc. many other choices!
+
+In addition, due to the composability of the system, none of the components are directly
+tied to the Flux.jl machine learning framework. For example, you can [use DiffEqFlux.jl
+to generate TensorFlow graphs and train the nueral network with TensorFlow.jl](https://youtu.be/n2MwJ1guGVQ?t=284),
+[utilze PyTorch arrays via torch.jl](https://github.com/FluxML/Torch.jl), and more all with
+single line code changes by utilizing the underlying code generation. The tutorials shown here
+are thus mostly a guide on how to use the ecosystem as a whole, only showing a small snippet
+of the possible ways to compose the thousands of differentiable libraries together!
+
 ## Citation
 
 If you use DiffEqFlux.jl or are influenced by its ideas, please cite:
