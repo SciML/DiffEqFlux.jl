@@ -128,7 +128,9 @@ to generate TensorFlow graphs and train the nueral network with TensorFlow.jl](h
 [utilize PyTorch arrays via torch.jl](https://github.com/FluxML/Torch.jl), and more all with
 single line code changes by utilizing the underlying code generation. The tutorials shown here
 are thus mostly a guide on how to use the ecosystem as a whole, only showing a small snippet
-of the possible ways to compose the thousands of differentiable libraries together!
+of the possible ways to compose the thousands of differentiable libraries together! Swap out
+ODEs for SDEs, DDEs, DAEs, etc., put quadrature libraries or [Tullio.jl](https://github.com/mcabbott/Tullio.jl)
+in the loss function, the world is your oyster!
 
 ## Citation
 
