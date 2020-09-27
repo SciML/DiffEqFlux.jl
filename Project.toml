@@ -51,7 +51,7 @@ TerminalLoggers = "0.1"
 Tracker = "0.2"
 Zygote = "0.5"
 ZygoteRules = "0.2"
-julia = "1"
+julia = "1.5"
 
 [extras]
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
