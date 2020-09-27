@@ -1,4 +1,4 @@
-using DiffEqFlux, DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, Optim, NLopt, BlackBoxOptim, Test #using Plots
+using DiffEqFlux, GalacticOptim,  DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, Optim, NLopt, BlackBoxOptim, Test #using Plots
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -31,30 +31,21 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_rd(p)
-pmin = DiffEqFlux.sciml_train(loss_rd, p, ADAM(0.1), cb = cb, maxiters = 100)
-loss2 = loss_rd(pmin.minimizer)
-@test 10loss2 < loss1
 
-pmin = DiffEqFlux.sciml_train(loss_rd, p, BFGS(initial_stepnorm = 0.01), cb = cb, allow_f_increases=false)
-loss2 = loss_rd(pmin.minimizer)
-@test 10loss2 < loss1
-pmin = DiffEqFlux.sciml_train(loss_rd, p, Fminbox(BFGS(initial_stepnorm = 0.01)), lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb, allow_f_increases=false)
-loss2 = loss_rd(pmin.minimizer)
-@test 10loss2 < loss1
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, p)
+res = GalacticOptim.solve(optprob, ADAM(0.1), cb = cb, maxiters = 100)
+@test 10res.minimum < loss1
 
-pmin = DiffEqFlux.sciml_train(loss_rd, p, maxiters=100, lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
-loss2 = loss_rd(pmin.minimizer)
-@test 10loss2 < loss1
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb, allow_f_increases=false)
+@test 10res.minimum < loss1
 
-#=
-using QuadDIRECT
-pmin = DiffEqFlux.sciml_train(loss_rd, p, QuadDIRECT(),
-                              splits = (),
-                              maxiters=100,
-                              lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
-loss2 = loss_rd(pmin.minimizer)
-@test 10loss2 < loss1
-=#
+optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
+res = GalacticOptim.solve(optprob,  Fminbox(BFGS(initial_stepnorm = 0.01)), cb = cb, allow_f_increases=false)
+@test 10res.minimum < loss1
+
+res = GalacticOptim.solve(optprob, Opt(:LN_BOBYQA, 4), maxiters=100, cb = cb)
+@test res.minimum < loss1
 
 # Forward-mode, R^n -> R^m layer
 
@@ -77,13 +68,14 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_fd(p)
-pmin = DiffEqFlux.sciml_train(loss_fd, p, opt, cb = cb, maxiters = 100)
-loss2 = loss_fd(pmin.minimizer)
-@test 10loss2 < loss1
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_fd(x), p, GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
-pmin = DiffEqFlux.sciml_train(loss_fd, p, BFGS(initial_stepnorm = 0.01), cb = cb)
-loss2 = loss_fd(pmin.minimizer)
-@test 10loss2 < loss1
+res = GalacticOptim.solve(optprob, opt, cb = cb, maxiters = 100)
+@test 10res.minimum < loss1
+
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
+@test 10res.minimum < loss1
 
 # Adjoint sensitivity
 p = [2.2, 1.0, 2.0, 0.4]
@@ -107,22 +99,22 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_adjoint(p)
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, opt, cb = cb, maxiters = 100)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), p, GalacticOptim.AutoFiniteDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, BFGS(initial_stepnorm = 0.01), cb = cb)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
+res = GalacticOptim.solve(optprob, opt, cb = cb, maxiters = 100)
+@test 10res.minimum < loss1
 
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Fminbox(BFGS(initial_stepnorm = 0.01)), lower_bounds = [0.0 for i in 1:4], upper_bounds = [5.0 for i in 1:4], cb = cb)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
+@test 10res.minimum < loss1
+
+optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4],)
+res = GalacticOptim.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), cb = cb, maxiters = 100, time_limit = 5, f_calls_limit = 100)
+@test 10res.minimum < loss1
 
 opt = Opt(:LD_MMA, 4)
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, opt)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
+res = GalacticOptim.solve(optprob, opt)
+@test 10res.minimum < loss1
 
 function lotka_volterra2(u,p,t)
   x, y = u
@@ -139,15 +131,15 @@ function predict_adjoint(p)
 end
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint(p) = loss_reduction(predict_adjoint(p))
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), p, GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Newton(), maxiters = 100)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
 
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, NewtonTrustRegion(), maxiters = 100)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
+res = GalacticOptim.solve(optprob, Newton(), maxiters = 100)
+@test 10res.minimum < loss1
 
-pmin = DiffEqFlux.sciml_train(loss_adjoint, p, Optim.KrylovTrustRegion(), maxiters = 100)
-loss2 = loss_adjoint(pmin.minimizer)
-@test 10loss2 < loss1
+res = GalacticOptim.solve(optprob, NewtonTrustRegion(), maxiters = 100)
+@test 10res.minimum < loss1
+
+res = GalacticOptim.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 100)
+@test 10res.minimum < loss1
