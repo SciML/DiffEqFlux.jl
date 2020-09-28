@@ -27,11 +27,6 @@ function diffeq_adjoint(p,prob,solver=nothing,args...;u0=prob.u0,kwargs...)
   concrete_solve(prob,solver,u0,p,args...;kwargs...)
 end
 
-function sciml_train(loss,θ,opt, args...; kwargs...)
-  @warn("sciml_train has been deprecated in favor of GalacticOptim.jl (https://github.com/SciML/GalacticOptim.jl)")
-  sciml_train(loss,θ,opt, args...; kwargs...)
-end
-
 function neural_ode(args...;kwargs...)
   @error("neural_ode has be removed and replaced by NeuralODE. Please consult the README for more details.")
 end

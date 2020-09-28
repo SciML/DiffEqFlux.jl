@@ -24,7 +24,7 @@ nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), nODE.p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), nODE.p, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, nODE.p)
 res = GalacticOptim.solve(optprob, LBFGS(), maxiters = 400, cb=cb)
 @test 10loss_function(res.minimizer) < l1
@@ -41,7 +41,7 @@ nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), nODE.p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), nODE.p, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, nODE.p)
 res = GalacticOptim.solve(optprob, LBFGS(), maxiters = 400, cb=cb, allow_f_increases = true)
 @test 10loss_function(res.minimizer) < l1
@@ -55,7 +55,7 @@ nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), nODE.p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), nODE.p, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, nODE.p)
 res = GalacticOptim.solve(optprob, LBFGS(), maxiters = 400, cb=cb, allow_f_increases = true)
 @test 10loss_function(res.minimizer) < l1

@@ -38,7 +38,7 @@ end
 cb(θ,l)
 
 loss1 = loss_rd(θ)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), θ, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), θ, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, θ)
 res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = res.minimum
@@ -80,7 +80,7 @@ end
 cb(θ,l)
 
 loss1 = loss_adjoint(θ)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), θ, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), θ, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, θ)
 res = GalacticOptim.solve(optprob, ADAM(0.01), cb = cb, maxiters = 100)
 optprob = GalacticOptim.OptimizationProblem(optfunc, res1.minimizer)

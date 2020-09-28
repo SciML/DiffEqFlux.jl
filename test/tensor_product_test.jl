@@ -19,7 +19,7 @@ function run_test(f, layer, atol)
         return false
     end
 
-    optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), layer.p, GalacticOptim.AutoForwardDiff())
+    optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), layer.p, GalacticOptim.AutoZygote())
     optprob = GalacticOptim.OptimizationProblem(optfunc, layer.p)
     res = GalacticOptim.solve(optprob, ADAM(0.1), cb=cb, maxiters = 100)
     optprob = GalacticOptim.OptimizationProblem(optfunc, res.minimizer)

@@ -3,6 +3,8 @@ const DEFAULT_DATA = Iterators.cycle((NullData(),))
 Base.iterate(::NullData, i=1) = nothing
 Base.length(::NullData) = 0
 
+@deprecate sciml_train(loss, θ, opt, args...; kwargs...) GalacticOptim.solve(optprob, opt)
+
 get_maxiters(data) = Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa Iterators.IsInfinite ||
                      Iterators.IteratorSize(typeof(DEFAULT_DATA)) isa Iterators.SizeUnknown ?
                      typemax(Int) : length(data)

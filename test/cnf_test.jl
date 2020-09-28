@@ -32,7 +32,7 @@ function loss_adjoint(θ)
     loss = -mean(logpx)
 end
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), cnf_test.p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), cnf_test.p, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, cnf_test.p)
 res = GalacticOptim.solve(optprob,
                              ADAM(0.1), cb=cb,
@@ -60,7 +60,7 @@ function loss_adjoint(θ)
     loss = -mean(logpx)
 end
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* cnf_test.p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* cnf_test.p, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, 0.01f0 .* cnf_test.p,)
 res = GalacticOptim.solve(optprob, 
                              ADAM(0.01), cb=cb,
@@ -90,7 +90,7 @@ function loss_adjoint(θ)
     loss = -mean(logpx)
 end
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* cnf_test.p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* cnf_test.p, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, 0.01f0 .* cnf_test.p)
 res = GalacticOptim.solve(optprob,
                              ADAM(0.1), cb=cb,
@@ -117,7 +117,7 @@ function loss_adjoint(θ)
     return mean(@. -logpx + 0.1 * λ₁ + λ₂)
 end
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* ffjord_test.p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* ffjord_test.p, GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, 0.01f0 .* ffjord_test.p)
 res = GalacticOptim.solve(optprob,
                              ADAM(0.1), cb = cb,
