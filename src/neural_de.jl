@@ -357,20 +357,21 @@ end
 
 function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     function f(du,u,p,t)
-        nn_out = n.re(p)(u)
+        nn_out = n.re(p)(vcat(u,du))
         alg_out = n.constraints_model(u,p,t)
-        v_out = []
-        for (j,i) in enumerate(n.differential_vars)
-            if i
-                push!(v_out,nn_out[j])
+        iter_nn = 0
+        iter_consts = 0
+        map(n.differential_vars) do isdiff
+            if isdiff
+                iter_nn += 1
+                nn_out[iter_nn]
             else
-                push!(v_out,alg_out[j])
+                iter_consts += 1
+                alg_out[iter_consts]
             end
         end
-        return v_out
     end
-    dudt_(du,u,p,t) = f
-    prob = DAEProblem(dudt_,du0,x,n.tspan,p,differential_vars=n.differential_vars)
+    prob = DAEProblem{false}(f,du0,x,n.tspan,p,differential_vars=n.differential_vars)
     solve(prob,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
 end
 
