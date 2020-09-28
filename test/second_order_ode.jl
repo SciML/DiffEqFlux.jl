@@ -31,7 +31,9 @@ cb = function (p,l,pred)
     l < 0.01 && Flux.stop()
 end
 
-res = DiffEqFlux.sciml_train(loss_n_ode, p, opt, cb=cb, maxiters = 100)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, p)
+res = GalacticOptim.solve(optprob, opt, cb=cb, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
@@ -55,8 +57,9 @@ cb = function (p,l,pred)
     println(l)
     l < 0.01 && Flux.stop()
 end
-
-res = DiffEqFlux.sciml_train(loss_n_ode, p, opt, cb=cb, maxiters = 100)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, p)
+res = GalacticOptim.solve(optprob, opt, cb=cb, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
@@ -81,6 +84,8 @@ cb = function (p,l,pred)
     l < 0.01 && Flux.stop()
 end
 
-res = DiffEqFlux.sciml_train(loss_n_ode, p, opt, cb=cb, maxiters = 100)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, p)
+res = GalacticOptim.solve(optprob, opt, cb=cb, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1

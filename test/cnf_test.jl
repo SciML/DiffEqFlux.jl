@@ -1,6 +1,6 @@
 println("Starting precompilation")
 using OrdinaryDiffEq
-using Flux, DiffEqFlux
+using Flux, DiffEqFlux, GalacticOptim
 using Test
 using Distributions
 using Distances
@@ -32,7 +32,9 @@ function loss_adjoint(θ)
     loss = -mean(logpx)
 end
 
-res = DiffEqFlux.sciml_train(loss_adjoint, cnf_test.p,
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), cnf_test.p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, cnf_test.p)
+res = GalacticOptim.solve(optprob,
                              ADAM(0.1), cb=cb,
                              maxiters = 100)
 
@@ -58,7 +60,9 @@ function loss_adjoint(θ)
     loss = -mean(logpx)
 end
 
-res = DiffEqFlux.sciml_train(loss_adjoint, 0.01f0 .* cnf_test.p,
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* cnf_test.p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, 0.01f0 .* cnf_test.p,)
+res = GalacticOptim.solve(optprob, 
                              ADAM(0.01), cb=cb,
                              maxiters = 300)
 
@@ -86,7 +90,9 @@ function loss_adjoint(θ)
     loss = -mean(logpx)
 end
 
-res = DiffEqFlux.sciml_train(loss_adjoint, 0.01f0 .* cnf_test.p,
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* cnf_test.p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, 0.01f0 .* cnf_test.p)
+res = GalacticOptim.solve(optprob,
                              ADAM(0.1), cb=cb,
                              maxiters = 300)
 
@@ -111,7 +117,9 @@ function loss_adjoint(θ)
     return mean(@. -logpx + 0.1 * λ₁ + λ₂)
 end
 
-res = DiffEqFlux.sciml_train(loss_adjoint, 0.01f0 .* ffjord_test.p,
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), 0.01f0 .* ffjord_test.p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, 0.01f0 .* ffjord_test.p)
+res = GalacticOptim.solve(optprob,
                              ADAM(0.1), cb = cb,
                              maxiters = 100)
 

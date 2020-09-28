@@ -1,4 +1,4 @@
-using Flux, DiffEqFlux, OrdinaryDiffEq, Optim, Test
+using Flux, DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Optim, Test
 #A desired MWE for now, not a test yet.
 function f(du,u,p,t)
     y₁,y₂,y₃ = u
@@ -37,5 +37,7 @@ cb = function (p,l,pred) #callback function to observe training
 end
 
 l1 = first(loss(ndae.p))
-res = DiffEqFlux.sciml_train(loss, ndae.p, BFGS(initial_stepnorm = 0.001), cb = cb, maxiters = 100)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), ndae.p, GalacticOptim.AutoForwardDiff())
+optprob = GalacticOptim.OptimizationProblem(optfunc, ndae.p)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.001), cb = cb, maxiters = 100)
 @test res.minimum < l1

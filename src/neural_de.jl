@@ -388,8 +388,8 @@ where `M` is semi-explicit, i.e. singular with zeros for rows corresponding to
 the constraint equations.
 
 ```julia
-NeuralODEMM(model,constraints_model,tspan,alg=nothing,args...;kwargs...)
-NeuralODEMM(model::FastChain,tspan,alg=nothing,args...;
+NeuralODEMM(model,constraints_model,tspan,mass_matrix,alg=nothing,args...;kwargs...)
+NeuralODEMM(model::FastChain,tspan,mass_matrix,alg=nothing,args...;
           sensealg=InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
           kwargs...)
 ```
@@ -400,6 +400,7 @@ Arguments:
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
   constaints to impose on the algebraic equations.
 - `tspan`: The timespan to be solved on.
+- `mass_matrix`: The mass matrix associated with the DAE 
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl. This method requires an
   implicit ODE solver compatible with singular mass matrices. Consult the
