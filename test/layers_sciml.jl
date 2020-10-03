@@ -32,7 +32,7 @@ end
 # Display the ODE with the current parameter values.
 loss1 = loss_rd(p)
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), GalacticOptim.AutoForwardDiff())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 res = GalacticOptim.solve(optprob, ADAM(0.1), cb = cb, maxiters = 100)
 @test 10res.minimum < loss1
@@ -68,7 +68,7 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_fd(p)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_fd(x), p, GalacticOptim.AutoZygote())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_fd(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
 res = GalacticOptim.solve(optprob, opt, cb = cb, maxiters = 100)
@@ -99,7 +99,7 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_adjoint(p)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), p, GalacticOptim.AutoFiniteDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), GalacticOptim.AutoFiniteDiff())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
 res = GalacticOptim.solve(optprob, opt, cb = cb, maxiters = 100)
@@ -131,7 +131,7 @@ function predict_adjoint(p)
 end
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint(p) = loss_reduction(predict_adjoint(p))
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), p, GalacticOptim.AutoZygote())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
 
