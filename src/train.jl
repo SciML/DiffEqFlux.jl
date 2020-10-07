@@ -5,7 +5,7 @@ Base.length(::NullData) = 0
 
 function sciml_train(loss, θ, opt, adtype; kwargs...)
   @warn("sciml_train has been deprecated in favor of GalacticOptim.jl (https://github.com/SciML/GalacticOptim.jl)") 
-  optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), θ, adtype; kwargs...)
+  optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype; kwargs...)
   optprob = GalacticOptim.OptimizationProblem(optfunc, θ; kwargs...)
   GalacticOptim.solve(optprob, opt; kwargs...)
 end
@@ -99,7 +99,7 @@ function sciml_train(loss, _θ, opt, _data = DEFAULT_DATA;
                      cb = (args...) -> false,
                      maxiters = get_maxiters(data),
                      progress=true, save_best=true)
-
+  @warn("sciml_train has been deprecated in favor of GalacticOptim.jl (https://github.com/SciML/GalacticOptim.jl)")
   # Flux is silly and doesn't have an abstract type on its optimizers, so assume
   # this is a Flux optimizer
   θ = copy(_θ)
@@ -190,6 +190,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractOptimizer, data = DEFAULT_DATA
                       cb = (args...) -> (false), maxiters = get_maxiters(data),
                       diffmode = ZygoteDiffMode(), allow_f_increases = false,
                       kwargs...)
+  @warn("sciml_train has been deprecated in favor of GalacticOptim.jl (https://github.com/SciML/GalacticOptim.jl)")
   local x, cur, state
   cur,state = iterate(data)
 
@@ -315,6 +316,7 @@ function sciml_train(loss, θ, opt::Optim.AbstractConstrainedOptimizer,
                      cb = (args...) -> (false), maxiters = get_maxiters(data),
                      allow_f_increases = false,
                      kwargs...)
+  @warn("sciml_train has been deprecated in favor of GalacticOptim.jl (https://github.com/SciML/GalacticOptim.jl)")
   local x, cur, state
   cur,state = iterate(data)
 
@@ -358,6 +360,7 @@ BBO() = BBO(:adaptive_de_rand_1_bin)
 
 function sciml_train(loss, _θ, opt::BBO = BBO(), data = DEFAULT_DATA;lower_bounds, upper_bounds,
                       cb = (x...)-> false, maxiters = get_maxiters(data), kwargs...)
+  @warn("sciml_train has been deprecated in favor of GalacticOptim.jl (https://github.com/SciML/GalacticOptim.jl)")
   local x, cur, state
   cur,state = iterate(data)
 
