@@ -20,8 +20,8 @@ function run_test(f, layer, atol)
         return false
     end
 
-    res = DiffEqFlux.sciml_train(loss_n_ode, layer.saved_points, ADAM(0.1), GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
-    res = DiffEqFlux.sciml_train(loss_n_ode, res.minimizer, ADAM(0.1), GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, layer.saved_points, ADAM(0.1), GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
+    res = DiffEqFlux.sciml_train(loss_function, res.minimizer, ADAM(0.1), GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
     opt = res.minimizer
 
     data_validate_vals = rand(100)
