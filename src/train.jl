@@ -3,7 +3,7 @@ const DEFAULT_DATA = Iterators.cycle((NullData(),))
 Base.iterate(::NullData, i=1) = nothing
 Base.length(::NullData) = 0
 
-function sciml_train(loss, θ, opt, adtype; kwargs...)
+function sciml_train(loss, θ, opt, adtype::DiffEqBase.AbstractADType; kwargs...)
   @warn("sciml_train has been deprecated in favor of GalacticOptim.jl (https://github.com/SciML/GalacticOptim.jl)") 
   optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype; kwargs...)
   optprob = GalacticOptim.OptimizationProblem(optfunc, θ; kwargs...)
