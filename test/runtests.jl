@@ -1,7 +1,7 @@
 using DiffEqFlux
 using Pkg
 using SafeTestsets
-using Test
+using Test, GalacticOptim
 
 const GROUP = get(ENV, "GROUP", "All")
 const is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )

@@ -1,6 +1,6 @@
 using DiffEqFlux, Flux
 using LinearAlgebra, Distributions
-using Optim
+using GalacticOptim
 using Test
 using DataInterpolations
 

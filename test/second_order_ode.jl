@@ -1,4 +1,4 @@
-using OrdinaryDiffEq, Flux, DiffEqFlux, DiffEqSensitivity, Zygote, RecursiveArrayTools
+using OrdinaryDiffEq, Flux, DiffEqFlux, DiffEqSensitivity, Zygote, RecursiveArrayTools, GalacticOptim
 
 u0 = Float32[0.; 2.]
 du0 = Float32[0.; 0.]
@@ -31,7 +31,7 @@ cb = function (p,l,pred)
     l < 0.01 && Flux.stop()
 end
 
-res = GalacticOptim.solve(loss_n_ode, p, opt, GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
+res = DiffEqFlux.sciml_train(loss_n_ode, p, opt, GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
@@ -55,7 +55,7 @@ cb = function (p,l,pred)
     println(l)
     l < 0.01 && Flux.stop()
 end
-res = GalacticOptim.solve(loss_n_ode, p, opt, GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
+res = DiffEqFlux.sciml_train(loss_n_ode, p, opt, GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
@@ -80,6 +80,6 @@ cb = function (p,l,pred)
     l < 0.01 && Flux.stop()
 end
 
-res = GalacticOptim.solve(loss_n_ode, p, opt, GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
+res = DiffEqFlux.sciml_train(loss_n_ode, p, opt, GalacticOptim.AutoZygote(), cb=cb, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1

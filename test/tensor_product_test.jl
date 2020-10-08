@@ -1,6 +1,6 @@
 using DiffEqFlux, Flux
 using LinearAlgebra, Distributions
-using Optim
+using Optim, GalacticOptim
 using Test
 
 function run_test(f, layer, atol)
