@@ -140,4 +140,4 @@ savefig("fullplot.png")
 ![](https://user-images.githubusercontent.com/1814174/81901711-f82ed400-958c-11ea-9ba2-2b1f213b865a.png)
 
 And there we go, a robust strategy for fitting an equation that would otherwise
-get stuck in a local optima.
+get stuck in a local optima..
