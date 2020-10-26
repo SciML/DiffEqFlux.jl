@@ -39,11 +39,11 @@ nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), GalacticOptim.AutoZygote(), maxiters = 400, cb=cb, allow_f_increases = true)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), GalacticOptim.AutoZygote(), maxiters = 1000, cb=cb)
 @test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 400, cb=cb, allow_f_increases = true)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), GalacticOptim.AutoReverseDiff(), maxiters = 400, cb=cb)
 @test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 400, cb=cb, allow_f_increases = true)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), GalacticOptim.AutoReverseDiff(), maxiters = 400, cb=cb, allow_f_increases = true)
 @test 10loss_function(res.minimizer) < l1
 
 @info "ROCK4"
