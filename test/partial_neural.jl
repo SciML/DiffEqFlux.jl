@@ -38,7 +38,9 @@ end
 cb(θ,l)
 
 loss1 = loss_rd(θ)
-res = DiffEqFlux.sciml_train(loss_rd, θ, BFGS(initial_stepnorm = 0.01), GalacticOptim.AutoZygote(), cb = cb)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, θ)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = res.minimum
 @test 10loss2 < loss1
 
@@ -78,7 +80,11 @@ end
 cb(θ,l)
 
 loss1 = loss_adjoint(θ)
-res1 = DiffEqFlux.sciml_train(loss_adjoint, θ, ADAM(0.01), GalacticOptim.AutoZygote(), cb = cb, maxiters = 100)
-res = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer, BFGS(initial_stepnorm = 0.01), GalacticOptim.AutoZygote(), cb = cb)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, θ)
+res1 = GalacticOptim.solve(optprob, ADAM(0.01), cb = cb, maxiters = 100)
+
+optprob = GalacticOptim.OptimizationProblem(optfunc, res1.minimizer)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = res.minimum
 @test 10loss2 < loss1

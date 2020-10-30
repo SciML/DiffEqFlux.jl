@@ -37,5 +37,7 @@ cb = function (p,l,pred) #callback function to observe training
 end
 
 l1 = first(loss(ndae.p))
-res = DiffEqFlux.sciml_train(loss, ndae.p, BFGS(initial_stepnorm = 0.001), GalacticOptim.AutoZygote(), cb = cb, maxiters = 100)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, ndae.p)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.001), cb = cb, maxiters = 100)
 @test res.minimum < l1
