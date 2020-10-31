@@ -1,4 +1,4 @@
-using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, Test
+using DiffEqFlux, Flux, GalacticOptim, Optim, OrdinaryDiffEq, Test
 
 n = 2  # number of ODEs
 tspan = (0.0, 1.0)
@@ -23,11 +23,12 @@ nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 400, cb=cb)
+
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), GalacticOptim.AutoZygote(), maxiters = 400, cb=cb)
 @test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 400, cb=cb)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 400, cb=cb)
 @test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 400, cb=cb)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 400, cb=cb)
 @test 10loss_function(res.minimizer) < l1
 
 NN = FastChain(FastDense(n, 10n, tanh),
@@ -38,11 +39,14 @@ nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 400, cb=cb, allow_f_increases = true)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, nODE.p,)
+
+res = GalacticOptim.solve(optprob, LBFGS(), maxiters = 1000, cb=cb)
 @test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 400, cb=cb, allow_f_increases = true)
+res = GalacticOptim.solve(optprob, NewtonTrustRegion(), maxiters = 400, cb=cb)
 @test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 400, cb=cb, allow_f_increases = true)
+res = GalacticOptim.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 400, cb=cb, allow_f_increases = true)
 @test 10loss_function(res.minimizer) < l1
 
 @info "ROCK4"
@@ -50,9 +54,12 @@ nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 400, cb=cb, allow_f_increases = true)
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, nODE.p,)
+
+res = GalacticOptim.solve(optprob, LBFGS(), maxiters = 400, cb=cb, allow_f_increases = true)
 @test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 400, cb=cb, allow_f_increases = true)
+res = GalacticOptim.solve(optprob, NewtonTrustRegion(), maxiters = 400, cb=cb, allow_f_increases = true)
 @test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 400, cb=cb, allow_f_increases = true)
+res = GalacticOptim.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 400, cb=cb, allow_f_increases = true)
 @test 10loss_function(res.minimizer) < l1

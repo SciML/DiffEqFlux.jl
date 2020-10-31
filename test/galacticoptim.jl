@@ -41,7 +41,7 @@ res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb, allow
 @test 10res.minimum < loss1
 
 optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
-res = GalacticOptim.solve(optprob,  Fminbox(BFGS(initial_stepnorm = 0.01)), cb = cb, allow_f_increases=false)
+res = GalacticOptim.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), cb = cb, allow_f_increases=false)
 @test 10res.minimum < loss1
 
 res = GalacticOptim.solve(optprob, Opt(:LN_BOBYQA, 4), maxiters=100, cb = cb)
@@ -108,7 +108,7 @@ res = GalacticOptim.solve(optprob, opt, cb = cb, maxiters = 100)
 res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
 @test 10res.minimum < loss1
 
-optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4],)
+optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
 res = GalacticOptim.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), cb = cb, maxiters = 100, time_limit = 5, f_calls_limit = 100)
 @test 10res.minimum < loss1
 
