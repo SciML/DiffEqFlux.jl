@@ -1,7 +1,7 @@
 using DiffEqFlux
 using Pkg
 using SafeTestsets
-using Test
+using Test, GalacticOptim
 
 const GROUP = get(ENV, "GROUP", "All")
 const is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
@@ -17,7 +17,7 @@ end
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
     @safetestset "Layers Tests" begin include("layers.jl") end
     @safetestset "Fast Layers" begin include("fast_layers.jl") end
-    @safetestset "Layers SciML Tests" begin include("layers_sciml.jl") end
+    @safetestset "GalacticOptim Tests" begin include("galacticoptim.jl") end
     @safetestset "Layers SDE" begin include("layers_sde.jl") end
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
     @safetestset "Collocation Regression" begin include("collocation_regression.jl") end

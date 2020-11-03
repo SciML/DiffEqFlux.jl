@@ -38,4 +38,6 @@ end
 
 p = p .+ rand(3) .* p
 
-res = DiffEqFlux.sciml_train(loss, p, BFGS(initial_stepnorm = 0.0001))
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, p)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.0001))

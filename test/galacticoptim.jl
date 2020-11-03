@@ -32,7 +32,7 @@ end
 # Display the ODE with the current parameter values.
 loss1 = loss_rd(p)
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), p, GalacticOptim.AutoForwardDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), GalacticOptim.AutoForwardDiff())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 res = GalacticOptim.solve(optprob, ADAM(0.1), cb = cb, maxiters = 100)
 @test 10res.minimum < loss1
@@ -41,7 +41,7 @@ res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb, allow
 @test 10res.minimum < loss1
 
 optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
-res = GalacticOptim.solve(optprob,  Fminbox(BFGS(initial_stepnorm = 0.01)), cb = cb, allow_f_increases=false)
+res = GalacticOptim.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), cb = cb, allow_f_increases=false)
 @test 10res.minimum < loss1
 
 res = GalacticOptim.solve(optprob, Opt(:LN_BOBYQA, 4), maxiters=100, cb = cb)
@@ -68,7 +68,7 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_fd(p)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_fd(x), p, GalacticOptim.AutoZygote())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_fd(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
 res = GalacticOptim.solve(optprob, opt, cb = cb, maxiters = 100)
@@ -99,7 +99,7 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_adjoint(p)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), p, GalacticOptim.AutoFiniteDiff())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), GalacticOptim.AutoFiniteDiff())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
 res = GalacticOptim.solve(optprob, opt, cb = cb, maxiters = 100)
@@ -108,7 +108,7 @@ res = GalacticOptim.solve(optprob, opt, cb = cb, maxiters = 100)
 res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
 @test 10res.minimum < loss1
 
-optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4],)
+optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
 res = GalacticOptim.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), cb = cb, maxiters = 100, time_limit = 5, f_calls_limit = 100)
 @test 10res.minimum < loss1
 
@@ -131,7 +131,7 @@ function predict_adjoint(p)
 end
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint(p) = loss_reduction(predict_adjoint(p))
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), p, GalacticOptim.AutoZygote())
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
 
 
