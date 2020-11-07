@@ -26,6 +26,7 @@ makedocs(
             "examples/local_minima.md",
             "examples/neural_sde.md",
             "examples/collocation.md",
+            "examples/exogeneous_input.md",
             "examples/pde_constrained.md",
             "examples/optimal_control.md",
             "examples/feedback_control.md",
