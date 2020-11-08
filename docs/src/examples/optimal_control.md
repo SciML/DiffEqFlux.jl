@@ -1,4 +1,4 @@
-# Solving Optimal Control Problems with Universal Differential Equations
+# Solving Optimal Control Problems with Universal Differential Equations (@ref optcontrl)
 
 Here we will solve a classic optimal control problem with a universal differential
 equation. Let
