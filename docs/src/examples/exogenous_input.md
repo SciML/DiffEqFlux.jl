@@ -30,7 +30,7 @@ which encloses an extra argument into `f` so that `_f` is now the interface-comp
 differential equation definition.
 
 Note that you can also learn what the exogenous equation is from data. For an
-example on how to do this, you can use the [Optimal Control Example](@ref optcontrl)
+example on how to do this, you can use the [Optimal Control Example](@ref optcontrol)
 which shows how to parameterize a `u(t)` by a universal function and learn that
 from data.
 
