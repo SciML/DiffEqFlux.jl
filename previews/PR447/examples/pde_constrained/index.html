@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Partial Differential Equation Constrained Optimization · DiffEqFlux.jl</title><link rel="canonical" href="https://diffeqflux.sciml.ai/stable/examples/pde_constrained/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">DiffEqFlux.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: Generalized Physics-Informed and Scientific Machine Learning (SciML)</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../optimization_ode/">Optimization of Ordinary Differential Equations</a></li><li><a class="tocitem" href="../optimization_sde/">Optimization of Stochastic Differential Equations</a></li><li><a class="tocitem" href="../lotka_volterra/">Lotka-Volterra with Flux.train!</a></li><li><a class="tocitem" href="../neural_ode_sciml/">Neural Ordinary Differential Equations with sciml_train</a></li><li><a class="tocitem" href="../neural_ode_flux/">Neural Ordinary Differential Equations with Flux.train!</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../delay_diffeq/">Delay Differential Equations</a></li><li><a class="tocitem" href="../hybrid_diffeq/">Training Neural Networks in Hybrid Differential Equations</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows with sciml_train</a></li><li><a class="tocitem" href="../local_minima/">Strategies to Avoid Local Minima</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../exogenous_input/">Handling Exogenous Input Signals</a></li><li class="is-active"><a class="tocitem" href>Partial Differential Equation Constrained Optimization</a><ul class="internal"><li><a class="tocitem" href="#Step-by-step-Description-1"><span>Step-by-step Description</span></a></li></ul></li><li><a class="tocitem" href="../optimal_control/">Solving Optimal Control Problems with Universal Differential Equations (@id optcontrol)</a></li><li><a class="tocitem" href="../feedback_control/">Universal Differential Equations for Neural Feedback Control</a></li><li><a class="tocitem" href="../second_order_neural/">Neural Second Order Ordinary Differential Equation</a></li><li><a class="tocitem" href="../physical_constraints/">Enforcing Physical Constraints via Universal Differential-Algebraic Equations</a></li><li><a class="tocitem" href="../second_order_adjoints/">Newton and Hessian-Free Newton-Krylov with Second Order Adjoint Sensitivity Analysis</a></li><li><a class="tocitem" href="../jump/">Neural Jump Diffusions (Neural Jump SDE) and Neural Partial Differential Equations (Neural PDEs)</a></li><li><a class="tocitem" href="../universal_diffeq/">Universal Ordinary, Stochastic, and Partial Diffrential Equation Examples</a></li><li><a class="tocitem" href="../minibatch/">Training a Neural Ordinary Differential Equation with Mini-Batching</a></li><li><a class="tocitem" href="../tensor_layer/">Physics Informed Machine Learning with TensorLayer</a></li><li><a class="tocitem" href="../neural_gde/">Neural Graph Differential Equations</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li></ul></li><li><span class="tocitem">Layers</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><a class="tocitem" href="../../ControllingAdjoints/">Controlling Choices of Adjoints</a></li><li><a class="tocitem" href="../../Flux/">Use with Flux Chain and train!</a></li><li><a class="tocitem" href="../../FastChain/">FastChain</a></li><li><a class="tocitem" href="../../Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../GPUs/">GPUs</a></li><li><a class="tocitem" href="../../Scimltrain/">sciml_train</a></li><li><a class="tocitem" href="../../Benchmark/">Benchmark</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Partial Differential Equation Constrained Optimization</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Partial Differential Equation Constrained Optimization</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/pde_constrained.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Partial-Differential-Equation-Constrained-Optimization-1"><a class="docs-heading-anchor" href="#Partial-Differential-Equation-Constrained-Optimization-1">Partial Differential Equation Constrained Optimization</a><a class="docs-heading-anchor-permalink" href="#Partial-Differential-Equation-Constrained-Optimization-1" title="Permalink"></a></h1><p>This example uses a prediction model to optimize the one-dimensional Burgers&#39; Equation. (Step-by-step description below)</p><pre><code class="language-julia">using DelimitedFiles,Plots
+using DiffEqSensitivity, OrdinaryDiffEq, Zygote, Flux, DiffEqFlux, Optim
+
+# Problem setup parameters:
+Lx = 10.0
+x  = 0.0:0.01:Lx
+dx = x[2] - x[1]
+Nx = size(x)
+
+u0 = exp.(-(x.-3.0).^2) # I.C
+
+## Problem Parameters
+p        = [1.0,1.0]    # True solution parameters
+xtrs     = [dx,Nx]      # Extra parameters
+dt       = 0.40*dx^2    # CFL condition
+t0, tMax = 0.0 ,1000*dt
+tspan    = (t0,tMax)
+t        = t0:dt:tMax;
+
+## Definition of Auxiliary functions
+function ddx(u,dx)
+    &quot;&quot;&quot;
+    2nd order Central difference for 1st degree derivative
+    &quot;&quot;&quot;
+    return [[zero(eltype(u))] ; (u[3:end] - u[1:end-2]) ./ (2.0*dx) ; [zero(eltype(u))]]
+end
+
+
+function d2dx(u,dx)
+    &quot;&quot;&quot;
+    2nd order Central difference for 2nd degree derivative
+    &quot;&quot;&quot;
+    return [[zero(eltype(u))]; (u[3:end] - 2.0.*u[2:end-1] + u[1:end-2]) ./ (dx^2); [zero(eltype(u))]]
+end
+
+## ODE description of the Physics:
+function burgers(u,p,t)
+    # Model parameters
+    a0, a1 = p
+    dx,Nx = xtrs #[1.0,3.0,0.125,100]
+    return 2.0*a0 .* u +  a1 .* d2dx(u, dx)
+end
+
+# Testing Solver on linear PDE
+prob = ODEProblem(burgers,u0,tspan,p)
+sol = solve(prob,Tsit5(), dt=dt,saveat=t);
+
+plot(x, sol.u[1], lw=3, label=&quot;t0&quot;, size=(800,500))
+plot!(x, sol.u[end],lw=3, ls=:dash, label=&quot;tMax&quot;)
+
+ps  = [0.1, 0.2];   # Initial guess for model parameters
+function predict(θ)
+    Array(solve(prob,Tsit5(),p=θ,dt=dt,saveat=t))
+end
+
+## Defining Loss function
+function loss(θ)
+    pred = predict(θ)
+    l = predict(θ)  - sol
+    return sum(abs2, l), pred # Mean squared error
+end
+
+l,pred   = loss(ps)
+size(pred), size(sol), size(t) # Checking sizes
+
+LOSS  = []                              # Loss accumulator
+PRED  = []                              # prediction accumulator
+PARS  = []                              # parameters accumulator
+
+cb = function (θ,l,pred) #callback function to observe training
+  display(l)
+  append!(PRED, [pred])
+  append!(LOSS, l)
+  append!(PARS, [θ])
+  false
+end
+
+cb(ps,loss(ps)...) # Testing callback function
+
+# Let see prediction vs. Truth
+scatter(sol[:,end], label=&quot;Truth&quot;, size=(800,500))
+plot!(PRED[end][:,end], lw=2, label=&quot;Prediction&quot;)
+
+res = DiffEqFlux.sciml_train(loss, ps, ADAM(0.01), cb = cb, maxiters = 100)  # Let check gradient propagation
+ps = res.minimizer
+res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100,
+                             allow_f_increases = false)  # Let check gradient propagation
+@show res.minimizer # returns [0.999999999999975, 1.0000000000000213]</code></pre><h2 id="Step-by-step-Description-1"><a class="docs-heading-anchor" href="#Step-by-step-Description-1">Step-by-step Description</a><a class="docs-heading-anchor-permalink" href="#Step-by-step-Description-1" title="Permalink"></a></h2><h3 id="Load-Packages-1"><a class="docs-heading-anchor" href="#Load-Packages-1">Load Packages</a><a class="docs-heading-anchor-permalink" href="#Load-Packages-1" title="Permalink"></a></h3><pre><code class="language-julia">using DelimitedFiles,Plots
+using DiffEqSensitivity, OrdinaryDiffEq, Zygote, Flux, DiffEqFlux, Optim</code></pre><h3 id="Parameters-1"><a class="docs-heading-anchor" href="#Parameters-1">Parameters</a><a class="docs-heading-anchor-permalink" href="#Parameters-1" title="Permalink"></a></h3><p>First, we setup the 1-dimensional space over which our equations will be evaluated. <code>x</code> spans <strong>from 0.0 to 10.0</strong> in steps of <strong>0.01</strong>; <code>t</code> spans <strong>from 0.00 to 0.04</strong> in steps of <strong>4.0e-5</strong>.</p><pre><code class="language-julia"># Problem setup parameters:
+Lx = 10.0
+x  = 0.0:0.01:Lx
+dx = x[2] - x[1]
+Nx = size(x)
+
+u0 = exp.(-(x.-3.0).^2) # I.C
+
+## Problem Parameters
+p        = [1.0,1.0]    # True solution parameters
+xtrs     = [dx,Nx]      # Extra parameters
+dt       = 0.40*dx^2    # CFL condition
+t0, tMax = 0.0 ,1000*dt
+tspan    = (t0,tMax)
+t        = t0:dt:tMax;</code></pre><p>In plain terms, the quantities that were defined are:</p><ul><li><code>x</code> (to <code>Lx</code>) spans the specified 1D space</li><li><code>dx</code> = distance between two points</li><li><code>Nx</code> = total size of space</li><li><code>u0</code> = initial condition</li><li><code>p</code> = true solution</li><li><code>xtrs</code> = convenient grouping of <code>dx</code> and <code>Nx</code> into Array</li><li><code>dt</code> = time distane between two points</li><li><code>t</code> (<code>t0</code> to <code>tMax</code>) spans the specified time frame</li><li><code>tspan</code> = span of <code>t</code></li></ul><h3 id="Auxiliary-Functions-1"><a class="docs-heading-anchor" href="#Auxiliary-Functions-1">Auxiliary Functions</a><a class="docs-heading-anchor-permalink" href="#Auxiliary-Functions-1" title="Permalink"></a></h3><p>We then define two functions to compute the derivatives numerically. The <strong>Central Difference</strong> is used in both the 1st and 2nd degree derivatives.</p><pre><code class="language-julia">## Definition of Auxiliary functions
+function ddx(u,dx)
+    &quot;&quot;&quot;
+    2nd order Central difference for 1st degree derivative
+    &quot;&quot;&quot;
+    return [[zero(eltype(u))] ; (u[3:end] - u[1:end-2]) ./ (2.0*dx) ; [zero(eltype(u))]]
+end
+
+
+function d2dx(u,dx)
+    &quot;&quot;&quot;
+    2nd order Central difference for 2nd degree derivative
+    &quot;&quot;&quot;
+    return [[zero(eltype(u))]; (u[3:end] - 2.0.*u[2:end-1] + u[1:end-2]) ./ (dx^2); [zero(eltype(u))]]
+end</code></pre><h3 id="Burgers&#39;-Differential-Equation-1"><a class="docs-heading-anchor" href="#Burgers&#39;-Differential-Equation-1">Burgers&#39; Differential Equation</a><a class="docs-heading-anchor-permalink" href="#Burgers&#39;-Differential-Equation-1" title="Permalink"></a></h3><p>Next, we setup our desired set of equations in order to define our problem.</p><pre><code class="language-julia">## ODE description of the Physics:
+function burgers(u,p,t)
+    # Model parameters
+    a0, a1 = p
+    dx,Nx = xtrs #[1.0,3.0,0.125,100]
+    return 2.0*a0 .* u +  a1 .* d2dx(u, dx)
+end</code></pre><h3 id="Solve-and-Plot-Ground-Truth-1"><a class="docs-heading-anchor" href="#Solve-and-Plot-Ground-Truth-1">Solve and Plot Ground Truth</a><a class="docs-heading-anchor-permalink" href="#Solve-and-Plot-Ground-Truth-1" title="Permalink"></a></h3><p>We then solve and plot our partial differential equation. This is the true solution which we will compare to further on.</p><pre><code class="language-julia"># Testing Solver on linear PDE
+prob = ODEProblem(burgers,u0,tspan,p)
+sol = solve(prob,Tsit5(), dt=dt,saveat=t);
+
+plot(x, sol.u[1], lw=3, label=&quot;t0&quot;, size=(800,500))
+plot!(x, sol.u[end],lw=3, ls=:dash, label=&quot;tMax&quot;)</code></pre><h3 id="Building-the-Prediction-Model-1"><a class="docs-heading-anchor" href="#Building-the-Prediction-Model-1">Building the Prediction Model</a><a class="docs-heading-anchor-permalink" href="#Building-the-Prediction-Model-1" title="Permalink"></a></h3><p>Now we start building our prediction model to try to obtain the values <code>p</code>. We make an initial guess for the parameters and name it <code>ps</code> here. The <code>predict</code> function is a non-linear transformation in one layer using <code>solve</code>. If unfamiliar with the concept, refer to <a href="https://julialang.org/blog/2019/01/fluxdiffeq/">here</a>.</p><pre><code class="language-julia">ps  = [0.1, 0.2];   # Initial guess for model parameters
+function predict(θ)
+    Array(solve(prob,Tsit5(),p=θ,dt=dt,saveat=t))
+end</code></pre><h3 id="Train-Parameters-1"><a class="docs-heading-anchor" href="#Train-Parameters-1">Train Parameters</a><a class="docs-heading-anchor-permalink" href="#Train-Parameters-1" title="Permalink"></a></h3><p>Training our model requires a <strong>loss function</strong>, an <strong>optimizer</strong> and a <strong>callback function</strong> to display the progress.</p><h4 id="Loss-1"><a class="docs-heading-anchor" href="#Loss-1">Loss</a><a class="docs-heading-anchor-permalink" href="#Loss-1" title="Permalink"></a></h4><p>We first make our predictions based on the current values of our parameters <code>ps</code>, then take the difference between the predicted solution and the truth above. For the loss, we use the <strong>Mean squared error</strong>.</p><pre><code class="language-julia">## Defining Loss function
+function loss(θ)
+    pred = predict(θ)
+    l = predict(θ)  - sol
+    return sum(abs2, l), pred # Mean squared error
+end
+
+l,pred   = loss(ps)
+size(pred), size(sol), size(t) # Checking sizes</code></pre><h4 id="Optimizer-1"><a class="docs-heading-anchor" href="#Optimizer-1">Optimizer</a><a class="docs-heading-anchor-permalink" href="#Optimizer-1" title="Permalink"></a></h4><p>The optimizers <code>ADAM</code> with a learning rate of 0.01 and <code>BFGS</code> are directly passed in training (see below)</p><h4 id="Callback-1"><a class="docs-heading-anchor" href="#Callback-1">Callback</a><a class="docs-heading-anchor-permalink" href="#Callback-1" title="Permalink"></a></h4><p>The callback function displays the loss during training. We also keep a history of the loss, the previous predictions and the previous parameters with <code>LOSS</code>, <code>PRED</code> and <code>PARS</code> accumulators.</p><pre><code class="language-julia">LOSS  = []                              # Loss accumulator
+PRED  = []                              # prediction accumulator
+PARS  = []                              # parameters accumulator
+
+cb = function (θ,l,pred) #callback function to observe training
+  display(l)
+  append!(PRED, [pred])
+  append!(LOSS, l)
+  append!(PARS, [θ])
+  false
+end
+
+cb(ps,loss(ps)...) # Testing callback function</code></pre><h3 id="Plotting-Prediction-vs-Ground-Truth-1"><a class="docs-heading-anchor" href="#Plotting-Prediction-vs-Ground-Truth-1">Plotting Prediction vs Ground Truth</a><a class="docs-heading-anchor-permalink" href="#Plotting-Prediction-vs-Ground-Truth-1" title="Permalink"></a></h3><p>The scatter points plotted here are the ground truth obtained from the actual solution we solved for above. The solid line represents our prediction. The goal is for both to overlap almost perfectly when the PDE finishes its training and the loss is close to 0.</p><pre><code class="language-julia"># Let see prediction vs. Truth
+scatter(sol[:,end], label=&quot;Truth&quot;, size=(800,500))
+plot!(PRED[end][:,end], lw=2, label=&quot;Prediction&quot;)</code></pre><h3 id="Train-1"><a class="docs-heading-anchor" href="#Train-1">Train</a><a class="docs-heading-anchor-permalink" href="#Train-1" title="Permalink"></a></h3><p>The parameters are trained using <code>sciml_train</code> and adjoint sensitivities. The resulting best parameters are stored in <code>res</code> and <code>res.minimizer</code> returns the parameters that minimizes the cost function.</p><pre><code class="language-julia">res = DiffEqFlux.sciml_train(loss, ps, ADAM(0.01), cb = cb, maxiters = 100)  # Let check gradient propagation
+ps = res.minimizer
+res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100,
+                             allow_f_increases = false)  # Let check gradient propagation
+@show res.minimizer # returns [0.999999999999975, 1.0000000000000213]</code></pre><p>We successfully predict the final <code>ps</code> to be equal to <strong>[0.999999999999975, 1.0000000000000213]</strong> vs the true solution of <code>p</code> = <strong>[1.0, 1.0]</strong></p><h3 id="Expected-Output-1"><a class="docs-heading-anchor" href="#Expected-Output-1">Expected Output</a><a class="docs-heading-anchor-permalink" href="#Expected-Output-1" title="Permalink"></a></h3><pre><code class="language-julia">153.74716386883014
+153.74716386883014
+150.31001476832154
+146.91327105278128
+143.55759898759374
+140.24363496931753
+136.97198347241257
+133.7432151677673
+130.55786524987215
+127.4164319720337
+124.31937540894337
+121.26711645161134
+118.26003603654628
+115.29847461603427
+112.3827318609633
+109.51306659138356
+106.68969692777314
+103.9128006498965
+101.18251574195561
+98.4989411191655
+95.8621374998964
+93.27212842357801
+90.7289013677808
+88.23240896985287
+85.7825703121191
+83.37927225399383
+81.02237079935475
+78.71169247246975
+76.44703568540336
+74.22817209335733
+72.05484791455291
+69.92678520204167
+67.84368308185877
+65.80521891873633
+63.81104944163126
+61.860811797059554
+59.95412455791812
+58.090588663826914
+56.26978832428055
+54.491291863817686
+52.75465253618253
+51.05940929392087
+49.405087540342564
+47.79119984816457
+46.217246667009626
+44.68271701552145
+43.18708916553295
+41.729831330086824
+40.310402328506555
+38.928252289762675
+37.58282331100446
+36.27355015737786
+34.99986094007708
+33.76117780641769
+32.55691762379305
+31.386492661205562
+30.249311268822595
+29.144778544729924
+28.07229699202965
+27.031267166855155
+26.0210883069299
+25.041158938495613
+24.09087747422764
+23.169642780270983
+22.276854715336583
+21.411914664407295
+20.57422602075309
+19.76319467338999
+18.978229434706996
+18.218742481097735
+17.48414972880479
+16.773871221320032
+16.087331469276343
+15.423959781047255
+14.78319057598673
+14.164463661389682
+13.567224508247984
+12.990924508800399
+12.435021204904853
+11.898978515303417
+11.382266943971572
+10.884363779196345
+10.404753276294088
+9.942926832732251
+9.49838314770057
+9.070628379941386
+8.659176278010788
+8.263548334737965
+7.883273889583058
+7.517890250788576
+7.1669427976429585
+6.829985075319055
+6.506578881124348
+6.19629433688754
+5.898709957062298
+5.613412692266443
+5.339997993203038
+5.078069839645422
+4.827240754206443
+4.587131834698446
+4.357372763056912
+4.357372763056912
+4.137601774726927
+1.5254536025963588
+0.0023707487489687726
+4.933077457357198e-7
+8.157805551380282e-14
+1.6648677430325974e-16
+res.minimizer = [0.999999999999975, 1.0000000000000213]
+2-element Array{Float64,1}:
+ 0.999999999999975
+ 1.0000000000000213</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../exogenous_input/">« Handling Exogenous Input Signals</a><a class="docs-footer-nextpage" href="../optimal_control/">Solving Optimal Control Problems with Universal Differential Equations (@id optcontrol) »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 23 November 2020 01:47">Monday 23 November 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
