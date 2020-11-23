@@ -42,7 +42,7 @@ optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), GalacticOptim
 optprob = GalacticOptim.OptimizationProblem(optfunc, θ)
 res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = res.minimum
-@test 10loss2 < loss1
+@test 3loss2 < loss1
 
 ## Partial Neural Adjoint
 
@@ -87,4 +87,4 @@ res1 = GalacticOptim.solve(optprob, ADAM(0.01), cb = cb, maxiters = 100)
 optprob = GalacticOptim.OptimizationProblem(optfunc, res1.minimizer)
 res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
 loss2 = res.minimum
-@test 10loss2 < loss1
+@test 3loss2 < loss1
