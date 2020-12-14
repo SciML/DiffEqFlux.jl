@@ -31,7 +31,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
 
 [compat]
-Adapt = "1, 2.0"
+Adapt = "2"
 BlackBoxOptim = "0.5"
 ConsoleProgressMonitor = "0.1"
 DiffEqBase = "6.41"
