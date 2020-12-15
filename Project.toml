@@ -58,10 +58,11 @@ NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["DelayDiffEq", "Distances", "DataInterpolations", "DiffEqCallbacks", "GalacticOptim", "OrdinaryDiffEq", "NLopt", "Pkg", "Random", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "GeometricFlux"]
+test = ["DelayDiffEq", "Distances", "DataInterpolations", "DiffEqCallbacks", "GalacticOptim", "OrdinaryDiffEq", "NLopt", "Pkg", "Random", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "GeometricFlux", "ReverseDiff"]
