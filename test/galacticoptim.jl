@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim,  DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, Optim, NLopt, BlackBoxOptim, Test #using Plots
+using DiffEqFlux, GalacticOptim,  DiffEqSensitivity, Flux, OrdinaryDiffEq, Zygote, NLopt, Test #using Plots
 
 function lotka_volterra(du,u,p,t)
   x, y = u

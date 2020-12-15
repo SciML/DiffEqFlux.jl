@@ -1,11 +1,11 @@
 module DiffEqFlux
 
-using GalacticOptim, DiffEqBase, Tracker, DiffResults, DiffEqSensitivity, Distributions, ForwardDiff,
-      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools, Optim,
-      StaticArrays, Base.Iterators, Printf, BlackBoxOptim, Zygote
+using GalacticOptim, DiffEqBase, DiffResults, DiffEqSensitivity, Distributions, ForwardDiff,
+      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools,
+      StaticArrays, Base.Iterators, Printf, Zygote
 
 using DistributionsAD
-import ProgressLogging, ZygoteRules, ReverseDiff
+import ProgressLogging, ZygoteRules
 import ConsoleProgressMonitor, TerminalLoggers, LoggingExtras
 
 import Logging
