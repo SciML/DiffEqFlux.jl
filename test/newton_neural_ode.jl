@@ -1,4 +1,4 @@
-using DiffEqFlux, Flux, GalacticOptim, Optim, OrdinaryDiffEq, Test
+using DiffEqFlux, Flux, GalacticOptim, OrdinaryDiffEq, Test
 
 n = 2  # number of ODEs
 tspan = (0.0, 1.0)

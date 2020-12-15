@@ -1,7 +1,7 @@
 println("Starting Precompilation")
 using Flux
 println("Starting Tests")
-using OrdinaryDiffEq, Test, Optim, DiffEqSensitivity
+using OrdinaryDiffEq, Test, DiffEqSensitivity
 println("Going to start tests!")
 using DiffEqFlux, GalacticOptim
 
