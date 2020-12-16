@@ -89,6 +89,8 @@ prediction = predict_neuralode(samples[idx])
 plot!(tsteps,prediction[1,:], color = :black, w = 2, label = "")
 plot!(tsteps,prediction[2,:], color = :black, w = 2, label = "Best fit prediction", ylims = (-2.5, 3.5))
 
+
+
 #################### RETRODICTED PLOTS - CONTOUR ####################
 pl = scatter(ode_data[1,:], ode_data[2,:], color = :red, label = "Data",  xlabel = "Var1", ylabel = "Var2", title = "Spiral Neural ODE")
 
@@ -99,6 +101,16 @@ end
 
 plot!(prediction[1,:], prediction[2,:], color = :black, w = 2, label = "Best fit prediction", ylims = (-2.5, 3))
 
+```
+Time Series Plots:
+
+![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_NUTS_TimeSeriesPlot.png?raw=true)
+
+Contour Plots:
+
+![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_NUTS_ContourPlot.png?raw=true)
+
+```julia
 ######################## CHAIN DIAGNOSIS PLOTS#########################
 samples = hcat(samples...)
 
@@ -111,7 +123,18 @@ Chain_Spiral = Chains(samples_reshape)
 plot(Chain_Spiral)
 
 autocorplot(Chain_Spiral)
+
 ```
+
+Chain Mixing Plot:
+
+![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_NUTS_ChainPlot1.png?raw=true)
+
+Auto-Corelation Plot:
+
+![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_NUTS_ChainPlot2.png?raw=true)
+
+
 
 
 ## Explanation
