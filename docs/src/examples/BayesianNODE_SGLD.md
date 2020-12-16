@@ -121,11 +121,11 @@ savefig(phase_plt, "C:/Users/16174/Desktop/Julia Lab/MSML2021/BayesianNODE_SGLD_
 
 Time Series Plots:
 
-![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_SGLD_Plot1.png)
+![](https://raw.githubusercontent.com/RajDandekar/BayesianNeuralODE.jl/master/BayesianNODE_SGLD_Plot1.png?token=AAN25HQGSTDIU23DMMDGCFC73JCNM)
 
 Contour Plots:
 
-![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_SGLD_Plot2.png)
+![](https://raw.githubusercontent.com/RajDandekar/BayesianNeuralODE.jl/master/BayesianNODE_SGLD_Plot2.png?token=AAN25HRJAI5VNFTAFYSLR7C73JCN4)
 
 ## Explanation
 
