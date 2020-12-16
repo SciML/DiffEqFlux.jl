@@ -1,7 +1,7 @@
 # Bayesian Neural ODEs: NUTS
-The DiffEqFlux.jl library in Julia can be seamlessly combined with Bayesian estimation
-librarries likes AdvancedHMC.jl and Turing.jl. This enables converting Neural ODEs
-to Bayesian Neural ODEs, which enables us to estimate the error in the Neural ODE estimation and forecasting.
+Recently, Neural Ordinary Differential Equations has emerged as a powerful framework for modeling physical simulations without explicitly defining the ODEs governing the system, but learning them via machine learning. However, the question: Can Bayesian learning frameworks be integrated with Neural ODEs to robustly quantify the uncertainty in the weights of a Neural ODE? remains unanswered. 
+
+In this tutorial, we show how the DiffEqFlux.jl library in Julia can be seamlessly combined with Bayesian estimation libraries likes AdvancedHMC.jl and Turing.jl. This enables converting Neural ODEs to Bayesian Neural ODEs, which enables us to estimate the error in the Neural ODE estimation and forecasting.
 In this tutorial, a working example of the Bayesian Neural ODE: NUTS sampler is shown.
 
 For more details, please refer to our study: https://arxiv.org/abs/2012.07244
@@ -139,7 +139,7 @@ Auto-Corelation Plot:
 
 ## Explanation
 
-Step1:Get the data from the Spiral ODE example
+#### Step 1 :Get the data from the Spiral ODE example
 
 ```julia
 u0 = [2.0; 0.0]
@@ -156,10 +156,10 @@ prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 ```
 
-Step2: Define the Neural ODE architecture. Note that this step potentially offers a lot of flexibility in the number of layers/ number of units in each layer. It may not necessarily be true that a 100 units
-architecture is better at prediction/forecasting than a 50 unit
-architecture. On the other hand, a complicated architecture can take a
-huge computational time without increasing performance.
+#### Step 2: Define the Neural ODE architecture. 
+
+Note that this step potentially offers a lot of flexibility in the number of layers/ number of units in each layer. It may not necessarily be true that a 100 units
+architecture is better at prediction/forecasting than a 50 unit architecture. On the other hand, a complicated architecture can take a huge computational time without increasing performance.
 
 ```julia
 dudt2 = FastChain((x, p) -> x.^3,
@@ -168,7 +168,8 @@ dudt2 = FastChain((x, p) -> x.^3,
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 ```
 
-Step3: Define the loss function for the Neural ODE.
+
+#### Step 3: Define the loss function for the Neural ODE.
 
 ```julia
 function predict_neuralode(p)
@@ -183,9 +184,9 @@ end
 
 ```
 
-Step4: Now we start integrating the Bayesian estimation workflow as prescribed
-by the AdvancedHMC interface with the NeuralODE defined above. The Advanced HMC interface requires us
-to specify: (a) the hamiltonian log density and its gradient , (b) the sampler and (c) the step size
+#### Step 4: Now we start integrating the Bayesian estimation workflow as prescribed by the AdvancedHMC interface with the NeuralODE defined above. 
+
+The Advanced HMC interface requires us to specify: (a) the hamiltonian log density and its gradient , (b) the sampler and (c) the step size
 adaptor function.
 
 For the hamiltonian log density, we use the loss function. The θ*θ term denotes the use of
@@ -227,7 +228,7 @@ samples, stats = sample(h, prop, Float64.(prob_neuralode.p), 500, adaptor, 500; 
 
 ```
 
-Step5: Plot diagnostics.
+#### Step 5: Plot diagnostics.
 
 A: Plot chain object and auto-corel plot of the first 5 parameters.
 
