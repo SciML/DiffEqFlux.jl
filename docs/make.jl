@@ -12,32 +12,45 @@ makedocs(
                              canonical="https://diffeqflux.sciml.ai/stable/"),
     pages=[
         "DiffEqFlux.jl: Generalized Physics-Informed and Scientific Machine Learning (SciML)" => "index.md",
-        "Tutorials" => Any[
+        "Basic Parameter Fitting Tutorials" => Any[
             "examples/optimization_ode.md",
             "examples/optimization_sde.md",
             "examples/lotka_volterra.md",
+            "examples/delay_diffeq.md",
+            "examples/pde_constrained.md",
+            ],
+        "Neural ODE and SDE Tutorials" => Any[
             "examples/neural_ode_sciml.md",
             "examples/neural_ode_flux.md",
             "examples/mnist_neural_ode.md",
-            "examples/delay_diffeq.md",
-            "examples/hybrid_diffeq.md",
-            "examples/augmented_neural_ode.md",
-            "examples/normalizing_flows.md",
-            "examples/local_minima.md",
             "examples/neural_sde.md",
+            "examples/augmented_neural_ode.md",
             "examples/collocation.md",
-            "examples/exogenous_input.md",
-            "examples/pde_constrained.md",
+            "examples/neural_gde.md",
+            "examples/normalizing_flows.md"],
+        "Bayesian Estimation Tutorials" => Any[
+            "examples/turing_bayesian.md"
+            "examples/BayesianNODE_NUTS.md"
+        ],
+        "FAQ, Tips, and Tricks" = Any[
+            "examples/local_minima.md",
+            "examples/second_order_neural.md",
+            "examples/second_order_adjoints.md",
+            "examples/minibatch.md",
+        ],
+        "Hybrid and Jump Tutorials" => Any[
+            "examples/hybrid_diffeq.md",
+            "examples/jump.md",
+        ],
+        "Optimal and Model Predictive Control Tutorials" => Any[
             "examples/optimal_control.md",
             "examples/feedback_control.md",
-            "examples/second_order_neural.md",
-            "examples/physical_constraints.md",
-            "examples/second_order_adjoints.md",
-            "examples/jump.md",
+        ],
+        "Universal Differential Equations and Physical Constraints Tutorials" => Any[
             "examples/universal_diffeq.md",
-            "examples/minibatch.md",
+            "examples/exogenous_input.md",
+            "examples/physical_constraints.md",
             "examples/tensor_layer.md",
-            "examples/neural_gde.md",
             "examples/hamiltonian_nn.md"
         ],
         "Layers" => Any[
