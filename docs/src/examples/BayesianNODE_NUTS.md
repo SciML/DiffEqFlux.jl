@@ -139,7 +139,7 @@ Auto-Corelation Plot:
 
 ## Explanation
 
-#### Step 1 :Get the data from the Spiral ODE example
+#### Step 1: Get the data from the Spiral ODE example
 
 ```julia
 u0 = [2.0; 0.0]
