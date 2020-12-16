@@ -29,8 +29,9 @@ makedocs(
             "examples/neural_gde.md",
             "examples/normalizing_flows.md"],
         "Bayesian Estimation Tutorials" => Any[
-            "examples/turing_bayesian.md"
-            "examples/BayesianNODE_NUTS.md"
+            "examples/turing_bayesian.md",
+            "examples/BayesianNODE_NUTS.md",
+            "examples/BayesianNODE_SGLD.md",
         ],
         "FAQ, Tips, and Tricks" = Any[
             "examples/local_minima.md",
