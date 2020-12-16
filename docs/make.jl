@@ -33,7 +33,7 @@ makedocs(
             "examples/BayesianNODE_NUTS.md",
             "examples/BayesianNODE_SGLD.md",
         ],
-        "FAQ, Tips, and Tricks" = Any[
+        "FAQ, Tips, and Tricks" => Any[
             "examples/local_minima.md",
             "examples/second_order_neural.md",
             "examples/second_order_adjoints.md",
