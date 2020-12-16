@@ -105,11 +105,11 @@ plot!(prediction[1,:], prediction[2,:], color = :black, w = 2, label = "Best fit
 ```
 Time Series Plots:
 
-![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_NUTS_TimeSeriesPlot.png)
+![](https://raw.githubusercontent.com/RajDandekar/BayesianNeuralODE.jl/master/BayesianNODE_NUTS_TimeSeriesPlot.png?token=AAN25HTZOBY27EP2U7J74C273JCLC)
 
 Contour Plots:
 
-![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_NUTS_ContourPlot.png)
+![](https://raw.githubusercontent.com/RajDandekar/BayesianNeuralODE.jl/master/BayesianNODE_NUTS_ContourPlot.png?token=AAN25HVNX4SOMRVYFMNIDDS73JCLY)
 
 ```julia
 ######################## CHAIN DIAGNOSIS PLOTS#########################
@@ -129,11 +129,11 @@ autocorplot(Chain_Spiral)
 
 Chain Mixing Plot:
 
-![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_NUTS_ChainPlot1.png)
+![](https://raw.githubusercontent.com/RajDandekar/BayesianNeuralODE.jl/master/BayesianNODE_NUTS_ChainPlot1.png?token=AAN25HWPABZYUCZSWZRGCPK73JCIG)
 
 Auto-Corelation Plot:
 
-![](https://github.com/RajDandekar/BayesianNeuralODE.jl/blob/master/BayesianNODE_NUTS_ChainPlot2.png)
+![](https://raw.githubusercontent.com/RajDandekar/BayesianNeuralODE.jl/master/BayesianNODE_NUTS_ChainPlot2.png?token=AAN25HQCNULFQ5WGTC2UEOK73JCJC)
 
 
 
