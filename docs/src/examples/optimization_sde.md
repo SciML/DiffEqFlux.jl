@@ -8,7 +8,7 @@ differentiation. However, forward-mode can be more efficient for low numbers
 of parameters (<100). (Note: the default is reverse-mode AD which is more suitable
 for things like neural SDEs!)
 
-## Example 1: Fitting Data with SDEs
+## Example 1: Fitting Data with SDEs via Method of Moments and Parallelism
 
 Let's do the most common scenario: fitting data. Let's say our ecological system
 is a stochastic process. Each time we solve this equation we get a different
@@ -107,7 +107,14 @@ The time for the full fitting process was:
 
 approximately 4 minutes.
 
-## Example 2: Controlling SDEs to an objective
+## Example 2: Fitting SDEs via Bayesian Quasi-Likelihood Approaches
+
+An inference method which can be much more efficient in many cases is the quasi-likelihood appraoch.
+This approach matches the random likelihood of the SDE output with the random sampling of a Bayesian
+inference problem to more efficiently directly estimate the posterior distribution. For more information,
+please see [the Turing.jl Bayesian Differential Equations tutorial](https://github.com/TuringLang/TuringTutorials/blob/master/10_diffeq.ipynb)
+
+## Example 3: Controlling SDEs to an objective
 
 In this example, we will find the parameters of the SDE that force the
 solution to be close to the constant 1.
