@@ -134,6 +134,10 @@ of the possible ways to compose the thousands of differentiable libraries togeth
 ODEs for SDEs, DDEs, DAEs, etc., put quadrature libraries or [Tullio.jl](https://github.com/mcabbott/Tullio.jl)
 in the loss function, the world is your oyster!
 
+As a proof of composability, note that the implementation of Bayesian neural ODEs required
+zero code changes to the library, and instead just relied on the composability with other
+Julia packages.
+
 ## Citation
 
 If you use DiffEqFlux.jl or are influenced by its ideas, please cite:
