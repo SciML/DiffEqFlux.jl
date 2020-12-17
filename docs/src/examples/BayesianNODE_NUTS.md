@@ -1,7 +1,5 @@
 # Bayesian Neural ODEs: NUTS
 
-Recently, Neural Ordinary Differential Equations has emerged as a powerful framework for modeling physical simulations without explicitly defining the ODEs governing the system, but learning them via machine learning. However, the question: Can Bayesian learning frameworks be integrated with Neural ODEs to robustly quantify the uncertainty in the weights of a Neural ODE? remains unanswered.
-
 In this tutorial, we show how the DiffEqFlux.jl library in Julia can be seamlessly combined with Bayesian estimation libraries like AdvancedHMC.jl and Turing.jl. This enables converting Neural ODEs to Bayesian Neural ODEs, which enables us to estimate the error in the Neural ODE estimation and forecasting.
 In this tutorial, a working example of the Bayesian Neural ODE: NUTS sampler is shown.
 
@@ -129,7 +127,7 @@ autocorplot(Chain_Spiral)
 
 Chain Mixing Plot:
 
-![]https://user-images.githubusercontent.com/23134958/102398106-dd31b000-4004-11eb-9623-a24ab0409b07.png)
+![](https://user-images.githubusercontent.com/23134958/102398106-dd31b000-4004-11eb-9623-a24ab0409b07.png)
 
 Auto-Corelation Plot:
 
