@@ -21,6 +21,7 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
     @safetestset "Layers SDE" begin include("layers_sde.jl") end
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
     @safetestset "Collocation Regression" begin include("collocation_regression.jl") end
+    @testset "Distributed" begin include("distributed.jl") end
 end
 
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
