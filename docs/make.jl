@@ -44,6 +44,7 @@ makedocs(
         ],
         "Hybrid and Jump Tutorials" => Any[
             "examples/hybrid_diffeq.md",
+            "examples/bouncing_ball.md"
             "examples/jump.md",
         ],
         "Optimal and Model Predictive Control Tutorials" => Any[
