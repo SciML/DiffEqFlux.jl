@@ -35,6 +35,7 @@ makedocs(
         ],
         "FAQ, Tips, and Tricks" => Any[
             "examples/local_minima.md",
+            "examples/multiple_nn.md",
             "examples/second_order_neural.md",
             "examples/second_order_adjoints.md",
             "examples/minibatch.md",
