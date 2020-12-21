@@ -1,4 +1,4 @@
-# GPU-based MNIST Neural ODE Classifier
+# [GPU-based MNIST Neural ODE Classifier](@id mnist)
 
 Training a classifier for **MNIST** using a neural ordinary differential equation **NN-ODE**
 on **GPUs** with **Minibatching**.

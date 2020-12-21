@@ -18,7 +18,7 @@ makedocs(
             "examples/lotka_volterra.md",
             "examples/delay_diffeq.md",
             "examples/pde_constrained.md",
-            ],
+        ],
         "Neural ODE and SDE Tutorials" => Any[
             "examples/neural_ode_sciml.md",
             "examples/neural_ode_flux.md",
@@ -27,7 +27,8 @@ makedocs(
             "examples/augmented_neural_ode.md",
             "examples/collocation.md",
             "examples/neural_gde.md",
-            "examples/normalizing_flows.md"],
+            "examples/normalizing_flows.md"
+        ],
         "Bayesian Estimation Tutorials" => Any[
             "examples/turing_bayesian.md",
             "examples/BayesianNODE_NUTS.md",
@@ -36,6 +37,7 @@ makedocs(
         "FAQ, Tips, and Tricks" => Any[
             "examples/local_minima.md",
             "examples/multiple_nn.md",
+            "examples/data_parallel.md",
             "examples/second_order_neural.md",
             "examples/second_order_adjoints.md",
             "examples/minibatch.md",
