@@ -1,4 +1,4 @@
-# Use sciml_train to train a model on a stiff chemical reaction system
+# Parameter Estimation on Highly Stiff Systems
 
 This tutorial goes into training a model on stiff chemical reaction system data.
 
@@ -113,7 +113,7 @@ end
 ```
 
 The difference between the data and the prediction is weighted by the transformed
-Jacobian to make the fitting easier.
+Jacobian to do a relative scaling of the loss.
 
 We define a callback function.
 ```julia

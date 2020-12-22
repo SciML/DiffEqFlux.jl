@@ -18,6 +18,7 @@ makedocs(
             "examples/lotka_volterra.md",
             "examples/delay_diffeq.md",
             "examples/pde_constrained.md",
+            "examples/stiff_ode_fit.md",
         ],
         "Neural ODE and SDE Tutorials" => Any[
             "examples/neural_ode_sciml.md",
