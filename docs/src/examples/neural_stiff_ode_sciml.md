@@ -1,4 +1,4 @@
-# Use sciml_train to train on a stiff chemical reaction system
+# Use sciml_train to train a neural network on a stiff chemical reaction system
 
 This tutorial goes into the training of stiff ODEs. Please read the [neural ordinary differential equations tutorial](https://diffeqflux.sciml.ai/dev/examples/neural_ode_sciml/) first.
 
