@@ -30,7 +30,7 @@ function f(x,p)
   tmp1 = x.^3
   len1 = paramlength(FastDense(2,50,tanh))
   tmp2 = FastDense(2,50,tanh)(tmp1,@view p[1:len1])
-  tmp3 = FastDense(50,2)(tmp2,@view p[len2:end])
+  tmp3 = FastDense(50,2)(tmp2,@view p[(len1+1):end])
 end
 ```
 
