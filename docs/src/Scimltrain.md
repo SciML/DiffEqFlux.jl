@@ -61,3 +61,8 @@ loss. This allows for reusing instead of recalculating. The callback function
 must return a boolean where if `true`, then the optimizer will prematurely end
 the optimization. It is called after every successful step, something that is
 defined in an optimizer-dependent manner.
+
+## Solution structure
+
+`sciml_train` returns its solution as a struct of type `Optim.MultivariateOptimizationResults`. Fields of interest include 
+`minimizer` array containing optimized model parameters, the `minimum` loss function value, number of `iterations`, `time_run` in seconds, `stopped_by` criteria as symbols, and `method` describing optimization algorithm parameters. Boolean fields describe whether `iteration_converged`, `x_converged`, and `is_success`.
