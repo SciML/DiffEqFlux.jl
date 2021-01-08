@@ -100,6 +100,7 @@ end
 """
 ```julia
 u′,u = collocate_data(data,tpoints,kernel=SigmoidKernel())
+u′,u = collocate_data(data,tpoints,tpoints_sample,interp,args...)
 ```
 
 Computes a non-parametrically smoothed estimate of `u'` and `u`
@@ -121,6 +122,11 @@ For kernels, the following exist:
 - SilvermanKernel
 
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2631937/
+
+Additionally, we can use interpolation methods from
+[DataInterpolations.jl](https://github.com/PumasAI/DataInterpolations.jl) to generate
+smoothed estimates. In this case, pass any of the methods like `QuadraticInterpolation`
+as `interp`, and the timestamps to sample from as `tpoints_sample`.
 """
 function collocate_data(data,tpoints,kernel=TriangularKernel())
   _one = oneunit(first(data))
@@ -147,26 +153,20 @@ function collocate_data(data,tpoints,kernel=TriangularKernel())
   estimated_derivative,estimated_solution
 end
 
-# # FIXME: Dispatch using AbstractInterpolation not working :(
-# function collocate_data(data::AbstractVector,tpoints,tpoints_sample,interp,args...)
-#     u, du = collocate_data(reshape(data, :, 1),tpoints,tpoints_sample,interp,args...)
-#     return u[:, 1], du[:, 1]
-# end
-#
-# # FIXME: Dispatch using AbstractInterpolation not working :(
-# function collocate_data(data::AbstractMatrix{T},tpoints::AbstractVector{T},
-# 			tpoints_sample::AbstractVector{T},interp, args...) where T
-#     u = zeros(T, length(tpoints_sample), size(data, 1))
-#     du = zeros(T, length(tpoints_sample), size(data, 1))
-#     z = ones(T, size(data, 1))
-#     result = DiffResults.JacobianResult(u[:, 1])
-#     for batch in 1:size(data, 2)
-#         data_batch = data[:, batch]
-#         interpolation = interp(data_batch,tpoints,args...)
-#         interp_func(t) = interpolation.(t)
-#         ForwardDiff.jacobian!(result, interp_func, tpoints_sample)
-#         u[:, batch] .= DiffResults.value(result)
-#         du[:, batch] .= diag(DiffResults.jacobian(result))
-#     end
-#     return u, du
-# end
+function collocate_data(data::AbstractVector,tpoints::AbstractVector,tpoints_sample::AbstractVector,
+                        interp,args...)
+  u, du = collocate_data(reshape(data, 1, :),tpoints,tpoints_sample,interp,args...)
+  return du[1, :], u[1, :]
+end
+
+function collocate_data(data::AbstractMatrix{T},tpoints::AbstractVector{T},
+                        tpoints_sample::AbstractVector{T},interp,args...) where T
+  u = zeros(T,size(data, 1),length(tpoints_sample))
+  du = zeros(T,size(data, 1),length(tpoints_sample))
+  for d1 in 1:size(data,1)
+    interpolation = interp(data[d1,:],tpoints,args...)
+    u[d1,:] .= interpolation.(tpoints_sample)
+    du[d1,:] .= DataInterpolations.derivative.((interpolation,), tpoints_sample)
+  end
+  return du, u
+end
