@@ -1,7 +1,7 @@
 module DiffEqFlux
 
-using GalacticOptim, DiffEqBase, DiffResults, DiffEqSensitivity, Distributions, ForwardDiff,
-      Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools,
+using GalacticOptim, DataInterpolations, DiffEqBase, DiffResults, DiffEqSensitivity,
+      Distributions, ForwardDiff, Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools,
       StaticArrays, Base.Iterators, Printf, Zygote
 
 using DistributionsAD
