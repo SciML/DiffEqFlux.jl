@@ -59,7 +59,7 @@ makedocs(
             "examples/tensor_layer.md",
             "examples/hamiltonian_nn.md"
         ],
-        "Layers" => Any[
+        "Layer APIs" => Any[
         "Classical Basis Layers" => "layers/BasisLayers.md",
         "Tensor Product Layer" => "layers/TensorLayer.md",
         "Continuous Normalizing Flows Layer" => "layers/CNFLayer.md",
@@ -67,13 +67,16 @@ makedocs(
         "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
         "Hamiltonian Neural Network Layer" => "layers/HamiltonianNN.md"
         ],
-        "Controlling Choices of Adjoints" => "ControllingAdjoints.md",
-        "Use with Flux Chain and train!" => "Flux.md",
-        "FastChain" => "FastChain.md",
-        "Smoothed Collocation" => "Collocation.md",
-        "GPUs" => "GPUs.md",
-        "sciml_train" => "Scimltrain.md",
-        "Benchmark" => "Benchmark.md"
+        "Manual and APIs" => Any[
+            "Controlling Choices of Adjoints" => "ControllingAdjoints.md",
+            "Use with Flux Chain and train!" => "Flux.md",
+            "FastChain" => "FastChain.md",
+            "Smoothed Collocation" => "Collocation.md",
+            "GPUs" => "GPUs.md",
+            "sciml_train" => "Scimltrain.md",
+
+        ],
+        "Benchmarks" => "Benchmark.md"
     ]
 )
 
