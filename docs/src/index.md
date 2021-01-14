@@ -27,13 +27,18 @@ updated for changes to the libraries). Additional demonstrations, like neural
 PDEs and neural jump SDEs, can be found [at this blog
 post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
 (among many others!). All of these features are only part of the advantage, as this library
-[routinely benchmarks orders of magnitude faster than competing libraries like torchdiffeq](@ref Benchmarks)
+[routinely benchmarks orders of magnitude faster than competing libraries like torchdiffeq](@ref Benchmarks).
+Use with GPUs is highly optimized by 
+[recompiling the solvers to GPUs to remove all CPU-GPU data transfers](https://www.stochasticlifestyle.com/solving-systems-stochastic-pdes-using-gpus-julia/),
+while use with CPUs uses specialized kernels for accelerating differential equation solves.
 
 Many different training techniques are supported by this package, including:
 
 - Optimize-then-discretize (backsolve adjoints, checkpointed adjoints, quadrature adjoints)
 - Discretize-then-optimize (forward and reverse mode discrete sensitivity analysis)
-  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
+  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and 
+    [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all 
+    [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
 - O(1) memory backprop of ODEs via BacksolveAdjoint, and Virtual Brownian Trees for O(1) backprop of SDEs
