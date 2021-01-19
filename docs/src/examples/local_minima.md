@@ -80,7 +80,7 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                           ADAM(0.05), cb = callback,
                                           maxiters = 300)
 
-callback(result_neuralode2.minimizer,loss_neuralode(result_neuralode.minimizer)...;doplot=true)
+callback(result_neuralode.minimizer,loss_neuralode(result_neuralode.minimizer)...;doplot=true)
 savefig("local_minima.png")
 ```
 
