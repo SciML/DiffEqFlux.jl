@@ -41,7 +41,7 @@ if GROUP == "All" || GROUP == "AdvancedNeuralDE"
     @safetestset "Neural Hamiltonian ODE Tests" begin include("hamiltonian_nn.jl") end
 end
 
-if GROUP == "All" || GROUP == "Newton"
+if GROUP == "Newton"
     @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
 end
 
