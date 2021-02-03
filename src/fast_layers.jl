@@ -38,14 +38,16 @@ struct FastDense{F,F2} <: FastLayer
   in::Int
   σ::F
   initial_params::F2
+  bias::Bool
   function FastDense(in::Integer, out::Integer, σ = identity;
-                 initW = Flux.glorot_uniform, initb = Flux.zeros)
-    initial_params() = vcat(vec(initW(out, in)),initb(out))
-    new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params)
+                 bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros)
+    temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
+    initial_params() = temp
+    new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params,bias)
   end
 end
 # (f::FastDense)(x,p) = f.σ.(reshape(uview(p,1:(f.out*f.in)),f.out,f.in)*x .+ uview(p,(f.out*f.in+1):lastindex(p)))
-(f::FastDense)(x,p) = f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])
+(f::FastDense)(x,p) = f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ ((f.bias == true) ? (p[(f.out*f.in+1):end]) : 0.0))
 ZygoteRules.@adjoint function (f::FastDense)(x,p)
   if !isgpu(p)
     W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
@@ -53,7 +55,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     W = reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
   end
 
-  b = p[(f.out*f.in+1):end]
+  b = ((f.bias == true) ? (p[(f.out*f.in+1):end]) : 0.0)
   r = W*x .+ b
   ifgpufree(b)
 
@@ -96,9 +98,8 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   end
   y,FastDense_adjoint
 end
-paramlength(f::FastDense) = f.out*(f.in + 1)
+paramlength(f::FastDense) = (f.bias == true ) ? f.out*(f.in + 1) : f.out*f.in
 initial_params(f::FastDense) = f.initial_params()
-
 """
 StaticDense(in,out,activation=identity;
           initW = Flux.glorot_uniform, initb = Flux.zeros)
@@ -116,17 +117,20 @@ adjoint with Zygote.
 struct StaticDense{out,in,F,F2} <: FastLayer
   σ::F
   initial_params::F2
-  function StaticDense(in::Integer, out::Integer, σ = identity;
+  bias::Bool
+  function StaticDense(in::Integer, out::Integer, σ = identity; bias = true,
                  initW = Flux.glorot_uniform, initb = Flux.zeros)
-    initial_params() = vcat(vec(initW(out, in)),initb(out))
+    temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
+    initial_params() = temp
     new{out,in,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end
 end
 
 function param2Wb(f::StaticDense{out,in}, p) where {out,in}
-  _W, _b = @views p[1:(out*in)], p[(out*in+1):end]
+  _W = @view p[1:(out*in)]
+  _b =  (out*in ==length(p)) ? (@view p[(out*in+1):end]) : 0.0
   W = @inbounds convert(SMatrix{out,in},_W)
-  b = @inbounds SVector{out}(_b)
+  b = ((f.bias==true) ? (@inbounds SVector{out}(_b)) : (@inbounds SVector{1}(_b)))
   return W, b
 end
 function (f::StaticDense{out,in})(x,p) where {out,in}
@@ -159,5 +163,5 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   end
   y,StaticDense_adjoint
 end
-paramlength(f::StaticDense{out,in}) where {out,in} = out*(in + 1)
+paramlength(f::StaticDense{out,in}) where {out,in} = ((f.bias == true) ? (out*(in + 1)) : out*in )
 initial_params(f::StaticDense) = f.initial_params()
