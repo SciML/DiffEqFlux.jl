@@ -118,8 +118,8 @@ struct StaticDense{out,in,F,F2} <: FastLayer
   σ::F
   initial_params::F2
   bias::Bool
-  function StaticDense(in::Integer, out::Integer, σ = identity; bias = true,
-                 initW = Flux.glorot_uniform, initb = Flux.zeros)
+  function StaticDense(in::Integer, out::Integer, σ = identity;
+                 bias =true, initW = Flux.glorot_uniform, initb = Flux.zeros)
     temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
     initial_params() = temp
     new{out,in,typeof(σ),typeof(initial_params)}(σ,initial_params)
@@ -127,10 +127,10 @@ struct StaticDense{out,in,F,F2} <: FastLayer
 end
 
 function param2Wb(f::StaticDense{out,in}, p) where {out,in}
-  _W = @view p[1:(out*in)]
-  _b =  (out*in ==length(p)) ? (@view p[(out*in+1):end]) : 0.0
+  _W = @views p[1:(out*in)]
+  _b =  ((f.bias == true ) ? (p[(out*in+1):end]) : 0 )
   W = @inbounds convert(SMatrix{out,in},_W)
-  b = ((f.bias==true) ? (@inbounds SVector{out}(_b)) : (@inbounds SVector{1}(_b)))
+  b = ((f.bias == true ) ? (@inbounds SVector{out}(_b)) : 0)
   return W, b
 end
 function (f::StaticDense{out,in})(x,p) where {out,in}
@@ -163,5 +163,5 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   end
   y,StaticDense_adjoint
 end
-paramlength(f::StaticDense{out,in}) where {out,in} = ((f.bias == true) ? (out*(in + 1)) : out*in )
+paramlength(f::StaticDense{out,in}) where {out,in} = length(f.initial_params())
 initial_params(f::StaticDense) = f.initial_params()
