@@ -1,6 +1,7 @@
-using DiffEqFlux, Optim, OrdinaryDiffEq, DiffEqSensitivity, Test
+using DiffEqFlux, Optim, OrdinaryDiffEq, DiffEqSensitivity, Zygote, Test
 
 function f(du,u,p,t)
+  @show t
   du[1] = u[2]
   du[2] = -p[1]
 end
@@ -20,20 +21,26 @@ p = [9.8, 0.8]
 prob = ODEProblem(f,u0,tspan,p)
 sol = solve(prob,Tsit5(),callback=cb)
 
-function loss(θ)
-  sol = solve(prob,Tsit5(),p=[9.8,θ[1]],callback=cb,sensealg=ForwardDiffSensitivity())
+function loss1(θ)
+  @show θ
+  sol = solve(prob,Tsit5(),p=[9.8,θ[1]],saveat=0.1,callback=cb,sensealg=ForwardDiffSensitivity())
   target = 20.0
   abs2(sol[end][1] - target)
 end
 
-res = DiffEqFlux.sciml_train(loss,[0.8],BFGS())
-@test loss(res.minimizer) < 1
-
-function loss(θ)
-  sol = solve(prob,Tsit5(),p=[9.8,θ[1]],callback=cb,sensealg=ReverseDiffAdjoint())
+function loss2(θ)
+  @show θ
+  sol = solve(prob,Tsit5(),p=[9.8,θ[1]],saveat=0.1,callback=cb,sensealg=ReverseDiffAdjoint())
   target = 20.0
   abs2(sol[end][1] - target)
 end
 
-res = DiffEqFlux.sciml_train(loss,[0.8],BFGS())
-@test loss(res.minimizer) < 1
+#Zygote.gradient(loss1,[0.8])
+
+#Zygote.gradient(loss2,[0.8])
+
+#res = DiffEqFlux.sciml_train(loss1,[0.8],BFGS())
+#@test loss1(res.minimizer) < 1
+
+#res = DiffEqFlux.sciml_train(loss2,[0.8],BFGS())
+#@test loss2(res.minimizer) < 1
