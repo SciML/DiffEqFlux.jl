@@ -47,15 +47,10 @@ struct FastDense{F,F2} <: FastLayer
     new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params,bias)
   end
 end
+
 # (f::FastDense)(x,p) = f.σ.(reshape(uview(p,1:(f.out*f.in)),f.out,f.in)*x .+ uview(p,(f.out*f.in+1):lastindex(p)))
-function (f::FastDense)(x,p) 
-  y = f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)
-  if (f.bias == true)
-    return y .+ p[(f.out*f.in+1):end]
-  else
-    return y
-  end
-end
+(f::FastDense)(x,p) = ((f.bias == true ) ? (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])) : (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)))
+
 ZygoteRules.@adjoint function (f::FastDense)(x,p)
   if !isgpu(p)
     W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
@@ -64,8 +59,8 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   end
 
   if f.bias == true
-    b = p[(f.out*f.in+1):end]
-    r = W*x .+b
+    b = p[(f.out*f.in + 1):end]
+    r = W*x .+  b
     ifgpufree(b)
   else
     r = W*x
@@ -109,13 +104,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   end
   y,FastDense_adjoint
 end
-function paramlength(f::FastDense)
-  if f.bias == true 
-    return f.out*(f.in + 1)
-  else 
-    return f.out*f.in
-  end
-end
+paramlength(f::FastDense) = length(f.initial_params())
 initial_params(f::FastDense) = f.initial_params()
 """
 StaticDense(in,out,activation=identity;
@@ -138,16 +127,17 @@ struct StaticDense{out,in,bias,F,F2} <: FastLayer
   bias::Bool
   function StaticDense(in::Integer, out::Integer, σ = identity;
                  bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros)
-    initial_params() = vcat(vec(initW(out, in)),initb(out))
+    temp = ((bias == true ) ? vcat(vec(initW(out, in)),initb(out)) : vcat(vec(initW(out, in))) )             
+    initial_params() = temp
     new{out,in,bias,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end
 end
 
 function param2Wb(f::StaticDense{out,in}, p) where {out,in}
   if f.bias == true
-  _W, _b = @views p[1:(out*in)], p[(out*in+1):end]
-  W = @inbounds convert(SMatrix{out,in},_W)
-  b = @inbounds SVector{out}(_b)
+    _W, _b = @views p[1:(out*in)], p[(out*in+1):end]
+    W = @inbounds convert(SMatrix{out,in},_W)
+    b = @inbounds SVector{out}(_b)
   return W, b
   else 
     W = @view p[1:(out*in)]
@@ -166,8 +156,8 @@ function (f::StaticDense{out,in})(x,p) where {out,in}
 end
 ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   if f.bias == true
-  W, b = param2Wb(f, p)
-  r = W*x .+ b
+    W, b = param2Wb(f, p)
+    r = W*x .+ b
   else 
     W = param2Wb(f,p)
     r = W*x
@@ -195,11 +185,5 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   end
   y,StaticDense_adjoint
 end
-function paramlength(f::StaticDense{out,in}) where {out,in} 
-  if f.bias == true 
-    return out*(in+1)
-  else 
-    return out*in
-  end
-end
+paramlength(f::StaticDense{out,in}) where {out,in} = length(f.initial_params())
 initial_params(f::StaticDense) = f.initial_params()
