@@ -24,11 +24,12 @@ initial_params(c::FastChain) = vcat(initial_params.(c.layers)...)
 
 """
 FastDense(in,out,activation=identity;
-          initW = Flux.glorot_uniform, initb = Flux.zeros)
+          bias = true ,initW = Flux.glorot_uniform, initb = Flux.zeros)
 
 A Dense layer `activation.(W*x + b)` with input size `in` and output size `out`.
 The `activation` function defaults to `identity`, meaning the layer is an affine
-function. Initial parameters are taken to match `Flux.Dense`.
+function. Initial parameters are taken to match `Flux.Dense`. 'bias' represents b in
+the layer and it defaults to true.
 
 Note that this function has specializations on `tanh` for a slightly faster
 adjoint with Zygote.
@@ -47,7 +48,14 @@ struct FastDense{F,F2} <: FastLayer
   end
 end
 # (f::FastDense)(x,p) = f.σ.(reshape(uview(p,1:(f.out*f.in)),f.out,f.in)*x .+ uview(p,(f.out*f.in+1):lastindex(p)))
-(f::FastDense)(x,p) = f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ ((f.bias == true) ? (p[(f.out*f.in+1):end]) : 0.0))
+function (f::FastDense)(x,p) 
+  y = f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)
+  if (f.bias == true)
+    return y .+ p[(f.out*f.in+1):end]
+  else
+    return y
+  end
+end
 ZygoteRules.@adjoint function (f::FastDense)(x,p)
   if !isgpu(p)
     W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
@@ -55,10 +63,13 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     W = reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
   end
 
-  b = ((f.bias == true) ? (p[(f.out*f.in+1):end]) : 0.0)
-  r = W*x .+ b
-  ifgpufree(b)
-
+  if f.bias == true
+    b = p[(f.out*f.in+1):end]
+    r = W*x .+b
+    ifgpufree(b)
+  else
+    r = W*x
+  end
   #=
   if typeof(x) <: AbstractVector
     r = p[(f.out*f.in+1):end]
@@ -98,7 +109,13 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   end
   y,FastDense_adjoint
 end
-paramlength(f::FastDense) = (f.bias == true ) ? f.out*(f.in + 1) : f.out*f.in
+function paramlength(f::FastDense)
+  if f.bias == true 
+    return f.out*(f.in + 1)
+  else 
+    return f.out*f.in
+  end
+end
 initial_params(f::FastDense) = f.initial_params()
 """
 StaticDense(in,out,activation=identity;
@@ -109,37 +126,52 @@ The `activation` function defaults to `identity`, meaning the layer is an affine
 function. Initial parameters are taken to match `Flux.Dense`. The internal
 calculations are done with `StaticArrays` for extra speed for small linear
 algebra operations. Should only be used for input/output sizes of approximately
-16 or less.
+16 or less. 'bias' represents bias(b) in the dense layer and it defaults to true.
 
 Note that this function has specializations on `tanh` for a slightly faster
 adjoint with Zygote.
 """
-struct StaticDense{out,in,F,F2} <: FastLayer
+
+struct StaticDense{out,in,bias,F,F2} <: FastLayer
   σ::F
   initial_params::F2
   bias::Bool
   function StaticDense(in::Integer, out::Integer, σ = identity;
-                 bias =true, initW = Flux.glorot_uniform, initb = Flux.zeros)
-    temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
-    initial_params() = temp
-    new{out,in,typeof(σ),typeof(initial_params)}(σ,initial_params)
+                 bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros)
+    initial_params() = vcat(vec(initW(out, in)),initb(out))
+    new{out,in,bias,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end
 end
 
 function param2Wb(f::StaticDense{out,in}, p) where {out,in}
-  _W = @views p[1:(out*in)]
-  _b =  ((f.bias == true ) ? (p[(out*in+1):end]) : 0 )
+  if f.bias == true
+  _W, _b = @views p[1:(out*in)], p[(out*in+1):end]
   W = @inbounds convert(SMatrix{out,in},_W)
-  b = ((f.bias == true ) ? (@inbounds SVector{out}(_b)) : 0)
+  b = @inbounds SVector{out}(_b)
   return W, b
+  else 
+    W = @view p[1:(out*in)]
+    _W = @inbounds convert(SMatrix{out,in},W)
+    return _W
+  end
 end
 function (f::StaticDense{out,in})(x,p) where {out,in}
-  W, b = param2Wb(f, p)
-  f.σ.(W*x .+ b)
+  if f.bias == true
+    W, b = param2Wb(f, p)
+    return f.σ.(W*x .+ b)
+  else 
+    W = param2Wb(f,p)
+    return f.σ.(W*x)
+  end
 end
 ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
+  if f.bias == true
   W, b = param2Wb(f, p)
   r = W*x .+ b
+  else 
+    W = param2Wb(f,p)
+    r = W*x
+  end
   y = f.σ.(r)
   function StaticDense_adjoint(ȳ)
     if typeof(f.σ) <: typeof(tanh)
@@ -163,5 +195,11 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   end
   y,StaticDense_adjoint
 end
-paramlength(f::StaticDense{out,in}) where {out,in} = length(f.initial_params())
+function paramlength(f::StaticDense{out,in}) where {out,in} 
+  if f.bias == true 
+    return out*(in+1)
+  else 
+    return out*in
+  end
+end
 initial_params(f::StaticDense) = f.initial_params()
