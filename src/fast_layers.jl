@@ -104,7 +104,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   end
   y,FastDense_adjoint
 end
-paramlength(f::FastDense) = length(f.initial_params())
+paramlength(f::FastDense) = f.out*(f.in+f.bias)
 initial_params(f::FastDense) = f.initial_params()
 """
 StaticDense(in,out,activation=identity;
@@ -124,29 +124,28 @@ adjoint with Zygote.
 struct StaticDense{out,in,bias,F,F2} <: FastLayer
   σ::F
   initial_params::F2
-  bias::Bool
   function StaticDense(in::Integer, out::Integer, σ = identity;
-                 bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros)
+                 bias::Bool = true, initW = Flux.glorot_uniform, initb = Flux.zeros)
     temp = ((bias == true ) ? vcat(vec(initW(out, in)),initb(out)) : vcat(vec(initW(out, in))) )             
     initial_params() = temp
     new{out,in,bias,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end
 end
 
-function param2Wb(f::StaticDense{out,in}, p) where {out,in}
-  if f.bias == true
+function param2Wb(f::StaticDense{out,in,bias}, p) where {out,in,bias}
+  if bias == true
     _W, _b = @views p[1:(out*in)], p[(out*in+1):end]
     W = @inbounds convert(SMatrix{out,in},_W)
     b = @inbounds SVector{out}(_b)
   return W, b
   else 
-    W = @view p[1:(out*in)]
-    _W = @inbounds convert(SMatrix{out,in},W)
-    return _W
+    _W = @view p[1:(out*in)]
+    W = @inbounds convert(SMatrix{out,in},_W)
+    return W
   end
 end
-function (f::StaticDense{out,in})(x,p) where {out,in}
-  if f.bias == true
+function (f::StaticDense{out,in,bias})(x,p) where {out,in,bias}
+  if bias == true 
     W, b = param2Wb(f, p)
     return f.σ.(W*x .+ b)
   else 
@@ -154,8 +153,8 @@ function (f::StaticDense{out,in})(x,p) where {out,in}
     return f.σ.(W*x)
   end
 end
-ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
-  if f.bias == true
+ZygoteRules.@adjoint function (f::StaticDense{out,in,bias})(x,p) where {out,in,bias}
+  if bias == true
     W, b = param2Wb(f, p)
     r = W*x .+ b
   else 
@@ -185,5 +184,5 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in})(x,p) where {out,in}
   end
   y,StaticDense_adjoint
 end
-paramlength(f::StaticDense{out,in}) where {out,in} = length(f.initial_params())
+paramlength(f::StaticDense{out,in,bias}) where {out,in,bias} = out*(in + bias)
 initial_params(f::StaticDense) = f.initial_params()
