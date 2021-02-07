@@ -1,7 +1,6 @@
 using DiffEqFlux, Optim, OrdinaryDiffEq, DiffEqSensitivity, Zygote, Test
 
 function f(du,u,p,t)
-  @show t
   du[1] = u[2]
   du[2] = -p[1]
 end
@@ -22,14 +21,12 @@ prob = ODEProblem(f,u0,tspan,p)
 sol = solve(prob,Tsit5(),callback=cb)
 
 function loss1(θ)
-  @show θ
   sol = solve(prob,Tsit5(),p=[9.8,θ[1]],saveat=0.1,callback=cb,sensealg=ForwardDiffSensitivity())
   target = 20.0
   abs2(sol[end][1] - target)
 end
 
 function loss2(θ)
-  @show θ
   sol = solve(prob,Tsit5(),p=[9.8,θ[1]],saveat=0.1,callback=cb,sensealg=ReverseDiffAdjoint())
   target = 20.0
   abs2(sol[end][1] - target)
