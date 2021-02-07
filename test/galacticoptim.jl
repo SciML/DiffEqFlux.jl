@@ -113,7 +113,7 @@ res = GalacticOptim.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), cb = 
 @test 10res.minimum < loss1
 
 opt = Opt(:LD_MMA, 4)
-res = GalacticOptim.solve(optprob, opt)
+res = GalacticOptim.solve(optprob, opt, maxiters = 100)
 @test 10res.minimum < loss1
 
 function lotka_volterra2(u,p,t)
