@@ -14,5 +14,6 @@ steps:
 
 env:
   GROUP: GPU
+  DATADEPS_ALWAYS_ACCEPT: 'true'
   JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
   # SECRET_CODECOV_TOKEN: "..."
