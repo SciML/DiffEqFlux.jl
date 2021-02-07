@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/JuliaDiffEq/Lobby](https://badges.gitter.im/JuliaDiffEq/Lobby.svg)](https://gitter.im/JuliaDiffEq/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://github.com/SciML/DiffEqFlux.jl/workflows/CI/badge.svg)](https://github.com/SciML/DiffEqFlux.jl/actions?query=workflow%3ACI)
-[![GitlabCI](https://gitlab.com/JuliaGPU/DiffEqFlux.jl/badges/master/pipeline.svg)](https://gitlab.com/JuliaGPU/DiffEqFlux.jl/pipelines)
+[![Build status](https://badge.buildkite.com/a1fecf87b085b452fe0f3d3968ddacb5c1d5570806834e1d52.svg)](https://buildkite.com/julialang/diffeqflux-dot-jl)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](http://diffeqflux.sciml.ai/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](http://diffeqflux.sciml.ai/dev/)
 
