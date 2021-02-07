@@ -33,7 +33,9 @@ function run_test(f, layer, atol)
 
     data_validate_pred = [layer(x,opt) for x in data_validate_vals]
 
-    return sum(abs.(data_validate_pred.-data_validate_fn))/length(data_validate_fn) < atol
+    output = sum(abs.(data_validate_pred.-data_validate_fn))/length(data_validate_fn)
+    @show output
+    return output < atol
 end
 
 ##test 01: affine function, Linear Interpolation
