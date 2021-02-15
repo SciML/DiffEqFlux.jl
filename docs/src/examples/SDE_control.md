@@ -662,7 +662,7 @@ for epoch in 1:myparameters.epochs
 end
 ```
 
-![Evolution of the fidelity as a function of time]()
+![Evolution of the fidelity as a function of time](https://user-images.githubusercontent.com/42201748/107991039-10c59200-6fd6-11eb-8a97-a1c8d18a266b.png)
 
 
 `References`:
