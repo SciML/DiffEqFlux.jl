@@ -1,16 +1,17 @@
 # Controlling Stochastic Differential Equations
 
-In this tutorial, we show how to use DiffEqFlux to control stochastic differential
-equations (SDEs). Specifically, we consider a continuously monitored qubit described by an
-SDE in the Ito sense with multiplicative scalar noise (see [1] for a reference):
+In this tutorial, we show how to use DiffEqFlux to control the time evolution of a system
+described by a stochastic differential equations (SDE). Specifically, we consider a
+continuously monitored qubit described by an SDE in the Ito sense with multiplicative
+scalar noise (see [1] for a reference):
 
 ```math
-d{\psi}= b(\psi(t), Ω(t))\psi(t)\der{t}+ σ(\psi(t))\psi(t)dW_t .
+dψ = b(ψ(t), Ω(t))ψ(t) dt + σ(ψ(t))ψ(t) dW_t .
 ```
 
-We use a predictive model to map the quantum state of the qubit \psi(t) at each time
-to the parameter Ω(t) which controls a rotation about the `x`-axis of the Bloch sphere
-to prepare and stabilize the qubit in the excited state.
+We use a predictive model to map the quantum state of the qubit, ψ(t), at each time
+to the control parameter Ω(t) which rotates the quantum state about the `x`-axis of the Bloch sphere
+to ultimately prepare and stabilize the qubit in the excited state.
 
 ## Copy-Pasteable Code
 Before getting to the explanation, here's some code to start with. We will
@@ -48,19 +49,19 @@ ts = Array(tstart:dt:(Nintervals*tinterval+dt)) # time array for noise grid
 C1 = Float32(1.0)  # evolution state fidelity
 
 struct Parameters{flType,intType,tType}
-	lr::flType
-	epochs::intType
-	numtraj::intType
-	numtrajplot::intType
-	dt::flType
-	tinterval::flType
-	tspan::tType
-	Nintervals::intType
-	ts::Vector{flType}
-	Δ::flType
-	Ωmax::flType
-	κ::flType
-	C1::flType
+  lr::flType
+  epochs::intType
+  numtraj::intType
+  numtrajplot::intType
+  dt::flType
+  tinterval::flType
+  tspan::tType
+  Nintervals::intType
+  ts::Vector{flType}
+  Δ::flType
+  Ωmax::flType
+  κ::flType
+  C1::flType
 end
 
 myparameters = Parameters{typeof(dt),typeof(numtraj), typeof(tspan)}(
@@ -315,9 +316,9 @@ _dy = 0.63193643f0
 Loss (epoch: 100): 0.11777343
 ```
 
-## Step-by-step Description
+## Step-by-step description
 
-### Load Packages
+### Load packages
 ```julia
 using Flux, DiffEqFlux, DiffEqSensitivity, Zygote
 using StochasticDiffEq, DiffEqCallbacks, DiffEqNoiseProcess
@@ -351,19 +352,19 @@ ts = Array(tstart:dt:(Nintervals*tinterval+dt)) # time array for noise grid
 C1 = Float32(1.0)  # evolution state fidelity
 
 struct Parameters{flType,intType,tType}
-	lr::flType
-	epochs::intType
-	numtraj::intType
-	numtrajplot::intType
-	dt::flType
-	tinterval::flType
-	tspan::tType
-	Nintervals::intType
-	ts::Vector{flType}
-	Δ::flType
-	Ωmax::flType
-	κ::flType
-	C1::flType
+  lr::flType
+  epochs::intType
+  numtraj::intType
+  numtrajplot::intType
+  dt::flType
+  tinterval::flType
+  tspan::tType
+  Nintervals::intType
+  ts::Vector{flType}
+  Δ::flType
+  Ωmax::flType
+  κ::flType
+  C1::flType
 end
 
 myparameters = Parameters{typeof(dt),typeof(numtraj), typeof(tspan)}(
@@ -402,6 +403,12 @@ p_nn = initial_params(nn) # random initial parameters
 
 ### Initial state
 We prepare `n_par` initial states, uniformly distributed over the Bloch sphere.
+To avoid complex numbers in our simulations, we split the state of the qubit
+```math
+  ψ(t) = c_e(t) (1,0) + c_d(t) (0,1)
+```
+into its real and imaginary part.
+
 ```julia
 # initial state anywhere on the Bloch sphere
 function prepare_initial(dt, n_par)
@@ -422,16 +429,13 @@ u0 = prepare_initial(myparameters.dt, myparameters.numtraj)
 ```
 
 ### Defining the SDE
-We define the drift and diffusion term of the qubit. To avoid complex numbers, we
-split the state of the qubit
-```math
-  \psi(t) = c_e(t) (1,0) + c_d(t) (0,1)
-```
-into its real and imaginary part.
-The SDE doesn't preserve the norm of the quantum state. To ensure the normalization of the state,
-we use a `DiscreteCallback` after each time step. Further, we use a NoiseGrid
-from the [DiffEqNoiseProcess](https://diffeq.sciml.ai/latest/features/noise_process/#Direct-Construction-Example) package,
-as one possibility to simulate a 1D Brownian motion.
+We define the drift and diffusion term of the qubit. The SDE doesn't preserve the
+norm of the quantum state. To ensure the normalization of the state, we add a
+`DiscreteCallback` after each time step. Further, we use a NoiseGrid
+from the [DiffEqNoiseProcess](https://diffeq.sciml.ai/latest/features/noise_process/#Direct-Construction-Example)
+package, as one possibility to simulate a 1D Brownian motion. Note that the NN
+is placed directly into the drift function, thus the control parameter Ω is
+continuously updated.
 
 ```julia
 # Define SDE
@@ -497,10 +501,14 @@ prob = SDEProblem{true}(qubit_drift!, qubit_diffusion!, vec(u0[:,1]), myparamete
 ### Compute loss function
 
 We'd like to prepare the excited state of the qubit. An appropriate choice for
-the loss function is the infidelity of the state |\psi> with respect to the excited
+the loss function is the infidelity of the state ψ(t) with respect to the excited
 state. We create a parallelized `EnsembleProblem`, where the `prob_func` creates a
-new `NoiseGrid` for every trajectory. The number of parallel trajectories can be
-tuned by the kwargs `trajectories=..` and `batchsize=..` in the `solve` call.
+new `NoiseGrid` for every trajectory and loops over the initial states. The number
+of parallel trajectories and the used batch size can be tuned by the
+kwargs `trajectories=..` and `batchsize=..` in the `solve` call. See also [the
+parallel ensemble simulation docs](https://diffeq.sciml.ai/latest/features/ensemble/)
+for a description of the available ensemble algorithms. To optimize only the parameters
+of the neural network, we use `pars = [p; myparameters.Δ; myparameters.Ωmax; myparameters.κ]`
 
 ``` julia
 # compute loss
@@ -620,7 +628,10 @@ We use the `ADAM` optimizer to optimize the parameters of the neural network.
 In each epoch, we draw new initial quantum states, compute the forward evolution,
 and, subsequently, the gradients of the loss function with respect to the parameters
 of the neural network.
-`sensealg` allows to switch between the different [sensitivity modes](https://diffeqflux.sciml.ai/dev/ControllingAdjoints/).
+`sensealg` allows one to switch between the different [sensitivity modes](https://diffeqflux.sciml.ai/dev/ControllingAdjoints/).
+`InterpolatingAdjoint` and `BacksolveAdjoint` are the two possible continuous adjoint
+sensitivity methods. The necessary correction between Ito and Stratonovich integrals
+is computed under the hood in the DiffEqSensitivity package.
 
 ```julia
 # optimize the parameters for a few epochs with ADAM on time span Nint
@@ -651,10 +662,10 @@ for epoch in 1:myparameters.epochs
 end
 ```
 
-![evolution of the fidelity as a function of time]()
+![Evolution of the fidelity as a function of time]()
 
 
 `References`:
 
-[1] F. Schäfer, P. Sekatski, M. Koppenhöfer, C. Bruder, M. Kloc. Control of Stochastic
-Quantum Dynamics with Differentiable Programming. arXiv preprint at arXiv:2101.01190, 2021.
+[1] [F. Schäfer, P. Sekatski, M. Koppenhöfer, C. Bruder, M. Kloc. Control of Stochastic
+Quantum Dynamics with Differentiable Programming. arXiv preprint at arXiv:2101.01190, 2021.](https://arxiv.org/abs/2101.01190)
