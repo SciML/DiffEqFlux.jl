@@ -51,6 +51,7 @@ makedocs(
         "Optimal and Model Predictive Control Tutorials" => Any[
             "examples/optimal_control.md",
             "examples/feedback_control.md",
+            "examples/SDE_control.md",
         ],
         "Universal Differential Equations and Physical Constraints Tutorials" => Any[
             "examples/universal_diffeq.md",
