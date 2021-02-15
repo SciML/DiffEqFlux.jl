@@ -1,4 +1,4 @@
-using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, Test
+using DiffEqFlux, Flux, GalacticOptim, OrdinaryDiffEq, Test
 
 n = 2  # number of ODEs
 tspan = (0.0, 1.0)
@@ -23,12 +23,11 @@ nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
+
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 200, cb=cb)
+@test 5loss_function(res.minimizer) < l1
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 200, cb=cb)
+@test 5loss_function(res.minimizer) < l1
 
 NN = FastChain(FastDense(n, 10n, tanh),
                FastDense(10n, n))
@@ -38,21 +37,10 @@ nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
+optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), GalacticOptim.AutoZygote())
+optprob = GalacticOptim.OptimizationProblem(optfunc, nODE.p,)
 
-@info "ROCK4"
-nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
-
-loss_function(θ) = Flux.mse(y, nODE(x, θ))
-l1 = loss_function(nODE.p)
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, LBFGS(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), maxiters = 200, cb=cb)
-@test 10loss_function(res.minimizer) < l1
+res = GalacticOptim.solve(optprob, NewtonTrustRegion(), maxiters = 200, cb=cb)
+@test 5loss_function(res.minimizer) < l1
+res = GalacticOptim.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 200, cb=cb, allow_f_increases = true)
+@test 5loss_function(res.minimizer) < l1

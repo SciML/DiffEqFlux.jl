@@ -27,15 +27,22 @@ updated for changes to the libraries). Additional demonstrations, like neural
 PDEs and neural jump SDEs, can be found [at this blog
 post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
 (among many others!). All of these features are only part of the advantage, as this library
-[routinely benchmarks orders of magnitude faster than competing libraries like torchdiffeq](@ref Benchmarks)
+[routinely benchmarks orders of magnitude faster than competing libraries like torchdiffeq](@ref Benchmarks).
+Use with GPUs is highly optimized by 
+[recompiling the solvers to GPUs to remove all CPU-GPU data transfers](https://www.stochasticlifestyle.com/solving-systems-stochastic-pdes-using-gpus-julia/),
+while use with CPUs uses specialized kernels for accelerating differential equation solves.
 
 Many different training techniques are supported by this package, including:
 
 - Optimize-then-discretize (backsolve adjoints, checkpointed adjoints, quadrature adjoints)
 - Discretize-then-optimize (forward and reverse mode discrete sensitivity analysis)
-  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
+  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and 
+    [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all 
+    [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
+- O(1) memory backprop of ODEs via BacksolveAdjoint, and Virtual Brownian Trees for O(1) backprop of SDEs
+- [Continuous adjoints for integral loss functions](https://diffeq.sciml.ai/stable/analysis/sensitivity/#Example-continuous-adjoints-on-an-energy-functional)
 - Probabilistic programming and variational inference on ODEs/SDEs/DAEs/DDEs/hybrid
   equations etc. is provided by integration with [Turing.jl](https://turing.ml/dev/)
   and [Gen.jl](https://github.com/probcomp/Gen.jl). Reproduce
@@ -106,6 +113,35 @@ methodology, and are showcased in tutorials and layer functions:
 - Legrangian Neural Networks
 - Continuous Normalizing Flows (CNF) and FFJORD
 - Galerkin Nerual ODEs
+
+## Modularity and Composability
+
+Note that DiffEqFlux.jl purely built on composable and modular infrustructure. In fact, 
+DiffEqFlux.jl's functions are not even directly required for performing many of these operations! 
+DiffEqFlux provides high level helper functions and documentation for the user, but the 
+code generation stack is modular and composes in many different ways. For example, one can 
+use and swap out the ODE solver between any common interface compatible library, like:
+
+- Sundials.jl
+- OrdinaryDiffEq.jl
+- LSODA.jl
+- [IRKGaussLegendre.jl](https://github.com/mikelehu/IRKGaussLegendre.jl)
+- [SciPyDiffEq.jl](https://github.com/SciML/SciPyDiffEq.jl)
+- [... etc. many other choices!](https://diffeq.sciml.ai/stable/solvers/ode_solve/)
+
+In addition, due to the composability of the system, none of the components are directly
+tied to the Flux.jl machine learning framework. For example, you can [use DiffEqFlux.jl
+to generate TensorFlow graphs and train the nueral network with TensorFlow.jl](https://youtu.be/n2MwJ1guGVQ?t=284),
+[utilize PyTorch arrays via Torch.jl](https://github.com/FluxML/Torch.jl), and more all with
+single line code changes by utilizing the underlying code generation. The tutorials shown here
+are thus mostly a guide on how to use the ecosystem as a whole, only showing a small snippet
+of the possible ways to compose the thousands of differentiable libraries together! Swap out
+ODEs for SDEs, DDEs, DAEs, etc., put quadrature libraries or [Tullio.jl](https://github.com/mcabbott/Tullio.jl)
+in the loss function, the world is your oyster!
+
+As a proof of composability, note that the implementation of Bayesian neural ODEs required
+zero code changes to the library, and instead just relied on the composability with other
+Julia packages.
 
 ## Citation
 

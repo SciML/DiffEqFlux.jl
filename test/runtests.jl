@@ -1,7 +1,7 @@
 using DiffEqFlux
 using Pkg
 using SafeTestsets
-using Test
+using Test, GalacticOptim
 
 const GROUP = get(ENV, "GROUP", "All")
 const is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
@@ -17,16 +17,17 @@ end
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
     @safetestset "Layers Tests" begin include("layers.jl") end
     @safetestset "Fast Layers" begin include("fast_layers.jl") end
-    @safetestset "Layers SciML Tests" begin include("layers_sciml.jl") end
+    @safetestset "GalacticOptim Tests" begin include("galacticoptim.jl") end
     @safetestset "Layers SDE" begin include("layers_sde.jl") end
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
     @safetestset "Collocation Regression" begin include("collocation_regression.jl") end
+    @testset "Distributed" begin include("distributed.jl") end
 end
 
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
     @safetestset "Augmented Neural DE Tests" begin include("augmented_nde.jl") end
-    #@safetestset "Neural Graph DE" begin include("neural_gde.jl") end
+    @safetestset "Neural Graph DE" begin include("neural_gde.jl") end
     @safetestset "Hybrid DE" begin include("hybrid_de.jl") end
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
@@ -40,12 +41,13 @@ if GROUP == "All" || GROUP == "AdvancedNeuralDE"
     @safetestset "Neural Hamiltonian ODE Tests" begin include("hamiltonian_nn.jl") end
 end
 
-if GROUP == "All" || GROUP == "Newton"
+if GROUP == "Newton"
     @safetestset "Newton Neural ODE Tests" begin include("newton_neural_ode.jl") end
 end
 
 if GROUP == "All" || GROUP == "Integration"
     @safetestset "Ensemble Tests" begin include("ensembles.jl") end
+    @safetestset "Event Tests" begin include("event_tests.jl") end
     @safetestset "Partial Neural Tests" begin include("partial_neural.jl") end
     @safetestset "Size Handling in Adjoint Tests" begin include("size_handling_adjoint.jl") end
     @safetestset "odenet" begin include("odenet.jl") end

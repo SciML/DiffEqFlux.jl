@@ -55,7 +55,7 @@ or via the NeuralODE struct:
 
 ```julia
 prob_neuralode_gpu = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
-sol_gpu = solve(prob_neuralode_gpu, Tsit5(), saveat = tsteps)
+prob_neuralode_gpu(u0,p)
 ```
 
 ## Neural ODE Example

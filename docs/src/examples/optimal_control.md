@@ -1,4 +1,4 @@
-# Solving Optimal Control Problems with Universal Differential Equations
+# [Solving Optimal Control Problems with Universal Differential Equations](@id optcontrol)
 
 Here we will solve a classic optimal control problem with a universal differential
 equation. Let
@@ -68,7 +68,9 @@ end
 cb(θ,l)
 loss1 = loss_adjoint(θ)
 res1 = DiffEqFlux.sciml_train(loss_adjoint, θ, ADAM(0.005), cb = cb,maxiters=100)
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer, BFGS(initial_stepnorm=0.01), cb = cb,maxiters=100)
+res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer,
+                              BFGS(initial_stepnorm=0.01), cb = cb,maxiters=100,
+                              allow_f_increases = false)
 ```
 
 Now that the system is in a better behaved part of parameter space, we return to
@@ -80,7 +82,9 @@ function loss_adjoint(θ)
   mean(abs2,4.0 .- x[1,:]) + 2mean(abs2,x[2,:]) + mean(abs2,[first(ann([t],θ)) for t in ts])
 end
 
-res3 = DiffEqFlux.sciml_train(loss_adjoint, res2.minimizer, BFGS(initial_stepnorm=0.01), cb = cb,maxiters=100)
+res3 = DiffEqFlux.sciml_train(loss_adjoint, res2.minimizer,
+                              BFGS(initial_stepnorm=0.01), cb = cb,maxiters=100,
+                              allow_f_increases = false)
 
 l = loss_adjoint(res3.minimizer)
 cb(res3.minimizer,l)

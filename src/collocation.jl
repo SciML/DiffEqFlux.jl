@@ -100,6 +100,7 @@ end
 """
 ```julia
 u′,u = collocate_data(data,tpoints,kernel=SigmoidKernel())
+u′,u = collocate_data(data,tpoints,tpoints_sample,interp,args...)
 ```
 
 Computes a non-parametrically smoothed estimate of `u'` and `u`
@@ -121,6 +122,11 @@ For kernels, the following exist:
 - SilvermanKernel
 
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2631937/
+
+Additionally, we can use interpolation methods from
+[DataInterpolations.jl](https://github.com/PumasAI/DataInterpolations.jl) to generate
+data from intermediate timesteps. In this case, pass any of the methods like
+`QuadraticInterpolation` as `interp`, and the timestamps to sample from as `tpoints_sample`.
 """
 function collocate_data(data,tpoints,kernel=TriangularKernel())
   _one = oneunit(first(data))
@@ -130,13 +136,37 @@ function collocate_data(data,tpoints,kernel=TriangularKernel())
   n = length(tpoints)
   h = (n^(-1/5))*(n^(-3/35))*((log(n))^(-1/16))
 
+  Wd = similar(data, n, size(data,1))
+  WT1 = similar(data, n, 2)
+  WT2 = similar(data, n, 3)
   x = map(tpoints) do _t
       T1 = construct_t1(_t,tpoints)
       T2 = construct_t2(_t,tpoints)
       W = construct_w(_t,tpoints,h,kernel)
-      e2'*inv(T2'*W*T2)T2'*W*data',e1'*inv(T1'*W*T1)*T1'*W*data'
+      mul!(Wd,W,data')
+      mul!(WT1,W,T1)
+      mul!(WT2,W,T2)
+      (e2'*((T2'*WT2)\T2'))*Wd,(e1'*((T1'*WT1)\T1'))*Wd
   end
   estimated_derivative = reduce(hcat,transpose.(first.(x)))
   estimated_solution = reduce(hcat,transpose.(last.(x)))
   estimated_derivative,estimated_solution
+end
+
+function collocate_data(data::AbstractVector,tpoints::AbstractVector,tpoints_sample::AbstractVector,
+                        interp,args...)
+  u, du = collocate_data(reshape(data, 1, :),tpoints,tpoints_sample,interp,args...)
+  return du[1, :], u[1, :]
+end
+
+function collocate_data(data::AbstractMatrix{T},tpoints::AbstractVector{T},
+                        tpoints_sample::AbstractVector{T},interp,args...) where T
+  u = zeros(T,size(data, 1),length(tpoints_sample))
+  du = zeros(T,size(data, 1),length(tpoints_sample))
+  for d1 in 1:size(data,1)
+    interpolation = interp(data[d1,:],tpoints,args...)
+    u[d1,:] .= interpolation.(tpoints_sample)
+    du[d1,:] .= DataInterpolations.derivative.((interpolation,), tpoints_sample)
+  end
+  return du, u
 end

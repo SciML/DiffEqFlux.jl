@@ -16,8 +16,8 @@ Arguments:
 - `time_span`: Tuple of real numbers corresponding to the time span.
 - `time_step`: Real number corresponding to the time step.
 - `spline_basis`: Interpolation method to be used yb the basis (current supported
-interpolation methods: ConstantInterpolation, LinearInterpolation, QuadraticInterpolation,
-QuadraticSpline, CubicSpline).
+  interpolation methods: ConstantInterpolation, LinearInterpolation, QuadraticInterpolation,
+  QuadraticSpline, CubicSpline).
 - 'saved_points': values of the function at multiples of the time step. Initialized by default
 to a random vector sampled from the unit normal.
 """

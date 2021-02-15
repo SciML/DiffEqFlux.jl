@@ -357,20 +357,21 @@ end
 
 function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     function f(du,u,p,t)
-        nn_out = n.re(p)(u)
+        nn_out = n.re(p)(vcat(u,du))
         alg_out = n.constraints_model(u,p,t)
-        v_out = []
-        for (j,i) in enumerate(n.differential_vars)
-            if i
-                push!(v_out,nn_out[j])
+        iter_nn = 0
+        iter_consts = 0
+        map(n.differential_vars) do isdiff
+            if isdiff
+                iter_nn += 1
+                nn_out[iter_nn]
             else
-                push!(v_out,alg_out[j])
+                iter_consts += 1
+                alg_out[iter_consts]
             end
         end
-        return v_out
     end
-    dudt_(du,u,p,t) = f
-    prob = DAEProblem(dudt_,du0,x,n.tspan,p,differential_vars=n.differential_vars)
+    prob = DAEProblem{false}(f,du0,x,n.tspan,p,differential_vars=n.differential_vars)
     solve(prob,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
 end
 
@@ -388,8 +389,8 @@ where `M` is semi-explicit, i.e. singular with zeros for rows corresponding to
 the constraint equations.
 
 ```julia
-NeuralODEMM(model,constraints_model,tspan,alg=nothing,args...;kwargs...)
-NeuralODEMM(model::FastChain,tspan,alg=nothing,args...;
+NeuralODEMM(model,constraints_model,tspan,mass_matrix,alg=nothing,args...;kwargs...)
+NeuralODEMM(model::FastChain,tspan,mass_matrix,alg=nothing,args...;
           sensealg=InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
           kwargs...)
 ```
@@ -400,6 +401,7 @@ Arguments:
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
   constaints to impose on the algebraic equations.
 - `tspan`: The timespan to be solved on.
+- `mass_matrix`: The mass matrix associated with the DAE 
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl. This method requires an
   implicit ODE solver compatible with singular mass matrices. Consult the

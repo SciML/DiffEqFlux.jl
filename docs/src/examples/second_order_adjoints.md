@@ -70,8 +70,8 @@ cb = function (p, l, pred; doplot = false)
 end
 
 pstart = DiffEqFlux.sciml_train(loss_neuralode, p, ADAM(0.01), cb=cb, maxiters = 100).minimizer
-pmin = DiffEqFlux.sciml_train(loss_neuralode, pstart, cb=cb, NewtonTrustRegion())
-pmin = DiffEqFlux.sciml_train(loss_neuralode, pstart, cb=cb, Optim.KrylovTrustRegion())
+pmin = DiffEqFlux.sciml_train(loss_neuralode, pstart, NewtonTrustRegion(), cb=cb, maxiters = 200)
+pmin = DiffEqFlux.sciml_train(loss_neuralode, pstart, Optim.KrylovTrustRegion(), cb=cb, maxiters = 200)
 ```
 
 Note that we do note demonstrate `Newton()` because we have not found a single

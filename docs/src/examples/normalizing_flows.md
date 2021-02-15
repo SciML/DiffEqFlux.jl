@@ -8,7 +8,7 @@ We can use DiffEqFlux.jl to define, train and output the densities computed by C
 using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Distributions, Zygote
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
-tspan = (0.0,10.0)
+tspan = (0.0f0,10.0f0)
 ffjord_test = FFJORD(nn,tspan, Tsit5())
 ```
 
@@ -19,14 +19,14 @@ where we also pass as an input the desired timespan for which the differential e
 First, let's get an array from a normal distribution as the training data
 
 ```julia
-data_train = [Float32(rand(Normal(6.0,0.7))) for i in 1:100]
+data_train = Float32.(rand(Normal(6.0,0.7), 1, 100))
 ```
 
 Now we define a loss function that we wish to minimize
 
 ```julia
 function loss_adjoint(θ)
-    logpx = [ffjord_test(x,θ) for x in data_train]
+    logpx = ffjord_test(data_train,θ)[1]
     loss = -mean(logpx)
 end
 ```
@@ -40,8 +40,8 @@ Here we showcase starting the optimization with `ADAM` to more quickly find a mi
 ```julia
 # Train using the ADAM optimizer
 res1 = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test.p,
-                                          ADAM(0.1), cb = cb,
-                                          maxiters = 100)
+                              ADAM(0.1), cb = cb,
+                              maxiters = 100)
 
 * Status: failure (reached maximum number of iterations)
 
@@ -72,7 +72,8 @@ We then complete the training using a different optimizer starting from where `A
 ```julia
 # Retrain using the LBFGS optimizer
 res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer,
-                                        LBFGS())
+                              LBFGS(),
+                              allow_f_increases = false)
 
 * Status: success
 

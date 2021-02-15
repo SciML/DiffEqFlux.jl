@@ -59,7 +59,8 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
 result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
                                            result_neuralode.minimizer,
                                            LBFGS(),
-                                           cb = callback)
+                                           cb = callback,
+                                           allow_f_increases = false)
 ```
 
 ![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
@@ -179,14 +180,16 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
 ```
 
 We then complete the training using a different optimizer starting from where
-`ADAM` stopped.
+`ADAM` stopped. We do `allow_f_increases=false` to make the optimization automatically
+halt when near the minimum.
 
 ```julia
 # Retrain using the LBFGS optimizer
 result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
                                            result_neuralode.minimizer,
                                            LBFGS(),
-                                           cb = callback)
+                                           cb = callback,
+                                           allow_f_increases = false)
 
 * Status: success
 
@@ -290,5 +293,6 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, pinit,
 result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
                                            result_neuralode.minimizer,
                                            LBFGS(),
-                                           cb = callback)
+                                           cb = callback,
+                                           allow_f_increases = false)
 ```

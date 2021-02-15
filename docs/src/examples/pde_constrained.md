@@ -89,7 +89,8 @@ plot!(PRED[end][:,end], lw=2, label="Prediction")
 
 res = DiffEqFlux.sciml_train(loss, ps, ADAM(0.01), cb = cb, maxiters = 100)  # Let check gradient propagation
 ps = res.minimizer
-res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100)  # Let check gradient propagation
+res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100,
+                             allow_f_increases = false)  # Let check gradient propagation
 @show res.minimizer # returns [0.999999999999975, 1.0000000000000213]
 ```
 
@@ -108,7 +109,7 @@ First, we setup the 1-dimensional space over which our equations will be evaluat
 `x` spans **from 0.0 to 10.0** in steps of **0.01**; `t` spans **from 0.00 to 0.04** in
 steps of **4.0e-5**.
 
-```
+```julia
 # Problem setup parameters:
 Lx = 10.0
 x  = 0.0:0.01:Lx
@@ -143,7 +144,7 @@ In plain terms, the quantities that were defined are:
 We then define two functions to compute the derivatives numerically. The **Central
 Difference** is used in both the 1st and 2nd degree derivatives.
 
-```
+```julia
 ## Definition of Auxiliary functions
 function ddx(u,dx)
     """
@@ -165,7 +166,7 @@ end
 
 Next, we setup our desired set of equations in order to define our problem.
 
-```
+```julia
 ## ODE description of the Physics:
 function burgers(u,p,t)
     # Model parameters
@@ -180,7 +181,7 @@ end
 We then solve and plot our partial differential equation. This is the true solution which we
 will compare to further on.
 
-```
+```julia
 # Testing Solver on linear PDE
 prob = ODEProblem(burgers,u0,tspan,p)
 sol = solve(prob,Tsit5(), dt=dt,saveat=t);
@@ -196,7 +197,7 @@ initial guess for the parameters and name it `ps` here. The `predict` function i
 non-linear transformation in one layer using `solve`. If unfamiliar with the concept,
 refer to [here](https://julialang.org/blog/2019/01/fluxdiffeq/).
 
-```
+```julia
 ps  = [0.1, 0.2];   # Initial guess for model parameters
 function predict(θ)
     Array(solve(prob,Tsit5(),p=θ,dt=dt,saveat=t))
@@ -214,7 +215,7 @@ We first make our predictions based on the current values of our parameters `ps`
 take the difference between the predicted solution and the truth above. For the loss, we
 use the **Mean squared error**.
 
-```
+```julia
 ## Defining Loss function
 function loss(θ)
     pred = predict(θ)
@@ -237,7 +238,7 @@ The callback function displays the loss during training. We also keep a history 
 loss, the previous predictions and the previous parameters with `LOSS`, `PRED` and `PARS`
 accumulators.
 
-```
+```julia
 LOSS  = []                              # Loss accumulator
 PRED  = []                              # prediction accumulator
 PARS  = []                              # parameters accumulator
@@ -259,7 +260,7 @@ The scatter points plotted here are the ground truth obtained from the actual so
 solved for above. The solid line represents our prediction. The goal is for both to overlap
 almost perfectly when the PDE finishes its training and the loss is close to 0.
 
-```
+```julia
 # Let see prediction vs. Truth
 scatter(sol[:,end], label="Truth", size=(800,500))
 plot!(PRED[end][:,end], lw=2, label="Prediction")
@@ -271,10 +272,11 @@ The parameters are trained using `sciml_train` and adjoint sensitivities. The re
 best parameters are stored in `res` and `res.minimizer` returns the parameters that
 minimizes the cost function.
 
-```
+```julia
 res = DiffEqFlux.sciml_train(loss, ps, ADAM(0.01), cb = cb, maxiters = 100)  # Let check gradient propagation
 ps = res.minimizer
-res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100)  # Let check gradient propagation
+res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100,
+                             allow_f_increases = false)  # Let check gradient propagation
 @show res.minimizer # returns [0.999999999999975, 1.0000000000000213]
 ```
 
@@ -283,7 +285,7 @@ We successfully predict the final `ps` to be equal to **[0.999999999999975,
 
 ### Expected Output
 
-```
+```julia
 153.74716386883014
 153.74716386883014
 150.31001476832154

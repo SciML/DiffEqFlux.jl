@@ -11,7 +11,7 @@ TensorLayer(model,out,p=nothing)
 Arguments:
 - `model`: Array of TensorProductBasis [B_1(n_1), ..., B_k(n_k)], where k corresponds to the dimension of the input.
 - `out`: Dimension of the output.
-- `p`: Optional initialization of the layer's weight. Initizalized to 0 by default.
+- `p`: Optional initialization of the layer's weight. Initialized to standard normal by default.
 """
 struct TensorLayer{M<:Array{TensorProductBasis},P<:AbstractArray,Int} <: AbstractTensorProductLayer
     model::M
@@ -23,7 +23,9 @@ struct TensorLayer{M<:Array{TensorProductBasis},P<:AbstractArray,Int} <: Abstrac
         for basis in model
             number_of_weights *= basis.n
         end
-        p = randn(out*number_of_weights)
+        if p === nothing
+            p = randn(out*number_of_weights)
+        end
         new{Array{TensorProductBasis},typeof(p),Int}(model,p,length(model),out)
     end
 end

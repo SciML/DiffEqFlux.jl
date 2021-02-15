@@ -13,6 +13,15 @@ accumulate through time, is not as exact as other methods.
 collocate_data
 ```
 
+## Kernel Choice
+
+Note that the kernel choices of DataInterpolations.jl, such as `CubicSpline()`,
+are exact, i.e. go through the data points, while the smoothed kernels are
+regression splines. Thus `CubicSpline()` is preferred if the data is not too
+noisy or is relatively sparse. If data is sparse and very noisy, a `BSpline()` 
+can be the best regression spline, otherwise one of the other kernels such as as
+`EpanechnikovKernel`.
+
 ## Non-Allocating Forward-Mode L2 Collocation Loss
 
 The following is an example of a loss function over the collocation that
