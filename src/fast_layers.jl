@@ -120,7 +120,6 @@ algebra operations. Should only be used for input/output sizes of approximately
 Note that this function has specializations on `tanh` for a slightly faster
 adjoint with Zygote.
 """
-
 struct StaticDense{out,in,bias,F,F2} <: FastLayer
   σ::F
   initial_params::F2
