@@ -112,7 +112,7 @@ methodology, and are showcased in tutorials and layer functions:
 - Hamiltonian Neural Networks (with specialized second order and symplectic integrators)
 - Legrangian Neural Networks
 - Continuous Normalizing Flows (CNF) and FFJORD
-- Galerkin Nerual ODEs
+- Galerkin Neural ODEs
 
 ## Modularity and Composability
 
