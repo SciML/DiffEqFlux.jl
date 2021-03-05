@@ -1,14 +1,9 @@
 # sciml_train
 
-!!! note
-
-    `sciml_train` is planned to be replaced by [GalacticOptim.jl](https://github.com/SciML/GalacticOptim.jl)
-    when it is ready. This optimizer library will have a feature superset of `sciml_train`
-    but will have a slightly different interface to allow for backpropagation over
-    the optimization and handling constrained optimization in a nicer manner. Translation
-    from `sciml_train` to GalacticOptim's style will be fairly trivial since the internals
-    are largely the same, and deprecation warnings will help you update when the time
-    comes, so do not worry about using this functionality.
+*Important:* Please note that `sciml_train` has now been replaced by [GalacticOptim.jl](https://github.com/SciML/GalacticOptim.jl). What it means for the end user is that `sciml_train`
+translates the input parameters into GalacticOptim-compatible problem setup and
+calls GalacticOptim's `solve()` function to obtain the final result. Also note
+that in `sciml_train`, the lower and upper bounds are set to `nothing` by default.
 
 `sciml_train` is a multi-package optimization setup. It currently allows for using
 the following nonlinear optimization packages as the backend:
