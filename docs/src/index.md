@@ -28,7 +28,7 @@ PDEs and neural jump SDEs, can be found [at this blog
 post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
 (among many others!). All of these features are only part of the advantage, as this library
 [routinely benchmarks orders of magnitude faster than competing libraries like torchdiffeq](@ref Benchmarks).
-Use with GPUs is highly optimized by 
+Use with GPUs is highly optimized by
 [recompiling the solvers to GPUs to remove all CPU-GPU data transfers](https://www.stochasticlifestyle.com/solving-systems-stochastic-pdes-using-gpus-julia/),
 while use with CPUs uses specialized kernels for accelerating differential equation solves.
 
@@ -36,8 +36,8 @@ Many different training techniques are supported by this package, including:
 
 - Optimize-then-discretize (backsolve adjoints, checkpointed adjoints, quadrature adjoints)
 - Discretize-then-optimize (forward and reverse mode discrete sensitivity analysis)
-  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and 
-    [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all 
+  - This is a generalization of [ANODE](https://arxiv.org/pdf/1902.10298.pdf) and
+    [ANODEv2](https://arxiv.org/pdf/1906.04596.pdf) to all
     [DifferentialEquations.jl ODE solvers](https://diffeq.sciml.ai/latest/solvers/ode_solve/)
 - Hybrid approaches (adaptive time stepping + AD for adaptive discretize-then-optimize)
 - Collocation approaches (two-stage methods, multiple shooting, etc.)
@@ -92,8 +92,8 @@ Thus, what DiffEqFlux.jl provides is:
 - Pre-built layer functions for common use cases, like neural ODEs
 - Specialized layer functions (`FastDense`) to improve neural differential equation
   training performance
-- A specialized optimization function `sciml_train` with a training loop that
-  allows non-machine learning libraries to be easily utilized
+- Compatibility with a multifunctional optimization package [GalacticOptim.jl](https://github.com/SciML/GalacticOptim.jl) with a training loop that allows non-machine learning
+  libraries to be easily utilized
 
 ## Applications
 
@@ -116,10 +116,10 @@ methodology, and are showcased in tutorials and layer functions:
 
 ## Modularity and Composability
 
-Note that DiffEqFlux.jl purely built on composable and modular infrustructure. In fact, 
+Note that DiffEqFlux.jl purely built on composable and modular infrustructure. In fact,
 DiffEqFlux.jl's functions are not even directly required for performing many of these operations! 
-DiffEqFlux provides high level helper functions and documentation for the user, but the 
-code generation stack is modular and composes in many different ways. For example, one can 
+DiffEqFlux provides high level helper functions and documentation for the user, but the
+code generation stack is modular and composes in many different ways. For example, one can
 use and swap out the ODE solver between any common interface compatible library, like:
 
 - Sundials.jl
