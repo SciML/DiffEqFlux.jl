@@ -1,17 +1,17 @@
-# Neural Ordinary Differential Equations with sciml_train
+# Neural Ordinary Differential Equations with GalacticOptim.jl
 
 We can use DiffEqFlux.jl to define, solve, and train neural ordinary
 differential equations. A neural ODE is an ODE where a neural network defines
 its derivative function. Thus for example, with the multilayer perceptron neural
-network `Chain(Dense(2, 50, tanh), Dense(50, 2))`,
+network `Chain(Dense(2, 50, tanh), Dense(50, 2))`, we obtain the following results.
 
 ## Copy-Pasteable Code
 
-Before getting to the explanation, here's some code to start with. We will follow
-wil a full explanation of the definition and training process:
+Before getting to the explanation, here's some code to start with. We will
+follow a full explanation of the definition and training process:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, GalacticOptim
 
 u0 = Float32[2.0; 0.0]
 datasize = 30
@@ -52,15 +52,24 @@ callback = function (p, l, pred; doplot = true)
   return false
 end
 
-result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
-                                          ADAM(0.05), cb = callback,
-                                          maxiters = 300)
+# use GalacticOptim.jl to solve the problem
+adtype = GalacticOptim.AutoZygote()
 
-result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
-                                           result_neuralode.minimizer,
-                                           LBFGS(),
-                                           cb = callback,
-                                           allow_f_increases = false)
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
+
+result_neuralode = GalacticOptim.solve(optprob,
+                                       ADAM(0.05),
+                                       cb = callback,
+                                       maxiters = 300)
+
+optprob2 = remake(optprob,u0 = result_neuralode.minimizer)
+
+result_neuralode2 = GalacticOptim.solve(optprob2,
+                                        LBFGS(),
+                                        cb = callback,
+                                        allow_f_increases = false)
 ```
 
 ![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
@@ -147,15 +156,25 @@ We then train the neural network to learn the ODE.
 Here we showcase starting the optimization with `ADAM` to more quickly find a
 minimum, and then honing in on the minimum by using `LBFGS`. By using the two
 together, we are able to fit the neural ODE in 9 seconds! (Note, the timing
-commented out the plotting).
+commented out the plotting). You can easily incorporate the procedure below to
+set up custom optimization problems. For more information on the usage of
+[GalacticOptim.jl](https://github.com/SciML/GalacticOptim.jl), please consult
+[this](https://galacticoptim.sciml.ai/stable/) documentation.
 
 ```julia
 # Train using the ADAM optimizer
-result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
-                                          ADAM(0.05), cb = callback,
-                                          maxiters = 300)
+adtype = GalacticOptim.AutoZygote()
 
-* Status: failure (reached maximum number of iterations)
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
+
+result_neuralode = GalacticOptim.solve(optprob,
+                                       ADAM(0.05),
+                                       cb = callback,
+                                       maxiters = 300)
+# output
+* Status: success
 
 * Candidate solution
    Minimizer: [4.38e-01, -6.02e-01, 4.98e-01,  ...]
@@ -164,19 +183,6 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
 * Found with
    Algorithm:     ADAM
    Initial Point: [-3.02e-02, -5.40e-02, 2.78e-01,  ...]
-
-* Convergence measures
-   |x - x'|               = NaN ≰ 0.0e+00
-   |x - x'|/|x'|          = NaN ≰ 0.0e+00
-   |f(x) - f(x')|         = NaN ≰ 0.0e+00
-   |f(x) - f(x')|/|f(x')| = NaN ≰ 0.0e+00
-   |g(x)|                 = NaN ≰ 0.0e+00
-
-* Work counters
-   Seconds run:   5  (vs limit Inf)
-   Iterations:    300
-   f(x) calls:    300
-   ∇f(x) calls:   300
 ```
 
 We then complete the training using a different optimizer starting from where
@@ -185,12 +191,13 @@ halt when near the minimum.
 
 ```julia
 # Retrain using the LBFGS optimizer
-result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
-                                           result_neuralode.minimizer,
-                                           LBFGS(),
-                                           cb = callback,
-                                           allow_f_increases = false)
+optprob2 = remake(optprob,u0 = result_neuralode.minimizer)
 
+result_neuralode2 = GalacticOptim.solve(optprob2,
+                                        LBFGS(),
+                                        cb = callback,
+                                        allow_f_increases = false)
+# output
 * Status: success
 
 * Candidate solution
@@ -239,10 +246,10 @@ my_neural_ode_prob = solve(prob, Tsit5(), args...; kwargs...)
 
 and then one would use `solve` for the prediction like in other tutorials.
 
-In total, the from scratch form looks like:
+In total, the 'from-scratch' form looks like:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, GalacticOptim
 
 u0 = Float32[2.0; 0.0]
 datasize = 30
@@ -260,13 +267,10 @@ ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 dudt2 = FastChain((x, p) -> x.^3,
                   FastDense(2, 50, tanh),
                   FastDense(50, 2))
-neural_ode_f(u,p,t) = dudt2(u,p)
-pinit = initial_params(dudt2)
-prob = ODEProblem(neural_ode_f, u0, tspan, pinit)
+prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 
 function predict_neuralode(p)
-  tmp_prob = remake(prob,p=p)
-  Array(solve(tmp_prob,Tsit5(),saveat=tsteps))
+  Array(prob_neuralode(u0, p))
 end
 
 function loss_neuralode(p)
@@ -286,13 +290,21 @@ callback = function (p, l, pred; doplot = true)
   return false
 end
 
-result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, pinit,
-                                          ADAM(0.05), cb = callback,
-                                          maxiters = 300)
+adtype = GalacticOptim.AutoZygote()
 
-result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode,
-                                           result_neuralode.minimizer,
-                                           LBFGS(),
-                                           cb = callback,
-                                           allow_f_increases = false)
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
+
+result_neuralode = GalacticOptim.solve(optprob,
+                                       ADAM(0.05),
+                                       cb = callback,
+                                       maxiters = 300)
+
+optprob2 = remake(optprob,u0 = result_neuralode.minimizer)
+
+result_neuralode2 = GalacticOptim.solve(optprob2,
+                                        LBFGS(),
+                                        cb = callback,
+                                        allow_f_increases = false)
 ```

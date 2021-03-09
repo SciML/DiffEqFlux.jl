@@ -74,7 +74,7 @@ makedocs(
             "FastChain" => "FastChain.md",
             "Smoothed Collocation" => "Collocation.md",
             "GPUs" => "GPUs.md",
-            "sciml_train" => "Scimltrain.md",
+            "GalacticOptim.jl" => "GalacticOptim.md",
 
         ],
         "Benchmarks" => "Benchmark.md"
