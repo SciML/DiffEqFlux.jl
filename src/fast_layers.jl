@@ -78,7 +78,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
 
   y = f.σ.(r)
 
-  if typeof(f.σ) <: typeof(tanh)
+  if typeof(f.σ) <: typeof(tanh) || typeof(f.σ) <: typeof(identity)
     ifgpufree(r)
   end
 
@@ -87,25 +87,23 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
       zbar = ȳ .* (1 .- y.^2)
     elseif typeof(f.σ) <: typeof(identity)
       zbar = ȳ
-      ifgpufree(r)
     else
       zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
-      ifgpufree(r)
     end
-    ifgpufree(y)
     Wbar = zbar * x'
     bbar = zbar
     xbar = W' * zbar
     pbar = typeof(bbar) <: AbstractVector ?
                              vec(vcat(vec(Wbar),bbar)) :
                              vec(vcat(vec(Wbar),sum(bbar,dims=2)))
-    ifgpufree(Wbar); ifgpufree(bbar); ifgpufree(ȳ)
+    ifgpufree(Wbar); ifgpufree(bbar)
     nothing,xbar,pbar
   end
   y,FastDense_adjoint
 end
 paramlength(f::FastDense) = f.out*(f.in+f.bias)
 initial_params(f::FastDense) = f.initial_params()
+
 """
 StaticDense(in,out,activation=identity;
           initW = Flux.glorot_uniform, initb = Flux.zeros)
