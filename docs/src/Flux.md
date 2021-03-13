@@ -27,7 +27,8 @@ ode_data = Array(solve(prob,Tsit5(),saveat=t))
 dudt2 = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
-dudt(u,p,t) = dudt2(u)
+p,re = Flux.destructure(dudt2) # use this p as the initial condition!
+dudt(u,p,t) = re(p)(u) # need to restrcture for backprop!
 prob = ODEProblem(dudt,u0,tspan)
 
 function predict_n_ode()
