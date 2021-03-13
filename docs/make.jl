@@ -23,7 +23,7 @@ makedocs(
             "examples/neural_gde.md",
             "examples/exogenous_input.md",
             "examples/normalizing_flows.md"
-        ]
+        ],
 
         "Stochastic Differential Equation (SDE) Tutorials" => Any[
             "examples/optimization_sde.md",
