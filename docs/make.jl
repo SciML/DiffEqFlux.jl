@@ -34,7 +34,7 @@ makedocs(
         ],
         "Differential-Algebraic Equation (DAE) Tutorials" => Any[
             "examples/physical_constraints.md",
-        ]
+        ],
         "Partial Differential Equation (PDE) Tutorials" => Any[
             "examples/pde_constrained.md",
         ],
