@@ -1,10 +1,18 @@
 # Multiple Shooting
 
-In Multiple Shooting, the training data is split into overlapping intervals. The solver is then trained on individual intervals. If the end conditions of any interval co-incide with the initial conditions of the next immediate interval, then the joined/combined solution is same as solving on the whole dataset (without splitting).
+In Multiple Shooting, the training data is split into overlapping intervals.
+The solver is then trained on individual intervals. If the end conditions of any
+interval co-incide with the initial conditions of the next immediate interval,
+then the joined/combined solution is same as solving on the whole dataset
+(without splitting).
 
-To ensure that the overlapping part of two consecutive intervals co-incide, we add a penalizing term, `continuity_strength * absolute_value_of( prediction of last point of some group, i - prediction of first point of group i+1 )`, to the loss.
+To ensure that the overlapping part of two consecutive intervals co-incide,
+we add a penalizing term, `continuity_strength * absolute_value_of( prediction
+of last point of some group, i - prediction of first point of group i+1 )`, to
+the loss.
 
-Note that the `continuity_strength` should have a large positive value to add high penalities in case the solver predicts discontinuous values.
+Note that the `continuity_strength` should have a large positive value to add
+high penalities in case the solver predicts discontinuous values.
 
 
 The following is a working demo, using Multiple Shooting
@@ -68,7 +76,7 @@ callback = function (p, l, pred, predictions; doplot = true)
 end
 
 # Define parameters for Multiple Shooting
-grp_size_param = 5
+grp_size_param = 1
 loss_multiplier_param = 100
 
 neural_ode_f(u,p,t) = dudt2(u,p)
@@ -87,16 +95,24 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                           maxiters = 300)
 callback(result_neuralode.minimizer,loss_neuralode(result_neuralode.minimizer)...;doplot=true)
 
+result_neuralode_2 = DiffEqFlux.sciml_train(loss_neuralode, result_neuralode.minimizer,
+                                          BFGS(), cb = callback,
+                                          maxiters = 100, allow_f_increases=true)
+callback(result_neuralode_2.minimizer,loss_neuralode(result_neuralode_2.minimizer)...;doplot=true)
 
-``` 
+```
 Here's the plots that we get from above
 
-![pic](https://user-images.githubusercontent.com/58384989/111841264-b6488a00-8923-11eb-9648-3b4dfa73b833.PNG)
-The picture on the left shows how well our Neural Network does on a single shoot after training it through `multiple_shoot`.
-The picture on the right shows the predictions of each group (Notice that there are some overlapping points. These are the points we are trying to co-incide.)
+![pic](https://user-images.githubusercontent.com/58384989/111881194-6de9a480-89d5-11eb-8f21-6481d1e22521.PNG)
+The picture on the left shows how well our Neural Network does on a single shoot
+after training it through `multiple_shoot`.
+The picture on the right shows the predictions of each group (Notice that there
+are overlapping points as well. These are the points we are trying to co-incide.)
 
-Here is an output with `grp_size` = 30 (which is same as solving on the whole interval without splitting also called single shooting)
+Here is an output with `grp_size` = 30 (which is same as solving on the whole
+interval without splitting also called single shooting)
 
 ![pic_single_shoot3](https://user-images.githubusercontent.com/58384989/111843307-f0fff180-8926-11eb-9a06-2731113173bc.PNG)
 
-It is clear from the above picture, a single shoot doesn't perform very well with the ODE Problem we have and gets stuck in a local minima.
+It is clear from the above picture, a single shoot doesn't perform very well
+with the ODE Problem we have and gets stuck in a local minima.
