@@ -24,7 +24,15 @@ makedocs(
             "examples/exogenous_input.md",
             "examples/normalizing_flows.md"
         ],
-
+        "Training Techniques" => Any[
+            "examples/multiple_shooting.md"
+            "examples/local_minima.md",
+            "examples/multiple_nn.md",
+            "examples/data_parallel.md",
+            "examples/second_order_neural.md",
+            "examples/second_order_adjoints.md",
+            "examples/minibatch.md",
+        ],
         "Stochastic Differential Equation (SDE) Tutorials" => Any[
             "examples/optimization_sde.md",
             "examples/neural_sde.md",
@@ -47,14 +55,6 @@ makedocs(
             "examples/turing_bayesian.md",
             "examples/BayesianNODE_NUTS.md",
             "examples/BayesianNODE_SGLD.md",
-        ],
-        "FAQ, Tips, and Tricks" => Any[
-            "examples/local_minima.md",
-            "examples/multiple_nn.md",
-            "examples/data_parallel.md",
-            "examples/second_order_neural.md",
-            "examples/second_order_adjoints.md",
-            "examples/minibatch.md",
         ],
         "Optimal and Model Predictive Control Tutorials" => Any[
             "examples/optimal_control.md",
