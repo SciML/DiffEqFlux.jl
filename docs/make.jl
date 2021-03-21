@@ -25,7 +25,7 @@ makedocs(
             "examples/normalizing_flows.md"
         ],
         "Training Techniques" => Any[
-            "examples/multiple_shooting.md"
+            "examples/multiple_shooting.md",
             "examples/local_minima.md",
             "examples/multiple_nn.md",
             "examples/data_parallel.md",
