@@ -57,11 +57,7 @@ end
 # Piracy, should get upstreamed
 function Flux.create_bias(weights::AbstractArray{<:DiffEqSensitivity.ReverseDiff.TrackedReal}, bias::AbstractArray{<:DiffEqSensitivity.ReverseDiff.TrackedReal}, dims::Integer...)
   size(bias) == dims || throw(DimensionMismatch("expected bias of size $(dims), got size $(size(bias))"))
-  if eltype(bias) == eltype(weights)
-    return bias
-  else
-    return convert.((eltype(weights),),bias)
-  end
+  return bias
 end
 
 # ForwardDiff integration
