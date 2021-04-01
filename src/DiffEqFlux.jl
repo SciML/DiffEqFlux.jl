@@ -54,6 +54,12 @@ function neural_ode(model,x,tspan,args...;kwargs...)
     error("neural_ode has been deprecated with the change to Zygote. Please see the documentation on the new NeuralODE layer.")
 end
 
+# Piracy, should get upstreamed
+function Flux.create_bias(weights::AbstractArray{<:DiffEqSensitivity.ReverseDiff.TrackedReal}, bias::AbstractArray{<:DiffEqSensitivity.ReverseDiff.TrackedReal}, dims::Integer...)
+  size(bias) == dims || throw(DimensionMismatch("expected bias of size $(dims), got size $(size(bias))"))
+  return bias
+end
+
 # ForwardDiff integration
 
 ZygoteRules.@adjoint function ForwardDiff.Dual{T}(x, ẋ::Tuple) where T
