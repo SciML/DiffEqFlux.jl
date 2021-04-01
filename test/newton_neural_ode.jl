@@ -25,9 +25,9 @@ loss_function(θ) = Flux.mse(y, nODE(x, θ))
 l1 = loss_function(nODE.p)
 
 res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 100, cb=cb)
-@test 2loss_function(res.minimizer) < l1
+@test loss_function(res.minimizer) < l1
 res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 100, cb=cb)
-@test 2loss_function(res.minimizer) < l1
+@test loss_function(res.minimizer) < l1
 
 NN = FastChain(FastDense(n, 5n, tanh),
                FastDense(5n, n))
@@ -41,6 +41,6 @@ optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), Galacti
 optprob = GalacticOptim.OptimizationProblem(optfunc, nODE.p,)
 
 res = GalacticOptim.solve(optprob, NewtonTrustRegion(), maxiters = 100, cb=cb)
-@test 2loss_function(res.minimizer) < l1
+@test loss_function(res.minimizer) < l1
 res = GalacticOptim.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 100, cb=cb)
-@test 2loss_function(res.minimizer) < l1
+@test loss_function(res.minimizer) < l1
