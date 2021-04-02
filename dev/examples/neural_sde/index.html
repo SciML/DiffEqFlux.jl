@@ -46,18 +46,16 @@ plt1 = plot(ensemble_nsum, title = &quot;Neural SDE: Before Training&quot;)
 scatter!(plt1, tsteps, sde_data&#39;, lw = 3)
 
 scatter(tsteps, sde_data[1,:], label = &quot;data&quot;)
-scatter!(tsteps, prediction0[1,:], label = &quot;prediction&quot;)</code></pre><p>Now just as with the neural ODE we define a loss function that calculates the mean and variance from <code>n</code> runs at each time point and uses the distance from the data values:</p><pre><code class="language-julia">function predict_neuralsde(p)
-  return Array(neuralsde(u0, p))
+scatter!(tsteps, prediction0[1,:], label = &quot;prediction&quot;)</code></pre><p>Now just as with the neural ODE we define a loss function that calculates the mean and variance from <code>n</code> runs at each time point and uses the distance from the data values:</p><pre><code class="language-julia">function predict_neuralsde(p, u = u0)
+  return Array(neuralsde(u, p))
 end
 
 function loss_neuralsde(p; n = 100)
-  samples = [predict_neuralsde(p) for i in 1:n]
-  means = reshape(mean.([[samples[i][j] for i in 1:length(samples)]
-                                        for j in 1:length(samples[1])]),
-                      size(samples[1])...)
-  vars = reshape(var.([[samples[i][j] for i in 1:length(samples)]
-                                      for j in 1:length(samples[1])]),
-                      size(samples[1])...)
+  u = repeat(reshape(u0, :, 1), 1, n)
+  samples = predict_neuralsde(p, u)
+  means = mean(samples, dims = 2)
+  vars = var(samples, dims = 2, mean = means)[:, 1, :]
+  means = means[:, 1, :]
   loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
   return loss, means, vars
 end</code></pre><pre><code class="language-julia">list_plots = []
@@ -76,9 +74,9 @@ callback = function (p, loss, means, vars; doplot = false)
   display(loss)
 
   # plot current prediction against data
-  plt = scatter(tsteps, sde_data[1,:], yerror = sde_data_vars[1,:],
-                ylim = (-4.0, 8.0), label = &quot;data&quot;)
-  scatter!(plt, tsteps, means[1,:], ribbon = vars[1,:], label = &quot;prediction&quot;)
+  plt = Plots.scatter(tsteps, sde_data[1,:], yerror = sde_data_vars[1,:],
+                     ylim = (-4.0, 8.0), label = &quot;data&quot;)
+  Plots.scatter!(plt, tsteps, means[1,:], ribbon = vars[1,:], label = &quot;prediction&quot;)
   push!(list_plots, plt)
 
   if doplot
@@ -92,18 +90,12 @@ result1 = DiffEqFlux.sciml_train((p) -&gt; loss_neuralsde(p, n = 10),
                                  neuralsde.p, opt,
                                  cb = callback, maxiters = 100)</code></pre><p>We resume the training with a larger <code>n</code>. (WARNING - this step is a couple of orders of magnitude longer than the previous one).</p><pre><code class="language-julia">result2 = DiffEqFlux.sciml_train((p) -&gt; loss_neuralsde(p, n = 100),
                                  result1.minimizer, opt,
-                                 cb = callback, maxiters = 100)</code></pre><p>And now we plot the solution to an ensemble of the trained neural SDE:</p><pre><code class="language-julia">samples = [predict_neuralsde(result2.minimizer) for i in 1:1000]
-means = reshape(mean.([[samples[i][j] for i in 1:length(samples)]
-                                      for j in 1:length(samples[1])]),
-                    size(samples[1])...)
-vars = reshape(var.([[samples[i][j] for i in 1:length(samples)]
-                                    for j in 1:length(samples[1])]),
-                    size(samples[1])...)
+                                 cb = callback, maxiters = 100)</code></pre><p>And now we plot the solution to an ensemble of the trained neural SDE:</p><pre><code class="language-julia">_, means, vars = loss_neuralsde(result2.minimizer, n = 1000)
 
-plt2 = scatter(tsteps, sde_data&#39;, yerror = sde_data_vars&#39;,
-               label = &quot;data&quot;, title = &quot;Neural SDE: After Training&quot;,
-               xlabel = &quot;Time&quot;)
+plt2 = Plots.scatter(tsteps, sde_data&#39;, yerror = sde_data_vars&#39;,
+                     label = &quot;data&quot;, title = &quot;Neural SDE: After Training&quot;,
+                     xlabel = &quot;Time&quot;)
 plot!(plt2, tsteps, means&#39;, lw = 8, ribbon = vars&#39;, label = &quot;prediction&quot;)
 
 plt = plot(plt1, plt2, layout = (2, 1))
-savefig(plt, &quot;NN_sde_combined.png&quot;); nothing # sde</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png" alt/></p><p>Try this with GPUs as well!</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../optimization_sde/">« Optimization of Stochastic Differential Equations</a><a class="docs-footer-nextpage" href="../delay_diffeq/">Delay Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 1 April 2021 11:29">Thursday 1 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+savefig(plt, &quot;NN_sde_combined.png&quot;); nothing # sde</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png" alt/></p><p>Try this with GPUs as well!</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../optimization_sde/">« Optimization of Stochastic Differential Equations</a><a class="docs-footer-nextpage" href="../delay_diffeq/">Delay Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 2 April 2021 11:42">Friday 2 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
