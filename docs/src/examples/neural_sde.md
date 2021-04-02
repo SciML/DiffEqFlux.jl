@@ -109,18 +109,16 @@ mean and variance from `n` runs at each time point and uses the distance from
 the data values:
 
 ```julia
-function predict_neuralsde(p)
-  return Array(neuralsde(u0, p))
+function predict_neuralsde(p, u = u0)
+  return Array(neuralsde(u, p))
 end
 
 function loss_neuralsde(p; n = 100)
-  samples = [predict_neuralsde(p) for i in 1:n]
-  means = reshape(mean.([[samples[i][j] for i in 1:length(samples)]
-                                        for j in 1:length(samples[1])]),
-                      size(samples[1])...)
-  vars = reshape(var.([[samples[i][j] for i in 1:length(samples)]
-                                      for j in 1:length(samples[1])]),
-                      size(samples[1])...)
+  u = repeat(reshape(u0, :, 1), 1, n)
+  samples = predict_neuralsde(p, u)
+  means = mean(samples, dims = 2)
+  vars = var(samples, dims = 2, mean = means)[:, 1, :]
+  means = means[:, 1, :]
   loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
   return loss, means, vars
 end
@@ -143,9 +141,9 @@ callback = function (p, loss, means, vars; doplot = false)
   display(loss)
 
   # plot current prediction against data
-  plt = scatter(tsteps, sde_data[1,:], yerror = sde_data_vars[1,:],
-                ylim = (-4.0, 8.0), label = "data")
-  scatter!(plt, tsteps, means[1,:], ribbon = vars[1,:], label = "prediction")
+  plt = Plots.scatter(tsteps, sde_data[1,:], yerror = sde_data_vars[1,:],
+                     ylim = (-4.0, 8.0), label = "data")
+  Plots.scatter!(plt, tsteps, means[1,:], ribbon = vars[1,:], label = "prediction")
   push!(list_plots, plt)
 
   if doplot
@@ -180,17 +178,11 @@ result2 = DiffEqFlux.sciml_train((p) -> loss_neuralsde(p, n = 100),
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```julia
-samples = [predict_neuralsde(result2.minimizer) for i in 1:1000]
-means = reshape(mean.([[samples[i][j] for i in 1:length(samples)]
-                                      for j in 1:length(samples[1])]),
-                    size(samples[1])...)
-vars = reshape(var.([[samples[i][j] for i in 1:length(samples)]
-                                    for j in 1:length(samples[1])]),
-                    size(samples[1])...)
+_, means, vars = loss_neuralsde(result2.minimizer, n = 1000)
 
-plt2 = scatter(tsteps, sde_data', yerror = sde_data_vars',
-               label = "data", title = "Neural SDE: After Training",
-               xlabel = "Time")
+plt2 = Plots.scatter(tsteps, sde_data', yerror = sde_data_vars',
+                     label = "data", title = "Neural SDE: After Training",
+                     xlabel = "Time")
 plot!(plt2, tsteps, means', lw = 8, ribbon = vars', label = "prediction")
 
 plt = plot(plt1, plt2, layout = (2, 1))
