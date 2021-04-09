@@ -19,7 +19,15 @@ Arguments:
 !!!note
 The parameter 'continuity_term' should be a relatively big number to enforce a large penalty whenever the last point of any group doesn't coincide with the first point of next group.
 """
-function multiple_shoot(p :: Array, ode_data :: Array, tsteps, prob :: ODEProblem, loss_function ::Function, grp_size :: Integer = 5, continuity_term :: Integer = 100)
+function multiple_shoot(
+    p::AbstractArray,
+    ode_data::AbstractArray,
+    tsteps,
+    prob::ODEProblem,
+    loss_function::Function,
+    grp_size::Integer,
+    continuity_term::Real=100
+)
 	datasize = length(ode_data[1,:])
 
 	if grp_size < 1 || grp_size > datasize
