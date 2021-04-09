@@ -22,7 +22,9 @@ The parameter 'continuity_term' should be a relatively big number to enforce a l
 function multiple_shoot(p :: Array, ode_data :: Array, tsteps, prob :: ODEProblem, loss_function ::Function, grp_size :: Integer = 5, continuity_term :: Integer = 100)
 	datasize = length(ode_data[1,:])
 
-	@assert (grp_size >= 1 && grp_size <= datasize) "grp_size can't be <= 1 or >= number of data points"
+	if grp_size < 1 || grp_size > datasize
+        throw(DomainError(grp_size, "grp_size can't be < 1 or > number of data points"))
+    end
 
 	tot_loss = 0
 
