@@ -5,7 +5,7 @@ The default group size is 5 implying the whole dataset would be divided in group
 The default continuity term is 100 implying any losses arising from the non-continuity of 2 different groups will be scaled by 100.
 
 ```julia
-multiple_shoot(p,ode_data,tsteps,prob,loss_function,grp_size=5,continuity_strength=100)
+multiple_shoot(p,ode_data,tsteps,prob,loss_function,grp_size,continuity_strength=100)
 ```
 Arguments:
 - `p`: The parameters of the Neural Network to be trained.
