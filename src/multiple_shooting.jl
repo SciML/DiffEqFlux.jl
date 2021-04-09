@@ -14,10 +14,10 @@ Arguments:
 - `prob`: ODE problem that the Neural Network attempts to solve.
 - `loss_function`: Any arbitrary function to calculate loss.
 - `grp_size`: The group size achieved after splitting the ode_data into equal sizes.
-- `continuity_strength`: Multiplying factor to ensure continuity of predictions throughout different groups.
+- `continuity_term`: Multiplying factor to ensure continuity of predictions throughout different groups.
 
 !!!note
-The parameter 'continuity_strength' should be a relatively big number to enforce a large penalty whenever the last point of any group doesn't coincide with the first point of next group.
+The parameter 'continuity_term' should be a relatively big number to enforce a large penalty whenever the last point of any group doesn't coincide with the first point of next group.
 """
 function multiple_shoot(p :: Array, ode_data :: Array, tsteps, prob :: ODEProblem, loss_function ::Function, grp_size :: Integer = 5, continuity_term :: Integer = 100)
 	datasize = length(ode_data[1,:])
