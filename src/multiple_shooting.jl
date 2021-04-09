@@ -25,6 +25,7 @@ function multiple_shoot(
     tsteps,
     prob::ODEProblem,
     loss_function::Function,
+    solver::DiffEqBase.AbstractODEAlgorithm,
     grp_size::Integer,
     continuity_term::Real=100
 )
@@ -37,14 +38,14 @@ function multiple_shoot(
 	tot_loss = 0
 
 	if(grp_size == datasize)
-		grp_predictions = [solve(remake(prob, p = p, tspan = (tsteps[1],tsteps[datasize]), u0 = ode_data[:,1]), Tsit5(),saveat = tsteps)]
+		grp_predictions = [solve(remake(prob, p=p, tspan=(tsteps[1],tsteps[datasize]), u0=ode_data[:,1]), solver, saveat=tsteps)]
 		tot_loss = loss_function(ode_data, grp_predictions[1][:,1:grp_size])
 		return tot_loss, grp_predictions[1], grp_predictions
 	end
 
 	if(grp_size == 1)
 		# store individual single shooting predictions for each group
-		grp_predictions = [solve(remake(prob, p = p, tspan = (tsteps[i],tsteps[i+1]), u0 = ode_data[:,i]), Tsit5(),saveat = tsteps[i:i+1]) for i in 1:datasize-1]
+		grp_predictions = [solve(remake(prob, p=p, tspan=(tsteps[i],tsteps[i+1]), u0=ode_data[:,i]), solver, saveat=tsteps[i:i+1]) for i in 1:datasize-1]
 
 		# calculate multiple shooting loss from the single shoots done in above step
 		for i in 1:datasize-1
@@ -52,12 +53,12 @@ function multiple_shoot(
 		end
 
 		# single shooting predictions from ode_data[:,1] (= u0)
-		pred = solve(remake(prob, p = p, tspan = (tsteps[1],tsteps[datasize]), u0 = ode_data[:,1]), Tsit5(),saveat = tsteps)
+		pred = solve(remake(prob, p=p, tspan=(tsteps[1],tsteps[datasize]), u0=ode_data[:,1]), solver, saveat=tsteps)
 		return tot_loss, pred, grp_predictions
 	end
 
 	# multiple shooting predictions
-	grp_predictions = [solve(remake(prob, p = p, tspan = (tsteps[i],tsteps[i+grp_size-1]), u0 = ode_data[:,i]), Tsit5(),saveat = tsteps[i:i+grp_size-1]) for i in 1:grp_size-1:datasize-grp_size]
+	grp_predictions = [solve(remake(prob, p=p, tspan=(tsteps[i],tsteps[i+grp_size-1]), u0=ode_data[:,i]), solver, saveat=tsteps[i:i+grp_size-1]) for i in 1:grp_size-1:datasize-grp_size]
 
 	# calculate multiple shooting loss
 	for i in 1:grp_size-1:datasize-grp_size
@@ -66,6 +67,6 @@ function multiple_shoot(
 	end
 
 	# single shooting prediction
-	pred = solve(remake(prob, p = p, tspan = (tsteps[1],tsteps[datasize]), u0 = ode_data[:,1]), Tsit5(),saveat = tsteps)
+	pred = solve(remake(prob, p=p, tspan=(tsteps[1],tsteps[datasize]), u0=ode_data[:,1]), solver, saveat=tsteps)
 	return tot_loss, pred, grp_predictions
 end
