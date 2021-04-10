@@ -28,7 +28,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
 
 [compat]
-Adapt = "3-3.2"
+Adapt = "3 - 3.2"
 ConsoleProgressMonitor = "0.1"
 DataInterpolations = "3.3"
 DiffEqBase = "6.41"
