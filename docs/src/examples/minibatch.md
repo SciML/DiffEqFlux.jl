@@ -131,8 +131,8 @@ From here we build a loss function around it.
 
 ```julia
 function predict_adjoint(time_batch)
-    Array(concrete_solve(prob, Tsit5(),
-    u0, θ, saveat = time_batch)) 
+    _prob = remake(prob, u0=u0, p=θ)
+    Array(solve(_prob, Tsit5(), saveat = time_batch)) 
 end
 
 function loss_adjoint(batch, time_batch)
