@@ -51,7 +51,7 @@ function loss_function_param(ode_data, pred):: Float32
 end
 
 function loss_neuralode_param(p)
-	return multiple_shoot(p, ode_data, tsteps, prob_param, loss_function_param, grp_size_param, loss_multiplier_param)
+	return multiple_shoot(p, ode_data, tsteps, prob_param, loss_function_param, Tsit5(), grp_size_param, loss_multiplier_param)
 end
 
 
@@ -76,3 +76,7 @@ multiple_shoot_loss_2 = general_loss_function(multiple_shoot_result_neuralode_2)
 println("multiple_shoot_loss_2: ",multiple_shoot_loss_2)
 
 @test multiple_shoot_loss_2 < single_shoot_loss
+
+# test for DomainErrors
+@test_throws DomainError multiple_shoot(prob_neuralode.p, ode_data, tsteps, prob_param, loss_function_param, Tsit5(), 0, loss_multiplier_param)
+@test_throws DomainError multiple_shoot(prob_neuralode.p, ode_data, tsteps, prob_param, loss_function_param, Tsit5(), datasize + 1, loss_multiplier_param)

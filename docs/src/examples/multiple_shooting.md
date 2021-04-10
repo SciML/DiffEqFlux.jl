@@ -87,7 +87,7 @@ function loss_function_param(ode_data, pred):: Float32
 end
 
 function loss_neuralode(p)
-	return multiple_shoot(p, ode_data, tsteps, prob_param, loss_function_param, grp_size_param, loss_multiplier_param)
+	return multiple_shoot(p, ode_data, tsteps, prob_param, loss_function_param, Tsit5(), grp_size_param, loss_multiplier_param)
 end
 
 result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
