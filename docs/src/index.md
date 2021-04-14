@@ -110,7 +110,7 @@ methodology, and are showcased in tutorials and layer functions:
 - Augmented Neural ODEs
 - Graph Neural ODEs
 - Hamiltonian Neural Networks (with specialized second order and symplectic integrators)
-- Legrangian Neural Networks
+- Lagrangian Neural Networks
 - Continuous Normalizing Flows (CNF) and FFJORD
 - Galerkin Neural ODEs
 
