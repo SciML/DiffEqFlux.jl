@@ -18,6 +18,7 @@ makedocs(
             "examples/neural_ode_sciml.md",
             "examples/neural_ode_flux.md",
             "examples/mnist_neural_ode.md",
+            "examples/mnist_conv_neural_ode.md",
             "examples/augmented_neural_ode.md",
             "examples/collocation.md",
             "examples/neural_gde.md",
