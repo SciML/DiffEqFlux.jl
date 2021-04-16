@@ -29,7 +29,7 @@ function loadmnist(batchsize = bs, train_split = 0.9)
 end
 
 # Main
-const bs = 512
+const bs = 128
 const train_split = 0.9
 train_dataloader, test_dataloader = loadmnist(bs, train_split);
 
@@ -195,4 +195,46 @@ loss(img, lab)</code></pre><h4 id="Optimizer"><a class="docs-heading-anchor" hre
                 iter, train_accuracy, test_accuracy)
     end
 end</code></pre><h3 id="Train"><a class="docs-heading-anchor" href="#Train">Train</a><a id="Train-1"></a><a class="docs-heading-anchor-permalink" href="#Train" title="Permalink"></a></h3><p>To train our model, we select the appropriate trainable parameters of our network with <code>params</code>. In our case, backpropagation is required for <code>down</code>, <code>nn_ode</code> and <code>fc</code>. Notice that the parameters for Neural ODE is given by <code>nn_ode.p</code>:</p><pre><code class="language-julia"># Train the NN-ODE and monitor the loss and weights.
-Flux.train!(loss, params(down, nn_ode.p, fc), train_dataloader, opt, cb = cb)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mnist_neural_ode/">« GPU-based MNIST Neural ODE Classifier</a><a class="docs-footer-nextpage" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 16 April 2021 09:41">Friday 16 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Flux.train!(loss, params(down, nn_ode.p, fc), train_dataloader, opt, cb = cb)</code></pre><h3 id="Expected-Output"><a class="docs-heading-anchor" href="#Expected-Output">Expected Output</a><a id="Expected-Output-1"></a><a class="docs-heading-anchor-permalink" href="#Expected-Output" title="Permalink"></a></h3><pre><code class="language-julia">Iter:   1 || Train Accuracy: 8.453 || Test Accuracy: 8.883
+Iter:  11 || Train Accuracy: 14.773 || Test Accuracy: 14.967
+Iter:  21 || Train Accuracy: 24.383 || Test Accuracy: 24.433
+Iter:  31 || Train Accuracy: 38.820 || Test Accuracy: 38.000
+Iter:  41 || Train Accuracy: 30.852 || Test Accuracy: 31.350
+Iter:  51 || Train Accuracy: 29.852 || Test Accuracy: 29.433
+Iter:  61 || Train Accuracy: 45.195 || Test Accuracy: 45.217
+Iter:  71 || Train Accuracy: 70.336 || Test Accuracy: 68.850
+Iter:  81 || Train Accuracy: 76.250 || Test Accuracy: 75.783
+Iter:  91 || Train Accuracy: 80.867 || Test Accuracy: 81.017
+Iter: 101 || Train Accuracy: 86.398 || Test Accuracy: 85.317
+Iter: 111 || Train Accuracy: 90.852 || Test Accuracy: 90.650
+Iter: 121 || Train Accuracy: 93.477 || Test Accuracy: 92.550
+Iter: 131 || Train Accuracy: 93.320 || Test Accuracy: 92.483
+Iter: 141 || Train Accuracy: 94.273 || Test Accuracy: 93.567
+Iter: 151 || Train Accuracy: 94.531 || Test Accuracy: 93.583
+Iter: 161 || Train Accuracy: 94.992 || Test Accuracy: 94.067
+Iter: 171 || Train Accuracy: 95.398 || Test Accuracy: 94.883
+Iter: 181 || Train Accuracy: 96.945 || Test Accuracy: 95.633
+Iter: 191 || Train Accuracy: 96.430 || Test Accuracy: 95.750
+Iter: 201 || Train Accuracy: 96.859 || Test Accuracy: 95.983
+Iter: 211 || Train Accuracy: 97.359 || Test Accuracy: 96.500
+Iter: 221 || Train Accuracy: 96.586 || Test Accuracy: 96.133
+Iter: 231 || Train Accuracy: 96.992 || Test Accuracy: 95.833
+Iter: 241 || Train Accuracy: 97.148 || Test Accuracy: 95.950
+Iter: 251 || Train Accuracy: 96.422 || Test Accuracy: 95.950
+Iter: 261 || Train Accuracy: 96.094 || Test Accuracy: 95.633
+Iter: 271 || Train Accuracy: 96.719 || Test Accuracy: 95.767
+Iter: 281 || Train Accuracy: 96.719 || Test Accuracy: 96.000
+Iter: 291 || Train Accuracy: 96.609 || Test Accuracy: 95.817
+Iter: 301 || Train Accuracy: 96.656 || Test Accuracy: 96.033
+Iter: 311 || Train Accuracy: 97.594 || Test Accuracy: 96.500
+Iter: 321 || Train Accuracy: 97.633 || Test Accuracy: 97.083
+Iter: 331 || Train Accuracy: 98.008 || Test Accuracy: 97.067
+Iter: 341 || Train Accuracy: 98.070 || Test Accuracy: 97.150
+Iter: 351 || Train Accuracy: 97.875 || Test Accuracy: 97.050
+Iter: 361 || Train Accuracy: 96.922 || Test Accuracy: 96.500
+Iter: 371 || Train Accuracy: 97.188 || Test Accuracy: 96.650
+Iter: 381 || Train Accuracy: 97.820 || Test Accuracy: 96.783
+Iter: 391 || Train Accuracy: 98.156 || Test Accuracy: 97.567
+Iter: 401 || Train Accuracy: 98.250 || Test Accuracy: 97.367
+Iter: 411 || Train Accuracy: 97.969 || Test Accuracy: 97.267
+Iter: 421 || Train Accuracy: 96.555 || Test Accuracy: 95.667</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mnist_neural_ode/">« GPU-based MNIST Neural ODE Classifier</a><a class="docs-footer-nextpage" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 16 April 2021 10:00">Friday 16 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
