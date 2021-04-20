@@ -107,7 +107,7 @@ Here's the plots that we get from above
 The picture on the left shows how well our Neural Network does on a single shoot
 after training it through `multiple_shoot`.
 The picture on the right shows the predictions of each group (Notice that there
-are overlapping points as well. These are the points we are trying to co-incide.)
+are overlapping points as well. These are the points we are trying to coincide.)
 
 Here is an output with `grp_size` = 30 (which is same as solving on the whole
 interval without splitting also called single shooting)

@@ -145,7 +145,7 @@ model = Chain(GCNConv(adj_mat, num_features=>hidden, relu),
 
 ## Training Configuration
 
-### Loss Function and Accurary
+### Loss Function and Accuracy
 
 We shall be using the standard categorical crossentropy loss function which is used for multiclass classification tasks.
 

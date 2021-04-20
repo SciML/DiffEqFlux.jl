@@ -135,7 +135,7 @@ In plain terms, the quantities that were defined are:
 - `u0` = initial condition
 - `p` = true solution
 - `xtrs` = convenient grouping of `dx` and `Nx` into Array
-- `dt` = time distane between two points
+- `dt` = time distance between two points
 - `t` (`t0` to `tMax`) spans the specified time frame
 - `tspan` = span of `t`
 

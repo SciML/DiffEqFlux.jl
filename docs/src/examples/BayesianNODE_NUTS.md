@@ -129,7 +129,7 @@ Chain Mixing Plot:
 
 ![](https://user-images.githubusercontent.com/23134958/102398106-dd31b000-4004-11eb-9623-a24ab0409b07.png)
 
-Auto-Corelation Plot:
+Auto-Correlation Plot:
 
 ![](https://user-images.githubusercontent.com/23134958/102398102-dacf5600-4004-11eb-853a-60faa67422ef.png)
 
@@ -229,7 +229,7 @@ samples, stats = sample(h, prop, Float64.(prob_neuralode.p), 500, adaptor, 500; 
 
 #### Step 5: Plot diagnostics.
 
-A: Plot chain object and auto-corel plot of the first 5 parameters.
+A: Plot chain object and auto-correlation plot of the first 5 parameters.
 
 ```julia
 samples = hcat(samples...)
