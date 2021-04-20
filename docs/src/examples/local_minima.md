@@ -7,7 +7,7 @@ there are many strategies to avoid local minima:
 2. Weigh the loss function to allow for fitting earlier portions first
 3. Changing the optimizers to `allow_f_increases`
 4. Iteratively grow the fit
-5. Training the initial conditions and the parmeters to start
+5. Training the initial conditions and the parameters to start
 
 ## `allow_f_increases=true`
 

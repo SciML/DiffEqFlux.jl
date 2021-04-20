@@ -98,7 +98,7 @@ end
 plt_anode = plot_contour(model)
 ```
 
-# Step-by-Step Explaination
+# Step-by-Step Explanation
 
 ## Loading required packages
 
@@ -150,7 +150,7 @@ end
 
 ## Models
 
-We consider 2 models in this tuturial. The first is a simple Neural ODE which is described in detail in
+We consider 2 models in this tutorial. The first is a simple Neural ODE which is described in detail in
 [this tutorial](https://diffeqflux.sciml.ai/dev/examples/neural_ode_sciml/). The other one is an
 Augmented Neural ODE \[1]. The idea behind this layer is very simple. It augments the input to the Neural
 DE Layer by appending zeros. So in order to use any arbitrary DE Layer in combination with this layer,
