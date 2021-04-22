@@ -78,7 +78,7 @@ group_size = 3
 continuity_term = 200
 
 function loss_function(data, pred)
-	return sum(abs2, data - pred)^2
+	return sum(abs2, data - pred)
 end
 
 function loss_multiple_shooting(p)
