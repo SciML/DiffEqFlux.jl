@@ -1,23 +1,28 @@
 """
-Returns the a total loss after trying a 'Direct multiple shooting' on ODE data, predictions on the whole ODE data and an array of predictions from the each of the groups (smaller intervals).
-In Direct Multiple Shooting, the Neural Network divides the interval into smaller intervals and solves for them separately.
-The default group size is 5 implying the whole dataset would be divided in groups of 5 and the Neural Network will solve on them individually.
-The default continuity term is 100 implying any losses arising from the non-continuity of 2 different groups will be scaled by 100.
+Returns the a total loss after trying a 'Direct multiple shooting' on ODE data
+and an array of predictions from the each of the groups (smaller intervals).
+In Direct Multiple Shooting, the Neural Network divides the interval into smaller intervals
+and solves for them separately.
+The default continuity term is 100 implying any losses arising from the non-continuity
+of 2 different groups will be scaled by 100.
 
 ```julia
-multiple_shoot(p,ode_data,tsteps,prob,loss_function,grp_size,continuity_strength=100)
+multiple_shoot(p, ode_data, tsteps, prob, loss_function, group_size; continuity_term=100)
 ```
-Arguments:
-- `p`: The parameters of the Neural Network to be trained.
-- `ode_data`: Original Data to be modelled.
-- `tsteps`: Timesteps on which ode_data was calculated.
-- `prob`: ODE problem that the Neural Network attempts to solve.
-- `loss_function`: Any arbitrary function to calculate loss.
-- `grp_size`: The group size achieved after splitting the ode_data into equal sizes.
-- `continuity_term`: Multiplying factor to ensure continuity of predictions throughout different groups.
 
-!!!note
-The parameter 'continuity_term' should be a relatively big number to enforce a large penalty whenever the last point of any group doesn't coincide with the first point of next group.
+Arguments:
+  - `p`: The parameters of the Neural Network to be trained.
+  - `ode_data`: Original Data to be modelled.
+  - `tsteps`: Timesteps on which ode_data was calculated.
+  - `prob`: ODE problem that the Neural Network attempts to solve.
+  - `loss_function`: Any arbitrary function to calculate loss.
+  - `group_size`: The group size achieved after splitting the ode_data into equal sizes.
+  - `continuity_term`: Multiplying factor to ensure continuity of predictions throughout
+    different groups.
+
+Note:
+The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
+whenever the last point of any group doesn't coincide with the first point of next group.
 """
 function multiple_shoot(
     p::AbstractArray,
