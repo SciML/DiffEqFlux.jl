@@ -27,51 +27,83 @@ whenever the last point of any group doesn't coincide with the first point of ne
 function multiple_shoot(
     p::AbstractArray,
     ode_data::AbstractArray,
-    tsteps,
+    tsteps::AbstractArray,
     prob::ODEProblem,
     loss_function::Function,
     solver::DiffEqBase.AbstractODEAlgorithm,
-    grp_size::Integer,
-    continuity_term::Real=100
+    group_size::Integer;
+    continuity_term::Real=100,
 )
-	datasize = length(ode_data[1,:])
+    datasize = size(ode_data, 2)
 
-	if grp_size < 1 || grp_size > datasize
-        throw(DomainError(grp_size, "grp_size can't be < 1 or > number of data points"))
+    if group_size < 2 || group_size > datasize
+        throw(DomainError(group_size, "group_size can't be < 2 or > number of data points"))
     end
 
-	tot_loss = 0
+    # Get ranges that partition data to groups of size group_size
+    ranges = group_ranges(datasize, group_size)
 
-	if(grp_size == datasize)
-		grp_predictions = [solve(remake(prob, p=p, tspan=(tsteps[1],tsteps[datasize]), u0=ode_data[:,1]), solver, saveat=tsteps)]
-		tot_loss = loss_function(ode_data, grp_predictions[1][:,1:grp_size])
-		return tot_loss, grp_predictions[1], grp_predictions
-	end
+    # Multiple shooting predictions
+    group_predictions = [
+        Array(
+            solve(
+                remake(
+                    prob;
+                    p=p,
+                    tspan=(tsteps[first(rg)], tsteps[last(rg)]),
+                    u0=ode_data[:, first(rg)],
+                ),
+                solver;
+                saveat=tsteps[rg],
+            ),
+        ) for rg in ranges
+    ]
 
-	if(grp_size == 1)
-		# store individual single shooting predictions for each group
-		grp_predictions = [solve(remake(prob, p=p, tspan=(tsteps[i],tsteps[i+1]), u0=ode_data[:,i]), solver, saveat=tsteps[i:i+1]) for i in 1:datasize-1]
+    # Calculate multiple shooting loss
+    loss = 0
+    for (i, rg) in enumerate(ranges)
+        y = ode_data[:, rg]
+        ŷ = group_predictions[i]
+        loss += loss_function(y, ŷ)
 
-		# calculate multiple shooting loss from the single shoots done in above step
-		for i in 1:datasize-1
-		tot_loss += loss_function(ode_data[:,i:i+1], grp_predictions[i][:, 1:grp_size]) + (continuity_term * sum(abs,grp_predictions[i][:,2] - ode_data[:,i+1]))
-		end
+        if i > 1
+            # Ensure continuity between last state in previous prediction
+            # and current initial condition in ode_data
+            loss += continuity_term * sum(abs, y[:, 1] - group_predictions[i - 1][:, end])
+        end
+    end
 
-		# single shooting predictions from ode_data[:,1] (= u0)
-		pred = solve(remake(prob, p=p, tspan=(tsteps[1],tsteps[datasize]), u0=ode_data[:,1]), solver, saveat=tsteps)
-		return tot_loss, pred, grp_predictions
-	end
+    return loss, group_predictions
+end
 
-	# multiple shooting predictions
-	grp_predictions = [solve(remake(prob, p=p, tspan=(tsteps[i],tsteps[i+grp_size-1]), u0=ode_data[:,i]), solver, saveat=tsteps[i:i+grp_size-1]) for i in 1:grp_size-1:datasize-grp_size]
+"""
+Get ranges that partition data of length `datasize` in groups of `groupsize` observations.
+If the data isn't perfectly dividable by `groupsize`, the last group contains
+the reminding observations.
 
-	# calculate multiple shooting loss
-	for i in 1:grp_size-1:datasize-grp_size
-		# The term `trunc(Integer,(i-1)/(grp_size-1)+1)` goes from 1, 2, ... , N where N is the total number of groups that can be formed from `ode_data` (In other words, N = trunc(Integer, (datasize-1)/(grp_size-1)))
-		tot_loss += loss_function(ode_data[:,i:i+grp_size-1], grp_predictions[trunc(Integer,(i-1)/(grp_size-1)+1)][:, 1:grp_size]) + (continuity_term * sum(abs,grp_predictions[trunc(Integer,(i-1)/(grp_size-1)+1)][:,grp_size] - ode_data[:,i+grp_size-1]))
-	end
+```julia
+group_ranges(datasize, groupsize)
+```
 
-	# single shooting prediction
-	pred = solve(remake(prob, p=p, tspan=(tsteps[1],tsteps[datasize]), u0=ode_data[:,1]), solver, saveat=tsteps)
-	return tot_loss, pred, grp_predictions
+Arguments:
+- `datasize`: amount of data points to be partitioned
+- `groupsize`: maximum amount of observations in each group
+
+Example:
+```julia-repl
+julia> group_ranges(10, 4)
+3-element Vector{UnitRange{Int64}}:
+ 1:4
+ 5:8
+ 9:10
+```
+"""
+function group_ranges(datasize::Integer, groupsize::Integer)
+    1 <= groupsize <= datasize || throw(
+        DomainError(
+            groupsize,
+            "datasize must be positive and groupsize must to be within [1, datasize]",
+        ),
+    )
+    return [i:min(datasize, i + groupsize - 1) for i in 1:groupsize:datasize]
 end
