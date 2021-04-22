@@ -99,11 +99,11 @@ julia> group_ranges(10, 4)
 ```
 """
 function group_ranges(datasize::Integer, groupsize::Integer)
-    1 <= groupsize <= datasize || throw(
+    2 <= groupsize <= datasize || throw(
         DomainError(
             groupsize,
-            "datasize must be positive and groupsize must to be within [1, datasize]",
+            "datasize must be positive and groupsize must to be within [2, datasize]",
         ),
     )
-    return [i:min(datasize, i + groupsize - 1) for i in 1:groupsize:datasize]
+    return [i:min(datasize, i + groupsize - 1) for i in 1:groupsize-1:datasize-1]
 end
