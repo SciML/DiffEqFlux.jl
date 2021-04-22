@@ -62,7 +62,7 @@ callback = function (p, l, preds; doplot = true)
   display(l)
   if doplot
 	# plot the original data
-	plt = scatter(tsteps[:], ode_data[1,:], label = "Data")
+	plt = scatter(tsteps, ode_data[1,:], label = "Data")
 
 	# plot the different predictions for individual shoot
 	plot_multiple_shoot(plt, preds, group_size)
