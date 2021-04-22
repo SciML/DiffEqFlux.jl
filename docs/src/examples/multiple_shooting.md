@@ -7,11 +7,11 @@ then the joined/combined solution is same as solving on the whole dataset
 (without splitting).
 
 To ensure that the overlapping part of two consecutive intervals coincide,
-we add a penalizing term, `continuity_term * absolute_value_of( prediction
-of last point of some group, i - prediction of first point of group i+1 )`, to
+we add a penalizing term, `continuity_term * absolute_value_of(prediction
+of last point of group i - prediction of first point of group i+1)`, to
 the loss.
 
-Note that the `continuity_strength` should have a large positive value to add
+Note that the `continuity_term` should have a large positive value to add
 high penalties in case the solver predicts discontinuous values.
 
 
@@ -93,18 +93,16 @@ res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, res_ms.minimizer,
                                 BFGS(), cb = callback, maxiters = 100,
                                 allow_f_increases=true)
 
-# gif(anim, "multiple_shooting.gif", fps=15)
+gif(anim, "multiple_shooting.gif", fps=15)
 
 ```
-Here's the plots that we get from above
+Here's the animation that we get from above
 
-![pic](https://user-images.githubusercontent.com/58384989/111881194-6de9a480-89d5-11eb-8f21-6481d1e22521.PNG)
-The picture on the left shows how well our Neural Network does on a single shoot
-after training it through `multiple_shoot`.
-The picture on the right shows the predictions of each group (Notice that there
+![pic](https://camo.githubusercontent.com/9f1a4b38895ebaa47b7d90e53268e6f10d04da684b58549624c637e85c22d27b/68747470733a2f2f692e696d6775722e636f6d2f636d507a716a722e676966)
+The connected lines show the predictions of each group (Notice that there
 are overlapping points as well. These are the points we are trying to coincide.)
 
-Here is an output with `group_size` = 30 (which is same as solving on the whole
+Here is an output with `group_size = 30` (which is same as solving on the whole
 interval without splitting also called single shooting)
 
 ![pic_single_shoot3](https://user-images.githubusercontent.com/58384989/111843307-f0fff180-8926-11eb-9a06-2731113173bc.PNG)
