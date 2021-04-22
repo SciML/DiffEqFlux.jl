@@ -91,10 +91,10 @@ Arguments:
 
 Example:
 ```julia-repl
-julia> group_ranges(10, 4)
+julia> group_ranges(10, 5)
 3-element Vector{UnitRange{Int64}}:
- 1:4
- 5:8
+ 1:5
+ 5:9
  9:10
 ```
 """
