@@ -83,10 +83,12 @@ include("tensor_product_layer.jl")
 include("collocation.jl")
 include("hnn.jl")
 include("multiple_shooting.jl")
+include("ltc.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
 export DeterministicCNF, FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
 export HamiltonianNN
+export LTC 
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
 export neural_ode, neural_ode_rd
 export neural_dmsde
@@ -95,6 +97,7 @@ export FastDense, StaticDense, FastChain, initial_params
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel
 export TriweightKernel, TricubeKernel, GaussianKernel, CosineKernel
 export LogisticKernel, SigmoidKernel, SilvermanKernel
+
 export collocate_data
 
 export multiple_shoot
