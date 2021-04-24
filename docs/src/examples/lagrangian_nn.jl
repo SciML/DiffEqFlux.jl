@@ -11,12 +11,8 @@ model = LagrangianNN(g)
 params = model.params
 re = model.re
 
-# some toy loss function
-function loss(x, y, p)
-    nn = x -> model(x,p)
-    out = sum((y .- (nn(x))).^2)
-    out
-end
+loss(x, y, p) = sum(abs2, y .- model(x, p))
+
 opt = ADAM(0.01)
 epochs = 100
 
