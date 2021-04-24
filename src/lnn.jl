@@ -3,13 +3,13 @@ Constructs a Lagrangian Neural Network [1].
 
 References:
 [1] Miles Cranmer, Sam Greydanus, Stephan Hoyer, Peter Battaglia, David Spergel, and Shirley Ho.Lagrangian Neural Networks.
-    InICLR 2020 Workshop on Integration of Deep Neural Modelsand Differential Equations, 2020.
+    In ICLR 2020 Workshop on Integration of Deep Neural Models and Differential Equations, 2020.
 """
 
-struct LagrangianNN
-    model
-    re
-    params
+struct LagrangianNN{M, R, P}
+    model::M
+    re::R
+    p::P
 
     # Define inner constructor method
     function LagrangianNN(model; p = nothing)
@@ -17,14 +17,14 @@ struct LagrangianNN
         if p === nothing
             p = _p
         end
-        return new(model, re, p)
+        return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
     end
 end
 
-function (nn::LagrangianNN)(x, p = nn.params)
+function (lnn::LagrangianNN)(x, p = lnn.p)
     @assert size(x,1) % 2 === 0 # velocity df should be equal to coords degree of freedom
     M = div(size(x,1), 2) # number of velocities degrees of freedom
-    re = nn.re
+    re = lnn.re
     hess = x -> Zygote.hessian_reverse(x->sum(re(p)(x)), x) # we have to compute the whole hessian
     hess = hess(x)[M+1:end, M+1:end]  # takes only velocities
     inv_hess = GenericLinearAlgebra.pinv(hess)
