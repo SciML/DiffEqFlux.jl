@@ -55,8 +55,8 @@ loss_ss, _ = loss_single_shooting(res_single_shooting.minimizer)
 println("Single shooting loss: $(loss_ss)")
 
 ## Test Multiple Shooting
-group_size = 2
-continuity_term = 100
+group_size = 3
+continuity_term = 200
 
 function loss_multiple_shooting(p)
     return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
@@ -70,6 +70,27 @@ res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, neuralode.p,
 loss_ms, _ = loss_single_shooting(res_ms.minimizer)
 println("Multiple shooting loss: $(loss_ms)")
 @test loss_ms < loss_ss
+
+# Test with custom loss function
+group_size = 4
+continuity_term = 50
+
+function continuity_loss_abs2(û_end,  u_0)
+    return sum(abs2, û_end - u_0) # using abs2 instead of default abs
+end
+
+function loss_multiple_shooting_abs2(p)
+    return multiple_shoot(p, ode_data, tsteps, prob_node,
+                          loss_function, continuity_loss_abs2, Tsit5(),
+                          group_size; continuity_term)
+end
+
+res_ms_abs2 = DiffEqFlux.sciml_train(loss_multiple_shooting_abs2, neuralode.p,
+                                     ADAM(0.05), maxiters = 300)
+
+loss_ms_abs2, _ = loss_single_shooting(res_ms_abs2.minimizer)
+println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
+@test loss_ms_abs2 < loss_ss
 
 # Test for DomainErrors
 @test_throws DomainError multiple_shoot(p_init, ode_data, tsteps, prob_node,
