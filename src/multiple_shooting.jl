@@ -8,6 +8,7 @@ of 2 different groups will be scaled by 100.
 
 ```julia
 multiple_shoot(p, ode_data, tsteps, prob, loss_function, group_size; continuity_term=100)
+multiple_shoot(p, ode_data, tsteps, prob, loss_function, continuity_loss, group_size; continuity_term=100)
 ```
 
 Arguments:
@@ -17,8 +18,12 @@ Arguments:
   - `prob`: ODE problem that the Neural Network attempts to solve.
   - `loss_function`: Any arbitrary function to calculate loss.
   - `group_size`: The group size achieved after splitting the ode_data into equal sizes.
-  - `continuity_term`: Multiplying factor to ensure continuity of predictions throughout
-    different groups.
+  - `continuity_term`: Weight term to ensure continuity of predictions throughout
+  different groups.
+  - `continuity_loss`: Function that takes states ``\\hat{u}_{end}`` of group ``k`` and
+    ``u_{0}`` of group ``k+1`` as input and calculates prediction continuity loss
+    between them.
+    If no custom `continuity_loss` is specified, `sum(abs, û_end - u_0)` is used.
 
 Note:
 The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
@@ -30,6 +35,7 @@ function multiple_shoot(
     tsteps::AbstractArray,
     prob::ODEProblem,
     loss_function::Function,
+    continuity_loss::Function,
     solver::DiffEqBase.AbstractODEAlgorithm,
     group_size::Integer;
     continuity_term::Real=100,
@@ -62,18 +68,48 @@ function multiple_shoot(
     # Calculate multiple shooting loss
     loss = 0
     for (i, rg) in enumerate(ranges)
-        y = ode_data[:, rg]
-        ŷ = group_predictions[i]
-        loss += loss_function(y, ŷ)
+        u = ode_data[:, rg]
+        û = group_predictions[i]
+        loss += loss_function(u, û)
 
         if i > 1
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
-            loss += continuity_term * sum(abs, y[:, 1] - group_predictions[i - 1][:, end])
+            loss +=
+                continuity_term * continuity_loss(group_predictions[i - 1][:, end], u[:, 1])
         end
     end
 
     return loss, group_predictions
+end
+
+function multiple_shoot(
+    p::AbstractArray,
+    ode_data::AbstractArray,
+    tsteps::AbstractArray,
+    prob::ODEProblem,
+    loss_function::Function,
+    solver::DiffEqBase.AbstractODEAlgorithm,
+    group_size::Integer;
+    continuity_term::Real=100,
+)
+    # Continuity loss between last state in previous prediction
+    # and current initial condition in ode_data
+    function continuity_loss(û_end, u_0)
+        return sum(abs, û_end - u_0)
+    end
+
+    return multiple_shoot(
+        p,
+        ode_data,
+        tsteps,
+        prob,
+        loss_function,
+        continuity_loss,
+        solver,
+        group_size;
+        continuity_term,
+    )
 end
 
 """
