@@ -167,10 +167,14 @@ ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 dudt2 = FastChain((x, p) -&gt; x.^3,
                   FastDense(2, 50, tanh),
                   FastDense(50, 2))
-prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
+dudt!(u, p, t) = dudt2(u, p)
+u0 = rand(2)
+prob_neuralode = ODEProblem(dudt!, u0, tspan, initial_params(dudt2))
+sol_node = solve(prob, Tsit5(), saveat = tsteps)
 
 function predict_neuralode(p)
-  Array(prob_neuralode(u0, p))
+  tmp_prob = remake(prob, p = p)
+  Array(solve(tmp_prob, Tsit5(), saveat = tsteps))
 end
 
 function loss_neuralode(p)
@@ -199,11 +203,12 @@ optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
 result_neuralode = GalacticOptim.solve(optprob,
                                        ADAM(0.05),
                                        cb = callback,
-                                       maxiters = 300)
+                                       maxiters = 500)
 
-optprob2 = remake(optprob,u0 = result_neuralode.minimizer)
+optprob2 = remake(optprob, u0 = result_neuralode.minimizer)
 
 result_neuralode2 = GalacticOptim.solve(optprob2,
-                                        LBFGS(),
+                                        BFGS(),
                                         cb = callback,
-                                        allow_f_increases = false)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../stiff_ode_fit/">« Parameter Estimation on Highly Stiff Systems</a><a class="docs-footer-nextpage" href="../neural_ode_flux/">Neural Ordinary Differential Equations with Flux.train! »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 20 April 2021 15:12">Tuesday 20 April 2021</span>. Using Julia version 1.6.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+                                        maxiters = 500,
+                                        allow_f_increases = true)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../stiff_ode_fit/">« Parameter Estimation on Highly Stiff Systems</a><a class="docs-footer-nextpage" href="../neural_ode_flux/">Neural Ordinary Differential Equations with Flux.train! »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 27 April 2021 09:48">Tuesday 27 April 2021</span>. Using Julia version 1.6.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
