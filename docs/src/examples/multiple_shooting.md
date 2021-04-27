@@ -2,25 +2,26 @@
 
 In Multiple Shooting, the training data is split into overlapping intervals.
 The solver is then trained on individual intervals. If the end conditions of any
-interval co-incide with the initial conditions of the next immediate interval,
+interval coincide with the initial conditions of the next immediate interval,
 then the joined/combined solution is same as solving on the whole dataset
 (without splitting).
 
-To ensure that the overlapping part of two consecutive intervals co-incide,
-we add a penalizing term, `continuity_strength * absolute_value_of( prediction
-of last point of some group, i - prediction of first point of group i+1 )`, to
+To ensure that the overlapping part of two consecutive intervals coincide,
+we add a penalizing term, `continuity_term * absolute_value_of(prediction
+of last point of group i - prediction of first point of group i+1)`, to
 the loss.
 
-Note that the `continuity_strength` should have a large positive value to add
-high penalities in case the solver predicts discontinuous values.
+Note that the `continuity_term` should have a large positive value to add
+high penalties in case the solver predicts discontinuous values.
 
 
 The following is a working demo, using Multiple Shooting
 
 ```julia
 using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux: group_ranges
 
-# Define initial conditions and timesteps
+# Define initial conditions and time steps
 datasize = 30
 u0 = Float32[2.0, 0.0]
 tspan = (0.0f0, 5.0f0)
@@ -37,79 +38,71 @@ ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
 
 # Define the Neural Network
-dudt2 = FastChain((x, p) -> x.^3,
+nn = FastChain((x, p) -> x.^3,
                   FastDense(2, 16, tanh),
                   FastDense(16, 2))
+p_init = initial_params(nn)
 
-prob_neuralode = NeuralODE(dudt2, (0.0,5.0), Tsit5(), saveat = tsteps)
+neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
+prob_node = ODEProblem((u,p,t)->nn(u,p), u0, tspan, p_init)
 
-function plot_function_for_multiple_shoot(plt, pred, grp_size)
-	step = 1
-	if(grp_size != 1)
-		step = grp_size-1
-	end
-	if(grp_size == datasize)
-		scatter!(plt, tsteps, pred[1][1,:], label = "pred")
-	else
-		for i in 1:step:datasize-grp_size
-			# The term `trunc(Integer,(i-1)/(grp_size-1)+1)` goes from 1, 2, ... , N where N is the total number of groups that can be formed from `ode_data` (In other words, N = trunc(Integer, (datasize-1)/(grp_size-1)))
-			scatter!(plt, tsteps[i:i+step], pred[trunc(Integer,(i-1)/step+1)][1,:], label = "grp"*string(trunc(Integer,(i-1)/step+1)))
-		end
+
+function plot_multiple_shoot(plt, preds, group_size)
+	step = group_size-1
+	ranges = group_ranges(datasize, group_size)
+
+	for (i, rg) in enumerate(ranges)
+		plot!(plt, tsteps[rg], preds[i][1,:], markershape=:circle, label="Group $(i)")
 	end
 end
 
-callback = function (p, l, pred, predictions; doplot = true)
+# Animate training
+anim = Animation()
+callback = function (p, l, preds; doplot = true)
   display(l)
   if doplot
 	# plot the original data
-	plt = scatter(tsteps[1:size(pred,2)], ode_data[1,1:size(pred,2)], label = "data")
+	plt = scatter(tsteps, ode_data[1,:], label = "Data")
 
 	# plot the different predictions for individual shoot
-	plot_function_for_multiple_shoot(plt, predictions, grp_size_param)
+	plot_multiple_shoot(plt, preds, group_size)
 
-	# plot a single shooting performance of our multiple shooting training (this is what the solver predicts after the training is done)
-	# scatter!(plt, tsteps[1:size(pred,2)], pred[1,:], label = "pred")
-
+    frame(anim)
     display(plot(plt))
   end
   return false
 end
 
 # Define parameters for Multiple Shooting
-grp_size_param = 1
-loss_multiplier_param = 100
+group_size = 3
+continuity_term = 200
 
-neural_ode_f(u,p,t) = dudt2(u,p)
-prob_param = ODEProblem(neural_ode_f, u0, tspan, initial_params(dudt2))
-
-function loss_function_param(ode_data, pred):: Float32
-	return sum(abs2, (ode_data .- pred))^2
+function loss_function(data, pred)
+	return sum(abs2, data - pred)
 end
 
-function loss_neuralode(p)
-	return multiple_shoot(p, ode_data, tsteps, prob_param, loss_function_param, Tsit5(), grp_size_param, loss_multiplier_param)
+function loss_multiple_shooting(p)
+    return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
+                          group_size; continuity_term)
 end
 
-result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
-                                          ADAM(0.05), cb = callback,
-                                          maxiters = 300)
-callback(result_neuralode.minimizer,loss_neuralode(result_neuralode.minimizer)...;doplot=true)
+res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, p_init,
+                                ADAM(0.05), cb = callback, maxiters = 300)
 
-result_neuralode_2 = DiffEqFlux.sciml_train(loss_neuralode, result_neuralode.minimizer,
-                                          BFGS(), cb = callback,
-                                          maxiters = 100, allow_f_increases=true)
-callback(result_neuralode_2.minimizer,loss_neuralode(result_neuralode_2.minimizer)...;doplot=true)
+res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, res_ms.minimizer,
+                                BFGS(), cb = callback, maxiters = 100,
+                                allow_f_increases=true)
+
+gif(anim, "multiple_shooting.gif", fps=15)
 
 ```
-Here's the plots that we get from above
+Here's the animation that we get from above
 
-![pic](https://user-images.githubusercontent.com/58384989/111881194-6de9a480-89d5-11eb-8f21-6481d1e22521.PNG)
-The picture on the left shows how well our Neural Network does on a single shoot
-after training it through `multiple_shoot`.
-The picture on the right shows the predictions of each group (Notice that there
+![pic](https://camo.githubusercontent.com/9f1a4b38895ebaa47b7d90e53268e6f10d04da684b58549624c637e85c22d27b/68747470733a2f2f692e696d6775722e636f6d2f636d507a716a722e676966)
+The connected lines show the predictions of each group (Notice that there
 are overlapping points as well. These are the points we are trying to coincide.)
 
-Here is an output with `grp_size` = 30 (which is same as solving on the whole
+Here is an output with `group_size = 30` (which is same as solving on the whole
 interval without splitting also called single shooting)
 
 ![pic_single_shoot3](https://user-images.githubusercontent.com/58384989/111843307-f0fff180-8926-11eb-9a06-2731113173bc.PNG)
