@@ -27,8 +27,9 @@ Arguments:
   - `group_size`: The group size achieved after splitting the ode_data into equal sizes.
   - `continuity_term`: Weight term to ensure continuity of predictions throughout
   different groups.
-  - `sensealg`: Sensitivity algorithm, defaults to `InterpolatingAdjoint()`. Refer to
-  the [Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/)
+  - `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
+  [Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/) and
+  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
   documentation for more details.
 
 Note:
@@ -45,7 +46,7 @@ function multiple_shoot(
     solver::DiffEqBase.AbstractODEAlgorithm,
     group_size::Integer;
     continuity_term::Real=100,
-    sensealg::SciMLBase.AbstractSensitivityAlgorithm=InterpolatingAdjoint(),
+    kwargs...
 )
     datasize = size(ode_data, 2)
 
@@ -68,7 +69,7 @@ function multiple_shoot(
                 ),
                 solver;
                 saveat=tsteps[rg],
-                sensealg=sensealg,
+                kwargs...
             ),
         ) for rg in ranges
     ]

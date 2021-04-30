@@ -60,7 +60,8 @@ continuity_term = 200
 
 function loss_multiple_shooting(p)
     return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
-                          group_size; continuity_term)
+                          group_size; continuity_term,
+                          abstol=1e-3, reltol=1e-3) # test solver kwargs
 end
 
 res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, neuralode.p,
