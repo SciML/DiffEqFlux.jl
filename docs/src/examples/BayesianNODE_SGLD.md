@@ -11,7 +11,7 @@ For more details regarding Bayesian Neural ODEs, please refer to [Bayesian Neura
 ## Copy-Pasteable Code
 
 Before getting to the explanation, here's some code to start with. We will follow
-wil a full explanation of the definition and training process:
+with a full explanation of the definition and training process:
 
 ```julia
 using DiffEqFlux, OrdinaryDiffEq, Flux

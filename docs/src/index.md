@@ -110,13 +110,13 @@ methodology, and are showcased in tutorials and layer functions:
 - Augmented Neural ODEs
 - Graph Neural ODEs
 - Hamiltonian Neural Networks (with specialized second order and symplectic integrators)
-- Legrangian Neural Networks
+- Lagrangian Neural Networks
 - Continuous Normalizing Flows (CNF) and FFJORD
 - Galerkin Neural ODEs
 
 ## Modularity and Composability
 
-Note that DiffEqFlux.jl purely built on composable and modular infrustructure. In fact,
+Note that DiffEqFlux.jl purely built on composable and modular infrastructure. In fact,
 DiffEqFlux.jl's functions are not even directly required for performing many of these operations! 
 DiffEqFlux provides high level helper functions and documentation for the user, but the
 code generation stack is modular and composes in many different ways. For example, one can
@@ -131,7 +131,7 @@ use and swap out the ODE solver between any common interface compatible library,
 
 In addition, due to the composability of the system, none of the components are directly
 tied to the Flux.jl machine learning framework. For example, you can [use DiffEqFlux.jl
-to generate TensorFlow graphs and train the nueral network with TensorFlow.jl](https://youtu.be/n2MwJ1guGVQ?t=284),
+to generate TensorFlow graphs and train the neural network with TensorFlow.jl](https://youtu.be/n2MwJ1guGVQ?t=284),
 [utilize PyTorch arrays via Torch.jl](https://github.com/FluxML/Torch.jl), and more all with
 single line code changes by utilizing the underlying code generation. The tutorials shown here
 are thus mostly a guide on how to use the ecosystem as a whole, only showing a small snippet

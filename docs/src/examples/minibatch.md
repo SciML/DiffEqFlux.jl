@@ -25,8 +25,8 @@ function dudt_(u,p,t)
 end
 
 function predict_adjoint(time_batch)
-    Array(concrete_solve(prob, Tsit5(),
-    u0, θ, saveat = time_batch)) 
+    _prob = remake(prob,u0=u0,p=θ)
+    Array(solve(_prob, Tsit5(), saveat = time_batch)) 
 end
 
 function loss_adjoint(batch, time_batch)
@@ -95,7 +95,7 @@ train_loader, _, _ = kfolds((ode_data, t))
 Flux.train!(loss_adjoint, Flux.params(θ), ncycle(eachbatch(train_loader[1], k), numEpochs), opt, cb=Flux.throttle(cb, 10))
 ```
 
-When training a neural network we need to find the gradient with respect to our data set. There are three main ways to partition our data when using a training algorithm like gradient descent: stochastic, batching and mini-batching. Stochastic gradient descent trains on a single random data point each epoch. This allows for the neural network to better converge to the global minimum even on noisy data but is computationally inefficient. Batch gradient descent trains on the whole data set each epoch and while computationally effiecient is prone to converging to local minima. Mini-batching combines both of these advantages and by training on a small random "mini-batch" of the data each epoch can converge to the global minimum while remaining more computationally effiecient than stochastic descent. Typically we do this by randomly selecting subsets of the data each epoch and use this subset to train on. We can also pre-batch the data by creating an iterator holding these randomly selected batches before beginning to train. The proper size for the batch can be determined expirementally. Let us see how to do this with Julia. 
+When training a neural network we need to find the gradient with respect to our data set. There are three main ways to partition our data when using a training algorithm like gradient descent: stochastic, batching and mini-batching. Stochastic gradient descent trains on a single random data point each epoch. This allows for the neural network to better converge to the global minimum even on noisy data but is computationally inefficient. Batch gradient descent trains on the whole data set each epoch and while computationally efficient is prone to converging to local minima. Mini-batching combines both of these advantages and by training on a small random "mini-batch" of the data each epoch can converge to the global minimum while remaining more computationally efficient than stochastic descent. Typically we do this by randomly selecting subsets of the data each epoch and use this subset to train on. We can also pre-batch the data by creating an iterator holding these randomly selected batches before beginning to train. The proper size for the batch can be determined experimentally. Let us see how to do this with Julia. 
 
 For this example we will use a very simple ordinary differential equation, newtons law of cooling. We can represent this in Julia like so. 
 
@@ -131,8 +131,8 @@ From here we build a loss function around it.
 
 ```julia
 function predict_adjoint(time_batch)
-    Array(concrete_solve(prob, Tsit5(),
-    u0, θ, saveat = time_batch)) 
+    _prob = remake(prob, u0=u0, p=θ)
+    Array(solve(_prob, Tsit5(), saveat = time_batch)) 
 end
 
 function loss_adjoint(batch, time_batch)

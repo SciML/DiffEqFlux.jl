@@ -120,7 +120,7 @@ adjoint pass. `QuadratureAdjoint` uses this to build a continuous
 function for the solution of adjoint equation and then performs an
 adaptive quadrature via [Quadrature.jl](https://github.com/SciML/Quadrature.jl),
 while `InterpolatingAdjoint` appends the integrand to the ODE so it's
-computed simultaneously to the Legrange multiplier. When memory is
+computed simultaneously to the Lagrange multiplier. When memory is
 not an issue, we find that the `QuadratureAdjoint` approach tends to
 be the most efficient as it has a significantly smaller adjoint
 differential equation and the quadrature converges very fast, but this

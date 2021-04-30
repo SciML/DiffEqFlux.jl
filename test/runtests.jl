@@ -27,7 +27,7 @@ end
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
     @safetestset "Augmented Neural DE Tests" begin include("augmented_nde.jl") end
-    @safetestset "Neural Graph DE" begin include("neural_gde.jl") end
+    #@safetestset "Neural Graph DE" begin include("neural_gde.jl") end
     @safetestset "Hybrid DE" begin include("hybrid_de.jl") end
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
@@ -62,5 +62,6 @@ if !is_APPVEYOR && GROUP == "GPU"
     end
     @safetestset "odenet GPU" begin include("odenet_gpu.jl") end
     @safetestset "Neural DE GPU Tests" begin include("neural_de_gpu.jl") end
-    @safetestset "MNIST GPU Tests" begin include("mnist_gpu.jl") end
+    @safetestset "MNIST GPU Tests: Fully Connected NN" begin include("mnist_gpu.jl") end
+    @safetestset "MNIST GPU Tests: Convolutional NN" begin include("mnist_conv_gpu.jl") end
 end

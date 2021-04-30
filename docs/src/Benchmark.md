@@ -7,7 +7,7 @@ for ODEs ranging in size from 3 to nearly 1 million.
 
 ## Vs Torchdiffeq on neural ODE training
 
-A training benchmark using the sprial ODE from the original neural ODE paper
+A training benchmark using the spiral ODE from the original neural ODE paper
 [demonstrates a 100x performance advantage for DiffEqFlux in training neural ODEs](https://gist.github.com/ChrisRackauckas/4a4d526c15cc4170ce37da837bfc32c4).
 
 ## Vs torchsde on small SDEs

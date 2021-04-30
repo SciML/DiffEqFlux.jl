@@ -267,10 +267,14 @@ ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 dudt2 = FastChain((x, p) -> x.^3,
                   FastDense(2, 50, tanh),
                   FastDense(50, 2))
-prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
+dudt!(u, p, t) = dudt2(u, p)
+u0 = rand(2)
+prob_neuralode = ODEProblem(dudt!, u0, tspan, initial_params(dudt2))
+sol_node = solve(prob, Tsit5(), saveat = tsteps)
 
 function predict_neuralode(p)
-  Array(prob_neuralode(u0, p))
+  tmp_prob = remake(prob, p = p)
+  Array(solve(tmp_prob, Tsit5(), saveat = tsteps))
 end
 
 function loss_neuralode(p)
@@ -299,12 +303,13 @@ optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
 result_neuralode = GalacticOptim.solve(optprob,
                                        ADAM(0.05),
                                        cb = callback,
-                                       maxiters = 300)
+                                       maxiters = 500)
 
-optprob2 = remake(optprob,u0 = result_neuralode.minimizer)
+optprob2 = remake(optprob, u0 = result_neuralode.minimizer)
 
 result_neuralode2 = GalacticOptim.solve(optprob2,
-                                        LBFGS(),
+                                        BFGS(),
                                         cb = callback,
-                                        allow_f_increases = false)
+                                        maxiters = 500,
+                                        allow_f_increases = true)
 ```

@@ -30,7 +30,8 @@ Js = map(u->I + 0.1*ForwardDiff.jacobian(UJacobianWrapper(rober, 0.0, p), u), so
 
 function predict_adjoint(p)
     p = exp.(p)
-    Array(concrete_solve(prob,Rosenbrock23(autodiff=false),u0,p,saveat=ts,sensealg=QuadratureAdjoint(autojacvec=ReverseDiffVJP(true))))
+    _prob = remake(prob,p=p)
+    Array(solve(_prob,Rosenbrock23(autodiff=false),saveat=ts,sensealg=QuadratureAdjoint(autojacvec=ReverseDiffVJP(true))))
 end
 
 function loss_adjoint(p)
@@ -100,7 +101,8 @@ the original parameters.
 ```julia
 function predict_adjoint(p)
     p = exp.(p)
-    Array(concrete_solve(prob,Rosenbrock23(autodiff=false),u0,p,saveat=ts,sensealg=QuadratureAdjoint(autojacvec=ReverseDiffVJP(true))))
+    _prob = remake(prob,p=p)
+    Array(solve(_prob,Rosenbrock23(autodiff=false),saveat=ts,sensealg=QuadratureAdjoint(autojacvec=ReverseDiffVJP(true))))
 end
 
 function loss_adjoint(p)

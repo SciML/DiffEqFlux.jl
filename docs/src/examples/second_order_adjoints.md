@@ -74,6 +74,6 @@ pmin = DiffEqFlux.sciml_train(loss_neuralode, pstart, NewtonTrustRegion(), cb=cb
 pmin = DiffEqFlux.sciml_train(loss_neuralode, pstart, Optim.KrylovTrustRegion(), cb=cb, maxiters = 200)
 ```
 
-Note that we do note demonstrate `Newton()` because we have not found a single
+Note that we do not demonstrate `Newton()` because we have not found a single
 case where it is competitive with the other two methods. `KrylovTrustRegion()`
 is generally the fastest due to its use of Hessian-vector products.

@@ -109,7 +109,7 @@ approximately 4 minutes.
 
 ## Example 2: Fitting SDEs via Bayesian Quasi-Likelihood Approaches
 
-An inference method which can be much more efficient in many cases is the quasi-likelihood appraoch.
+An inference method which can be much more efficient in many cases is the quasi-likelihood approach.
 This approach matches the random likelihood of the SDE output with the random sampling of a Bayesian
 inference problem to more efficiently directly estimate the posterior distribution. For more information,
 please see [the Turing.jl Bayesian Differential Equations tutorial](https://github.com/TuringLang/TuringTutorials/blob/master/10_diffeq.ipynb)

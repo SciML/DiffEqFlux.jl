@@ -107,3 +107,11 @@ res = DiffEqFlux.sciml_train(loss,[0.8],BFGS())
    f(x) calls:    16
    ∇f(x) calls:   16
 ```
+
+## Note on Sensitivity Methods
+
+Only some continuous adjoint sensitivities are compatible with callbacks, namely
+`BacksolveAdjoint` and `InterpolatingAdjoint`. All methods based on discrete sensitivity 
+analysis via automatic differentiation, like `ReverseDiffAdjoint`, `TrackerAdjoint`, or 
+`ForwardDiffAdjoint` are the methods to use (and `ReverseDiffAdjoint` is demonstrated above),
+are compatible with events. This applies to SDEs, DAEs, and DDEs as well.

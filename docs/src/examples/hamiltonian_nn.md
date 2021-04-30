@@ -59,7 +59,7 @@ xlabel!("Position (q)")
 ylabel!("Momentum (p)")
 ```
 
-## Step by Step Explaination
+## Step by Step Explanation
 
 ### Data Generation
 

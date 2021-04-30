@@ -78,10 +78,6 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
 
   y = f.σ.(r)
 
-  if typeof(f.σ) <: typeof(tanh) || typeof(f.σ) <: typeof(identity)
-    ifgpufree(r)
-  end
-
   function FastDense_adjoint(ȳ)
     if typeof(f.σ) <: typeof(tanh)
       zbar = ȳ .* (1 .- y.^2)
@@ -96,7 +92,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     pbar = typeof(bbar) <: AbstractVector ?
                              vec(vcat(vec(Wbar),bbar)) :
                              vec(vcat(vec(Wbar),sum(bbar,dims=2)))
-    ifgpufree(Wbar); ifgpufree(bbar)
+    ifgpufree(Wbar); ifgpufree(bbar); ifgpufree(r)
     nothing,xbar,pbar
   end
   y,FastDense_adjoint
@@ -123,7 +119,7 @@ struct StaticDense{out,in,bias,F,F2} <: FastLayer
   initial_params::F2
   function StaticDense(in::Integer, out::Integer, σ = identity;
                  bias::Bool = true, initW = Flux.glorot_uniform, initb = Flux.zeros)
-    temp = ((bias == true ) ? vcat(vec(initW(out, in)),initb(out)) : vcat(vec(initW(out, in))) )             
+    temp = ((bias == true ) ? vcat(vec(initW(out, in)),initb(out)) : vcat(vec(initW(out, in))) )
     initial_params() = temp
     new{out,in,bias,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end
@@ -135,17 +131,17 @@ function param2Wb(f::StaticDense{out,in,bias}, p) where {out,in,bias}
     W = @inbounds convert(SMatrix{out,in},_W)
     b = @inbounds SVector{out}(_b)
   return W, b
-  else 
+  else
     _W = @view p[1:(out*in)]
     W = @inbounds convert(SMatrix{out,in},_W)
     return W
   end
 end
 function (f::StaticDense{out,in,bias})(x,p) where {out,in,bias}
-  if bias == true 
+  if bias == true
     W, b = param2Wb(f, p)
     return f.σ.(W*x .+ b)
-  else 
+  else
     W = param2Wb(f,p)
     return f.σ.(W*x)
   end
@@ -154,7 +150,7 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in,bias})(x,p) where {out,in,b
   if bias == true
     W, b = param2Wb(f, p)
     r = W*x .+ b
-  else 
+  else
     W = param2Wb(f,p)
     r = W*x
   end

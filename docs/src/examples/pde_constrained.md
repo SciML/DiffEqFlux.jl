@@ -1,6 +1,6 @@
-# Partial Differential Equation Constrained Optimization
+# Partial Differential Equation (PDE) Constrained Optimization
 
-This example uses a prediction model to optimize the one-dimensional Burgers' Equation.
+This example uses a prediction model to optimize the one-dimensional Heat Equation.
 (Step-by-step description below)
 
 ```julia
@@ -40,7 +40,7 @@ function d2dx(u,dx)
 end
 
 ## ODE description of the Physics:
-function burgers(u,p,t)
+function heat(u,p,t)
     # Model parameters
     a0, a1 = p
     dx,Nx = xtrs #[1.0,3.0,0.125,100]
@@ -48,7 +48,7 @@ function burgers(u,p,t)
 end
 
 # Testing Solver on linear PDE
-prob = ODEProblem(burgers,u0,tspan,p)
+prob = ODEProblem(heat,u0,tspan,p)
 sol = solve(prob,Tsit5(), dt=dt,saveat=t);
 
 plot(x, sol.u[1], lw=3, label="t0", size=(800,500))
@@ -135,7 +135,7 @@ In plain terms, the quantities that were defined are:
 - `u0` = initial condition
 - `p` = true solution
 - `xtrs` = convenient grouping of `dx` and `Nx` into Array
-- `dt` = time distane between two points
+- `dt` = time distance between two points
 - `t` (`t0` to `tMax`) spans the specified time frame
 - `tspan` = span of `t`
 
@@ -162,13 +162,13 @@ function d2dx(u,dx)
 end
 ```
 
-### Burgers' Differential Equation
+### Heat Differential Equation
 
 Next, we setup our desired set of equations in order to define our problem.
 
 ```julia
 ## ODE description of the Physics:
-function burgers(u,p,t)
+function heat(u,p,t)
     # Model parameters
     a0, a1 = p
     dx,Nx = xtrs #[1.0,3.0,0.125,100]
@@ -183,7 +183,7 @@ will compare to further on.
 
 ```julia
 # Testing Solver on linear PDE
-prob = ODEProblem(burgers,u0,tspan,p)
+prob = ODEProblem(heat,u0,tspan,p)
 sol = solve(prob,Tsit5(), dt=dt,saveat=t);
 
 plot(x, sol.u[1], lw=3, label="t0", size=(800,500))
