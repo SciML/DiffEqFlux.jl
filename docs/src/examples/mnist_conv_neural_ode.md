@@ -226,7 +226,7 @@ nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
 `fc`: The final fully connected layer which maps our learned features to the probability of
       the feature vector of belonging to a particular class
 
-`gpu`: An utility function which transfers our model to GPU, if one is available
+`gpu`: A utility function which transfers our model to GPU, if one is available
 
 ### Array Conversion
 
