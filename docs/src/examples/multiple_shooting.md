@@ -33,8 +33,9 @@ function trueODEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
     du .= ((u.^3)'true_A)'
 end
+solver =Tsit5()
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
-ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
+ode_data = Array(solve(prob_trueode, solver, saveat = tsteps))
 
 
 # Define the Neural Network
@@ -43,7 +44,7 @@ nn = FastChain((x, p) -> x.^3,
                   FastDense(16, 2))
 p_init = initial_params(nn)
 
-neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
+neuralode = NeuralODE(nn, tspan, solver, saveat = tsteps)
 prob_node = ODEProblem((u,p,t)->nn(u,p), u0, tspan, p_init)
 
 
@@ -66,7 +67,12 @@ callback = function (p, l, preds; doplot = true)
 
 	# plot the different predictions for individual shoot
 	plot_multiple_shoot(plt, preds, group_size)
-
+        
+	# plot the single prediction using multiple shoot
+	#prediction  = solve(remake(prob_node, p=p, tspan=(tsteps[1],tsteps[datasize]),u0=ode_data[:,1]), solver, saveat=tsteps)
+	#plot!(plt, tsteps, prediction[1,:],label = "Prediction")
+	
+	
     frame(anim)
     display(plot(plt))
   end
@@ -82,7 +88,7 @@ function loss_function(data, pred)
 end
 
 function loss_multiple_shooting(p)
-    return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
+    return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, solver,
                           group_size; continuity_term)
 end
 
