@@ -8,9 +8,9 @@ of 2 different groups will be scaled by 100.
 
 ```julia
 multiple_shoot(p, ode_data, tsteps, prob, loss_function, solver, group_size;
-               continuity_term=100, sensealg=DiffEqSensitivity.InterpolatingAdjoint())
+               continuity_term=100, kwargs...)
 multiple_shoot(p, ode_data, tsteps, prob, loss_function, continuity_loss, solver, group_size;
-               continuity_term=100, sensealg=DiffEqSensitivity.InterpolatingAdjoint())
+               continuity_term=100, kwargs...)
 ```
 
 Arguments:
