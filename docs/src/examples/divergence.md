@@ -16,9 +16,9 @@ parameters. This is shown in the loss function:
 ```julia
 function loss(p)
   tmp_prob = remake(prob, p=p)
-  tmp_sol = Array(solve(tmp_prob,Tsit5(),saveat=0.1))
-  if size(tmp_sol) == size(dataset)
-    return sum(abs2,tmp_sol - dataset)
+  tmp_sol = solve(tmp_prob,Tsit5(),saveat=0.1)
+  if tmp_sol.retcode == :Success 
+    return sum(abs2,Array(tmp_sol) - dataset)
   else
     return Inf
   end
@@ -55,9 +55,9 @@ scatter!(sol.t,dataset')
 
 function loss(p)
   tmp_prob = remake(prob, p=p)
-  tmp_sol = Array(solve(tmp_prob,Tsit5(),saveat=0.1))
-  if size(tmp_sol) == size(dataset)
-    return sum(abs2,tmp_sol - dataset)
+  tmp_sol = solve(tmp_prob,Tsit5(),saveat=0.1)
+  if tmp_sol.retcode == :Success
+    return sum(abs2,Array(tmp_sol) - dataset)
   else
     return Inf
   end
