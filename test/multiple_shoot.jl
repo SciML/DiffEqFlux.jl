@@ -1,4 +1,4 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Test
+using DiffEqFlux, DiffEqSensitivity, OrdinaryDiffEq, Flux, Optim, Test
 using DiffEqFlux: group_ranges
 
 ## Test group partitioning helper function
@@ -60,7 +60,8 @@ continuity_term = 200
 
 function loss_multiple_shooting(p)
     return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
-                          group_size; continuity_term)
+                          group_size; continuity_term,
+                          abstol=1e-3, reltol=1e-3) # test solver kwargs
 end
 
 res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, neuralode.p,
@@ -92,7 +93,23 @@ loss_ms_abs2, _ = loss_single_shooting(res_ms_abs2.minimizer)
 println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
 @test loss_ms_abs2 < loss_ss
 
-# Test for DomainErrors
+## Test different SensitivityAlgorithm (default is InterpolatingAdjoint)
+function loss_multiple_shooting_fd(p)
+    return multiple_shoot(p, ode_data, tsteps, prob_node,
+                          loss_function, continuity_loss_abs2, Tsit5(),
+                          group_size; continuity_term,
+                          sensealg=ForwardDiffSensitivity())
+end
+
+res_ms_fd = DiffEqFlux.sciml_train(loss_multiple_shooting_fd, neuralode.p,
+                                ADAM(0.05), maxiters = 300)
+
+# Calculate single shooting loss with parameter from multiple_shoot training
+loss_ms_fd, _ = loss_single_shooting(res_ms_fd.minimizer)
+println("Multiple shooting loss with ForwardDiffSensitivity: $(loss_ms_fd)")
+@test loss_ms_fd < loss_ss
+
+## Test for DomainErrors
 @test_throws DomainError multiple_shoot(p_init, ode_data, tsteps, prob_node,
                                         loss_function, Tsit5(), 1)
 @test_throws DomainError multiple_shoot(p_init, ode_data, tsteps, prob_node,
