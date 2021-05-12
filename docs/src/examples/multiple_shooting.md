@@ -69,12 +69,14 @@ callback = function (p, l, preds; doplot = true)
 	plot_multiple_shoot(plt, preds, group_size)
         
 	# plot the single prediction using multiple shoot
-	#prediction  = solve(remake(prob_node, p=p, tspan=(tsteps[1],tsteps[datasize]),u0=ode_data[:,1]), solver, saveat=tsteps)
-	#plot!(plt, tsteps, prediction[1,:],label = "Prediction")
-	
-	
-    frame(anim)
-    display(plot(plt))
+	prediction  = solve(remake(prob_node, p=p, tspan=(tsteps[1],tsteps[datasize]),
+								u0=ode_data[:,1]), solver, saveat=tsteps)
+	plt1 = scatter(tsteps, ode_data[1,:], label = "Data")
+	plot!(plt1,tsteps, prediction[1, :],label = "Single Prediction")
+
+
+        display(plot(plt, plt1, layout=(2,1)))
+	frame(anim)
   end
   return false
 end
