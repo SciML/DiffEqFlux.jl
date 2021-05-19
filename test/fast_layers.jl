@@ -59,3 +59,25 @@ testgrad = Flux.Zygote.gradient((x,p)->sum(ts(x,p)),x,pd)
 fsgrad = Flux.Zygote.gradient((x,p)->sum(fs(x,p)),SVector{2}(x),SVector{75}(pd))
 @test fsgrad[1] isa SArray
 @test fsgrad[2] isa SArray
+
+layer = FastDense(3, 4, bias=false)
+p = initial_params(layer)
+
+rand_loss(p) = begin
+    y = sum(abs2, layer(randn(3, 5), p))
+end
+
+y, back = Zygote.pullback(rand_loss, p)
+grad = back(1.0)[1]
+@test length(grad) == length(p)
+
+layer = StaticDense(3, 4, bias=false)
+p = initial_params(layer)
+
+rand_loss(p) = begin
+    y = sum(abs2, layer(randn(3, 5), p))
+end
+
+y, back = Zygote.pullback(rand_loss, p)
+grad = back(1.0)[1]
+@test length(grad) == length(p)

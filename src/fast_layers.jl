@@ -89,10 +89,16 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     Wbar = zbar * x'
     bbar = zbar
     xbar = W' * zbar
-    pbar = typeof(bbar) <: AbstractVector ?
-                             vec(vcat(vec(Wbar),bbar)) :
-                             vec(vcat(vec(Wbar),sum(bbar,dims=2)))
-    ifgpufree(Wbar); ifgpufree(bbar); ifgpufree(r)
+    pbar = if f.bias == true
+        tmp = typeof(bbar) <: AbstractVector ?
+                         vec(vcat(vec(Wbar),bbar)) :
+                         vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+        ifgpufree(bbar);
+        tmp
+    else
+        vec(Wbar)
+    end
+    ifgpufree(Wbar); ifgpufree(r)
     nothing,xbar,pbar
   end
   y,FastDense_adjoint
@@ -168,9 +174,14 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in,bias})(x,p) where {out,in,b
     Wbar = zbar * SVector{in}(x)'
     bbar = zbar
     xbar = W' * zbar
-    pbar = typeof(bbar) <: AbstractVector ?
-                             vec(vcat(vec(Wbar),bbar)) :
-                             vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+    pbar = if f.bias == true
+        tmp = typeof(bbar) <: AbstractVector ?
+                         vec(vcat(vec(Wbar),bbar)) :
+                         vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+        tmp
+    else
+        vec(Wbar)
+    end
     xbar_out = x isa SArray ? xbar : adapt(typeof(x),xbar)
     pbar_out = p isa SArray ? pbar : adapt(typeof(p),pbar)
     nothing,xbar_out,pbar_out
