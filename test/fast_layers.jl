@@ -75,7 +75,7 @@ layer = StaticDense(3, 4, bias=false)
 p = initial_params(layer)
 
 rand_loss(p) = begin
-    y = sum(abs2, layer(randn(3, 5), p))
+    y = sum(abs2, layer(randn(3), p))
 end
 
 y, back = Zygote.pullback(rand_loss, p)
