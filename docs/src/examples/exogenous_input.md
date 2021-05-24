@@ -23,7 +23,7 @@ function f(du,u,p,t,I)
   du[2] = u[1]
 end
 
-_f = (du,u,p,t) = f(du,u,p,t,x -> x^2)
+_f(du,u,p,t) = f(du,u,p,t,x -> x^2)
 ```
 
 which encloses an extra argument into `f` so that `_f` is now the interface-compliant
