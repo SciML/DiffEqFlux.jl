@@ -75,6 +75,8 @@ that version we showcased forward sensitivity analysis, but adjoints
 can be utilized as well:
 
 ```julia
+using ReverseDiff
+
 function loss(θ)
   sol = solve(prob,Tsit5(),p=[9.8,θ[1]],callback=cb,sensealg=ReverseDiffAdjoint())
   target = 20.0
