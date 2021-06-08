@@ -1,10 +1,11 @@
 # FastChain
 
 The `FastChain` system is a Flux-like explicit parameter neural network
-architecture system for less overhead in smaller neural networks. For neural
-networks with layers of lengths >~200, these optimizations are overshadowed by
-the cost of matrix multiplication. However, for smaller layer operations, this
-architecture can reduce a lot of the overhead traditionally seen in neural
+architecture system for less overhead in smaller neural networks. It acts explicitly,
+avoiding internal references to reduce overhead, while using explicitly defined adjoints
+to fuse operations. For neural networks with layers of lengths >~200, these optimizations 
+are overshadowed by the cost of matrix multiplication. However, for smaller layer operations, 
+this architecture can reduce a lot of the overhead traditionally seen in neural
 network architectures and thus is recommended in a lot of scientific machine
 learning use cases.
 
