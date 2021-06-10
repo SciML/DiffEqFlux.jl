@@ -2,7 +2,7 @@ module DiffEqFlux
 
 using GalacticOptim, DataInterpolations, DiffEqBase, DiffResults, DiffEqSensitivity,
       Distributions, ForwardDiff, Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools,
-      StaticArrays, Base.Iterators, Printf, Zygote
+      StaticArrays, Base.Iterators, Printf, Zygote, GenericLinearAlgebra
 
 using DistributionsAD
 import ProgressLogging, ZygoteRules
@@ -82,11 +82,13 @@ include("tensor_product_basis.jl")
 include("tensor_product_layer.jl")
 include("collocation.jl")
 include("hnn.jl")
+include("lnn.jl")
 include("multiple_shooting.jl")
 
 export diffeq_fd, diffeq_rd, diffeq_adjoint
 export DeterministicCNF, FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
 export HamiltonianNN
+export LagrangianNN
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
 export neural_ode, neural_ode_rd
 export neural_dmsde

@@ -26,6 +26,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TerminalLoggers = "5d786b92-1e48-4d6f-9151-6b4477ca9bed"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
+GenericLinearAlgebra = "14197337-ba66-59df-a3e3-ca00e7dcff7a"
 
 [compat]
 Adapt = "3"
@@ -48,6 +49,7 @@ TerminalLoggers = "0.1"
 Zygote = "0.5, 0.6"
 ZygoteRules = "0.2"
 julia = "1.5"
+GenericLinearAlgebra = "0.2.5"
 
 [extras]
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
