@@ -9,7 +9,7 @@ context of neural differential equations and scientific machine learning.
 
 ## Choosing a sensealg in a Nutshell
 
-By default, a stable adjoint with an auto-adapting vjp choice is used. In many cases, a user can optimize the choice to compute more than an order of mangitude faster than the default. However, given the vast space to explore, use the following decision tree to help guide the choice:
+By default, a stable adjoint with an auto-adapting vjp choice is used. In many cases, a user can optimize the choice to compute more than an order of magnitude faster than the default. However, given the vast space to explore, use the following decision tree to help guide the choice:
 
 - If you have 100 parameters or less, consider using forward-mode sensititivites. If the `f` function is not ForwardDiff-compatible, use `ForwardSensitivty`, otherwise use `ForwardDiffSensitivty` as its more efficient.
 - For larger equations, give `BacksolveAdjoint` and `InterpolatingAdjoint` a try. If the gradient of `BacksolveAdjoint` is correct, many times it's the faster choice so choose that (but it's not always faster!). If your equation is stiff or a DAE, skip this step as `BacksolveAdjoint` is almost certainly unstable.
