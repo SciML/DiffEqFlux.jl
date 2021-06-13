@@ -7,7 +7,21 @@ details, see the
 documentation. Here we will summarize these methodologies in the
 context of neural differential equations and scientific machine learning.
 
-## Choosing Sensitivity Analysis Methods
+## Choosing a sensealg in a Nutshell
+
+By default, a stable adjoint with an auto-adapting vjp choice is used. In many cases, a user can optimize the choice to compute more than an order of mangitude faster than the default. However, given the vast space to explore, use the following decision tree to help guide the choice:
+
+- If you have 100 parameters or less, consider using forward-mode sensititivites. If the `f` function is not ForwardDiff-compatible, use `ForwardSensitivty`, otherwise use `ForwardDiffSensitivty` as its more efficient.
+- For larger equations, give `BacksolveAdjoint` and `InterpolatingAdjoint` a try. If the gradient of `BacksolveAdjoint` is correct, many times it's the faster choice so choose that (but it's not always faster!). If your equation is stiff or a DAE, skip this step as `BacksolveAdjoint` is almost certainly unstable.
+- If your equation does not use much memory and you're using a stiff solver, consider using `QuadratureAdjoint` as it is asymtopically more computationally efficient by trading off memory cost.
+- If the other methods are all unstable (check the gradients against each other!), then `ReverseDiffAdjoint` is a good fallback on CPU, while `TrackerAdjoint` is a good fallback on GPUs.
+- After choosing a general sensealg, if the choice is `InterpolatingAdjoint`, `QuadratureAdjoint`, or `BacksolveAdjoint`, then optimize the choice of vjp calculation next:
+  - If your function has no branching (no if statements), use `ReverseDiffVJP(true)`.
+  - If you're on the CPU and your function is very scalarized in operations but has branches, choose `ReverseDiffVJP()`.
+  - If your on the CPU or GPU and your function is very vectorized, choose `ZygoteVJP()`.
+  - Else fallback to `TrackerVJP()` if Zygote does not support the function.
+
+## Additional Details
 
 A sensitivity analysis method can be passed to a solver via the `sensealg`
 keyword argument. For example:
