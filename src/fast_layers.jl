@@ -88,7 +88,14 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     end
     Wbar = zbar * x'
     bbar = zbar
-    xbar = W' * zbar
+
+    if typeof(zbar) <: Zygote.OneElement
+        zzbar = ArrayInterface.restructure(r',zbar)
+    else
+        zzbar = zbar
+    end
+
+    xbar = ArrayInterface.restructure(x,W' * zzbar)
     pbar = if f.bias == true
         tmp = typeof(bbar) <: AbstractVector ?
                          vec(vcat(vec(Wbar),bbar)) :

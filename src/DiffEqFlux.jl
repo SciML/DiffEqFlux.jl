@@ -7,6 +7,7 @@ using GalacticOptim, DataInterpolations, DiffEqBase, DiffResults, DiffEqSensitiv
 using DistributionsAD
 import ProgressLogging, ZygoteRules
 import ConsoleProgressMonitor, TerminalLoggers, LoggingExtras
+import ArrayInterface
 
 import Logging
 
