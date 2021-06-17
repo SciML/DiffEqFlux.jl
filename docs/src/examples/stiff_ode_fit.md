@@ -54,7 +54,7 @@ initp = ones(3)
 # Display the ODE with the initial parameter values.
 cb(initp,loss_adjoint(initp)...)
 
-res = DiffEqFlux.sciml_train(loss_adjoint, initp, ADAM(0.01), cb = cb, maxiters = 100)
+res = DiffEqFlux.sciml_train(loss_adjoint, initp, ADAM(0.01), cb = cb, maxiters = 300)
 res2 = DiffEqFlux.sciml_train(loss_adjoint, res.minimizer, BFGS(), cb = cb, maxiters = 30, allow_f_increases=true)
 println("Ground truth: $(p)\nFinal parameters: $(round.(exp.(res2.minimizer), sigdigits=5))\nError: $(round(norm(exp.(res2.minimizer) - p) ./ norm(p) .* 100, sigdigits=3))%")
 ```
@@ -136,7 +136,7 @@ initp = ones(3)
 # Display the ODE with the initial parameter values.
 cb(initp,loss_adjoint(initp)...)
 
-res = DiffEqFlux.sciml_train(loss_adjoint, initp, ADAM(0.01), cb = cb, maxiters = 100)
+res = DiffEqFlux.sciml_train(loss_adjoint, initp, ADAM(0.01), cb = cb, maxiters = 300)
 res2 = DiffEqFlux.sciml_train(loss_adjoint, res.minimizer, BFGS(), cb = cb, maxiters = 30, allow_f_increases=true)
 ```
 
