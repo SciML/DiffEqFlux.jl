@@ -46,7 +46,7 @@ ode_data = Array(solve(true_prob, Tsit5(), saveat=t))
 prob = ODEProblem{false}(dudt_, u0, tspan, θ)
 
 k = 10
-train_loader = Flux.Data.DataLoader(ode_data, t, batchsize = k)
+train_loader = Flux.Data.DataLoader((ode_data, t), batchsize = k)
 
 for (x, y) in train_loader
     @show x
@@ -154,7 +154,7 @@ ode_data = Array(solve(true_prob, Tsit5(), saveat=t))
 prob = ODEProblem{false}(dudt_, u0, tspan, θ)
 
 k = 10
-train_loader = Flux.Data.DataLoader(ode_data, t, batchsize = k)
+train_loader = Flux.Data.DataLoader((ode_data, t), batchsize = k)
 for (x, y) in train_loader
     @show x
     @show y
