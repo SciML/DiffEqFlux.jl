@@ -38,77 +38,18 @@ the value 20:
 
 ```julia
 function loss(θ)
-  sol = solve(prob,Tsit5(),p=[9.8,θ[1]],callback=cb,sensealg=ForwardDiffSensitivity())
+  sol = solve(prob,Tsit5(),p=[9.8,θ[1]],callback=cb)
   target = 20.0
   abs2(sol[end][1] - target)
 end
 
 loss([0.8])
-res = DiffEqFlux.sciml_train(loss,[0.8],BFGS())
+@time res = DiffEqFlux.sciml_train(loss,[0.8])
+@show res.u # [0.866554105436901]
 ```
 
-```julia
-* Status: success
-
-* Candidate solution
-   Final objective value:     3.995469e-01
-
-* Found with
-   Algorithm:     BFGS
-
-* Convergence measures
-   |x - x'|               = 4.93e-07 ≰ 0.0e+00
-   |x - x'|/|x'|          = 5.69e-07 ≰ 0.0e+00
-   |f(x) - f(x')|         = 8.12e-10 ≰ 0.0e+00
-   |f(x) - f(x')|/|f(x')| = 2.03e-09 ≰ 0.0e+00
-   |g(x)|                 = 7.71e-12 ≤ 1.0e-08
-
-* Work counters
-   Seconds run:   0  (vs limit Inf)
-   Iterations:    5
-   f(x) calls:    16
-   ∇f(x) calls:   16
-```
-
-Finding an optimal friction coefficient of approximately `0.866`. In
-that version we showcased forward sensitivity analysis, but adjoints
-can be utilized as well:
-
-```julia
-using ReverseDiff
-
-function loss(θ)
-  sol = solve(prob,Tsit5(),p=[9.8,θ[1]],callback=cb,sensealg=ReverseDiffAdjoint())
-  target = 20.0
-  abs2(sol[end][1] - target)
-end
-
-loss([0.8])
-res = DiffEqFlux.sciml_train(loss,[0.8],BFGS())
-```
-
-```julia
-* Status: success
-
-* Candidate solution
-   Final objective value:     3.995469e-01
-
-* Found with
-   Algorithm:     BFGS
-
-* Convergence measures
-   |x - x'|               = 4.93e-07 ≰ 0.0e+00
-   |x - x'|/|x'|          = 5.69e-07 ≰ 0.0e+00
-   |f(x) - f(x')|         = 8.12e-10 ≰ 0.0e+00
-   |f(x) - f(x')|/|f(x')| = 2.03e-09 ≰ 0.0e+00
-   |g(x)|                 = 7.71e-12 ≤ 1.0e-08
-
-* Work counters
-   Seconds run:   0  (vs limit Inf)
-   Iterations:    5
-   f(x) calls:    16
-   ∇f(x) calls:   16
-```
+This runs in about `0.091215 seconds (533.45 k allocations: 80.717 MiB)` and finds
+an optimal drag coefficient.
 
 ## Note on Sensitivity Methods
 

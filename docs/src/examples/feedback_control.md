@@ -83,35 +83,5 @@ end
 
 ```julia
 result_univ = DiffEqFlux.sciml_train(loss_univ, θ,
-                                     BFGS(initial_stepnorm = 0.01),
-                                     cb = callback,
-                                     allow_f_increases = false)
+                                     cb = callback)
 ```
-
-```
-* Status: success
-
-* Candidate solution
-   u: [1.00e+00, 4.33e-02, 3.72e-01,  ...]
-   Minimum:   6.572520e-13
-
-* Found with
-   Algorithm:     BFGS
-   Initial Point: [1.10e+00, 4.18e-02, 3.64e-01,  ...]
-
-* Convergence measures
-   |x - x'|               = 0.00e+00 ≤ 0.0e+00
-   |x - x'|/|x'|          = 0.00e+00 ≤ 0.0e+00
-   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
-   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-   |g(x)|                 = 5.45e-06 ≰ 1.0e-08
-
-* Work counters
-   Seconds run:   8  (vs limit Inf)
-   Iterations:    23
-   f(x) calls:    172
-   ∇f(x) calls:   172
-```
-
-Notice that in just 23 iterations or 8 seconds we get to a minimum of `7e-13`,
-successfully solving the nonlinear optimal control problem.

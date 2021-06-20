@@ -47,8 +47,7 @@ end
 
 cb(p,loss_dde(p))
 
-result_dde = DiffEqFlux.sciml_train(loss_dde, p, ADAM(0.1),
-                                    cb = cb, maxiters = 100)
+result_dde = DiffEqFlux.sciml_train(loss_dde, p, cb = cb)
 ```
 
 Notice that we chose `sensealg = ReverseDiffAdjoint()` to utilize the ReverseDiff.jl
@@ -70,6 +69,5 @@ cb(p,loss_dde(p))
 We use `sciml_train` to optimize the parameters for our loss function:
 
 ```julia
-result_dde = DiffEqFlux.sciml_train(loss_dde, p, ADAM(0.1),
-                                    cb = cb, maxiters = 100)
+result_dde = DiffEqFlux.sciml_train(loss_dde, p, cb = cb)
 ```

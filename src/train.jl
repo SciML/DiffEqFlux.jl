@@ -55,8 +55,29 @@ function sciml_train(loss, θ, opt = nothing, adtype = nothing, args...;
                      maxiters = nothing, kwargs...)
 
   if adtype === nothing
-      if length(θ) < 100
-          adtype = GalacticOptim.AutoForwardDiff()
+      if length(θ) < 50
+          fdtime = try
+              ForwardDiff.gradient(loss,θ)
+              @elapsed ForwardDiff.gradient(loss,θ)
+          catch
+              Inf
+          end
+          zytime = try
+              Zygote.gradient(loss,θ)
+              @elapsed Zygote.gradient(loss,θ)
+          catch
+              Inf
+          end
+
+          if fdtime == zytime == Inf
+              @warn "AD methods failed, using numerical differentiation. To debug, try ForwardDiff.gradient(loss,θ) or Zygote.gradient(loss,θ)"
+              adtype = GalacticOptim.AutoFiniteDiff()
+          elseif fdtime < zytime
+              adtype = GalacticOptim.AutoForwardDiff()
+          else
+              adtype = GalacticOptim.AutoZygote()
+          end
+
       else
           adtype = GalacticOptim.AutoZygote()
       end
@@ -66,7 +87,11 @@ function sciml_train(loss, θ, opt = nothing, adtype = nothing, args...;
   optfunc = GalacticOptim.instantiate_function(optf, θ, adtype, nothing)
   optprob = GalacticOptim.OptimizationProblem(optfunc, θ; lb = lower_bounds, ub = upper_bounds, kwargs...)
   if opt !== nothing
-      GalacticOptim.solve(optprob, opt, args...; maxiters, kwargs...)
+      if maxiters !== nothing
+          GalacticOptim.solve(optprob, opt, args...; maxiters, kwargs...)
+      else
+          GalacticOptim.solve(optprob, opt, args...; kwargs...)
+      end
   else
       deterministic = first(loss(θ)) == first(loss(θ))
       if (!isempty(args) || !deterministic) && maxiters === nothing
