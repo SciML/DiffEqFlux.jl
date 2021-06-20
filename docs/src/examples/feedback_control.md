@@ -54,6 +54,7 @@ sol_univ = solve(prob_univ, Tsit5(),abstol = 1e-8, reltol = 1e-6)
 
 function predict_univ(θ)
   return Array(solve(prob_univ, Tsit5(), u0=[0f0, θ[1]], p=θ[2:end],
+                              sensealg = InterpolatingAdjoint(autojacvec=ReverseDiffVJP(true)),
                               saveat = tsteps))
 end
 

@@ -155,13 +155,13 @@ plot(remade_solution, ylim = (0, 6))
 
 ![Final plot](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
 
-Note that this was done with the default optimizer. One can also pass an optimization
-method, like `ADAM(0.1)`, and tweak settings like set `maxiters=100` to force
-at most 100 iterations of the optimization. This looks like:
+Note that this was done with the default optimizer. One can also pass an
+optimization method, like `ADAM(0.1)`, and tweak settings like set `maxiters=100`
+to force at most 100 iterations of the optimization. This looks like:
 
 ```julia
 result_ode = DiffEqFlux.sciml_train(loss, p, ADAM(0.1), cb = callback, maxiters=100)
 ```
 
-For more information on tweaking this functionality, see the [sciml_train](@ref sciml_train)
-documentation
+For more information on tweaking this functionality, see the
+[sciml_train](@ref sciml_train) documentation
