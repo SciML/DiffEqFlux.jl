@@ -10,7 +10,7 @@ on the current state of the dynamical system that will control the second
 equation to stay close to 1.
 
 ```julia
-using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 
 u0 = 1.1f0
 tspan = (0.0f0, 25.0f0)

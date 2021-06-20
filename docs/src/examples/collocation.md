@@ -5,7 +5,7 @@ pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -83,7 +83,7 @@ The smoothed collocation is a spline fit of the datapoints which allows
 us to get a an estimate of the approximate noiseless dynamics:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 300

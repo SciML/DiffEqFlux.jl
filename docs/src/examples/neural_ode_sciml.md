@@ -11,7 +11,7 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, GalacticOptim
+using DiffEqFlux, DifferentialEquations, Plots, GalacticOptim
 
 u0 = Float32[2.0; 0.0]
 datasize = 30
@@ -79,7 +79,7 @@ result_neuralode2 = GalacticOptim.solve(optprob2,
 Let's get a time series array from the Lotka-Volterra equation as data:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 30
@@ -249,7 +249,7 @@ and then one would use `solve` for the prediction like in other tutorials.
 In total, the 'from-scratch' form looks like:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, GalacticOptim
+using DiffEqFlux, DifferentialEquations, Plots, GalacticOptim
 
 u0 = Float32[2.0; 0.0]
 datasize = 30

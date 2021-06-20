@@ -7,7 +7,7 @@ model and the universal differential equation is trained to uncover the missing
 dynamical equations.
 
 ```julia
-using DiffEqFlux, DifferentialEquations, Flux, Optim, Plots, DiffEqSensitivity
+using DiffEqFlux, DifferentialEquations, Plots, DiffEqSensitivity
 u0 = Float32[2.; 0.]
 datasize = 100
 tspan = (0.0f0,10.5f0)

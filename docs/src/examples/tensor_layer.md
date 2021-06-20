@@ -10,10 +10,10 @@ ẍ = - kx - αx³ - βẋ -γẋ³.
 ```
 
 To obtain the training data, we solve the equation of motion using one of the
-solvers in `OrdinaryDiffEq`:
+solvers in `DifferentialEquations`:
 
 ```julia
-using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, LinearAlgebra
+using DiffEqFlux, DifferentialEquations, LinearAlgebra
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0,10.0)
 

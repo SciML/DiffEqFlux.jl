@@ -16,7 +16,7 @@ matrix multiplication). Thus for example, with `FastChain` we can
 define an ODE:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq
+using DiffEqFlux, DifferentialEquations
 
 dudt = FastChain(FastDense(2,50,tanh),FastDense(50,2))
 p = initial_params(dudt)
@@ -81,7 +81,7 @@ The following is a full copy-paste example for the multithreading.
 Distributed and GPU minibatching are described below.
 
 ```julia
-using OrdinaryDiffEq, DiffEqSensitivity, DiffEqFlux
+using DifferentialEquations, DiffEqFlux
 pa = [1.0]
 u0 = [3.0]
 θ = [u0;pa]
@@ -187,7 +187,7 @@ using Distributed
 addprocs(4)
 
 @everywhere begin
-  using OrdinaryDiffEq, DiffEqSensitivity, Flux, DiffEqFlux
+  using DifferentialEquations, DiffEqFlux
   function f(u,p,t)
     1.01u .* p
   end
@@ -235,7 +235,7 @@ The following is an example of minibatch ensemble parallelism across
 a GPU:
 
 ```julia
-using OrdinaryDiffEq, DiffEqSensitivity, Flux, DiffEqFlux
+using DifferentialEquations, DiffEqFlux
 function f(du,u,p,t)
   @inbounds begin
     du[1] = 1.01 * u[1] * p[1] * p[2]

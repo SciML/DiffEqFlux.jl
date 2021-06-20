@@ -15,7 +15,7 @@ is a stochastic process. Each time we solve this equation we get a different
 solution, so we need a sensible data source.
 
 ```julia
-using DiffEqFlux, DifferentialEquations, Plots, Flux, Optim, DiffEqSensitivity
+using DiffEqFlux, DifferentialEquations, Plots, DiffEqSensitivity
 function lotka_volterra!(du,u,p,t)
   x,y = u
   α,β,γ,δ = p
@@ -120,7 +120,7 @@ In this example, we will find the parameters of the SDE that force the
 solution to be close to the constant 1.
 
 ```julia
-using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
+using DifferentialEquations, DiffEqFlux, Plots
 
 function lotka_volterra!(du, u, p, t)
   x, y = u

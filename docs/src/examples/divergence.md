@@ -63,7 +63,7 @@ function loss(p)
   end
 end
 
-using DiffEqFlux, Optim
+using DiffEqFlux
 
 pinit = [1.2,0.8,2.5,0.8]
 res = DiffEqFlux.sciml_train(loss,pinit,BFGS())

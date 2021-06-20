@@ -8,7 +8,7 @@ data. Assume we have data for the ball's height after 15 seconds. Let's
 first start by implementing the ODE:
 
 ```julia
-using DiffEqFlux, Optim, OrdinaryDiffEq, DiffEqSensitivity
+using DiffEqFlux, DifferentialEquations, DiffEqSensitivity
 
 function f(du,u,p,t)
   du[1] = u[2]
@@ -113,7 +113,7 @@ res = DiffEqFlux.sciml_train(loss,[0.8],BFGS())
 ## Note on Sensitivity Methods
 
 Only some continuous adjoint sensitivities are compatible with callbacks, namely
-`BacksolveAdjoint` and `InterpolatingAdjoint`. All methods based on discrete sensitivity 
-analysis via automatic differentiation, like `ReverseDiffAdjoint`, `TrackerAdjoint`, or 
+`BacksolveAdjoint` and `InterpolatingAdjoint`. All methods based on discrete sensitivity
+analysis via automatic differentiation, like `ReverseDiffAdjoint`, `TrackerAdjoint`, or
 `ForwardDiffAdjoint` are the methods to use (and `ReverseDiffAdjoint` is demonstrated above),
 are compatible with events. This applies to SDEs, DAEs, and DDEs as well.

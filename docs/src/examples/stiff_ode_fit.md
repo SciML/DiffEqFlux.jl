@@ -8,7 +8,7 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```julia
-using OrdinaryDiffEq, Flux, Optim, DiffEqFlux, DiffEqSensitivity, LinearAlgebra
+using DifferentialEquations, DiffEqFlux, LinearAlgebra
 using ForwardDiff
 using DiffEqBase: UJacobianWrapper
 using Plots
@@ -71,7 +71,7 @@ Error: 1.69%
 First, let's get a time series array from the Robertson's equation as data.
 
 ```julia
-using OrdinaryDiffEq, Flux, Optim, DiffEqFlux, DiffEqSensitivity, LinearAlgebra
+using DifferentialEquations, DiffEqFlux, LinearAlgebra
 using ForwardDiff
 using DiffEqBase: UJacobianWrapper
 using Plots

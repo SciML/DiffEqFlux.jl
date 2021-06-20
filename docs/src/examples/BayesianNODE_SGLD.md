@@ -1,5 +1,5 @@
 # Bayesian Neural ODEs: SGLD
-Recently, Neural Ordinary Differential Equations has emerged as a powerful framework for modeling physical simulations without explicitly defining the ODEs governing the system, but learning them via machine learning. 
+Recently, Neural Ordinary Differential Equations has emerged as a powerful framework for modeling physical simulations without explicitly defining the ODEs governing the system, but learning them via machine learning.
 However, the question: Can Bayesian learning frameworks be integrated with Neural ODEs to robustly quantify the uncertainty in the weights of a Neural ODE? remains unanswered.
 
 In this tutorial, a working example of the Bayesian Neural ODE: SGLD sampler is shown. SGLD stands for Stochastic Langevin Gradient Descent.
@@ -14,7 +14,7 @@ Before getting to the explanation, here's some code to start with. We will follo
 with a full explanation of the definition and training process:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux
+using DiffEqFlux, DifferentialEquations, Flux
 using Plots, StatsPlots
 
 u0 = Float32[1., 1.]

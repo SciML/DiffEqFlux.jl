@@ -33,7 +33,7 @@ First let's build training data from the same example as the neural ODE:
 
 ```julia
 using Plots, Statistics
-using Flux, DiffEqFlux, StochasticDiffEq, DiffEqBase.EnsembleAnalysis
+using DiffEqFlux, StochasticDiffEq, DiffEqBase.EnsembleAnalysis
 
 u0 = Float32[2.; 0.]
 datasize = 30

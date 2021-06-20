@@ -5,7 +5,7 @@ This example uses a prediction model to optimize the one-dimensional Heat Equati
 
 ```julia
 using DelimitedFiles,Plots
-using DiffEqSensitivity, OrdinaryDiffEq, Zygote, Flux, DiffEqFlux, Optim
+using DifferentialEquations, DiffEqFlux
 
 # Problem setup parameters:
 Lx = 10.0
@@ -100,7 +100,7 @@ res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100,
 
 ```julia
 using DelimitedFiles,Plots
-using DiffEqSensitivity, OrdinaryDiffEq, Zygote, Flux, DiffEqFlux, Optim
+using DifferentialEquations, DiffEqFlux
 ```
 
 ### Parameters

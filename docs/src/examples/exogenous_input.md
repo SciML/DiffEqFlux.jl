@@ -40,7 +40,7 @@ In the following example, a discrete exogenous input signal `ex` is defined and
 used as an input into the neural network of a neural ODE system.
 
 ```julia
-using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
+using DifferentialEquations, DiffEqFlux, Plots
 
 tspan = (0.1f0, Float32(10.0))
 tsteps = range(tspan[1], tspan[2], length = 100)

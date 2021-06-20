@@ -11,7 +11,7 @@ Before getting to the explanation, here's some code to start with. We will follo
 wil a full explanation of the definition and training process:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, AdvancedHMC, MCMCChains
+using DiffEqFlux, DifferentialEquations, Plots, AdvancedHMC, MCMCChains
 using JLD, StatsPlots
 
 u0 = [2.0; 0.0]

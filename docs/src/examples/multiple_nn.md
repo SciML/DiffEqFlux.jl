@@ -7,7 +7,7 @@ this kind of study.
 The following is a fully working demo on the Fitzhugh-Nagumo ODE:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, DiffEqSensitivity, Flux, Optim
+using DiffEqFlux, DifferentialEquations
 
 function fitz(du,u,p,t)
   v,w = u

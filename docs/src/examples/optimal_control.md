@@ -36,7 +36,7 @@ will first reduce control cost (the last term) by 10x in order to bump the netwo
 of a local minimum. This looks like:
 
 ```julia
-using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, Plots, Statistics, DiffEqSensitivity
+using DiffEqFlux, DifferentialEquations, Plots, Statistics, DiffEqSensitivity
 tspan = (0.0f0,8.0f0)
 ann = FastChain(FastDense(1,32,tanh), FastDense(32,32,tanh), FastDense(32,1))
 θ = initial_params(ann)

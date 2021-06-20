@@ -14,7 +14,7 @@ with Hessian-vector products (never forming the Hessian) for large parameter
 optimizations.
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 30

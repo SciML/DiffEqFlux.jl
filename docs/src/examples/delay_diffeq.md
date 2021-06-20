@@ -5,7 +5,7 @@ supported. For example, we can build a layer with a delay differential equation
 like:
 
 ```julia
-using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity
+using DifferentialEquations, DiffEqFlux, DiffEqSensitivity
 
 
 # Define the same LV equation, but including a delay parameter

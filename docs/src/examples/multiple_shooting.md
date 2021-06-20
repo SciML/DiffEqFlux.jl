@@ -18,7 +18,7 @@ high penalties in case the solver predicts discontinuous values.
 The following is a working demo, using Multiple Shooting
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 using DiffEqFlux: group_ranges
 
 # Define initial conditions and time steps

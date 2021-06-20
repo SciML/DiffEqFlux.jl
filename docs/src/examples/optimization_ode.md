@@ -6,7 +6,7 @@ If you want to just get things running, try the following! Explanation will
 follow.
 
 ```julia
-using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
+using DifferentialEquations, DiffEqFlux, Plots
 
 function lotka_volterra!(du, u, p, t)
   x, y = u
@@ -68,7 +68,7 @@ more details, [see the DifferentialEquations.jl documentation](http://docs.julia
 ```
 
 ```julia
-using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
+using DifferentialEquations, DiffEqFlux, Plots
 
 function lotka_volterra!(du, u, p, t)
   x, y = u

@@ -1,13 +1,19 @@
 module DiffEqFlux
 
-using GalacticOptim, DataInterpolations, DiffEqBase, DiffResults, DiffEqSensitivity,
-      Distributions, ForwardDiff, Flux, Requires, Adapt, LinearAlgebra, RecursiveArrayTools,
-      StaticArrays, Base.Iterators, Printf, Zygote
+using GalacticOptim, DataInterpolations, DiffEqBase, DiffResults,
+      Distributions, ForwardDiff, Requires, Adapt, LinearAlgebra,
+      RecursiveArrayTools, StaticArrays, Base.Iterators, Printf
 
 using DistributionsAD
+
+using Reexport
+@reexport using Flux
+@reexport using Optim
+@reexport using Zygote
+@reexport using DiffEqSensitivity
+
 import ProgressLogging, ZygoteRules
 import ConsoleProgressMonitor, TerminalLoggers, LoggingExtras
-
 import Logging
 
 gpu_or_cpu(x) = Array

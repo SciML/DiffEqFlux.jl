@@ -19,7 +19,7 @@ follow a full explanation of the definition and training process:
 
 ```julia
 # load packages
-using Flux, DiffEqFlux, DiffEqSensitivity, Zygote
+using DiffEqFlux
 using StochasticDiffEq, DiffEqCallbacks, DiffEqNoiseProcess
 using Statistics, LinearAlgebra, Random
 using Plots
@@ -320,7 +320,7 @@ Loss (epoch: 100): 0.11777343
 
 ### Load packages
 ```julia
-using Flux, DiffEqFlux, DiffEqSensitivity, Zygote
+using DiffEqFlux
 using StochasticDiffEq, DiffEqCallbacks, DiffEqNoiseProcess
 using Statistics, LinearAlgebra, Random
 using Plots
