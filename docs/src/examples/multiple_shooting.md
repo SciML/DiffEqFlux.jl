@@ -87,12 +87,7 @@ function loss_multiple_shooting(p)
 end
 
 res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, p_init,
-                                ADAM(0.05), cb = callback, maxiters = 300)
-
-res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, res_ms.minimizer,
-                                BFGS(), cb = callback, maxiters = 100,
-                                allow_f_increases=true)
-
+                                cb = callback)
 gif(anim, "multiple_shooting.gif", fps=15)
 
 ```

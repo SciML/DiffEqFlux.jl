@@ -16,7 +16,6 @@ makedocs(
             "examples/optimization_ode.md",
             "examples/stiff_ode_fit.md",
             "examples/neural_ode_sciml.md",
-            "examples/neural_ode_flux.md",
             "examples/mnist_neural_ode.md",
             "examples/mnist_conv_neural_ode.md",
             "examples/augmented_neural_ode.md",
@@ -24,6 +23,10 @@ makedocs(
             "examples/neural_gde.md",
             "examples/exogenous_input.md",
             "examples/normalizing_flows.md"
+        ],
+        "Direct Usage with Optimizer Backends" => Any[
+            "examples/neural_ode_galacticoptim.md",
+            "examples/neural_ode_flux.md",
         ],
         "Training Techniques" => Any[
             "examples/multiple_shooting.md",
@@ -82,7 +85,7 @@ makedocs(
             "FastChain" => "FastChain.md",
             "Smoothed Collocation" => "Collocation.md",
             "GPUs" => "GPUs.md",
-            "GalacticOptim.jl" => "GalacticOptim.md",
+            "sciml_train and GalacticOptim.jl" => "sciml_train.md",
 
         ],
         "Benchmarks" => "Benchmark.md"

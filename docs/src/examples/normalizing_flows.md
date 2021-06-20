@@ -31,7 +31,7 @@ res1 = GalacticOptim.solve(optprob,
                            maxiters = 100)
 
 # Retrain using the LBFGS optimizer
-optprob2 = remake(optprob,u0 = res1.minimizer)
+optprob2 = remake(optprob,u0 = res1.u)
 
 res2 = GalacticOptim.solve(optprob2,
                            LBFGS(),
@@ -83,7 +83,7 @@ res1 = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test.p,
 * Status: success
 
 * Candidate solution
-   Minimizer: [-1.88e+00, 2.44e+00, 2.01e-01,  ...]
+   u: [-1.88e+00, 2.44e+00, 2.01e-01,  ...]
    Minimum:   1.240627e+00
 
 * Found with
@@ -96,14 +96,14 @@ We then complete the training using a different optimizer starting from where `A
 
 ```julia
 # Retrain using the LBFGS optimizer
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer,
+res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.u,
                               LBFGS(),
                               allow_f_increases = false)
 # output
 * Status: success
 
 * Candidate solution
-   Minimizer: [-1.06e+00, 2.24e+00, 8.77e-01,  ...]
+   u: [-1.06e+00, 2.24e+00, 8.77e-01,  ...]
    Minimum:   1.157672e+00
 
 * Found with

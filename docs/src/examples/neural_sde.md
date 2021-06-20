@@ -171,14 +171,14 @@ orders of magnitude longer than the previous one).
 
 ```julia
 result2 = DiffEqFlux.sciml_train((p) -> loss_neuralsde(p, n = 100),
-                                 result1.minimizer, opt,
+                                 result1.u, opt,
                                  cb = callback, maxiters = 100)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```julia
-_, means, vars = loss_neuralsde(result2.minimizer, n = 1000)
+_, means, vars = loss_neuralsde(result2.u, n = 1000)
 
 plt2 = Plots.scatter(tsteps, sde_data', yerror = sde_data_vars',
                      label = "data", title = "Neural SDE: After Training",

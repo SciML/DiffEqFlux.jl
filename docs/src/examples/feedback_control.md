@@ -92,7 +92,7 @@ result_univ = DiffEqFlux.sciml_train(loss_univ, θ,
 * Status: success
 
 * Candidate solution
-   Minimizer: [1.00e+00, 4.33e-02, 3.72e-01,  ...]
+   u: [1.00e+00, 4.33e-02, 3.72e-01,  ...]
    Minimum:   6.572520e-13
 
 * Found with

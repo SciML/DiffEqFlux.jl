@@ -15,7 +15,7 @@ is a stochastic process. Each time we solve this equation we get a different
 solution, so we need a sensible data source.
 
 ```julia
-using DiffEqFlux, DifferentialEquations, Plots, DiffEqSensitivity
+using DiffEqFlux, DifferentialEquations, Plots
 function lotka_volterra!(du,u,p,t)
   x,y = u
   α,β,γ,δ = p
@@ -61,7 +61,7 @@ then plot the evolution of the means and variances to verify the fit. For exampl
 function loss(p)
   tmp_prob = remake(prob,p=p)
   ensembleprob = EnsembleProblem(tmp_prob)
-  tmp_sol = solve(ensembleprob,SOSRI(),saveat=0.1,trajectories=1000,sensealg=ForwardDiffSensitivity())
+  tmp_sol = solve(ensembleprob,SOSRI(),saveat=0.1,trajectories=1000)
   arrsol = Array(tmp_sol)
   sum(abs2,truemean - mean(arrsol,dims=3)) + 0.1sum(abs2,truevar - var(arrsol,dims=3)),arrsol
 end

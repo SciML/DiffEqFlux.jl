@@ -52,7 +52,7 @@ result_neuralode = DiffEqFlux.sciml_train(loss, pinit,
                                           maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
-nn_sol = prob_neuralode(u0, result_neuralode.minimizer)
+nn_sol = prob_neuralode(u0, result_neuralode.u)
 scatter(tsteps,data')
 plot!(nn_sol)
 savefig("colloc_trained.png")
@@ -67,11 +67,11 @@ function loss_neuralode(p)
     return loss
 end
 
-@time numerical_neuralode = DiffEqFlux.sciml_train(loss_neuralode, result_neuralode.minimizer,
+@time numerical_neuralode = DiffEqFlux.sciml_train(loss_neuralode, result_neuralode.u,
                                                 ADAM(0.05), cb = callback,
                                                 maxiters = 300)
 
-nn_sol = prob_neuralode(u0, numerical_neuralode.minimizer)
+nn_sol = prob_neuralode(u0, numerical_neuralode.u)
 scatter(tsteps,data')
 plot!(nn_sol,lw=5)
 savefig("post_trained.png")
@@ -144,7 +144,7 @@ result_neuralode = DiffEqFlux.sciml_train(loss, pinit,
                                           maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
-nn_sol = prob_neuralode(u0, result_neuralode.minimizer)
+nn_sol = prob_neuralode(u0, result_neuralode.u)
 scatter(tsteps,data')
 plot!(nn_sol)
 ```
@@ -167,11 +167,11 @@ function loss_neuralode(p)
     return loss
 end
 
-@time numerical_neuralode = DiffEqFlux.sciml_train(loss_neuralode, result_neuralode.minimizer,
+@time numerical_neuralode = DiffEqFlux.sciml_train(loss_neuralode, result_neuralode.u,
                                                 ADAM(0.05), cb = callback,
                                                 maxiters = 300)
 
-nn_sol = prob_neuralode(u0, numerical_neuralode.minimizer)
+nn_sol = prob_neuralode(u0, numerical_neuralode.u)
 scatter(tsteps,data')
 plot!(nn_sol,lw=5)
 ```

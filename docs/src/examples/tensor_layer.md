@@ -80,8 +80,8 @@ and we train the network using two rounds of `ADAM`:
 
 ```julia
 res1 = DiffEqFlux.sciml_train(loss_adjoint, α, ADAM(0.05), cb = cb, maxiters = 150)
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer, ADAM(0.001), cb = cb,maxiters = 150)
-opt = res2.minimizer
+res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.u, ADAM(0.001), cb = cb,maxiters = 150)
+opt = res2.u
 ```
 
 We plot the results and we obtain a fairly accurate learned model:

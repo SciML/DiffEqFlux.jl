@@ -88,10 +88,10 @@ scatter(sol[:,end], label="Truth", size=(800,500))
 plot!(PRED[end][:,end], lw=2, label="Prediction")
 
 res = DiffEqFlux.sciml_train(loss, ps, ADAM(0.01), cb = cb, maxiters = 100)  # Let check gradient propagation
-ps = res.minimizer
+ps = res.u
 res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100,
                              allow_f_increases = false)  # Let check gradient propagation
-@show res.minimizer # returns [0.999999999999975, 1.0000000000000213]
+@show res.u # returns [0.999999999999975, 1.0000000000000213]
 ```
 
 ## Step-by-step Description
@@ -269,15 +269,15 @@ plot!(PRED[end][:,end], lw=2, label="Prediction")
 ### Train
 
 The parameters are trained using `sciml_train` and adjoint sensitivities. The resulting
-best parameters are stored in `res` and `res.minimizer` returns the parameters that
+best parameters are stored in `res` and `res.u` returns the parameters that
 minimizes the cost function.
 
 ```julia
 res = DiffEqFlux.sciml_train(loss, ps, ADAM(0.01), cb = cb, maxiters = 100)  # Let check gradient propagation
-ps = res.minimizer
+ps = res.u
 res = DiffEqFlux.sciml_train(loss, ps, BFGS(), cb = cb, maxiters = 100,
                              allow_f_increases = false)  # Let check gradient propagation
-@show res.minimizer # returns [0.999999999999975, 1.0000000000000213]
+@show res.u # returns [0.999999999999975, 1.0000000000000213]
 ```
 
 We successfully predict the final `ps` to be equal to **[0.999999999999975,
@@ -394,7 +394,7 @@ We successfully predict the final `ps` to be equal to **[0.999999999999975,
 4.933077457357198e-7
 8.157805551380282e-14
 1.6648677430325974e-16
-res.minimizer = [0.999999999999975, 1.0000000000000213]
+res.u = [0.999999999999975, 1.0000000000000213]
 2-element Array{Float64,1}:
  0.999999999999975
  1.0000000000000213

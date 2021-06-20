@@ -80,7 +80,7 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                           ADAM(0.05), cb = callback,
                                           maxiters = 300)
 
-callback(result_neuralode.minimizer,loss_neuralode(result_neuralode.minimizer)...;doplot=true)
+callback(result_neuralode.u,loss_neuralode(result_neuralode.u)...;doplot=true)
 savefig("local_minima.png")
 ```
 
@@ -102,7 +102,7 @@ result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                            ADAM(0.05), cb = callback,
                                            maxiters = 300)
 
-callback(result_neuralode2.minimizer,loss_neuralode(result_neuralode2.minimizer)...;doplot=true)
+callback(result_neuralode2.u,loss_neuralode(result_neuralode2.u)...;doplot=true)
 savefig("shortplot1.png")
 ```
 
@@ -115,10 +115,10 @@ from our `(0,1.5)` fit as the initial condition to our next fit:
 prob_neuralode = NeuralODE(dudt2, (0.0,3.0), Tsit5(), saveat = tsteps[tsteps .<= 3.0])
 
 result_neuralode3 = DiffEqFlux.sciml_train(loss_neuralode,
-                                           result_neuralode2.minimizer,
+                                           result_neuralode2.u,
                                            ADAM(0.05), maxiters = 300,
                                            cb = callback)
-callback(result_neuralode3.minimizer,loss_neuralode(result_neuralode3.minimizer)...;doplot=true)
+callback(result_neuralode3.u,loss_neuralode(result_neuralode3.u)...;doplot=true)
 savefig("shortplot2.png")
 ```
 
@@ -131,10 +131,10 @@ to the full fit:
 prob_neuralode = NeuralODE(dudt2, (0.0,5.0), Tsit5(), saveat = tsteps)
 
 result_neuralode4 = DiffEqFlux.sciml_train(loss_neuralode,
-                                           result_neuralode3.minimizer,
+                                           result_neuralode3.u,
                                            ADAM(0.01), maxiters = 300,
                                            cb = callback)
-callback(result_neuralode4.minimizer,loss_neuralode(result_neuralode4.minimizer)...;doplot=true)
+callback(result_neuralode4.u,loss_neuralode(result_neuralode4.u)...;doplot=true)
 savefig("fullplot.png")
 ```
 
