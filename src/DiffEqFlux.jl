@@ -4,7 +4,7 @@ using GalacticOptim, DataInterpolations, DiffEqBase, DiffResults,
       Distributions, ForwardDiff, Requires, Adapt, LinearAlgebra,
       RecursiveArrayTools, StaticArrays, Base.Iterators, Printf
 
-using DistributionsAD
+import DistributionsAD
 
 using Reexport
 @reexport using Flux

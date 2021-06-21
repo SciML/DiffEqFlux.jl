@@ -57,14 +57,14 @@ function sciml_train(loss, θ, opt = nothing, adtype = nothing, args...;
   if adtype === nothing
       if length(θ) < 50
           fdtime = try
-              ForwardDiff.gradient(loss,θ)
-              @elapsed ForwardDiff.gradient(loss,θ)
+              ForwardDiff.gradient(x->first(loss(x)),θ)
+              @elapsed ForwardDiff.gradient(x->first(loss(x)),θ)
           catch
               Inf
           end
           zytime = try
-              Zygote.gradient(loss,θ)
-              @elapsed Zygote.gradient(loss,θ)
+              Zygote.gradient(x->first(loss(x)),θ)
+              @elapsed Zygote.gradient(x->first(loss(x)),θ)
           catch
               Inf
           end
