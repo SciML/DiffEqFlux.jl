@@ -15,5 +15,5 @@ unified interface.
 ## sciml_train API
 
 ```@docs
-sciml_train
+DiffEqFlux.sciml_train
 ```
