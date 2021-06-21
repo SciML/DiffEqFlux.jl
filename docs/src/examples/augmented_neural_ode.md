@@ -1,7 +1,7 @@
 # Augmented Neural Ordinary Differential Equations
 
 ```julia
-using Flux, DiffEqFlux, DifferentialEquations
+using DiffEqFlux, DifferentialEquations
 using Statistics, LinearAlgebra, Plots
 import Flux.Data: DataLoader
 
@@ -103,7 +103,7 @@ plt_anode = plot_contour(model)
 ## Loading required packages
 
 ```julia
-using Flux, DiffEqFlux, DifferentialEquations
+using DiffEqFlux, DifferentialEquations
 using Statistics, LinearAlgebra, Plots
 import Flux.Data: DataLoader
 ```

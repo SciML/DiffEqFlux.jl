@@ -9,7 +9,7 @@ zeros, then we have a constraint defined by the right hand side. Using
 terms must add to one. An example of this is as follows:
 
 ```julia
-using Flux, DiffEqFlux, OrdinaryDiffEq, Optim, Test, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 
 function f!(du, u, p, t)
     y₁, y₂, y₃ = u
@@ -66,7 +66,7 @@ result_stiff = DiffEqFlux.sciml_train(loss_stiff_ndae, model_stiff_ndae.p,
 ### Load Packages
 
 ```julia
-using Flux, DiffEqFlux, OrdinaryDiffEq, Optim, Test, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 ```
 
 ### Differential Equation

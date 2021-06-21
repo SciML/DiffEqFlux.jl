@@ -36,7 +36,7 @@ will first reduce control cost (the last term) by 10x in order to bump the netwo
 of a local minimum. This looks like:
 
 ```julia
-using DiffEqFlux, Flux, Optim, OrdinaryDiffEq, Plots, Statistics, DiffEqSensitivity
+using DiffEqFlux, DifferentialEquations, Plots, Statistics
 tspan = (0.0f0,8.0f0)
 ann = FastChain(FastDense(1,32,tanh), FastDense(32,32,tanh), FastDense(32,1))
 θ = initial_params(ann)
@@ -68,7 +68,7 @@ end
 cb(θ,l)
 loss1 = loss_adjoint(θ)
 res1 = DiffEqFlux.sciml_train(loss_adjoint, θ, ADAM(0.005), cb = cb,maxiters=100)
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer,
+res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.u,
                               BFGS(initial_stepnorm=0.01), cb = cb,maxiters=100,
                               allow_f_increases = false)
 ```
@@ -82,14 +82,14 @@ function loss_adjoint(θ)
   mean(abs2,4.0 .- x[1,:]) + 2mean(abs2,x[2,:]) + mean(abs2,[first(ann([t],θ)) for t in ts])
 end
 
-res3 = DiffEqFlux.sciml_train(loss_adjoint, res2.minimizer,
+res3 = DiffEqFlux.sciml_train(loss_adjoint, res2.u,
                               BFGS(initial_stepnorm=0.01), cb = cb,maxiters=100,
                               allow_f_increases = false)
 
-l = loss_adjoint(res3.minimizer)
-cb(res3.minimizer,l)
-p = plot(solve(remake(prob,p=res3.minimizer),Tsit5(),saveat=0.01),ylim=(-6,6),lw=3)
-plot!(p,ts,[first(ann([t],res3.minimizer)) for t in ts],label="u(t)",lw=3)
+l = loss_adjoint(res3.u)
+cb(res3.u,l)
+p = plot(solve(remake(prob,p=res3.u),Tsit5(),saveat=0.01),ylim=(-6,6),lw=3)
+plot!(p,ts,[first(ann([t],res3.u)) for t in ts],label="u(t)",lw=3)
 savefig("optimal_control.png")
 ```
 

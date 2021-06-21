@@ -1,19 +1,30 @@
 # DiffEqFlux: Generalized Physics-Informed and Scientific Machine Learning (SciML)
 
-DiffEqFlux.jl is not just for neural ordinary differential equations.
+DiffEqFlux.jl is a parameter estimation system for the SciML ecosystem. It is
+a high level interface that pulls together all of the tools with heuristics
+and helper functions to make solving inverse problems and inferring models
+as easy as possible without losing efficiency.
+
 DiffEqFlux.jl is for universal differential equations, where these can include
 delays, physical constraints, stochasticity, events, and all other kinds of
 interesting behavior that shows up in scientific simulations. Neural networks can
 be all or part of the model. They can be around the differential equation,
 in the cost function, or inside of the differential equation. Neural networks
 representing unknown portions of the model or functions can go anywhere you
-have uncertainty in the form of the scientific simulator. For an overview of the
-topic with applications, consult the paper [Universal Differential Equations for
-Scientific Machine Learning](https://arxiv.org/abs/2001.04385).
+have uncertainty in the form of the scientific simulator. Forward sensitivity
+and adjoint equations are automatically generated with checkpointing and
+stabilization to ensure it works for large stiff equations, while specializations
+on static objects allows for high efficiency on small equations. For an overview
+of the topic with applications, consult the paper
+[Universal Differential Equations for Scientific Machine
+Learning](https://arxiv.org/abs/2001.04385).
 
-As such, it is the first package to support and demonstrate:
+You can efficiently use the package for:
 
-- Stiff universal ordinary differential equations (universal ODEs)
+- Parameter estimation of scientific models (ODEs, SDEs, DDEs, DAEs, etc.)
+- Neural ODEs, Neural SDE, etc.
+- Nonlinear optimal control, including training neural controllers
+- (Stiff) universal ordinary differential equations (universal ODEs)
 - Universal stochastic differential equations (universal SDEs)
 - Universal delay differential equations (universal DDEs)
 - Universal partial differential equations (universal PDEs)
@@ -117,7 +128,7 @@ methodology, and are showcased in tutorials and layer functions:
 ## Modularity and Composability
 
 Note that DiffEqFlux.jl purely built on composable and modular infrastructure. In fact,
-DiffEqFlux.jl's functions are not even directly required for performing many of these operations! 
+DiffEqFlux.jl's functions are not even directly required for performing many of these operations!
 DiffEqFlux provides high level helper functions and documentation for the user, but the
 code generation stack is modular and composes in many different ways. For example, one can
 use and swap out the ODE solver between any common interface compatible library, like:

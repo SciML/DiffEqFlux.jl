@@ -6,7 +6,7 @@ on **GPUs** with **Minibatching**.
 (Step-by-step description below)
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, NNlib, MLDataUtils, Printf
+using DiffEqFlux, DifferentialEquations, NNlib, MLDataUtils, Printf
 using Flux: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDatasets
@@ -123,7 +123,7 @@ Flux.train!(loss, params(down, nn_ode.p, fc), train_dataloader, opt, cb = cb)
 ### Load Packages
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, NNlib, MLDataUtils, Printf
+using DiffEqFlux, DifferentialEquations, NNlib, MLDataUtils, Printf
 using Flux: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDatasets

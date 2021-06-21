@@ -30,7 +30,7 @@ before except with one small twist: we wish to find the neural ODE that fits
 on `(0,5.0)`. Naively, we use the same training strategy as before:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 30
@@ -80,7 +80,7 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                           ADAM(0.05), cb = callback,
                                           maxiters = 300)
 
-callback(result_neuralode.minimizer,loss_neuralode(result_neuralode.minimizer)...;doplot=true)
+callback(result_neuralode.u,loss_neuralode(result_neuralode.u)...;doplot=true)
 savefig("local_minima.png")
 ```
 
@@ -102,7 +102,7 @@ result_neuralode2 = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                            ADAM(0.05), cb = callback,
                                            maxiters = 300)
 
-callback(result_neuralode2.minimizer,loss_neuralode(result_neuralode2.minimizer)...;doplot=true)
+callback(result_neuralode2.u,loss_neuralode(result_neuralode2.u)...;doplot=true)
 savefig("shortplot1.png")
 ```
 
@@ -115,10 +115,10 @@ from our `(0,1.5)` fit as the initial condition to our next fit:
 prob_neuralode = NeuralODE(dudt2, (0.0,3.0), Tsit5(), saveat = tsteps[tsteps .<= 3.0])
 
 result_neuralode3 = DiffEqFlux.sciml_train(loss_neuralode,
-                                           result_neuralode2.minimizer,
+                                           result_neuralode2.u,
                                            ADAM(0.05), maxiters = 300,
                                            cb = callback)
-callback(result_neuralode3.minimizer,loss_neuralode(result_neuralode3.minimizer)...;doplot=true)
+callback(result_neuralode3.u,loss_neuralode(result_neuralode3.u)...;doplot=true)
 savefig("shortplot2.png")
 ```
 
@@ -131,10 +131,10 @@ to the full fit:
 prob_neuralode = NeuralODE(dudt2, (0.0,5.0), Tsit5(), saveat = tsteps)
 
 result_neuralode4 = DiffEqFlux.sciml_train(loss_neuralode,
-                                           result_neuralode3.minimizer,
+                                           result_neuralode3.u,
                                            ADAM(0.01), maxiters = 300,
                                            cb = callback)
-callback(result_neuralode4.minimizer,loss_neuralode(result_neuralode4.minimizer)...;doplot=true)
+callback(result_neuralode4.u,loss_neuralode(result_neuralode4.u)...;doplot=true)
 savefig("fullplot.png")
 ```
 
@@ -144,7 +144,7 @@ savefig("fullplot.png")
 
 In this example we will show how to use strategy (5) in order to accomplish the
 same goal, except rather than growing the trajectory iteratively, we can train on
-the whole trajectory. We do this by allowing the neural ODE to learn both the 
+the whole trajectory. We do this by allowing the neural ODE to learn both the
 initial conditions and parameters to start, and then reset the initial conditions
 back and train only the parameters. Note: this strategy is demonstrated for the (0, 5)
 time span and (0, 10), any longer and more iterations will be required. Alternatively,
@@ -152,7 +152,7 @@ one could use a mix of (4) and (5), or breaking up the trajectory into chunks an
 
 ```julia
 
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots, DifferentialEquations
+using DiffEqFlux, Plots, DifferentialEquations
 
 
 #Starting example with tspan (0, 5)

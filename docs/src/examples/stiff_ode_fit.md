@@ -8,7 +8,7 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```julia
-using OrdinaryDiffEq, Flux, Optim, DiffEqFlux, DiffEqSensitivity, LinearAlgebra
+using DifferentialEquations, DiffEqFlux, LinearAlgebra
 using ForwardDiff
 using DiffEqBase: UJacobianWrapper
 using Plots
@@ -55,8 +55,8 @@ initp = ones(3)
 cb(initp,loss_adjoint(initp)...)
 
 res = DiffEqFlux.sciml_train(loss_adjoint, initp, ADAM(0.01), cb = cb, maxiters = 300)
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res.minimizer, BFGS(), cb = cb, maxiters = 30, allow_f_increases=true)
-println("Ground truth: $(p)\nFinal parameters: $(round.(exp.(res2.minimizer), sigdigits=5))\nError: $(round(norm(exp.(res2.minimizer) - p) ./ norm(p) .* 100, sigdigits=3))%")
+res2 = DiffEqFlux.sciml_train(loss_adjoint, res.u, BFGS(), cb = cb, maxiters = 30, allow_f_increases=true)
+println("Ground truth: $(p)\nFinal parameters: $(round.(exp.(res2.u), sigdigits=5))\nError: $(round(norm(exp.(res2.u) - p) ./ norm(p) .* 100, sigdigits=3))%")
 ```
 
 Output:
@@ -71,7 +71,7 @@ Error: 1.69%
 First, let's get a time series array from the Robertson's equation as data.
 
 ```julia
-using OrdinaryDiffEq, Flux, Optim, DiffEqFlux, DiffEqSensitivity, LinearAlgebra
+using DifferentialEquations, DiffEqFlux, LinearAlgebra
 using ForwardDiff
 using DiffEqBase: UJacobianWrapper
 using Plots
@@ -137,13 +137,13 @@ initp = ones(3)
 cb(initp,loss_adjoint(initp)...)
 
 res = DiffEqFlux.sciml_train(loss_adjoint, initp, ADAM(0.01), cb = cb, maxiters = 300)
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res.minimizer, BFGS(), cb = cb, maxiters = 30, allow_f_increases=true)
+res2 = DiffEqFlux.sciml_train(loss_adjoint, res.u, BFGS(), cb = cb, maxiters = 30, allow_f_increases=true)
 ```
 
 Finally, we can analyze the difference between the fitted parameters and the
 ground truth.
 ```julia
-println("Ground truth: $(p)\nFinal parameters: $(round.(exp.(res2.minimizer), sigdigits=5))\nError: $(round(norm(exp.(res2.minimizer) - p) ./ norm(p) .* 100, sigdigits=3))%")
+println("Ground truth: $(p)\nFinal parameters: $(round.(exp.(res2.u), sigdigits=5))\nError: $(round(norm(exp.(res2.u) - p) ./ norm(p) .* 100, sigdigits=3))%")
 ```
 
 It gives the output

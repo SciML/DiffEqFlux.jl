@@ -40,7 +40,7 @@ In the following example, a discrete exogenous input signal `ex` is defined and
 used as an input into the neural network of a neural ODE system.
 
 ```julia
-using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
+using DifferentialEquations, DiffEqFlux, Plots
 
 tspan = (0.1f0, Float32(10.0))
 tsteps = range(tspan[1], tspan[2], length = 100)
@@ -82,13 +82,9 @@ function loss(p)
     return sum(abs2.(y[1:N] .- sol'))/N
 end
 
-# start optimization (I played around with several different optimizers with no success)
-res0 = DiffEqFlux.sciml_train(loss,p_model ,ADAM(0.01), maxiters=100)
-res1 = DiffEqFlux.sciml_train(loss,res0.minimizer,BFGS(initial_stepnorm=0.01), maxiters=300, allow_f_increases = true)
+res0 = DiffEqFlux.sciml_train(loss,p_model,maxiters=100)
 
-Flux.gradient(loss,res1.minimizer)
-
-sol = predict_neuralode(res1.minimizer)
+sol = predict_neuralode(res0.u)
 plot(tsteps,sol')
 N = length(sol)
 scatter!(tsteps,y[1:N])

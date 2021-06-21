@@ -8,7 +8,7 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Distributions, Zygote, GalacticOptim
+using DiffEqFlux, DifferentialEquations, Distributions, GalacticOptim
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0,10.0f0)
@@ -31,7 +31,7 @@ res1 = GalacticOptim.solve(optprob,
                            maxiters = 100)
 
 # Retrain using the LBFGS optimizer
-optprob2 = remake(optprob,u0 = res1.minimizer)
+optprob2 = remake(optprob,u0 = res1.u)
 
 res2 = GalacticOptim.solve(optprob2,
                            LBFGS(),
@@ -41,7 +41,7 @@ res2 = GalacticOptim.solve(optprob2,
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Distributions, Zygote, GalacticOptim
+using DiffEqFlux, DifferentialEquations, Distributions, GalacticOptim
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0,10.0f0)
@@ -83,7 +83,7 @@ res1 = DiffEqFlux.sciml_train(loss_adjoint, ffjord_test.p,
 * Status: success
 
 * Candidate solution
-   Minimizer: [-1.88e+00, 2.44e+00, 2.01e-01,  ...]
+   u: [-1.88e+00, 2.44e+00, 2.01e-01,  ...]
    Minimum:   1.240627e+00
 
 * Found with
@@ -96,14 +96,14 @@ We then complete the training using a different optimizer starting from where `A
 
 ```julia
 # Retrain using the LBFGS optimizer
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.minimizer,
+res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.u,
                               LBFGS(),
                               allow_f_increases = false)
 # output
 * Status: success
 
 * Candidate solution
-   Minimizer: [-1.06e+00, 2.24e+00, 8.77e-01,  ...]
+   u: [-1.06e+00, 2.24e+00, 8.77e-01,  ...]
    Minimum:   1.157672e+00
 
 * Found with

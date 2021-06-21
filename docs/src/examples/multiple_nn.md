@@ -7,7 +7,7 @@ this kind of study.
 The following is a fully working demo on the Fitzhugh-Nagumo ODE:
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, DiffEqSensitivity, Flux, Optim
+using DiffEqFlux, DifferentialEquations
 
 function fitz(du,u,p,t)
   v,w = u
@@ -67,7 +67,7 @@ callback(θ,l,pred) = begin
 end
 
 res1_uode = DiffEqFlux.sciml_train(loss, p, ADAM(0.01), cb=callback, maxiters = 500)
-res2_uode = DiffEqFlux.sciml_train(loss, res1_uode.minimizer, BFGS(initial_stepnorm=0.01), cb=callback, maxiters = 10000)
+res2_uode = DiffEqFlux.sciml_train(loss, res1_uode.u, BFGS(initial_stepnorm=0.01), cb=callback, maxiters = 10000)
 ```
 
 The key is that `sciml_train` acts on a single parameter vector `p`.

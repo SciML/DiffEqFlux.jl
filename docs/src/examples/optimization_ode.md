@@ -6,7 +6,7 @@ If you want to just get things running, try the following! Explanation will
 follow.
 
 ```julia
-using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
+using DifferentialEquations, DiffEqFlux, Plots
 
 function lotka_volterra!(du, u, p, t)
   x, y = u
@@ -50,9 +50,9 @@ callback = function (p, l, pred)
 end
 
 result_ode = DiffEqFlux.sciml_train(loss, p,
-                                    ADAM(0.1),
                                     cb = callback,
                                     maxiters = 100)
+# result_ode = DiffEqFlux.sciml_train(loss, p, ADAM(0.1), cb = callback)
 ```
 
 ## Explanation
@@ -68,7 +68,7 @@ more details, [see the DifferentialEquations.jl documentation](http://docs.julia
 ```
 
 ```julia
-using DifferentialEquations, Flux, Optim, DiffEqFlux, DiffEqSensitivity, Plots
+using DifferentialEquations, DiffEqFlux, Plots
 
 function lotka_volterra!(du, u, p, t)
   x, y = u
@@ -138,22 +138,30 @@ end
 Let's optimize the model.
 
 ```julia
-result_ode = DiffEqFlux.sciml_train(loss, p,
-                                    ADAM(0.1),
-                                    cb = callback,
-                                    maxiters = 100)
+result_ode = DiffEqFlux.sciml_train(loss, p, cb = callback)
 ```
 
-In just seconds we found parameters which give a relative loss of `1e-8`! We can
+In just seconds we found parameters which give a relative loss of `1e-16`! We can
 get the final loss with `result_ode.minimum`, and get the optimal parameters
-with `result_ode.minimizer`. For example, we can plot the final outcome and show
+with `result_ode.u`. For example, we can plot the final outcome and show
 that we solved the control problem and successfully found parameters to make the
 ODE solution constant:
 
 ```julia
-remade_solution = solve(remake(prob, p = result_ode.minimizer), Tsit5(),      
+remade_solution = solve(remake(prob, p = result_ode.u), Tsit5(),      
                         saveat = tsteps)
 plot(remade_solution, ylim = (0, 6))
 ```
 
 ![Final plot](https://user-images.githubusercontent.com/1814174/51399500-1f4dd080-1b14-11e9-8c9d-144f93b6eac2.gif)
+
+Note that this was done with the default optimizer. One can also pass an
+optimization method, like `ADAM(0.1)`, and tweak settings like set `maxiters=100`
+to force at most 100 iterations of the optimization. This looks like:
+
+```julia
+result_ode = DiffEqFlux.sciml_train(loss, p, ADAM(0.1), cb = callback, maxiters=100)
+```
+
+For more information on tweaking this functionality, see the
+[sciml_train](@ref sciml_train) documentation

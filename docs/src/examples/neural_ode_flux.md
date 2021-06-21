@@ -6,7 +6,7 @@ make the neural network be a `Chain` and use Flux.jl's `Flux.params` implicit
 parameter system.
 
 ```julia
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
+using DiffEqFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.; 0.]
 datasize = 30
