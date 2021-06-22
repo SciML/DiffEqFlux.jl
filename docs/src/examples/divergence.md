@@ -66,5 +66,8 @@ end
 using DiffEqFlux
 
 pinit = [1.2,0.8,2.5,0.8]
-res = DiffEqFlux.sciml_train(loss,pinit,BFGS())
+res = DiffEqFlux.sciml_train(loss,pinit,ADAM(), maxiters = 1000)
+
+#try Newton method of optimization
+res = DiffEqFlux.sciml_train(loss,pinit,Newton(), GalacticOptim.AutoForwardDiff())
 ```
