@@ -192,7 +192,12 @@ paramlength(f::StaticDense{out,in,bias}) where {out,in,bias} = out*(in + bias)
 initial_params(f::StaticDense) = f.initial_params()
 
 # Override FastDense to exclude the branch from the check
-function Cassette.overdub(ctx::DiffEqSensitivity.HasBranchingCtx, f::Union{FastDense,StaticDense}, x, p)
+function Cassette.overdub(ctx::DiffEqSensitivity.HasBranchingCtx, f::FastDense, x, p)
     y = reshape(p[1:(f.out*f.in)],f.out,f.in)*x
+    Cassette.@overdub ctx f.σ.(y)
+end
+
+function Cassette.overdub(ctx::DiffEqSensitivity.HasBranchingCtx, f::StaticDense{out,in,bias}, x, p)
+    y = reshape(p[1:(out*in)],out,in)*x
     Cassette.@overdub ctx f.σ.(y)
 end
