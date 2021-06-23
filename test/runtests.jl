@@ -20,6 +20,7 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
     @safetestset "GalacticOptim Tests" begin include("galacticoptim.jl") end
     @safetestset "Layers SDE" begin include("layers_sde.jl") end
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
+    @safetestset "hasbranching Overloads" begin include("hasbranching.jl") end
     @safetestset "Collocation Regression" begin include("collocation_regression.jl") end
     @testset "Distributed" begin include("distributed.jl") end
 end
