@@ -58,21 +58,26 @@ function multiple_shoot(
     ranges = group_ranges(datasize, group_size)
 
     # Multiple shooting predictions
-    group_predictions = [
-        Array(
-            solve(
-                remake(
-                    prob;
-                    p=p,
-                    tspan=(tsteps[first(rg)], tsteps[last(rg)]),
-                    u0=ode_data[:, first(rg)],
-                ),
-                solver;
-                saveat=tsteps[rg],
-                kwargs...
+    sols = [
+        solve(
+            remake(
+                prob;
+                p=p,
+                tspan=(tsteps[first(rg)], tsteps[last(rg)]),
+                u0=ode_data[:, first(rg)],
             ),
+            solver;
+            saveat=tsteps[rg],
+            kwargs...
         ) for rg in ranges
     ]
+    group_predictions = Array.(sols)
+
+    # Abort and return infinite loss if one of the integrations failed
+    retcodes = [sol.retcode for sol in sols]
+    if any(retcodes .!= :Success)
+        return Inf, group_predictions
+    end
 
     # Calculate multiple shooting loss
     loss = 0

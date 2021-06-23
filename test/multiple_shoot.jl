@@ -109,6 +109,12 @@ loss_ms_fd, _ = loss_single_shooting(res_ms_fd.minimizer)
 println("Multiple shooting loss with ForwardDiffSensitivity: $(loss_ms_fd)")
 @test loss_ms_fd < loss_ss
 
+# Integration return codes `!= :Success` should return infinite loss.
+# In this case, we trigger `retcode = :MaxIters` by setting the solver option `maxiters=1`.
+loss_fail, _ = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function, Tsit5(),
+                              datasize; maxiters=1, verbose=false)
+@test loss_fail == Inf
+
 ## Test for DomainErrors
 @test_throws DomainError multiple_shoot(p_init, ode_data, tsteps, prob_node,
                                         loss_function, Tsit5(), 1)
