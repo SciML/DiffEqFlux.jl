@@ -15,6 +15,7 @@ using Reexport
 import ProgressLogging, ZygoteRules
 import ConsoleProgressMonitor, TerminalLoggers, LoggingExtras
 import Logging
+import Cassette
 
 gpu_or_cpu(x) = Array
 
