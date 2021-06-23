@@ -197,7 +197,7 @@ function Cassette.overdub(ctx::DiffEqSensitivity.HasBranchingCtx, f::FastDense, 
     Cassette.@overdub ctx f.σ.(y)
 end
 
-function Cassette.overdub(ctx::DiffEqSensitivity.HasBranchingCtx, f::StaticDense{out,in,bias}, x, p)
+function Cassette.overdub(ctx::DiffEqSensitivity.HasBranchingCtx, f::StaticDense{out,in,bias}, x, p) where {out,in,bias}
     y = reshape(p[1:(out*in)],out,in)*x
     Cassette.@overdub ctx f.σ.(y)
 end
