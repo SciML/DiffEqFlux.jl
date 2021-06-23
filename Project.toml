@@ -32,6 +32,7 @@ ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
 
 [compat]
 Adapt = "3"
+Cassette = "0.3.7"
 ConsoleProgressMonitor = "0.1"
 DataInterpolations = "3.3"
 DiffEqBase = "6.41"
