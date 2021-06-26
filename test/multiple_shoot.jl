@@ -1,4 +1,4 @@
-using DiffEqFlux, DiffEqSensitivity, OrdinaryDiffEq, Flux, Optim, Test
+using DiffEqFlux, DiffEqSensitivity, OrdinaryDiffEq, Test
 using DiffEqFlux: group_ranges
 
 ## Test group partitioning helper function
@@ -61,7 +61,7 @@ continuity_term = 200
 function loss_multiple_shooting(p)
     return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
                           group_size; continuity_term,
-                          abstol=1e-3, reltol=1e-3) # test solver kwargs
+                          abstol=1e-8, reltol=1e-6) # test solver kwargs
 end
 
 res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, neuralode.p,
