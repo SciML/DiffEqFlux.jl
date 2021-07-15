@@ -2,7 +2,7 @@
 
 `sciml_train` is a heuristic-based training function built using GalacticOptim.jl.
 It incorporates the knowledge of many high level benchmarks to attempt and do
-the right thing. However, if you need more control,
+the right thing.
 
 GalacticOptim.jl is a package with a scope that is beyond your normal global optimization
 package. GalacticOptim.jl seeks to bring together all of the optimization packages
