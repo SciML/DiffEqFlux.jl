@@ -64,7 +64,7 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
 
 ## Explanation
 
-Let's get a time series array from the Lotka-Volterra equation as data:
+Let's generate a time series array from a cubic equation as data:
 
 ```julia
 using DiffEqFlux, DifferentialEquations, Plots
@@ -104,9 +104,9 @@ dudt2 = Chain(x -> x.^3,
 
 In our model we used the `x -> x.^3` assumption in the model. By incorporating
 structure into our equations, we can reduce the required size and training time
-for the neural network, but a good guess needs to be known!
+for the neural network, but we need a good guess!
 
-From here we build a loss function around it. The `NeuralODE` has an optional
+From here, we build a loss function around our `NeuralODE`. `NeuralODE` has an optional
 second argument for new parameters which we will use to iteratively change the
 neural network in our training loop. We will use the L2 loss of the network's
 output against the time series data:
@@ -139,18 +139,18 @@ callback = function (p, l, pred; doplot = false)
 end
 ```
 
-We then train the neural network to learn the ODE. Using `sciml_train`, heuristics
-are chosen that does this fast and simply:
+We then train the neural network to learn the ODE. `sciml_train` chooses heuristics
+that train quickly and simply:
 
 ```julia
 result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                           cb = callback)
 ```
 
-## Usage without the layer
+## Usage Without the Layer Function
 
 Note that you can equivalently define the NeuralODE by hand instead of using
-the layer function. With `FastChain` this would look like:
+the `NeuralODE`. With `FastChain` this would look like:
 
 ```julia
 dudt!(u, p, t) = dudt2(u, p)
