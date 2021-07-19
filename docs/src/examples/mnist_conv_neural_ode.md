@@ -344,7 +344,7 @@ This callback function is used to print both the training and testing accuracy a
 ```julia
 cb() = begin
     global iter += 1
-    # Monitor that the weights do infact update
+    # Monitor that the weights update
     # Every 10 training iterations show accuracy
     if iter % 10 == 1
         train_accuracy = accuracy(model, train_dataloader) * 100

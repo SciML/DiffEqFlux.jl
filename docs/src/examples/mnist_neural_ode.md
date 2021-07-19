@@ -39,7 +39,7 @@ const bs = 128
 const train_split = 0.9
 train_dataloader, test_dataloader = loadmnist(bs, train_split)
 
-down = Chain(flatten, Dense(784, 20, tanh)) |> gpu
+down = Chain(Flux.flatten, Dense(784, 20, tanh)) |> gpu
 
 nn = Chain(Dense(20, 10, tanh),
            Dense(10, 10, tanh),
@@ -58,7 +58,7 @@ function DiffEqArray_to_Array(x)
     return reshape(xarr, size(xarr)[1:2])
 end
 
-# Build our over-all model topology
+# Build our overall model topology
 model = Chain(down,
               nn_ode,
               DiffEqArray_to_Array,
@@ -196,7 +196,7 @@ to the next. Four different sets of layers are used here:
 
 
 ```julia
-down = Chain(flatten, Dense(784, 20, tanh)) |> gpu
+down = Chain(Flux.flatten, Dense(784, 20, tanh)) |> gpu
 
 nn = Chain(Dense(20, 10, tanh),
            Dense(10, 10, tanh),
@@ -227,8 +227,8 @@ fc  = Chain(Dense(20, 10)) |> gpu
 
 ### Array Conversion
 
-When using `NeuralODE`, we can use the following function as a cheap conversion of `DiffEqArray`
-from the ODE solver into a Matrix that can be used in the following layer:
+When using `NeuralODE`, this function converts the ODESolution's `DiffEqArray` to
+a Matrix (CuArray), and reduces the matrix from 3 to 2 dimensions for use in the next layer.
 
 ```julia
 function DiffEqArray_to_Array(x)
@@ -238,7 +238,7 @@ end
 ```
 
 For CPU: If this function does not automatically fallback to CPU when no GPU is present, we can
-change `gpu(x)` with `Array(x)`.
+change `gpu(x)` to `Array(x)`.
 
 
 ### Build Topology
@@ -246,7 +246,7 @@ change `gpu(x)` with `Array(x)`.
 Next we connect all layers together in a single chain:
 
 ```julia
-# Build our over-all model topology
+# Build our overall model topology
 model = Chain(down,
               nn_ode,
               DiffEqArray_to_Array,
@@ -343,7 +343,7 @@ This callback function is used to print both the training and testing accuracy a
 ```julia
 cb() = begin
     global iter += 1
-    # Monitor that the weights do infact update
+    # Monitor that the weights update
     # Every 10 training iterations show accuracy
     if iter % 10 == 1
         train_accuracy = accuracy(model, train_dataloader) * 100
@@ -363,7 +363,7 @@ for Neural ODE is given by `nn_ode.p`:
 
 ```julia
 # Train the NN-ODE and monitor the loss and weights.
-Flux.train!(loss, params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb)
+Flux.train!(loss, Flux.params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb)
 ```
 
 ### Expected Output

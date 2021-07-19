@@ -5,7 +5,7 @@ a lot of the choices, using heuristics to determine a potentially efficient meth
 However, in some cases you may want more control over the optimization process.
 The underlying optimization package behind `sciml_train` is
 [GalacticOptim.jl](https://github.com/SciML/GalacticOptim.jl).
-In this tutorial we will show how to more deeply interact with the optimzation
+In this tutorial we will show how to more deeply interact with the optimization
 library to tweak its processes.
 
 We can use a neural ODE as our example. A neural ODE is an ODE where a neural
@@ -169,11 +169,14 @@ set up custom optimization problems. For more information on the usage of
 [GalacticOptim.jl](https://github.com/SciML/GalacticOptim.jl), please consult
 [this](https://galacticoptim.sciml.ai/stable/) documentation.
 
+The `x` and `p` variables in the optimization function are different than
+`x` and `p` above. The optimization function runs over the space of parameters of
+the original problem, so `x_optimization` == `p_original`.
 ```julia
 # Train using the ADAM optimizer
 adtype = GalacticOptim.AutoZygote()
 
-optf = GalacticOptim.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
+optf = GalacticOptim.OptimizationFunction((x_optimization, p_optimization) -> loss_neuralode(x_optimization), adtype)
 optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
 optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
 

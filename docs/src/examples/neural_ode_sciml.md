@@ -17,34 +17,40 @@ follow a full explanation of the definition and training process:
 ```julia
 using DiffEqFlux, DifferentialEquations, Plots, GalacticOptim
 
-u0 = Float32[2.0; 0.0]
-datasize = 30
-tspan = (0.0f0, 1.5f0)
-tsteps = range(tspan[1], tspan[2], length = datasize)
+u0 = Float32[2.0; 0.0] # Initial condition
+datasize = 30 # Number of data points
+tspan = (0.0f0, 1.5f0) # Time range
+tsteps = range(tspan[1], tspan[2], length = datasize) # Split time range into equal steps for each data point
 
+# Function that will generate the data we are trying to fit
 function trueODEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
-    du .= ((u.^3)'true_A)'
+    du .= ((u.^3)'true_A)' # Need transposes to make the matrix multiplication work
 end
 
+# Define the problem with the function above
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+# Solve and take just the solution array
 ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
-dudt2 = FastChain((x, p) -> x.^3,
-                  FastDense(2, 50, tanh),
+# Make a neural net with a NeuralODE layer
+dudt2 = FastChain((x, p) -> x.^3, # Guess a cubic function
+                  FastDense(2, 50, tanh), # Multilayer perceptron for the part we don't know
                   FastDense(50, 2))
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 
+# Array of predictions from NeuralODE with parameters p starting at initial condition u0
 function predict_neuralode(p)
   Array(prob_neuralode(u0, p))
 end
 
 function loss_neuralode(p)
     pred = predict_neuralode(p)
-    loss = sum(abs2, ode_data .- pred)
+    loss = sum(abs2, ode_data .- pred) # Just sum of squared error
     return loss, pred
 end
 
+# Callback function to observe training
 callback = function (p, l, pred; doplot = true)
   display(l)
   # plot current prediction against data
@@ -56,6 +62,7 @@ callback = function (p, l, pred; doplot = true)
   return false
 end
 
+# Parameters are prob_neuralode.p
 result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                           cb = callback)
 ```
@@ -64,7 +71,7 @@ result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
 
 ## Explanation
 
-Let's get a time series array from the Lotka-Volterra equation as data:
+Let's generate a time series array from a cubic equation as data:
 
 ```julia
 using DiffEqFlux, DifferentialEquations, Plots
@@ -104,9 +111,9 @@ dudt2 = Chain(x -> x.^3,
 
 In our model we used the `x -> x.^3` assumption in the model. By incorporating
 structure into our equations, we can reduce the required size and training time
-for the neural network, but a good guess needs to be known!
+for the neural network, but we need a good guess!
 
-From here we build a loss function around it. The `NeuralODE` has an optional
+From here, we build a loss function around our `NeuralODE`. `NeuralODE` has an optional
 second argument for new parameters which we will use to iteratively change the
 neural network in our training loop. We will use the L2 loss of the network's
 output against the time series data:
@@ -139,18 +146,18 @@ callback = function (p, l, pred; doplot = false)
 end
 ```
 
-We then train the neural network to learn the ODE. Using `sciml_train`, heuristics
-are chosen that does this fast and simply:
+We then train the neural network to learn the ODE. `sciml_train` chooses heuristics
+that train quickly and simply:
 
 ```julia
 result_neuralode = DiffEqFlux.sciml_train(loss_neuralode, prob_neuralode.p,
                                           cb = callback)
 ```
 
-## Usage without the layer
+## Usage Without the Layer Function
 
 Note that you can equivalently define the NeuralODE by hand instead of using
-the layer function. With `FastChain` this would look like:
+the `NeuralODE`. With `FastChain` this would look like:
 
 ```julia
 dudt!(u, p, t) = dudt2(u, p)

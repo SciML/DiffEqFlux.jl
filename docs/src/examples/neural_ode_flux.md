@@ -24,7 +24,7 @@ dudt2 = Chain(x -> x.^3,
              Dense(2,50,tanh),
              Dense(50,2))
 p,re = Flux.destructure(dudt2) # use this p as the initial condition!
-dudt(u,p,t) = re(p)(u) # need to restrcture for backprop!
+dudt(u,p,t) = re(p)(u) # need to restructure for backprop!
 prob = ODEProblem(dudt,u0,tspan)
 
 function predict_n_ode()
@@ -39,7 +39,7 @@ end
 
 loss_n_ode() # n_ode.p stores the initial parameters of the neural ODE
 
-cb = function (;doplot=false) #callback function to observe training
+cb = function (;doplot=false) # callback function to observe training
   pred = predict_n_ode()
   display(sum(abs2,ode_data .- pred))
   # plot current prediction against data
