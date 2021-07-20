@@ -24,7 +24,7 @@ initial_params(c::FastChain) = vcat(initial_params.(c.layers)...)
 
 """
 FastDense(in,out,activation=identity;
-          bias = true ,initW = Flux.glorot_uniform, initb = Flux.zeros)
+          bias = true ,initW = Flux.glorot_uniform, initb = Flux.zeros32)
 
 A Dense layer `activation.(W*x + b)` with input size `in` and output size `out`.
 The `activation` function defaults to `identity`, meaning the layer is an affine
@@ -41,7 +41,7 @@ struct FastDense{F,F2} <: FastLayer
   initial_params::F2
   bias::Bool
   function FastDense(in::Integer, out::Integer, σ = identity;
-                 bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros)
+                 bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros3232)
     temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
     initial_params() = temp
     new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params,bias)
@@ -108,7 +108,7 @@ initial_params(f::FastDense) = f.initial_params()
 
 """
 StaticDense(in,out,activation=identity;
-          initW = Flux.glorot_uniform, initb = Flux.zeros)
+          initW = Flux.glorot_uniform, initb = Flux.zeros32)
 
 A Dense layer `activation.(W*x + b)` with input size `in` and output size `out`.
 The `activation` function defaults to `identity`, meaning the layer is an affine
@@ -124,7 +124,7 @@ struct StaticDense{out,in,bias,F,F2} <: FastLayer
   σ::F
   initial_params::F2
   function StaticDense(in::Integer, out::Integer, σ = identity;
-                 bias::Bool = true, initW = Flux.glorot_uniform, initb = Flux.zeros)
+                 bias::Bool = true, initW = Flux.glorot_uniform, initb = Flux.zeros32)
     temp = ((bias == true ) ? vcat(vec(initW(out, in)),initb(out)) : vcat(vec(initW(out, in))) )
     initial_params() = temp
     new{out,in,bias,typeof(σ),typeof(initial_params)}(σ,initial_params)
