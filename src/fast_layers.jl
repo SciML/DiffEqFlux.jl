@@ -41,7 +41,7 @@ struct FastDense{F,F2} <: FastLayer
   initial_params::F2
   bias::Bool
   function FastDense(in::Integer, out::Integer, σ = identity;
-                 bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros3232)
+                 bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros32)
     temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
     initial_params() = temp
     new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params,bias)
