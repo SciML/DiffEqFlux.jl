@@ -7,7 +7,7 @@ ordinary differential equation **NN-ODE** on **GPUs** with **Minibatching**.
 
 ```julia
 using DiffEqFlux, DifferentialEquations, Printf
-using Flux: logitcrossentropy
+using Flux.Losses: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDatasets
 using MLDataUtils:  LabelEnc, convertlabel, stratifiedobs
@@ -125,7 +125,7 @@ Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt, cb = c
 
 ```julia
 using DiffEqFlux, DifferentialEquations, Printf
-using Flux: logitcrossentropy
+using Flux.Losses: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDatasets
 using MLDataUtils:  LabelEnc, convertlabel, stratifiedobs

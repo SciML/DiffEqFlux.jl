@@ -7,7 +7,7 @@ on **GPUs** with **Minibatching**.
 
 ```julia
 using DiffEqFlux, DifferentialEquations, NNlib, MLDataUtils, Printf
-using Flux: logitcrossentropy
+using Flux.Losses: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDatasets
 using CUDA
@@ -124,7 +124,7 @@ Flux.train!(loss, params(down, nn_ode.p, fc), train_dataloader, opt, cb = cb)
 
 ```julia
 using DiffEqFlux, DifferentialEquations, NNlib, MLDataUtils, Printf
-using Flux: logitcrossentropy
+using Flux.Losses: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDatasets
 ```

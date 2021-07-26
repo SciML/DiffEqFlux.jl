@@ -1,5 +1,5 @@
 using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
-using Flux: logitcrossentropy
+using Flux.Losses: logitcrossentropy
 using MLDatasets: MNIST
 using CUDA, Test
 CUDA.allowscalar(false)
