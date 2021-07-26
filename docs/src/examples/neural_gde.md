@@ -9,7 +9,8 @@ In this tutorial we will use Graph Differential Equations (GDEs) to perform clas
 ```julia
 # Load the packages
 using GeometricFlux, JLD2, SparseArrays, DiffEqFlux, DifferentialEquations
-using Flux: onehotbatch, onecold, logitcrossentropy, throttle
+using Flux: onehotbatch, onecold, throttle
+using Flux.Losses: logitcrossentropy
 using Statistics: mean
 using LightGraphs: adjacency_matrix
 
@@ -81,7 +82,8 @@ end
 ```julia
 # Load the packages
 using GeometricFlux, JLD2, SparseArrays, DiffEqFlux, DifferentialEquations
-using Flux: onehotbatch, onecold, crossentropy, throttle
+using Flux: onehotbatch, onecold, throttle
+using Flux.Losses: crossentropy
 using Statistics: mean
 using LightGraphs: adjacency_matrix
 ```

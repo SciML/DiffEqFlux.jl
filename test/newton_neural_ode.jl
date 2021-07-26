@@ -21,7 +21,7 @@ NN = Chain(Dense(n, 5n, tanh),
 @info "ROCK4"
 nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
-loss_function(θ) = Flux.mse(y, nODE(x, θ)[end])
+loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
 l1 = loss_function(nODE.p)
 
 res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 100, cb=cb)
@@ -35,7 +35,7 @@ NN = FastChain(FastDense(n, 5n, tanh),
 @info "ROCK2"
 nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1e-4, saveat=[tspan[end]])
 
-loss_function(θ) = Flux.mse(y, nODE(x, θ)[end])
+loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
 l1 = loss_function(nODE.p)
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, nODE.p,)

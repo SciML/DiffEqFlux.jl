@@ -1,5 +1,5 @@
 using DiffEqFlux, OrdinaryDiffEq, Flux, Printf
-using Flux: logitcrossentropy
+using Flux.Losses: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDatasets
 using MLDataUtils:  LabelEnc, convertlabel, stratifiedobs

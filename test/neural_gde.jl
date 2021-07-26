@@ -24,12 +24,12 @@ model = Chain(
 ps = Flux.params(model)
 opt = ADAM(0.1)
 
-initial_loss = Flux.logitcrossentropy(model(features), target)
+initial_loss = Flux.Losses.logitcrossentropy(model(features), target)
 
 for i in 1:100
-    gs = gradient(() -> Flux.logitcrossentropy(model(features), target), ps)
+    gs = gradient(() -> Flux.Losses.logitcrossentropy(model(features), target), ps)
     Flux.Optimise.update!(opt, ps, gs)
 end
-updated_loss = Flux.logitcrossentropy(model(features), target)
+updated_loss = Flux.Losses.logitcrossentropy(model(features), target)
 
 @test updated_loss < initial_loss
