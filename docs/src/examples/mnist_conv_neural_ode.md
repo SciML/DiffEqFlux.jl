@@ -364,7 +364,7 @@ for Neural ODE is given by `nn_ode.p`:
 
 ```julia
 # Train the NN-ODE and monitor the loss and weights.
-Flux.train!(loss, params(down, nn_ode.p, fc), train_dataloader, opt, cb = cb)
+Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt, cb = cb)
 ```
 
 ### Expected Output

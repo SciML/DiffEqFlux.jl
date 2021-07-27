@@ -97,5 +97,5 @@ cb() = begin
 end
 
 # Train the NN-ODE and monitor the loss and weights.
-Flux.train!( loss, params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb )
+Flux.train!( loss, Flux.params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb )
 @test accuracy(m, zip(x_train,y_train)) > 0.8
