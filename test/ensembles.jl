@@ -24,7 +24,7 @@ end
 opt = ADAM(0.1)
 println("Starting to train")
 l1 = loss()
-Flux.@epochs 10 Flux.train!(loss, params([pa,u0]), data, opt; cb = cb)
+Flux.@epochs 10 Flux.train!(loss, Flux.params([pa,u0]), data, opt; cb = cb)
 l2 = loss()
 @test 10l2 < l1
 
@@ -45,7 +45,7 @@ u0 = [3.0]
 opt = ADAM(0.1)
 println("Starting to train")
 l1 = loss()
-Flux.@epochs 10 Flux.train!(loss, params([pa,u0]), data, opt; cb = cb)
+Flux.@epochs 10 Flux.train!(loss, Flux.params([pa,u0]), data, opt; cb = cb)
 l2 = loss()
 @test 10l2 < l1
 
@@ -74,6 +74,6 @@ u0 = [3.0]
 opt = ADAM(0.1)
 println("Starting to train")
 l1 = loss()
-Flux.@epochs 10 Flux.train!(loss, params([pa,u0]), data, opt; cb = cb)
+Flux.@epochs 10 Flux.train!(loss, Flux.params([pa,u0]), data, opt; cb = cb)
 l2 = loss()
 @test 10l2 < l1
