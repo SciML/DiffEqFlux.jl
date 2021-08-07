@@ -16,9 +16,9 @@ parameters. This is shown in the loss function:
 ```julia
 function loss(p)
   tmp_prob = remake(prob, p=p)
-  tmp_sol = Array(solve(tmp_prob,Tsit5(),saveat=0.1))
-  if size(tmp_sol) == size(dataset)
-    return sum(abs2,tmp_sol - dataset)
+  tmp_sol = solve(tmp_prob,Tsit5(),saveat=0.1)
+  if tmp_sol.retcode == :Success
+    return sum(abs2,Array(tmp_sol) - dataset)
   else
     return Inf
   end
@@ -55,9 +55,9 @@ scatter!(sol.t,dataset')
 
 function loss(p)
   tmp_prob = remake(prob, p=p)
-  tmp_sol = Array(solve(tmp_prob,Tsit5(),saveat=0.1))
-  if size(tmp_sol) == size(dataset)
-    return sum(abs2,tmp_sol - dataset)
+  tmp_sol = solve(tmp_prob,Tsit5(),saveat=0.1)
+  if tmp_sol.retcode == :Success
+    return sum(abs2,Array(tmp_sol) - dataset)
   else
     return Inf
   end
@@ -68,6 +68,24 @@ using DiffEqFlux
 pinit = [1.2,0.8,2.5,0.8]
 res = DiffEqFlux.sciml_train(loss,pinit,ADAM(), maxiters = 1000)
 
+# res = DiffEqFlux.sciml_train(loss,pinit,BFGS(), maxiters = 1000) ### errors!
+
 #try Newton method of optimization
 res = DiffEqFlux.sciml_train(loss,pinit,Newton(), GalacticOptim.AutoForwardDiff())
+```
+
+You might notice that `AutoZygote` (default) fails for the above `sciml_train` call with Optim's optimizers which happens because
+of Zygote's behaviour for zero gradients in which case it returns `nothing`. To avoid such issue you can just use a different version of the same check which compares the size of the obtained 
+solution and the data we have, shown below, which is easier to AD.
+
+```julia
+function loss(p)
+  tmp_prob = remake(prob, p=p)
+  tmp_sol = solve(tmp_prob,Tsit5(),saveat=0.1)
+  if size(tmp_sol) == size(dataset)
+    return sum(abs2,Array(tmp_sol) .- dataset)
+  else
+    return Inf
+  end
+end
 ```
