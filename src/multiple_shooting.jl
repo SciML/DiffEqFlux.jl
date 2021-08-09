@@ -140,6 +140,7 @@ function multiple_shoot(
     kwargs...
 )
     datasize = size(ode_data, 2)
+    prob = ensembleprob.prob
 
     if group_size < 2 || group_size > datasize
         throw(DomainError(group_size, "group_size can't be < 2 or > number of data points"))
@@ -150,31 +151,31 @@ function multiple_shoot(
 
     # Multiple shooting predictions
 
-    
-    sols = []
-    for rg in ranges
-        prob = ensembleprob.prob
-        newprob = remake(
-                prob;
-                p=p,
-                tspan=(tsteps[first(rg)], tsteps[last(rg)]),
-                )
-        newensembleprob = EnsembleProblem(newprob, 
-                                        ensembleprob.prob_func, 
-                                        ensembleprob.output_func,
-                                        ensembleprob.reduction,
-                                        ensembleprob.u_init,
-                                        ensembleprob.safetycopy)
-        push!(sols,solve(newensembleprob,
-            solver,
-            ensemblealg;
-            saveat=tsteps[rg],
-            kwargs...
-        ))
-    end
+    # by using map we avoid mutating an array
+    sols =  map(
+        rg -> begin
+            newprob = remake(
+                    prob;
+                    p=p,
+                    tspan=(tsteps[first(rg)], tsteps[last(rg)]),
+                    );
+            newensembleprob = EnsembleProblem(newprob, 
+                                            ensembleprob.prob_func, 
+                                            ensembleprob.output_func,
+                                            ensembleprob.reduction,
+                                            ensembleprob.u_init,
+                                            ensembleprob.safetycopy);
+            solve(newensembleprob,
+                solver,
+                ensemblealg;
+                saveat=tsteps[rg],
+                kwargs...
+            )
+        end,
+        ranges)
     group_predictions = Array.(sols)
 
-    # Abort and return infinite loss if one of the integrations failed
+    # Abort and return infinite loss if one of the integrations did not converge?
     convergeds = [sol.converged for sol in sols]
     if any(.! convergeds)
         return Inf, sols
