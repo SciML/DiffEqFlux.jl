@@ -197,8 +197,11 @@ function multiple_shoot(
                     p=p,
                     tspan=(tsteps[first(rg)], tsteps[last(rg)]),
                     );
+            function prob_func(prob, i, repeat)
+                remake(prob, u0 = ode_data[:, first(rg), i])
+            end
             newensembleprob = EnsembleProblem(newprob, 
-                                            ensembleprob.prob_func, 
+                                            prob_func, 
                                             ensembleprob.output_func,
                                             ensembleprob.reduction,
                                             ensembleprob.u_init,
@@ -216,28 +219,62 @@ function multiple_shoot(
     # Abort and return infinite loss if one of the integrations did not converge?
     convergeds = [sol.converged for sol in sols]
     if any(.! convergeds)
-        return Inf, sols
+        return Inf, group_predictions
     end
 
     # Calculate multiple shooting loss
     loss = 0
     for (i, rg) in enumerate(ranges)
         û = group_predictions[i]
-        u = ode_data[:, rg, :] # trajectories are at dimensions 3
+        u = ode_data[:, rg, :] # trajectories are at dims 3
         # just summing up losses for all trajectories
         # but other alternatives might be considered
-        loss += loss_function(u, Array(û))
+
+        loss += loss_function(u, û)
 
         if i > 1
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
-            prev_û = group_predictions[i-1]
-                loss +=
-                    continuity_term * continuity_loss(prev_û[:, end, :], u[:, 1, :])
+            loss +=
+                continuity_term * continuity_loss(group_predictions[i - 1][:, end, :], u[:, 1, :])
         end
     end
 
     return loss, group_predictions
+end
+
+function multiple_shoot(
+    p::AbstractArray,
+    ode_data::AbstractArray,
+    tsteps::AbstractArray,
+    ensembleprob::EnsembleProblem,
+    ensemblealg::SciMLBase.BasicEnsembleAlgorithm,
+    loss_function::Function,
+    solver::DiffEqBase.AbstractODEAlgorithm,
+    group_size::Integer;
+    continuity_term::Real=100,
+    kwargs...
+)
+    # Continuity loss between last state in previous prediction
+    # and current initial condition in ode_data
+    function continuity_loss(û_end, u_0)
+        return sum(abs, û_end - u_0)
+    end
+
+    return multiple_shoot(
+        p,
+        ode_data,
+        tsteps,
+        ensembleprob,
+        ensemblealg,
+        loss_function,
+        continuity_loss,
+        solver,
+        group_size;
+        continuity_term,
+        kwargs...
+    )
+    
 end
 
 """
