@@ -170,7 +170,6 @@ function multiple_shoot(
     ranges = group_ranges(datasize, group_size)
 
     # Multiple shooting predictions
-
     # by using map we avoid mutating an array
     sols =  map(
         rg -> begin

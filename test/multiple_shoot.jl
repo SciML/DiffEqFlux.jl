@@ -122,9 +122,7 @@ loss_fail, _ = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function
                                         loss_function, Tsit5(), datasize + 1)
 
 ## Ensembles
-# dummy ensemble function
 u0s = [Float32[2.0, 0.0], Float32[3.0, 1.0]]
-# u0s = [Float32[2.0, 0.0]]
 function prob_func(prob, i, repeat)
     remake(prob, u0 = u0s[i])
 end
@@ -147,6 +145,7 @@ res_ms_ensembles = DiffEqFlux.sciml_train(loss_multiple_shooting_ens, neuralode.
                                 ADAM(0.05), maxiters = 300)
 
 loss_ms_ensembles, _ = loss_single_shooting(res_ms_ensembles.minimizer)
+
 println("Multiple shooting loss with EnsembleProblem: $(loss_ms_ensembles)")
 
 @test loss_ms_ensembles < 10loss_ss
