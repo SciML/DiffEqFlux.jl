@@ -138,6 +138,7 @@ function loss_multiple_shooting_ens(p)
     return multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg, 
                           loss_function, Tsit5(),
                           group_size; continuity_term,
+                          trajectories,
                           abstol=1e-8, reltol=1e-6) # test solver kwargs
 end
                                 
