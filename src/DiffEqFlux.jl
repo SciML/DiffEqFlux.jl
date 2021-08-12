@@ -18,6 +18,10 @@ import ConsoleProgressMonitor, TerminalLoggers, LoggingExtras
 import Logging
 import Cassette
 
+# for precompile
+import OrdinaryDiffEq
+import Zygote
+
 gpu_or_cpu(x) = Array
 
 function diffeq_fd(p,f,n,prob,solver=nothing,args...;u0=prob.u0,kwargs...)
@@ -91,7 +95,9 @@ include("tensor_product_layer.jl")
 include("collocation.jl")
 include("hnn.jl")
 include("multiple_shooting.jl")
-      
+
+include("precompile.jl")
+
 Flux.device(::FastLayer) = @warn "device(f::FastLayer) is a no-op: to move FastChain computations to a GPU, apply gpu(x) to the weight vector"
 Flux.gpu(::FastLayer) = @warn "device(f::FastLayer) is a no-op: to move FastChain computations to a GPU, apply gpu(x) to the weight vector"
 Flux.cpu(::FastLayer) = @warn "device(f::FastLayer) is a no-op: to move FastChain computations to a CPU, apply cpu(x) to the weight vector"
