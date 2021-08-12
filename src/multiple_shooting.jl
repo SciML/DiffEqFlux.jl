@@ -1,6 +1,6 @@
 """
-Returns the a total loss after trying a 'Direct multiple shooting' on ODE data
-and an array of predictions from the each of the groups (smaller intervals).
+Returns a total loss after trying a 'Direct multiple shooting' on ODE data
+and an array of predictions from each of the groups (smaller intervals).
 In Direct Multiple Shooting, the Neural Network divides the interval into smaller intervals
 and solves for them separately.
 The default continuity term is 100, implying any losses arising from the non-continuity
@@ -26,12 +26,11 @@ Arguments:
   - `solver`: ODE Solver algorithm.
   - `group_size`: The group size achieved after splitting the ode_data into equal sizes.
   - `continuity_term`: Weight term to ensure continuity of predictions throughout
-  different groups.
+    different groups.
   - `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
   [Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/) and
   [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
   documentation for more details.
-
 Note:
 The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
 whenever the last point of any group doesn't coincide with the first point of next group.
@@ -41,8 +40,8 @@ function multiple_shoot(
     ode_data::AbstractArray,
     tsteps::AbstractArray,
     prob::ODEProblem,
-    loss_function::Function,
-    continuity_loss::Function,
+    loss_function,
+    continuity_loss,
     solver::DiffEqBase.AbstractODEAlgorithm,
     group_size::Integer;
     continuity_term::Real=100,
@@ -107,11 +106,6 @@ function multiple_shoot(
     group_size::Integer;
     kwargs...,
 )
-    # Continuity loss between last state in previous prediction
-    # and current initial condition in ode_data
-    function continuity_loss(û_end, u_0)
-        return sum(abs, û_end - u_0)
-    end
 
     return multiple_shoot(
         p,
@@ -119,11 +113,161 @@ function multiple_shoot(
         tsteps,
         prob,
         loss_function,
-        continuity_loss,
+        _default_continuity_loss,
         solver,
         group_size;
         kwargs...,
     )
+end
+
+"""
+Returns a total loss after trying a 'Direct multiple shooting' on ODE data
+and an array of predictions from each of the groups (smaller intervals).
+In Direct Multiple Shooting, the Neural Network divides the interval into smaller intervals
+and solves for them separately.
+The default continuity term is 100, implying any losses arising from the non-continuity
+of 2 different groups will be scaled by 100.
+
+```julia
+multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg, loss_function, solver,
+                group_size; continuity_term=100, trajectories)
+multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg, loss_function, 
+                continuity_loss, solver, group_size; continuity_term=100, trajectories)
+```
+
+Arguments:
+  - `p`: The parameters of the Neural Network to be trained.
+  - `ode_data_ensemble`: Original Data to be modelled. Batches (or equivalently "trajectories") are located in the third dimension.
+  - `tsteps`: Timesteps on which `ode_data_ensemble` was calculated.
+  - `ensemble_prob`: Ensemble problem that the Neural Network attempts to solve.
+  - `ensemble_alg`: Ensemble algorithm, e.g. `EnsembleThreads()`
+  - `loss_function`: Any arbitrary function to calculate loss.
+  - `continuity_loss`: Function that takes states ``\\hat{u}_{end}`` of group ``k`` and
+  ``u_{0}`` of group ``k+1`` as input and calculates prediction continuity loss
+  between them.
+  If no custom `continuity_loss` is specified, `sum(abs, û_end - u_0)` is used.
+  - `solver`: ODE Solver algorithm.
+  - `group_size`: The group size achieved after splitting the ode_data into equal sizes.
+  - `continuity_term`: Weight term to ensure continuity of predictions throughout
+  different groups.
+  - `trajectories`: number of trajectories for `ensemble_prob`.
+  - `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
+  [Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/) and
+  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  documentation for more details.
+Note:
+The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
+whenever the last point of any group doesn't coincide with the first point of next group.
+"""
+function multiple_shoot(
+    p::AbstractArray,
+    ode_data::AbstractArray,
+    tsteps::AbstractArray,
+    ensembleprob::EnsembleProblem,
+    ensemblealg::SciMLBase.BasicEnsembleAlgorithm,
+    loss_function,
+    continuity_loss,
+    solver::DiffEqBase.AbstractODEAlgorithm,
+    group_size::Integer;
+    continuity_term::Real=100,
+    kwargs...
+)
+    datasize = size(ode_data, 2)
+    prob = ensembleprob.prob
+
+    if group_size < 2 || group_size > datasize
+        throw(DomainError(group_size, "group_size can't be < 2 or > number of data points"))
+    end
+
+    @assert ndims(ode_data) == 3 "ode_data must have three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
+    @assert size(ode_data,2) == length(tsteps)
+    @assert size(ode_data,3) == kwargs[:trajectories]
+
+    # Get ranges that partition data to groups of size group_size
+    ranges = group_ranges(datasize, group_size)
+
+    # Multiple shooting predictions
+    # by using map we avoid mutating an array
+    sols =  map(
+        rg -> begin
+            newprob = remake(
+                    prob;
+                    p=p,
+                    tspan=(tsteps[first(rg)], tsteps[last(rg)]),
+                    );
+            function prob_func(prob, i, repeat)
+                remake(prob, u0 = ode_data[:, first(rg), i])
+            end
+            newensembleprob = EnsembleProblem(newprob, 
+                                            prob_func, 
+                                            ensembleprob.output_func,
+                                            ensembleprob.reduction,
+                                            ensembleprob.u_init,
+                                            ensembleprob.safetycopy);
+            solve(newensembleprob,
+                solver,
+                ensemblealg;
+                saveat=tsteps[rg],
+                kwargs...
+            )
+        end,
+        ranges)
+    group_predictions = Array.(sols)
+
+    # Abort and return infinite loss if one of the integrations did not converge?
+    convergeds = [sol.converged for sol in sols]
+    if any(.! convergeds)
+        return Inf, group_predictions
+    end
+
+    # Calculate multiple shooting loss
+    loss = 0
+    for (i, rg) in enumerate(ranges)
+        û = group_predictions[i]
+        u = ode_data[:, rg, :] # trajectories are at dims 3
+        # just summing up losses for all trajectories
+        # but other alternatives might be considered
+
+        loss += loss_function(u, û)
+
+        if i > 1
+            # Ensure continuity between last state in previous prediction
+            # and current initial condition in ode_data
+            loss +=
+                continuity_term * continuity_loss(group_predictions[i - 1][:, end, :], u[:, 1, :])
+        end
+    end
+
+    return loss, group_predictions
+end
+
+function multiple_shoot(
+    p::AbstractArray,
+    ode_data::AbstractArray,
+    tsteps::AbstractArray,
+    ensembleprob::EnsembleProblem,
+    ensemblealg::SciMLBase.BasicEnsembleAlgorithm,
+    loss_function::Function,
+    solver::DiffEqBase.AbstractODEAlgorithm,
+    group_size::Integer;
+    continuity_term::Real=100,
+    kwargs...
+)
+
+    return multiple_shoot(
+        p,
+        ode_data,
+        tsteps,
+        ensembleprob,
+        ensemblealg,
+        loss_function,
+        _default_continuity_loss,
+        solver,
+        group_size;
+        continuity_term,
+        kwargs...
+    )
+    
 end
 
 """
@@ -156,4 +300,11 @@ function group_ranges(datasize::Integer, groupsize::Integer)
         ),
     )
     return [i:min(datasize, i + groupsize - 1) for i in 1:groupsize-1:datasize-1]
+end
+
+# Default ontinuity loss between last state in previous prediction
+# and current initial condition in ode_data
+function _default_continuity_loss(û_end::AbstractArray, 
+                                  u_0::AbstractArray)
+    return sum(abs, û_end - u_0)
 end

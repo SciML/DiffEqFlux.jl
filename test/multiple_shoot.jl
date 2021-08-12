@@ -120,3 +120,33 @@ loss_fail, _ = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function
                                         loss_function, Tsit5(), 1)
 @test_throws DomainError multiple_shoot(p_init, ode_data, tsteps, prob_node,
                                         loss_function, Tsit5(), datasize + 1)
+
+## Ensembles
+u0s = [Float32[2.0, 0.0], Float32[3.0, 1.0]]
+function prob_func(prob, i, repeat)
+    remake(prob, u0 = u0s[i])
+end
+ensemble_prob = EnsembleProblem(prob_node, prob_func = prob_func)
+ensemble_prob_trueODE = EnsembleProblem(prob_trueode, prob_func = prob_func)
+ensemble_alg = EnsembleThreads()
+trajectories = 2
+ode_data_ensemble = Array(solve(ensemble_prob_trueODE, Tsit5(), ensemble_alg, trajectories = trajectories, saveat = tsteps))
+
+group_size = 3
+continuity_term = 200
+function loss_multiple_shooting_ens(p)
+    return multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg, 
+                          loss_function, Tsit5(),
+                          group_size; continuity_term,
+                          trajectories,
+                          abstol=1e-8, reltol=1e-6) # test solver kwargs
+end
+                                
+res_ms_ensembles = DiffEqFlux.sciml_train(loss_multiple_shooting_ens, neuralode.p,
+                                ADAM(0.05), maxiters = 300)
+
+loss_ms_ensembles, _ = loss_single_shooting(res_ms_ensembles.minimizer)
+
+println("Multiple shooting loss with EnsembleProblem: $(loss_ms_ensembles)")
+
+@test loss_ms_ensembles < 10loss_ss

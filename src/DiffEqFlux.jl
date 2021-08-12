@@ -3,6 +3,7 @@ module DiffEqFlux
 using GalacticOptim, DataInterpolations, DiffEqBase, DiffResults,
       Distributions, ForwardDiff, Requires, Adapt, LinearAlgebra,
       RecursiveArrayTools, StaticArrays, Base.Iterators, Printf
+      SciMLBase
 
 import DistributionsAD
 
