@@ -93,7 +93,7 @@ Js = map(u->I + 0.1*ForwardDiff.jacobian(UJacobianWrapper(rober, 0.0, p), u), so
 ```
 
 Note that we also computed a shifted and scaled Jacobian along with the
-solution. We will use the this matrix to scale the loss later.
+solution. We will use this matrix to scale the loss later.
 
 We fit the parameters in log space, so we need to compute `exp.(p)` to get back
 the original parameters.
