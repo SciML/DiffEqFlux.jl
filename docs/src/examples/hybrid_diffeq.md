@@ -71,8 +71,13 @@ Flux.train!(loss_n_ode, ps, data, ADAM(0.05), cb = cba)
 
 ## Note on Sensitivity Methods
 
-Only some continuous adjoint sensitivities are compatible with callbacks, namely
-`BacksolveAdjoint` and `InterpolatingAdjoint`. All methods based on discrete sensitivity
-analysis via automatic differentiation, like `ReverseDiffAdjoint`, `TrackerAdjoint`, or
-`ForwardDiffAdjoint` are the methods to use (and `ReverseDiffAdjoint` is demonstrated above),
-are compatible with events. This applies to SDEs, DAEs, and DDEs as well.
+The continuous adjoint sensitivities `BacksolveAdjoint`, `InterpolatingAdjoint`,
+and `QuadratureAdjoint` are compatible with events for ODEs. `BacksolveAdjoint` and
+`InterpolatingAdjoint` can also handle events for SDEs. Use `BacksolveAdjoint` if
+the event terminates the time evolution and several states are saved. Currently,
+the continuous adjoint sensitivities do not support multiple events per time point.
+
+All methods based on discrete sensitivity analysis via automatic differentiation,
+like `ReverseDiffAdjoint`,m`TrackerAdjoint`, or `ForwardDiffAdjoint` are the methods
+to use (and `ReverseDiffAdjoint` is demonstrated above), are compatible with events.
+This applies to SDEs, DAEs, and DDEs as well.
