@@ -222,23 +222,22 @@ function ffjord(u, p, t, re, e, st;
     m = re(p)
     if regularize
         z = u[1:end - 3, :]
+        mz = m(z)
         if monte_carlo
-            mz, back = Zygote.pullback(m, z)
-            eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims=1)
+            Je = auto_jacvec(m, z, e)
+            trace_jac = sum(e' * Je, dims=1)
         else
-            mz = m(z)
             trace_jac = _trace_batched(jacobian_fn(m, z))
         end
         vcat(mz, -trace_jac, sum(abs2, mz, dims=1), _norm_batched(eJ))
     else
         z = u[1:end - 1, :]
+        mz = m(z)
         if monte_carlo
-            mz, back = Zygote.pullback(m, z)
-            eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims=1)
+            Je = auto_jacvec(m, z, e)
+            trace_jac = sum(e' * Je, dims=1)
+
         else
-            mz = m(z)
             trace_jac = _trace_batched(jacobian_fn(m, z))
         end
         vcat(mz, -trace_jac)

@@ -4,7 +4,7 @@ using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
     DiffEqBase, DiffEqSensitivity, DiffResults, Distributions, DistributionsAD,
     ForwardDiff, Optimization, OptimizationPolyalgorithms, LinearAlgebra,
     Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
-    Reexport, SciMLBase, StaticArrays, TerminalLoggers, Zygote, ZygoteRules
+    Reexport, SciMLBase, StaticArrays, TerminalLoggers, Zygote, ZygoteRules, SparseDiffTools
 
 @reexport using DiffEqSensitivity
 @reexport using Zygote
