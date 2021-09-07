@@ -50,7 +50,8 @@ struct DeterministicCNF{M,P,RE,Distribution,T,A,K} <: CNFLayer
         end
         if basedist === nothing
             size_input = size(model[1].weight, 2)
-            basedist = MvNormal(zeros(size_input), I + zeros(size_input, size_input))
+            type_input = eltype(model[1].weight)
+            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
         end
         @warn("This layer has been deprecated in favor of `FFJORD`. Use FFJORD with `monte_carlo=false` instead.")
         new{typeof(model),typeof(p),typeof(re),typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
@@ -127,7 +128,8 @@ struct FFJORD{M,P,RE,Distribution,T,A,K} <: CNFLayer
         end
         if basedist === nothing
             size_input = size(model[1].weight, 2)
-            basedist = MvNormal(zeros(size_input), I + zeros(size_input, size_input))
+            type_input = eltype(model[1].weight)
+            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
         end
         new{typeof(model),typeof(p),typeof(re),typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
             model, p, re, basedist, tspan, args, kwargs)
