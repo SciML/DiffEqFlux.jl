@@ -159,7 +159,7 @@ function jacobian_fn(f, x::AbstractMatrix)
 _trace_batched(x::AbstractArray{T,3}) where T =
     reshape([tr(x[:, :, i]) for i in 1:size(x, 3)], 1, size(x, 3))
 
-function ffjord(u, p, t, re, e=randn(eltype(x), size(x));
+function ffjord(u, p, t, re, e;
                 regularize=false, monte_carlo=true)
     m = re(p)
     if regularize
