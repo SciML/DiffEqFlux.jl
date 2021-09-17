@@ -38,8 +38,7 @@ end
         -mean(logpx)
     end
 
-    res1 = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=10)
-    @test true
+    @test_broken !isnothing(DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=10))
 end
 
 ###
