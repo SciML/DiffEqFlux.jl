@@ -18,6 +18,30 @@ function cb(p, l)
     false
 end
 
+# smoke test
+@testset "Smoke test for adtype=$adtype & regularize=$rglrz & monte_carlo=$mnt_crl" for
+        adtype in [GalacticOptim.AutoForwardDiff(), GalacticOptim.AutoReverseDiff(), GalacticOptim.AutoTracker(),
+                   GalacticOptim.AutoZygote(), GalacticOptim.AutoFiniteDiff()],
+        rglrz in [false, true],
+        mnt_crl in [false, true]
+    nn = Chain(
+        Dense(1, 1, tanh),
+    ) |> f32
+    tspan = (0.0f0, 1.0f0)
+    ffjord_mdl = FFJORD(nn, tspan, Tsit5())
+
+    data_dist = Beta(2.0f0, 2.0f0)
+    train_data = rand(data_dist, 1, 100)
+
+    function loss(θ)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize=rglrz, monte_carlo=mnt_crl)
+        -mean(logpx)
+    end
+
+    res1 = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=10)
+    @test true
+end
+
 ###
 # test for default base distribution and deterministic trace CNF
 ###
