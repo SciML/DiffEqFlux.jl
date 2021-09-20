@@ -33,31 +33,31 @@ Ref
 [3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
-struct DeterministicCNF{M,P,RE,Distribution,T,A,K} <: CNFLayer
+struct DeterministicCNF{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractFloat, RE <: Function, D <: Distribution, T, A, K}
     model::M
     p::P
     re::RE
-    basedist::Distribution
+    basedist::D
     tspan::T
     args::A
     kwargs::K
-
-    function DeterministicCNF(model, tspan, args...;
-                              p=nothing, basedist=nothing, kwargs...)
-        _p, re = Flux.destructure(model)
-        if p === nothing
-            p = _p
-        end
-        if basedist === nothing
-            size_input = size(model[1].weight, 2)
-            type_input = eltype(model[1].weight)
-            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
-        end
-        @warn("This layer has been deprecated in favor of `FFJORD`. Use FFJORD with `monte_carlo=false` instead.")
-        new{typeof(model),typeof(p),typeof(re),typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-            model, p, re, basedist, tspan, args, kwargs)
-    end
 end
+
+function DeterministicCNF(model::M, tspan::T, args::A...;
+                          p::P=nothing, basedist::D=nothing, kwargs::K...) where {M, P <: Union{AbstractFloat, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}, T, A, K}
+    _p, re = Flux.destructure(model)
+    if isnothing(p)
+        p = _p
+    end
+    if isnothing(basedist)
+        size_input = size(model[1].weight, 2)
+        type_input = eltype(model[1].weight)
+        basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
+    end
+    DeterministicCNF(model, p, re, basedist, tspan, args, kwargs)
+end
+
+@deprecate DeterministicCNF(model, p, re, basedist, tspan, args, kwargs) FFJORD(model, p, re, basedist, tspan, monte_carlo=false, args, kwargs)
 
 # FIXME: To be removed in future releases
 function cnf(du, u, p, t, re)
@@ -70,8 +70,8 @@ function cnf(du, u, p, t, re)
 end
 
 function (n::DeterministicCNF)(x, p=n.p)
-    cnf_ = (du, u, p, t) -> cnf(du, u, p, t, n.re)
-    prob = ODEProblem{true}(cnf_, vcat(x, 0f0), n.tspan, p)
+    cnf_(du, u, p, t) = cnf(du, u, p, t, n.re)
+    prob = ODEProblem{true}(cnf_, vcat(x, zero(eltype(x))), n.tspan, p)
     sensealg = InterpolatingAdjoint(autojacvec=false)
     pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, end]
     pz = n.basedist
@@ -79,7 +79,7 @@ function (n::DeterministicCNF)(x, p=n.p)
     delta_logp = pred[end]
     logpz = logpdf(pz, z)
     logpx = logpz .- delta_logp
-    return logpx[1]
+    logpx[1]
 end
 
 """
@@ -111,29 +111,28 @@ Ref
 [3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
-struct FFJORD{M,P,RE,Distribution,T,A,K} <: CNFLayer
+struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractFloat, RE <: Function, D <: Distribution, T, A, K}
     model::M
     p::P
     re::RE
-    basedist::Distribution
+    basedist::D
     tspan::T
     args::A
     kwargs::K
+end
 
-    function FFJORD(model, tspan, args...;
-                    p=nothing, basedist=nothing, kwargs...)
-        _p, re = Flux.destructure(model)
-        if p === nothing
-            p = _p
-        end
-        if basedist === nothing
-            size_input = size(model[1].weight, 2)
-            type_input = eltype(model[1].weight)
-            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
-        end
-        new{typeof(model),typeof(p),typeof(re),typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-            model, p, re, basedist, tspan, args, kwargs)
+function FFJORD(model::M, tspan::T, args::A...;
+                p::P=nothing, basedist::D=nothing, kwargs::K...) where {M, P <: Union{AbstractFloat, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}, T, A, K}
+    _p, re = Flux.destructure(model)
+    if isnothing(p)
+        p = _p
     end
+    if isnothing(basedist)
+        size_input = size(model[1].weight, 2)
+        type_input = eltype(model[1].weight)
+        basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
+    end
+    FFJORD(model, p, re, basedist, tspan, args, kwargs)
 end
 
 _norm_batched(x::AbstractMatrix) = sqrt.(sum(x.^2, dims=1))
@@ -153,10 +152,10 @@ function jacobian_fn(f, x::AbstractMatrix)
         Zygote.@ignore z[i, :] .+= one(eltype(x))
         vec[i, :, :] = back(z)[1]
     end
-    return copy(vec)
+    copy(vec)
  end
 
-_trace_batched(x::AbstractArray{T,3}) where T =
+_trace_batched(x::AbstractArray{T, 3}) where T =
     reshape([tr(x[:, :, i]) for i in 1:size(x, 3)], 1, size(x, 3))
 
 function ffjord(u, p, t, re, e;
@@ -172,8 +171,7 @@ function ffjord(u, p, t, re, e;
             mz = m(z)
             trace_jac = _trace_batched(jacobian_fn(m, z))
         end
-        return cat(mz, -trace_jac, sum(abs2, mz, dims=1),
-                   _norm_batched(eJ), dims=1)
+        vcat(mz, -trace_jac, sum(abs2, mz, dims=1), _norm_batched(eJ))
     else
         z = u[1:end - 1, :]
         if monte_carlo
@@ -184,7 +182,7 @@ function ffjord(u, p, t, re, e;
             mz = m(z)
             trace_jac = _trace_batched(jacobian_fn(m, z))
         end
-        return cat(mz, -trace_jac, dims=1)
+        vcat(mz, -trace_jac)
     end
 end
 
@@ -193,23 +191,23 @@ function (n::FFJORD)(x, p=n.p, e=randn(eltype(x), size(x));
                      regularize=false, monte_carlo=true)
     pz = n.basedist
     sensealg = InterpolatingAdjoint()
-    ffjord_ = (u, p, t) -> ffjord(u, p, t, n.re, e; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
     if regularize
         _z = Zygote.@ignore similar(x, 3, size(x, 2))
-        Zygote.@ignore fill!(_z, 0.0f0)
+        Zygote.@ignore fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), n.tspan, p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
         z = pred[1:end - 3, :]
-        delta_logp = reshape(pred[end - 2, :], 1, size(pred, 2))
+        delta_logp = pred[end - 2:end - 2, :]
         λ₁ = pred[end - 1, :]
         λ₂ = pred[end, :]
     else
         _z = Zygote.@ignore similar(x, 1, size(x, 2))
-        Zygote.@ignore fill!(_z, 0.0f0)
+        Zygote.@ignore fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), n.tspan, p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
         z = pred[1:end - 1, :]
-        delta_logp = reshape(pred[end, :], 1, size(pred, 2))
+        delta_logp = pred[end:end, :]
         λ₁ = λ₂ = _z[1, :]
     end
 
@@ -217,5 +215,5 @@ function (n::FFJORD)(x, p=n.p, e=randn(eltype(x), size(x));
     logpz = eltype(x).(reshape(logpdf(pz, z), 1, size(x, 2)))
     logpx = logpz .- delta_logp
 
-    return logpx, λ₁, λ₂
+    logpx, λ₁, λ₂
 end
