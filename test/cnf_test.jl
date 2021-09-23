@@ -18,12 +18,7 @@ function cb(p, l)
     false
 end
 
-# smoke test
-@testset "Smoke test for adtype=$adtype & regularize=$rglrz & monte_carlo=$mnt_crl" for
-        adtype in [GalacticOptim.AutoForwardDiff(), GalacticOptim.AutoReverseDiff(), GalacticOptim.AutoTracker(),
-                   GalacticOptim.AutoZygote(), GalacticOptim.AutoFiniteDiff()],
-        rglrz in [false, true],
-        mnt_crl in [false, true]
+@testset "Smoke test for FFJORD" begin
     nn = Chain(
         Dense(1, 1, tanh),
     ) |> f32
@@ -33,12 +28,151 @@ end
     data_dist = Beta(2.0f0, 2.0f0)
     train_data = rand(data_dist, 1, 100)
 
-    function loss(θ)
-        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize=rglrz, monte_carlo=mnt_crl)
+    function loss(θ; regularize, monte_carlo)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
         -mean(logpx)
     end
 
-    @test_broken !isnothing(DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=10))
+    @testset "AutoForwardDiff as adtype" begin
+        adtype = GalacticOptim.AutoForwardDiff()
+
+        @testset "regularize=false & monte_carlo=false" begin
+            regularize = false
+            monte_carlo = false
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=false & monte_carlo=true" begin
+            regularize = false
+            monte_carlo = true
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=false" begin
+            regularize = true
+            monte_carlo = false
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=true" begin
+            regularize = true
+            monte_carlo = true
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+    end
+    @testset "AutoReverseDiff as adtype" begin
+        adtype = GalacticOptim.AutoReverseDiff()
+
+        @testset "regularize=false & monte_carlo=false" begin
+            regularize = false
+            monte_carlo = false
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=false & monte_carlo=true" begin
+            regularize = false
+            monte_carlo = true
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=false" begin
+            regularize = true
+            monte_carlo = false
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=true" begin
+            regularize = true
+            monte_carlo = true
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+    end
+    @testset "AutoTracker as adtype" begin
+        adtype = GalacticOptim.AutoTracker()
+
+        @testset "regularize=false & monte_carlo=false" begin
+            regularize = false
+            monte_carlo = false
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=false & monte_carlo=true" begin
+            regularize = false
+            monte_carlo = true
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=false" begin
+            regularize = true
+            monte_carlo = false
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=true" begin
+            regularize = true
+            monte_carlo = true
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+    end
+    @testset "AutoZygote as adtype" begin
+        adtype = GalacticOptim.AutoZygote()
+
+        @testset "regularize=false & monte_carlo=false" begin
+            regularize = false
+            monte_carlo = false
+
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=false & monte_carlo=true" begin
+            regularize = false
+            monte_carlo = true
+
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=false" begin
+            regularize = true
+            monte_carlo = false
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=true" begin
+            regularize = true
+            monte_carlo = true
+
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+    end
+    @testset "AutoFiniteDiff as adtype" begin
+        adtype = GalacticOptim.AutoFiniteDiff()
+
+        @testset "regularize=false & monte_carlo=false" begin
+            regularize = false
+            monte_carlo = false
+
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=false & monte_carlo=true" begin
+            regularize = false
+            monte_carlo = true
+
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=false" begin
+            regularize = true
+            monte_carlo = false
+
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+        @testset "regularize=true & monte_carlo=true" begin
+            regularize = true
+            monte_carlo = true
+
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10))
+        end
+    end
 end
 
 ###
