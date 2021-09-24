@@ -174,6 +174,33 @@ end
         end
     end
 end
+@testset "Smoke test for FFJORDDistribution (sampling & pdf)" begin
+    nn = Chain(
+        Dense(1, 1, tanh),
+    ) |> f32
+    tspan = (0.0f0, 1.0f0)
+    ffjord_mdl = FFJORD(nn, tspan, Tsit5())
+
+    data_dist = Beta(2.0f0, 2.0f0)
+    train_data = rand(data_dist, 1, 100)
+
+    function loss(θ; regularize, monte_carlo)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
+        -mean(logpx)
+    end
+
+    adtype = GalacticOptim.AutoZygote()
+
+    regularize = false
+    monte_carlo = false
+
+    res = DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; cb, maxiters=10)
+    ffjord_d = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res.u); regularize, monte_carlo)
+
+    @test !isnothing(pdf(ffjord_d, train_data))
+    @test !isnothing(rand(ffjord_d))
+    @test !isnothing(rand(ffjord_d, 10))
+end
 @testset "Test for default base distribution and deterministic trace FFJORD" begin
     nn = Chain(
         Dense(1, 1, tanh),
