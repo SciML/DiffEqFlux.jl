@@ -4,4 +4,5 @@ The following layers are helper functions for easily building neural differentia
 ```@docs
 DeterministicCNF
 FFJORD
+FFJORDDistribution
 ```

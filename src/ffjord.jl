@@ -27,13 +27,15 @@ Arguments:
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
   documentation for more details.
-Ref
-[1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-[2]R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
-[3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
+
+References:
+
+[1] L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
+[2] R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
+[3] W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
-struct DeterministicCNF{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractFloat, RE <: Function, D <: Distribution, T, A, K}
+struct DeterministicCNF{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Function, D <: Distribution, T, A, K}
     model::M
     p::P
     re::RE
@@ -44,7 +46,7 @@ struct DeterministicCNF{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Abstrac
 end
 
 function DeterministicCNF(model::M, tspan::T, args::A...;
-                          p::P=nothing, basedist::D=nothing, kwargs::K...) where {M, P <: Union{AbstractFloat, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}, T, A, K}
+                          p::P=nothing, basedist::D=nothing, kwargs::K...) where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}, T, A, K}
     _p, re = Flux.destructure(model)
     if isnothing(p)
         p = _p
@@ -105,13 +107,15 @@ Arguments:
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
   documentation for more details.
-Ref
-[1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-[2]R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
-[3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
+
+References:
+
+[1] L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
+[2] R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
+[3] W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
-struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractFloat, RE <: Function, D <: Distribution, T, A, K}
+struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Function, D <: Distribution, T, A, K}
     model::M
     p::P
     re::RE
@@ -122,7 +126,7 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractFloat, RE
 end
 
 function FFJORD(model::M, tspan::T, args::A...;
-                p::P=nothing, basedist::D=nothing, kwargs::K...) where {M, P <: Union{AbstractFloat, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}, T, A, K}
+                p::P=nothing, basedist::D=nothing, kwargs::K...) where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}, T, A, K}
     _p, re = Flux.destructure(model)
     if isnothing(p)
         p = _p
@@ -153,7 +157,7 @@ function jacobian_fn(f, x::AbstractMatrix)
         vec[i, :, :] = back(z)[1]
     end
     copy(vec)
- end
+end
 
 _trace_batched(x::AbstractArray{T, 3}) where T =
     reshape([tr(x[:, :, i]) for i in 1:size(x, 3)], 1, size(x, 3))
@@ -187,8 +191,10 @@ function ffjord(u, p, t, re, e;
 end
 
 # When running on GPU e needs to be passed separately
-function (n::FFJORD)(x, p=n.p, e=randn(eltype(x), size(x));
-                     regularize=false, monte_carlo=true)
+(n::FFJORD)(args...; kwargs...) = forward_ffjord(n, args...; kwargs...)
+
+function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
+                        regularize=false, monte_carlo=true)
     pz = n.basedist
     sensealg = InterpolatingAdjoint()
     ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
@@ -217,3 +223,49 @@ function (n::FFJORD)(x, p=n.p, e=randn(eltype(x), size(x));
 
     logpx, λ₁, λ₂
 end
+
+function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].weight), n_samples);
+                         regularize=false, monte_carlo=true, rng=nothing)
+    px = n.basedist
+    x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
+    sensealg = InterpolatingAdjoint()
+    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
+    if regularize
+        _z = Zygote.@ignore similar(x, 3, size(x, 2))
+        Zygote.@ignore fill!(_z, zero(eltype(x)))
+        prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
+        pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
+        z = pred[1:end - 3, :]
+    else
+        _z = Zygote.@ignore similar(x, 1, size(x, 2))
+        Zygote.@ignore fill!(_z, zero(eltype(x)))
+        prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
+        pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
+        z = pred[1:end - 1, :]
+    end
+
+    z
+end
+
+"""
+FFJORD can be used as a distribution to generate new samples by `rand` or estimate densities by `pdf` or `logpdf` (from `Distributions.jl`).
+
+Arguments:
+- `model`: A FFJORD instance
+- `regularize`: Whether we use regularization (default: `false`)
+- `monte_carlo`: Whether we use monte carlo (default: `true`)
+
+"""
+struct FFJORDDistribution <: ContinuousMultivariateDistribution
+    model::FFJORD
+    regularize::Bool
+    monte_carlo::Bool
+end
+
+FFJORDDistribution(model; regularize=false, monte_carlo=true) = FFJORDDistribution(model, regularize, monte_carlo)
+
+Base.length(d::FFJORDDistribution) = size(d.model.model[1].weight, 2)
+Base.eltype(d::FFJORDDistribution) = eltype(d.model.model[1].weight)
+Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray) = forward_ffjord(d.model, x; d.regularize, d.monte_carlo)[1]
+Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution, x::AbstractVector{<: Real}) = (x[:] = backward_ffjord(d.model, size(x, 2); d.regularize, d.monte_carlo, rng))
+Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution, A::DenseMatrix{<: Real}) = (A[:] = backward_ffjord(d.model, size(A, 2); d.regularize, d.monte_carlo, rng))

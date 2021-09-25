@@ -2,8 +2,8 @@ module DiffEqFlux
 
 using GalacticOptim, DataInterpolations, DiffEqBase, DiffResults,
       Distributions, ForwardDiff, Requires, Adapt, LinearAlgebra,
-      RecursiveArrayTools, StaticArrays, Base.Iterators, Printf
-      SciMLBase
+      RecursiveArrayTools, StaticArrays, Base.Iterators, Printf,
+      SciMLBase, Random
 
 import DistributionsAD
 
@@ -103,6 +103,7 @@ export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, Polynomi
 export neural_ode, neural_ode_rd
 export neural_dmsde
 export FastDense, StaticDense, FastChain, initial_params
+export FFJORDDistribution
 
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel
 export TriweightKernel, TricubeKernel, GaussianKernel, CosineKernel
