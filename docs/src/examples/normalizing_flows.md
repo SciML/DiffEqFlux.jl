@@ -17,6 +17,7 @@ nn = Chain(
 tspan = (0.0f0, 10.0f0)
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
+# Training
 data_dist = Normal(6.0f0, 0.7f0)
 train_data = rand(data_dist, 1, 100)
 
@@ -29,12 +30,16 @@ adtype = GalacticOptim.AutoZygote()
 res1 = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=100)
 res2 = DiffEqFlux.sciml_train(loss, res1.u, LBFGS(), adtype; allow_f_increases=false)
 
-
+# Evaluation
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
 learned_pdf = exp.(ffjord_mdl(train_data, res2.u)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
+
+# Data Generation
+ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
+new_data = rand(ffjord_dist, 100)
 ```
 
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
@@ -52,7 +57,7 @@ ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
 where we also pass as an input the desired timespan for which the differential equation that defines `log p_x` and `z(t)` will be solved.
 
-### Training a CNF layer
+### Training
 
 First, let's get an array from a normal distribution as the training data
 
@@ -133,6 +138,15 @@ using Distances
 actual_pdf = pdf.(data_dist, train_data)
 learned_pdf = exp.(ffjord_mdl(train_data, res2.u)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
+```
+
+### Data Generation
+
+What's more, we can generate new data by using FFJORD as a distribution in `rand`.
+
+```julia
+ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
+new_data = rand(ffjord_dist, 100)
 ```
 
 `References`:

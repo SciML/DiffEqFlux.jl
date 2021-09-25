@@ -27,10 +27,12 @@ Arguments:
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
   documentation for more details.
-Ref
-[1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-[2]R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
-[3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
+
+References:
+
+[1] L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
+[2] R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
+[3] W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
 struct DeterministicCNF{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Function, D <: Distribution, T, A, K}
@@ -105,10 +107,12 @@ Arguments:
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
   documentation for more details.
-Ref
-[1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-[2]R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
-[3]W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
+
+References:
+
+[1] L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
+[2] R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
+[3] W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
 
 """
 struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Function, D <: Distribution, T, A, K}
@@ -243,6 +247,15 @@ function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].
     z
 end
 
+"""
+FFJORD can be used as a distribution to generate new samples by `rand` or estimate densities by `pdf` or `logpdf` (from `Distributions.jl`).
+
+Arguments:
+- `model`: A FFJORD instance
+- `regularize`: Whether we use regularization (default: `false`)
+- `monte_carlo`: Whether we use monte carlo (default: `true`)
+
+"""
 struct FFJORDDistribution <: ContinuousMultivariateDistribution
     model::FFJORD
     regularize::Bool
