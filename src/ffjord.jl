@@ -30,9 +30,11 @@ Arguments:
 
 References:
 
-[1] L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-[2] R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
-[3] W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
+[1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
+
+[2] Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural ordinary differential equations." In Proceedings of the 32nd International Conference on Neural Information Processing Systems, pp. 6572-6583. 2018.
+
+[3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
 
 """
 struct DeterministicCNF{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Function, D <: Distribution, T, A, K}
@@ -110,9 +112,11 @@ Arguments:
 
 References:
 
-[1] L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
-[2] R. T. Q. Chen, Y. Rubanova, J. Bettencourt, D. Duvenaud. Neural Ordinary Differential Equations. arXiv preprint at arXiv1806.07366, 2019.
-[3] W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever, D. Duvenaud. FFJORD: Free-Form Continuous Dynamic For Scalable Reversible Generative Models. arXiv preprint at arXiv1810.01367, 2018.
+[1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
+
+[2] Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural ordinary differential equations." In Proceedings of the 32nd International Conference on Neural Information Processing Systems, pp. 6572-6583. 2018.
+
+[3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
 
 """
 struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Function, D <: Distribution, T, A, K}

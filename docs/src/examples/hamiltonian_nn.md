@@ -141,4 +141,4 @@ Loss Neural Hamiltonian DE = 0.009806873
 
 ## References
 
-[1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. "Hamiltonian neural networks." Advances in Neural Information Processing Systems. 2019.
+[1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. "Hamiltonian Neural Networks." Advances in Neural Information Processing Systems 32 (2019): 15379-15389.

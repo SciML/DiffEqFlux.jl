@@ -665,7 +665,6 @@ end
 ![Evolution of the fidelity as a function of time](https://user-images.githubusercontent.com/42201748/107991039-10c59200-6fd6-11eb-8a97-a1c8d18a266b.png)
 
 
-`References`:
+## References
 
-[1] [F. Schäfer, P. Sekatski, M. Koppenhöfer, C. Bruder, M. Kloc. Control of Stochastic
-Quantum Dynamics with Differentiable Programming. arXiv preprint at arXiv:2101.01190, 2021.](https://arxiv.org/abs/2101.01190)
+[1] Schäfer, Frank, Pavel Sekatski, Martin Koppenhöfer, Christoph Bruder, and Michal Kloc. "Control of stochastic quantum dynamics by differentiable programming." Machine Learning: Science and Technology 2, no. 3 (2021): 035004.
