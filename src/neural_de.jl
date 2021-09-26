@@ -61,20 +61,18 @@ struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
     end
 end
 
-function (n::NeuralODE)(x,p=n.p)
+function (n::NeuralODE)(x,p=n.p; sensealg=InterpolatingAdjoint(autojacvec=ZygoteVJP()))
     dudt_(u,p,t) = n.re(p)(u)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,getfield(n,:tspan),p)
-    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sense=sense,n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
-function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
+function (n::NeuralODE{M})(x,p=n.p; sensealg=InterpolatingAdjoint(autojacvec=ZygoteVJP())) where {M<:FastChain}
     dudt_(u,p,t) = n.model(u,p)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,n.tspan,p)
-    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sensealg=sense,n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
 """
@@ -134,20 +132,20 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralDELayer
     end
 end
 
-function (n::NeuralDSDE)(x,p=n.p)
+function (n::NeuralDSDE)(x,p=n.p; sensealg=TrackerAdjoint())
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
-function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
+function (n::NeuralDSDE{M})(x,p=n.p; sensealg=TrackerAdjoint()) where {M<:FastChain}
     dudt_(u,p,t) = n.model1(u,p[1:n.len])
     g(u,p,t) = n.model2(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
 """
@@ -209,20 +207,20 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralDELayer
     end
 end
 
-function (n::NeuralSDE)(x,p=n.p)
+function (n::NeuralSDE)(x,p=n.p; sensealg=TrackerAdjoint())
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
-function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
+function (n::NeuralSDE{P,M})(x,p=n.p; sensealg=TrackerAdjoint()) where {P,M<:FastChain}
     dudt_(u,p,t) = n.model1(u,p[1:n.len])
     g(u,p,t) = n.model2(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
 """
@@ -282,24 +280,24 @@ struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
     end
 end
 
-function (n::NeuralCDDE)(x,p=n.p)
+function (n::NeuralCDDE)(x,p=n.p; sensealg=TrackerAdjoint())
     function dudt_(u,h,p,t)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.re(p)(_u)
     end
     ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
-function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
+function (n::NeuralCDDE{P,M})(x,p=n.p; sensealg=TrackerAdjoint()) where {P,M<:FastChain}
     function dudt_(u,h,p,t)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.model(_u,p)
     end
     ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
 """
@@ -355,7 +353,7 @@ struct NeuralDAE{P,M,M2,D,RE,T,DV,A,K} <: NeuralDELayer
     end
 end
 
-function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
+function (n::NeuralDAE)(x,du0=n.du0,p=n.p; sensealg=TrackerAdjoint())
     function f(du,u,p,t)
         nn_out = n.re(p)(vcat(u,du))
         alg_out = n.constraints_model(u,p,t)
@@ -372,7 +370,7 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
         end
     end
     prob = DAEProblem{false}(f,du0,x,n.tspan,p,differential_vars=n.differential_vars)
-    solve(prob,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
 """
@@ -401,7 +399,7 @@ Arguments:
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
   constaints to impose on the algebraic equations.
 - `tspan`: The timespan to be solved on.
-- `mass_matrix`: The mass matrix associated with the DAE 
+- `mass_matrix`: The mass matrix associated with the DAE
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl. This method requires an
   implicit ODE solver compatible with singular mass matrices. Consult the
@@ -447,7 +445,7 @@ struct NeuralODEMM{M,M2,P,RE,T,MM,A,K} <: NeuralDELayer
     end
 end
 
-function (n::NeuralODEMM)(x,p=n.p)
+function (n::NeuralODEMM)(x,p=n.p; sensealg=InterpolatingAdjoint(autojacvec=ZygoteVJP()))
     function f(u,p,t)
         nn_out = n.re(p)(u)
         alg_out = n.constraints_model(u,p,t)
@@ -456,11 +454,10 @@ function (n::NeuralODEMM)(x,p=n.p)
     dudt_= ODEFunction{false}(f,mass_matrix=n.mass_matrix,tgrad=basic_tgrad)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
 
-    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sensealg=sense,n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
-function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
+function (n::NeuralODEMM{M})(x,p=n.p; sensealg=InterpolatingAdjoint(autojacvec=ZygoteVJP())) where {M<:FastChain}
     function f(u,p,t)
         nn_out = n.model(u,p)
         alg_out = n.constraints_model(u,p,t)
@@ -469,8 +466,7 @@ function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
     dudt_= ODEFunction{false}(f;mass_matrix=n.mass_matrix,tgrad=basic_tgrad)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
 
-    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sensealg=sense,n.kwargs...)
+    solve(prob,n.args...; sensealg,n.kwargs...)
 end
 
 """

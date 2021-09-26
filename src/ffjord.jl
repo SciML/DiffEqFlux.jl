@@ -71,10 +71,9 @@ function cnf(du, u, p, t, re)
     du[end] = -trace_jac
 end
 
-function (n::DeterministicCNF)(x, p=n.p)
+function (n::DeterministicCNF)(x, p=n.p; sensealg=InterpolatingAdjoint(autojacvec=false))
     cnf_(du, u, p, t) = cnf(du, u, p, t, n.re)
     prob = ODEProblem{true}(cnf_, vcat(x, zero(eltype(x))), n.tspan, p)
-    sensealg = InterpolatingAdjoint(autojacvec=false)
     pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, end]
     pz = n.basedist
     z = pred[1:end - 1]
@@ -194,9 +193,8 @@ end
 (n::FFJORD)(args...; kwargs...) = forward_ffjord(n, args...; kwargs...)
 
 function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
-                        regularize=false, monte_carlo=true)
+                        regularize=false, monte_carlo=true, sensealg=InterpolatingAdjoint())
     pz = n.basedist
-    sensealg = InterpolatingAdjoint()
     ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
     if regularize
         _z = Zygote.@ignore similar(x, 3, size(x, 2))
@@ -225,10 +223,9 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
 end
 
 function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].weight), n_samples);
-                         regularize=false, monte_carlo=true, rng=nothing)
+                         regularize=false, monte_carlo=true, rng=nothing, sensealg=InterpolatingAdjoint())
     px = n.basedist
     x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
-    sensealg = InterpolatingAdjoint()
     ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
     if regularize
         _z = Zygote.@ignore similar(x, 3, size(x, 2))
@@ -236,15 +233,20 @@ function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
         z = pred[1:end - 3, :]
+        delta_logp = pred[end - 2:end - 2, :]
+        λ₁ = pred[end - 1, :]
+        λ₂ = pred[end, :]
     else
         _z = Zygote.@ignore similar(x, 1, size(x, 2))
         Zygote.@ignore fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
         z = pred[1:end - 1, :]
+        delta_logp = pred[end:end, :]
+        λ₁ = λ₂ = _z[1, :]
     end
 
-    z
+    z, λ₁, λ₂
 end
 
 """
@@ -254,18 +256,20 @@ Arguments:
 - `model`: A FFJORD instance
 - `regularize`: Whether we use regularization (default: `false`)
 - `monte_carlo`: Whether we use monte carlo (default: `true`)
+- `sensealg`: The automatic differentiation algorithm to use for the backpropagation of the solver (default: `InterpolatingAdjoint()`)
 
 """
 struct FFJORDDistribution <: ContinuousMultivariateDistribution
     model::FFJORD
     regularize::Bool
     monte_carlo::Bool
+    sensealg::SciMLBase.AbstractSensitivityAlgorithm
 end
 
-FFJORDDistribution(model; regularize=false, monte_carlo=true) = FFJORDDistribution(model, regularize, monte_carlo)
+FFJORDDistribution(model; regularize=false, monte_carlo=true, sensealg=InterpolatingAdjoint()) = FFJORDDistribution(model, regularize, monte_carlo, sensealg)
 
 Base.length(d::FFJORDDistribution) = size(d.model.model[1].weight, 2)
 Base.eltype(d::FFJORDDistribution) = eltype(d.model.model[1].weight)
 Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray) = forward_ffjord(d.model, x; d.regularize, d.monte_carlo)[1]
-Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution, x::AbstractVector{<: Real}) = (x[:] = backward_ffjord(d.model, size(x, 2); d.regularize, d.monte_carlo, rng))
-Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution, A::DenseMatrix{<: Real}) = (A[:] = backward_ffjord(d.model, size(A, 2); d.regularize, d.monte_carlo, rng))
+Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution, x::AbstractVector{<: Real}) = (x[:] = backward_ffjord(d.model, size(x, 2); d.regularize, d.monte_carlo, rng)[1])
+Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution, A::DenseMatrix{<: Real}) = (A[:] = backward_ffjord(d.model, size(A, 2); d.regularize, d.monte_carlo, rng)[1])

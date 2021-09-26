@@ -109,12 +109,11 @@ struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     end
 end
 
-function (nhde::NeuralHamiltonianDE)(x, p = nhde.p)
+# NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP
+function (nhde::NeuralHamiltonianDE)(x, p = nhde.p; sensealg=InterpolatingAdjoint(autojacvec = false))
     function neural_hamiltonian!(du, u, p, t)
         du .= reshape(nhde.hnn(u, p), size(du))
     end
     prob = ODEProblem(neural_hamiltonian!, x, nhde.tspan, p)
-    # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP
-    sense = InterpolatingAdjoint(autojacvec = false)
-    solve(prob, nhde.args...; sensealg = sense, nhde.kwargs...)
+    solve(prob, nhde.args...; sensealg, nhde.kwargs...)
 end
