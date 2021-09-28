@@ -1,5 +1,7 @@
 # Augmented Neural Ordinary Differential Equations
 
+## Copy-Pasteable Code
+
 ```julia
 using DiffEqFlux, DifferentialEquations
 using Statistics, LinearAlgebra, Plots
@@ -55,7 +57,7 @@ function plot_contour(model, npoints = 300)
         idx += 1
     end
     sol = reshape(model(grid_points |> gpu), npoints, npoints) |> cpu
-    
+
     return contour(x, y, sol, fill = true, linewidth=0.0)
 end
 
@@ -192,7 +194,7 @@ function plot_contour(model, npoints = 300)
         idx += 1
     end
     sol = reshape(model(grid_points |> gpu), npoints, npoints) |> cpu
-    
+
     return contour(x, y, sol, fill = true, linewidth=0.0)
 end
 ```
@@ -261,7 +263,7 @@ the thin artifact which connects the circles.
 
 Our training configuration will be same as that of Neural ODE. Only in this case we have augmented the
 input with a single zero. This makes the problem 3 dimensional and as such it is possible to find
-a function which can be expressed by the neural ode. For more details and proofs please refer to \[1].
+a function which can be expressed by the neural ode. For more details and proofs please refer to [1].
 
 ```julia
 model, parameters = construct_model(1, 2, 64, 1)
@@ -316,4 +318,5 @@ Iteration 150 || Loss = 0.036247417
 
 # References
 
-\[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural odes." Advances in Neural Information Processing Systems. 2019.
+[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural ODEs." In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.
+

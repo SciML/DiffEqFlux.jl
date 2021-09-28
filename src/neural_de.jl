@@ -31,8 +31,9 @@ Arguments:
   [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
   documentation for more details.
 
-Ref
-[1]L. S. Pontryagin, Mathematical Theory of Optimal Processes. CRC Press, 1987.
+References:
+
+[1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
 
 """
 struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
@@ -401,7 +402,7 @@ Arguments:
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
   constaints to impose on the algebraic equations.
 - `tspan`: The timespan to be solved on.
-- `mass_matrix`: The mass matrix associated with the DAE 
+- `mass_matrix`: The mass matrix associated with the DAE
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl. This method requires an
   implicit ODE solver compatible with singular mass matrices. Consult the
@@ -487,7 +488,8 @@ Arguments:
 
 References:
 
-[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural odes." Advances in Neural Information Processing Systems. 2019.
+[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural ODEs." In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.
+
 """
 struct AugmentedNDELayer{DE<:NeuralDELayer} <: NeuralDELayer
     nde::DE
