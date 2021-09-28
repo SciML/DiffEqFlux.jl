@@ -372,7 +372,7 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
         end
     end
     prob = DAEProblem{false}(f,du0,x,n.tspan,p,differential_vars=n.differential_vars)
-    solve(prob,n.args...;sensalg=TrackerAdjoint(),n.kwargs...)
+    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 """
