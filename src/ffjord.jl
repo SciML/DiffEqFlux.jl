@@ -221,8 +221,7 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
         λ₁ = λ₂ = _z[1, :]
     end
 
-    # logpdf promotes the type to Float64 by default
-    logpz = eltype(x).(reshape(logpdf(pz, z), 1, size(x, 2)))
+    logpz = reshape(logpdf(pz, z), 1, size(x, 2))
     logpx = logpz .- delta_logp
 
     logpx, λ₁, λ₂
