@@ -47,8 +47,8 @@ struct DeterministicCNF{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Abstrac
     kwargs::K
 end
 
-function DeterministicCNF(model::M, tspan::T, args::A...;
-                          p::P=nothing, basedist::D=nothing, kwargs::K...) where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}, T, A, K}
+function DeterministicCNF(model, tspan, args...;
+                          p::P=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}}
     _p, re = Flux.destructure(model)
     if isnothing(p)
         p = _p
@@ -129,8 +129,8 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<:
     kwargs::K
 end
 
-function FFJORD(model::M, tspan::T, args::A...;
-                p::P=nothing, basedist::D=nothing, kwargs::K...) where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}, T, A, K}
+function FFJORD(model, tspan, args...;
+                p::P=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}}
     _p, re = Flux.destructure(model)
     if isnothing(p)
         p = _p
