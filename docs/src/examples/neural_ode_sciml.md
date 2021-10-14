@@ -202,10 +202,10 @@ dudt2 = FastChain((x, p) -> x.^3,
 dudt!(u, p, t) = dudt2(u, p)
 u0 = rand(2)
 prob_neuralode = ODEProblem(dudt!, u0, tspan, initial_params(dudt2))
-sol_node = solve(prob, Tsit5(), saveat = tsteps)
+sol_node = solve(prob_neuralode, Tsit5(), saveat = tsteps)
 
 function predict_neuralode(p)
-  tmp_prob = remake(prob, p = p)
+  tmp_prob = remake(prob_neuralode, p = p)
   Array(solve(tmp_prob, Tsit5(), saveat = tsteps))
 end
 
