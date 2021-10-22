@@ -1,4 +1,5 @@
-using OrdinaryDiffEq, DiffEqSensitivity, Flux, Test
+using DiffEqFlux, OrdinaryDiffEq, Test
+
 pa = [1.0]
 u0 = [3.0]
 function model1()

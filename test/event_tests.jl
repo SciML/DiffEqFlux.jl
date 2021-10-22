@@ -1,4 +1,4 @@
-using DiffEqFlux, Optim, OrdinaryDiffEq, DiffEqSensitivity, Zygote, Test
+using DiffEqFlux, OrdinaryDiffEq, Test
 
 function f(du,u,p,t)
   du[1] = u[2]
@@ -32,12 +32,12 @@ function loss2(θ)
   abs2(sol[end][1] - target)
 end
 
-#Zygote.gradient(loss1,[0.8])
+# Zygote.gradient(loss1,[0.8])
 
-#Zygote.gradient(loss2,[0.8])
+# Zygote.gradient(loss2,[0.8])
 
-#res = DiffEqFlux.sciml_train(loss1,[0.8],BFGS())
-#@test loss1(res.minimizer) < 1
+# res = DiffEqFlux.sciml_train(loss1,[0.8],BFGS())
+# @test loss1(res.minimizer) < 1
 
-#res = DiffEqFlux.sciml_train(loss2,[0.8],BFGS())
-#@test loss2(res.minimizer) < 1
+# res = DiffEqFlux.sciml_train(loss2,[0.8],BFGS())
+# @test loss2(res.minimizer) < 1

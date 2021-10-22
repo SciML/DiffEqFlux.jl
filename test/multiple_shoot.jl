@@ -1,4 +1,4 @@
-using DiffEqFlux, DiffEqSensitivity, OrdinaryDiffEq, Test
+using DiffEqFlux, OrdinaryDiffEq, Test
 using DiffEqFlux: group_ranges
 
 ## Test group partitioning helper function
@@ -76,7 +76,7 @@ println("Multiple shooting loss: $(loss_ms)")
 group_size = 4
 continuity_term = 50
 
-function continuity_loss_abs2(û_end,  u_0)
+function continuity_loss_abs2(û_end, u_0)
     return sum(abs2, û_end - u_0) # using abs2 instead of default abs
 end
 
@@ -135,13 +135,13 @@ ode_data_ensemble = Array(solve(ensemble_prob_trueODE, Tsit5(), ensemble_alg, tr
 group_size = 3
 continuity_term = 200
 function loss_multiple_shooting_ens(p)
-    return multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg, 
+    return multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg,
                           loss_function, Tsit5(),
                           group_size; continuity_term,
                           trajectories,
                           abstol=1e-8, reltol=1e-6) # test solver kwargs
 end
-                                
+
 res_ms_ensembles = DiffEqFlux.sciml_train(loss_multiple_shooting_ens, neuralode.p,
                                 ADAM(0.05), maxiters = 300)
 

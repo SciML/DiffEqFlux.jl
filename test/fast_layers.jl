@@ -1,4 +1,4 @@
-using Flux, DiffEqFlux, Test, StaticArrays, Zygote
+using DiffEqFlux, StaticArrays, Test
 
 fd = FastDense(2,25,tanh)
 pd = initial_params(fd)

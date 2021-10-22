@@ -5,7 +5,7 @@
 ```julia
 using DiffEqFlux, DifferentialEquations
 using Statistics, LinearAlgebra, Plots
-import Flux.Data: DataLoader
+using Flux.Data: DataLoader
 
 function random_point_in_sphere(dim, min_radius, max_radius)
     distance = (max_radius - min_radius) .* (rand(1) .^ (1.0 / dim)) .+ min_radius
@@ -107,7 +107,7 @@ plt_anode = plot_contour(model)
 ```julia
 using DiffEqFlux, DifferentialEquations
 using Statistics, LinearAlgebra, Plots
-import Flux.Data: DataLoader
+using Flux.Data: DataLoader
 ```
 
 ## Generating a toy dataset

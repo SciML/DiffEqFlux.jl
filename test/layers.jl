@@ -1,6 +1,4 @@
-using Flux, OrdinaryDiffEq, Zygote, Test #using Plots
-println("Starting tests")
-using DiffEqFlux, DiffEqSensitivity
+using DiffEqFlux, OrdinaryDiffEq, Test # , Plots
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -27,7 +25,7 @@ grads = Zygote.gradient(loss_rd, p)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_rd())
-  #display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
+  # display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
@@ -53,7 +51,7 @@ data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_fd())
-  #display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
+  # display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.
@@ -79,7 +77,7 @@ data = Iterators.repeated((), 100)
 opt = ADAM(0.1)
 cb = function ()
   display(loss_adjoint())
-  #display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
+  # display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
 end
 
 # Display the ODE with the current parameter values.

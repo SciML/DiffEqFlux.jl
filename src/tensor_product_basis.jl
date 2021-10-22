@@ -82,7 +82,7 @@ function legendre_poly(x, p::Integer)
     end
 
     for j in 2:p
-        a, b = b, ( (2j-1)*x*b - (j-1)*a ) / j
+        a, b = b, ((2j-1)*x*b - (j-1)*a) / j
     end
 
     b

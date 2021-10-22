@@ -1,17 +1,8 @@
-using DiffEqFlux
-using Pkg
-using SafeTestsets
-using Test, GalacticOptim
+using DiffEqFlux, SafeTestsets, Test
 
 const GROUP = get(ENV, "GROUP", "All")
-const is_APPVEYOR = ( Sys.iswindows() && haskey(ENV,"APPVEYOR") )
+const is_APPVEYOR = (Sys.iswindows() && haskey(ENV,"APPVEYOR"))
 const is_CI = haskey(ENV,"CI")
-
-function activate_gpu_env()
-    Pkg.activate("gpu")
-    Pkg.develop(PackageSpec(path=dirname(@__DIR__)))
-    Pkg.instantiate()
-end
 
 @time begin
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
@@ -28,7 +19,7 @@ end
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
     @safetestset "Neural DE Tests" begin include("neural_de.jl") end
     @safetestset "Augmented Neural DE Tests" begin include("augmented_nde.jl") end
-    #@safetestset "Neural Graph DE" begin include("neural_gde.jl") end
+    @safetestset "Neural Graph DE" begin include("neural_gde.jl") end
     @safetestset "Hybrid DE" begin include("hybrid_de.jl") end
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
     @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
@@ -59,9 +50,6 @@ end
 end
 
 if !is_APPVEYOR && GROUP == "GPU"
-    if is_CI
-        activate_gpu_env()
-    end
     @safetestset "odenet GPU" begin include("odenet_gpu.jl") end
     @safetestset "Neural DE GPU Tests" begin include("neural_de_gpu.jl") end
     @safetestset "MNIST GPU Tests: Fully Connected NN" begin include("mnist_gpu.jl") end

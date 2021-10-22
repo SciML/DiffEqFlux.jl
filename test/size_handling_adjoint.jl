@@ -1,4 +1,4 @@
-using OrdinaryDiffEq, Test
+using DiffEqFlux, OrdinaryDiffEq, Test # , Plots
 
 p = [1.5 1.0;3.0 1.0]
 function lotka_volterra(du,u,p,t)
@@ -12,13 +12,8 @@ tspan = (0.0,10.0)
 prob = ODEProblem(lotka_volterra,u0,tspan,p)
 sol = solve(prob,Tsit5())
 
-#=
-using Plots
-plot(sol)
-=#
+# plot(sol)
 
-import Flux
-using DiffEqFlux
 p = [2.2 1.0;2.0 0.4] # Tweaked Initial Parameter Array
 ps = Flux.params(p)
 
@@ -29,7 +24,7 @@ end
 loss_adjoint() = sum(abs2,x-1 for x in predict_adjoint())
 
 data = Iterators.repeated((), 100)
-opt = Flux.ADAM(0.1)
+opt = ADAM(0.1)
 cb = function () #callback function to observe training
   display(loss_adjoint())
 end
