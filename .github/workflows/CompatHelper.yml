@@ -13,8 +13,6 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
-          arch: 'x64'
-          show-versioninfo: 'never'
       - name: Pkg.add("CompatHelper")
         run: julia -e 'using Pkg; Pkg.add("CompatHelper")'
       - name: CompatHelper.main()
