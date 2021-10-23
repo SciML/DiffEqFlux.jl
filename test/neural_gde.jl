@@ -1,10 +1,10 @@
 using OrdinaryDiffEq, DiffEqFlux, Flux, Test, GeometricFlux
 
 # Fully Connected Graph
-adj_mat = Float32.([0 1 1 1
-                    1 0 1 1
-                    1 1 0 1
-                    1 1 1 0])
+adj_mat = FeaturedGraph(Float32.([0 1 1 1
+                                  1 0 1 1
+                                  1 1 0 1
+                                  1 1 1 0]))
 
 features = [-10.0f0 -9.0f0 9.0f0 10.0f0
               0.0f0  0.0f0 0.0f0  0.0f0]
