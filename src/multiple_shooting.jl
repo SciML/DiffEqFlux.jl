@@ -131,7 +131,7 @@ of 2 different groups will be scaled by 100.
 ```julia
 multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg, loss_function, solver,
                 group_size; continuity_term=100, trajectories)
-multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg, loss_function, 
+multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg, loss_function,
                 continuity_loss, solver, group_size; continuity_term=100, trajectories)
 ```
 
@@ -188,18 +188,18 @@ function multiple_shoot(
 
     # Multiple shooting predictions
     # by using map we avoid mutating an array
-    sols =  map(
+    sols = map(
         rg -> begin
             newprob = remake(
                     prob;
                     p=p,
                     tspan=(tsteps[first(rg)], tsteps[last(rg)]),
-                    );
+                    )
             function prob_func(prob, i, repeat)
                 remake(prob, u0 = ode_data[:, first(rg), i])
             end
-            newensembleprob = EnsembleProblem(newprob, 
-                                            prob_func, 
+            newensembleprob = EnsembleProblem(newprob,
+                                            prob_func,
                                             ensembleprob.output_func,
                                             ensembleprob.reduction,
                                             ensembleprob.u_init,
@@ -267,7 +267,7 @@ function multiple_shoot(
         continuity_term,
         kwargs...
     )
-    
+
 end
 
 """
@@ -304,7 +304,7 @@ end
 
 # Default ontinuity loss between last state in previous prediction
 # and current initial condition in ode_data
-function _default_continuity_loss(û_end::AbstractArray, 
+function _default_continuity_loss(û_end::AbstractArray,
                                   u_0::AbstractArray)
     return sum(abs, û_end - u_0)
 end

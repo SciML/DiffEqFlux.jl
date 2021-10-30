@@ -1,7 +1,7 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux, MLDataUtils, NNlib
+using DiffEqFlux, CUDA, MLDataUtils, NNlib, OrdinaryDiffEq, Test
 using Flux.Losses: logitcrossentropy
 using MLDatasets: MNIST
-using CUDA, Test
+
 CUDA.allowscalar(false)
 
 function loadmnist(batchsize = bs)
@@ -9,7 +9,7 @@ function loadmnist(batchsize = bs)
   	onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
 	# Load MNIST
 	MNIST.download(i_accept_the_terms_of_use=true)
-	imgs, labels_raw = MNIST.traindata();
+	imgs, labels_raw = MNIST.traindata()
 	# Process images into (H,W,C,BS) batches
 	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |> gpu
 	x_train = batchview(x_train,batchsize)
@@ -27,38 +27,38 @@ down = Chain(x->reshape(x,(28*28,:)),
              Dense(784,20,tanh)
             ) |> gpu
 nfe = 0
-nn  = Chain(
+nn = Chain(
            Dense(20,10,tanh),
            Dense(10,10,tanh),
            Dense(10,20,tanh)
           ) |> gpu
-fc  = Chain( Dense(20,10) ) |> gpu
+fc = Chain(Dense(20,10)) |> gpu
 
-nn_ode = NeuralODE( nn, (0.f0, 1.f0), Tsit5(),
+nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                         save_everystep = false,
                         reltol = 1e-3, abstol = 1e-3,
-                        save_start = false ) |> gpu
+                        save_start = false) |> gpu
 
 """
-    DiffEqArray_to_Array( x )
+    DiffEqArray_to_Array(x)
 
 Cheap conversion of a `DiffEqArray` instance to a Matrix.
 """
-function DiffEqArray_to_Array( x )
-    xarr = gpu( x )
-    return reshape( xarr, size(xarr)[1:2] )
+function DiffEqArray_to_Array(x)
+    xarr = gpu(x)
+    return reshape(xarr, size(xarr)[1:2])
 end
 
 #Build our over-all model topology
-m        = Chain(down,
-                 nn_ode,
-                 DiffEqArray_to_Array,
-                 fc ) |> gpu
+m = Chain(down,
+    nn_ode,
+    DiffEqArray_to_Array,
+    fc) |> gpu
 #We can also build the model topology without a NN-ODE
-m_no_ode = Chain( down, nn, fc) |> gpu
+m_no_ode = Chain(down, nn, fc) |> gpu
 
 #To understand the intermediate NN-ODE layer, we can examine it's dimensionality
-x_d = down( x_train[1] )
+x_d = down(x_train[1])
 
 # We can see that we can compute the forward pass through the NN topology featuring an NNODE layer.
 x_m = m(x_train[1])
@@ -97,5 +97,5 @@ cb() = begin
 end
 
 # Train the NN-ODE and monitor the loss and weights.
-Flux.train!( loss, Flux.params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, cb = cb )
+Flux.train!(loss, Flux.params(down, nn_ode.p, fc), zip(x_train, y_train), opt, cb = cb)
 @test accuracy(m, zip(x_train,y_train)) > 0.8

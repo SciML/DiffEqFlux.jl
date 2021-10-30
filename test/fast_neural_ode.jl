@@ -1,4 +1,4 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux, Zygote, Test
+using DiffEqFlux, BenchmarkTools, OrdinaryDiffEq, Test
 
 u0 = Float32[2.; 0.]
 datasize = 30
@@ -66,9 +66,6 @@ _p,re = Flux.destructure(dudt2)
 @test Zygote.gradient((p)->fast_loss_n_ode(p)[1], p)[1] ≈ Zygote.gradient((p)->loss_n_ode(p)[1], p)[1] rtol=1e-3
 @test Zygote.gradient((p)->static_loss_n_ode(p)[1], p)[1] ≈ Zygote.gradient((p)->loss_n_ode(p)[1], p)[1] rtol=1e-3
 
-#=
-using BenchmarkTools
-@btime Zygote.gradient((p)->static_loss_n_ode(p)[1], p)
-@btime Zygote.gradient((p)->fast_loss_n_ode(p)[1], p)
-@btime Zygote.gradient((p)->loss_n_ode(p)[1], p)
-=#
+# @btime Zygote.gradient((p)->static_loss_n_ode(p)[1], p)
+# @btime Zygote.gradient((p)->fast_loss_n_ode(p)[1], p)
+# @btime Zygote.gradient((p)->loss_n_ode(p)[1], p)

@@ -21,8 +21,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
         with:
-          version: 1
-          coverage: false
+          version: '1'
       - uses: actions/cache@v1
         env:
           cache-name: cache-artifacts
@@ -35,6 +34,8 @@ jobs:
             ${{ runner.os }}-
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+        with:
+          coverage: false
         env:
           GROUP: ${{ matrix.group }}
       - uses: julia-actions/julia-processcoverage@v1

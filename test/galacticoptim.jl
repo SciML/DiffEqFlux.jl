@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim,  DiffEqSensitivity, OrdinaryDiffEq, Zygote, NLopt, Test #using Plots
+using DiffEqFlux, GalacticOptim, NLopt, OrdinaryDiffEq, Test # , Plots
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -62,7 +62,7 @@ grads = Zygote.gradient(loss_fd, p)
 opt = ADAM(0.1)
 cb = function (p,l)
   display(l)
-  #display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
+  # display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
   false
 end
 
@@ -93,7 +93,7 @@ grads = Zygote.gradient(loss_adjoint, p)
 opt = ADAM(0.1)
 cb = function (p,l)
   display(l)
-  #display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
+  # display(plot(solve(remake(prob,p=p),Tsit5(),saveat=0.1),ylim=(0,6)))
   false
 end
 

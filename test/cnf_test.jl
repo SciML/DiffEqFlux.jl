@@ -1,14 +1,5 @@
-println("Starting precompilation")
-using OrdinaryDiffEq
-using Flux, DiffEqFlux, GalacticOptim
-using Test
-using Distributions
-using Distances
-using Zygote
-using DistributionsAD
-using LinearAlgebra
-using Random
-println("Starting tests")
+using DiffEqFlux, Distances, Distributions, DistributionsAD, GalacticOptim,
+    LinearAlgebra, OrdinaryDiffEq, Random, Test
 
 Random.seed!(1999)
 
@@ -225,6 +216,7 @@ end
     actual_pdf = pdf.(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
 
+    @test ffjord_mdl.p != res.u
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.35
 end
 @testset "Test for alternative base distribution and deterministic trace FFJORD" begin
@@ -252,6 +244,7 @@ end
     actual_pdf = pdf.(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
 
+    @test 0.01f0 * ffjord_mdl.p != res.u
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
 end
 @testset "Test for multivariate distribution and deterministic trace FFJORD" begin
@@ -280,9 +273,9 @@ end
     actual_pdf = pdf(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
 
+    @test 0.01f0 * ffjord_mdl.p != res.u
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
 end
-#= enable this test after smoke test for "regularize=true & monte_carlo=false" get passed
 @testset "Test for default multivariate distribution and FFJORD with regularizers" begin
     nn = Chain(
         Dense(2, 2, tanh),
@@ -290,7 +283,7 @@ end
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
     regularize = true
-    monte_carlo = false
+    monte_carlo = true
 
     μ = ones(Float32, 2)
     Σ = Diagonal([7.0f0, 7.0f0])
@@ -300,7 +293,7 @@ end
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-        -mean(@. logpx + 0.1 * λ₁ + λ₂)
+        mean(-logpx .+ 0.1 * λ₁ .+ 0.1 * λ₂)
     end
 
     adtype = GalacticOptim.AutoZygote()
@@ -309,6 +302,6 @@ end
     actual_pdf = pdf(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
 
+    @test 0.01f0 * ffjord_mdl.p != res.u
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.40
 end
-=#

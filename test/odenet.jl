@@ -1,6 +1,4 @@
-using DiffEqFlux, Flux, Test, OrdinaryDiffEq
-using Statistics
-#= using Plots =#
+using DiffEqFlux, OrdinaryDiffEq, Statistics, Test # , Plots
 
 ## True Solution
 u0 = [2.; 0.]
@@ -15,8 +13,8 @@ end
 true_prob = ODEProblem(trueODEfunc, u0,tspan)
 true_sol = solve(true_prob,Tsit5(),saveat=range(tspan[1],tspan[2],length=datasize))
 
-#= true_sol_plot = solve(true_prob,Tsit5()) =#
-#= plot(true_sol_plot) =#
+# true_sol_plot = solve(true_prob,Tsit5())
+# plot(true_sol_plot)
 
 ## Neural ODE
 dudt = Chain(Dense(2,50,tanh),Dense(50,2))

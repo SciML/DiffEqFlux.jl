@@ -1,4 +1,4 @@
-using DiffEqFlux, DiffEqSensitivity, Test
+using DiffEqFlux, Test
 
 u0 = Float32[2.0; 0.0]
 dudt2 = FastChain((x, p) -> x.^3,

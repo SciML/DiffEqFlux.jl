@@ -1,9 +1,11 @@
-using DiffEqFlux, Flux, GalacticOptim, OrdinaryDiffEq, Test
+using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Random, Test
 
-n = 1  # number of ODEs
+Random.seed!(100)
+
+n = 1 # number of ODEs
 tspan = (0.0, 1.0)
 
-d = 5  # number of data pairs
+d = 5 # number of data pairs
 x = rand(n, 5)
 y = rand(n, 5)
 
@@ -11,9 +13,6 @@ cb = function (p,l)
   @show l
   false
 end
-
-using Random
-Random.seed!(100)
 
 NN = Chain(Dense(n, 5n, tanh),
            Dense(5n, n))

@@ -1,5 +1,0 @@
-[deps]
-CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
-MLDataUtils = "cc2ba9b6-d476-5e6d-8eaf-a92d5412d41d"
-MLDatasets = "eb30cadb-4394-5ae3-aed4-317e484a6458"
-NNlib = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"

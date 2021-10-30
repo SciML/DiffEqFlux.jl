@@ -1,4 +1,5 @@
-using Flux, DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Test
+using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Test
+
 #A desired MWE for now, not a test yet.
 function f(du,u,p,t)
     y₁,y₂,y₃ = u

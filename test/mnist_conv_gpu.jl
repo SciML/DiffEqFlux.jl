@@ -1,9 +1,8 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux, Printf
+using DiffEqFlux, CUDA, MLDatasets, OrdinaryDiffEq, Printf, Test
 using Flux.Losses: logitcrossentropy
 using Flux.Data: DataLoader
-using MLDatasets
-using MLDataUtils:  LabelEnc, convertlabel, stratifiedobs
-using CUDA
+using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
+
 CUDA.allowscalar(false)
 
 function loadmnist(batchsize = bs, train_split = 0.9)
@@ -11,7 +10,7 @@ function loadmnist(batchsize = bs, train_split = 0.9)
     onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw,
                                       LabelEnc.NativeLabels(collect(0:9)))
     # Load MNIST
-    imgs, labels_raw = MNIST.traindata();
+    imgs, labels_raw = MNIST.traindata()
     # Process images into (H,W,C,BS) batches
     x_data = Float32.(reshape(imgs, size(imgs,1), size(imgs,2), 1, size(imgs,3)))
     y_data = onehot(labels_raw)
@@ -30,7 +29,7 @@ end
 # Main
 const bs = 128
 const train_split = 0.9
-train_dataloader, test_dataloader = loadmnist(bs, train_split);
+train_dataloader, test_dataloader = loadmnist(bs, train_split)
 
 down = Chain(Conv((3, 3), 1=>64, relu, stride = 1), GroupNorm(64, 64),
              Conv((4, 4), 64=>64, relu, stride = 2, pad=1), GroupNorm(64, 64),
@@ -41,7 +40,7 @@ dudt = Chain(Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
 
 fc = Chain(GroupNorm(64, 64), x -> relu.(x), MeanPool((6, 6)),
            x -> reshape(x, (64, :)), Dense(64,10)) |> gpu
-          
+
 nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
