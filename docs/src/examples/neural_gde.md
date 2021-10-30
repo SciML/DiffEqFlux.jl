@@ -4,8 +4,6 @@ This tutorial has been adapted from [here](https://github.com/yuehhua/GeometricF
 
 In this tutorial we will use Graph Differential Equations (GDEs) to perform classification on the [CORA Dataset](https://relational.fit.cvut.cz/dataset/CORA). We shall be using the Graph Neural Networks primitives from the package [GeometricFlux](https://github.com/yuehhua/GeometricFlux.jl).
 
-**NOTE**: It is recommended to run this tutorial on CPU. GCNConv uses scalar indexing which is slow on GPUs
-
 ```julia
 # Load the packages
 using GeometricFlux, JLD2, SparseArrays, DiffEqFlux, DifferentialEquations
@@ -35,7 +33,7 @@ epochs = 40
 train_X = Float32.(features)  # dim: num_features * num_nodes
 train_y = Float32.(labels)  # dim: target_catg * num_nodes
 
-adj_mat = Matrix{Float32}(adjacency_matrix(g))
+adj_mat = FeaturedGraph(Matrix{Float32}(adjacency_matrix(g)))
 
 # Define the Neural GDE
 diffeqarray_to_array(x) = reshape(cpu(x), size(x)[1:2])
