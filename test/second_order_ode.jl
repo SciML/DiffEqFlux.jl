@@ -1,4 +1,4 @@
-using OrdinaryDiffEq, Flux, DiffEqFlux, DiffEqSensitivity, Zygote, RecursiveArrayTools, GalacticOptim
+using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, RecursiveArrayTools
 
 u0 = Float32[0.; 2.]
 du0 = Float32[0.; 0.]
@@ -27,7 +27,7 @@ opt = ADAM(0.01)
 l1 = loss_n_ode(p)
 
 cb = function (p,l,pred)
-    println(l)
+    @show l
     l < 0.01 && Flux.stop()
 end
 
@@ -54,7 +54,7 @@ opt = ADAM(0.01)
 loss_n_ode(p)
 
 cb = function (p,l,pred)
-    println(l)
+    @show l
     l < 0.01 && Flux.stop()
 end
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), GalacticOptim.AutoZygote())
@@ -80,7 +80,7 @@ opt = ADAM(0.01)
 loss_n_ode(p)
 
 cb = function (p,l,pred)
-    println(l)
+    @show l
     l < 0.01 && Flux.stop()
 end
 

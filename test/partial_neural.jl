@@ -1,9 +1,4 @@
-println("Starting Precompilation")
-using Flux
-println("Starting Tests")
-using OrdinaryDiffEq, Test, DiffEqSensitivity
-println("Going to start tests!")
-using DiffEqFlux, GalacticOptim
+using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Test # , Plots
 
 x = Float32[0.8; 0.8]
 tspan = (0.0f0,10.0f0)
@@ -29,8 +24,8 @@ loss_rd(p) = sum(abs2,x-1 for x in predict_rd(p))
 l = loss_rd(θ)
 
 cb = function (θ,l)
-  println(l)
-  #display(plot(solve(remake(prob,u0=Flux.data(_x),p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  @show l
+  # display(plot(solve(remake(prob,u0=Flux.data(_x),p=Flux.data(p)),Tsit5(),saveat=0.1),ylim=(0,6)))
   false
 end
 
@@ -71,8 +66,8 @@ loss_adjoint(θ) = sum(abs2,x-1 for x in predict_adjoint(θ))
 l = loss_adjoint(θ)
 
 cb = function (θ,l)
-  println(l)
-  #display(plot(solve(remake(prob,p=Flux.data(p3),u0=Flux.data(u0)),Tsit5(),saveat=0.1),ylim=(0,6)))
+  @show l
+  # display(plot(solve(remake(prob,p=Flux.data(p3),u0=Flux.data(u0)),Tsit5(),saveat=0.1),ylim=(0,6)))
   false
 end
 

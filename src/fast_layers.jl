@@ -49,7 +49,7 @@ struct FastDense{F,F2} <: FastLayer
 end
 
 # (f::FastDense)(x,p) = f.σ.(reshape(uview(p,1:(f.out*f.in)),f.out,f.in)*x .+ uview(p,(f.out*f.in+1):lastindex(p)))
-(f::FastDense)(x,p) = ((f.bias == true ) ? (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])) : (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)))
+(f::FastDense)(x,p) = ((f.bias == true) ? (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])) : (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)))
 
 ZygoteRules.@adjoint function (f::FastDense)(x,p)
   if !isgpu(p)
@@ -60,21 +60,20 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
 
   if f.bias == true
     b = p[(f.out*f.in + 1):end]
-    r = W*x .+  b
+    r = W*x .+ b
     ifgpufree(b)
   else
     r = W*x
   end
-  #=
-  if typeof(x) <: AbstractVector
-    r = p[(f.out*f.in+1):end]
-    mul!(r,W,x,one(eltype(x)),one(eltype(x)))
-  else
-    b = @view p[(f.out*f.in+1):end]
-    r = reshape(repeat(b,outer=size(x,2)),length(b),size(x,2))
-    mul!(r,W,x,one(eltype(x)),one(eltype(x)))
-  end
-  =#
+
+  # if typeof(x) <: AbstractVector
+  #   r = p[(f.out*f.in+1):end]
+  #   mul!(r,W,x,one(eltype(x)),one(eltype(x)))
+  # else
+  #   b = @view p[(f.out*f.in+1):end]
+  #   r = reshape(repeat(b,outer=size(x,2)),length(b),size(x,2))
+  #   mul!(r,W,x,one(eltype(x)),one(eltype(x)))
+  # end
 
   y = f.σ.(r)
 
@@ -93,12 +92,13 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
         tmp = typeof(bbar) <: AbstractVector ?
                          vec(vcat(vec(Wbar),bbar)) :
                          vec(vcat(vec(Wbar),sum(bbar,dims=2)))
-        ifgpufree(bbar);
+        ifgpufree(bbar)
         tmp
     else
         vec(Wbar)
     end
-    ifgpufree(Wbar); ifgpufree(r)
+    ifgpufree(Wbar)
+    ifgpufree(r)
     nothing,xbar,pbar
   end
   y,FastDense_adjoint
@@ -125,7 +125,7 @@ struct StaticDense{out,in,bias,F,F2} <: FastLayer
   initial_params::F2
   function StaticDense(in::Integer, out::Integer, σ = identity;
                  bias::Bool = true, initW = Flux.glorot_uniform, initb = Flux.zeros32)
-    temp = ((bias == true ) ? vcat(vec(initW(out, in)),initb(out)) : vcat(vec(initW(out, in))) )
+    temp = ((bias == true) ? vcat(vec(initW(out, in)),initb(out)) : vcat(vec(initW(out, in))))
     initial_params() = temp
     new{out,in,bias,typeof(σ),typeof(initial_params)}(σ,initial_params)
   end

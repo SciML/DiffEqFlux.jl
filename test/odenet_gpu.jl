@@ -1,6 +1,4 @@
-using DiffEqFlux, Flux, Test, OrdinaryDiffEq, CUDA
-using Statistics
-#= using Plots =#
+using DiffEqFlux, CUDA, OrdinaryDiffEq, Statistics, Test # , Plots
 
 CUDA.allowscalar(false)
 
@@ -18,8 +16,8 @@ true_prob = ODEProblem(trueODEfunc, u0,tspan)
 
 true_sol = solve(true_prob,BS3(),saveat=range(tspan[1],tspan[2],length=datasize))
 
-#= true_sol_plot = solve(true_prob,Tsit5()) =#
-#= plot(true_sol_plot) =#
+# true_sol_plot = solve(true_prob,Tsit5())
+# plot(true_sol_plot)
 
 ## Neural ODE
 dudt = Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu

@@ -1,4 +1,5 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux, DiffEqCallbacks, DiffEqSensitivity
+using DiffEqFlux, DiffEqCallbacks, OrdinaryDiffEq, Test # , Plots
+
 u0 = Float32[2.; 0.]
 datasize = 100
 tspan = (0.0f0,10.5f0)
@@ -32,7 +33,7 @@ cb = PresetTimeCallback(dosetimes,affect!,save_positions=(false,false))
 function predict_n_ode()
     _prob = remake(prob,p=p)
     Array(solve(_prob,Tsit5(),u0=z0,p=p,callback=cb,saveat=t,sensealg=ReverseDiffAdjoint()))[1:2,:]
-    #Array(solve(prob,Tsit5(),u0=z0,p=p,saveat=t))[1:2,:]
+    # Array(solve(prob,Tsit5(),u0=z0,p=p,saveat=t))[1:2,:]
 end
 
 function loss_n_ode()
@@ -46,9 +47,9 @@ cba = function (;doplot=false) #callback function to observe training
   pred = predict_n_ode()
   display(sum(abs2,ode_data .- pred))
   # plot current prediction against data
-  #pl = scatter(t,ode_data[1,:],label="data")
-  #scatter!(pl,t,pred[1,:],label="prediction")
-  #display(plot(pl))
+  # pl = scatter(t,ode_data[1,:],label="data")
+  # scatter!(pl,t,pred[1,:],label="prediction")
+  # display(plot(pl))
   return false
 end
 cba()

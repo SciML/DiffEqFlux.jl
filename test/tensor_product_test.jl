@@ -1,7 +1,4 @@
-using DiffEqFlux, Flux
-using LinearAlgebra, Distributions
-using GalacticOptim
-using Test
+using DiffEqFlux, Distributions, GalacticOptim, LinearAlgebra, Test
 
 function run_test(f, layer, atol)
 

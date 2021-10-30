@@ -1,4 +1,4 @@
-using Flux, DiffEqFlux, DiffEqSensitivity, StochasticDiffEq, Zygote, Test
+using DiffEqFlux, StochasticDiffEq, Test
 
 function lotka_volterra(du,u,p,t)
   x, y = u

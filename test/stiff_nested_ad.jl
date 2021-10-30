@@ -1,4 +1,4 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux
+using DiffEqFlux, OrdinaryDiffEq, Test
 
 u0 = Float32[2.; 0.]
 datasize = 30

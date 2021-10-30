@@ -1,4 +1,5 @@
-using OrdinaryDiffEq, StochasticDiffEq, Flux, DiffEqSensitivity, DiffEqFlux, Zygote, Test, CUDA
+using DiffEqFlux, CUDA, OrdinaryDiffEq, StochasticDiffEq, Test
+
 CUDA.allowscalar(false)
 
 mp = Chain(Dense(2,2)) |> gpu
@@ -76,11 +77,10 @@ end
 NeuralDSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)(x)
 sode = NeuralDSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=Float32.(0.0:0.1:2.0),dt=1f-1)
 @test_broken grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode)) isa Tuple
-#=
+
 @test ! iszero(grads[x])
 @test ! iszero(grads[sode.p])
 
 grads = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
 @test ! iszero(grads[xs])
 @test ! iszero(grads[sode.p])
-=#
