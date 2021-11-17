@@ -62,7 +62,7 @@ integrator = Leapfrog(find_good_stepsize(h, Float64.(prob_neuralode.p)))
 
 prop = AdvancedHMC.NUTS{MultinomialTS, GeneralisedNoUTurn}(integrator)
 
-adaptor = StanHMCAdaptor(MassMatrixAdaptor(metric), StepSizeAdaptor(0.45, prop.integrator))
+adaptor = StanHMCAdaptor(MassMatrixAdaptor(metric), StepSizeAdaptor(0.45, integrator))
 
 samples, stats = sample(h, prop, Float64.(prob_neuralode.p), 500, adaptor, 500; progress=true)
 
@@ -221,7 +221,7 @@ integrator = Leapfrog(find_good_stepsize(h, Float64.(prob_neuralode.p)))
 
 prop = AdvancedHMC.NUTS{MultinomialTS, GeneralisedNoUTurn}(integrator)
 
-adaptor = StanHMCAdaptor(MassMatrixAdaptor(metric), StepSizeAdaptor(0.45, prop.integrator))
+adaptor = StanHMCAdaptor(MassMatrixAdaptor(metric), StepSizeAdaptor(0.45, integrator))
 
 samples, stats = sample(h, prop, Float64.(prob_neuralode.p), 500, adaptor, 500; progress=true)
 
