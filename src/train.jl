@@ -40,9 +40,11 @@ defined in an optimizer-dependent manner.
 
 ## Default AD Choice
 
-The current default AD choice is dependent on the number of parameters, where
-for <100 parameters ForwardDiff.jl is used, otherwise Zygote.jl is used. More
-refinements to the techniques are planned.
+The current default AD choice is dependent on the number of parameters.
+For <50 parameters both ForwardDiff.jl and Zygote.jl gradients are evaluated
+and the fastest is used. If both methods fail, finite difference method 
+is used as a fallback. For ≥50 parameters Zygote.jl is used. 
+More refinements to the techniques are planned.
 
 ## Default Optimizer Choice
 
