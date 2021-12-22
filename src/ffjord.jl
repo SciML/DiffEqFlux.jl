@@ -157,8 +157,9 @@ function jacobian_fn(f, x::AbstractMatrix)
     Zygote.@ignore fill!(z, zero(eltype(x)))
     vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
     for i in 1:size(y, 1)
-        Zygote.@ignore z[i, :] .+= one(eltype(x))
+        Zygote.@ignore z[i, :] .= one(eltype(x))
         vec[i, :, :] = back(z)[1]
+        Zygote.@ignore z[i, :] .= zero(eltype(x))
     end
     copy(vec)
 end
