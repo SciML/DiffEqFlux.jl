@@ -217,7 +217,7 @@ end
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
 
     @test ffjord_mdl.p != res.u
-    @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.35
+    @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.9
 end
 @testset "Test for alternative base distribution and deterministic trace FFJORD" begin
     nn = Chain(
