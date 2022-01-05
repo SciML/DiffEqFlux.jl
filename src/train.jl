@@ -42,8 +42,8 @@ defined in an optimizer-dependent manner.
 
 The current default AD choice is dependent on the number of parameters.
 For <50 parameters both ForwardDiff.jl and Zygote.jl gradients are evaluated
-and the fastest is used. If both methods fail, finite difference method 
-is used as a fallback. For ≥50 parameters Zygote.jl is used. 
+and the fastest is used. If both methods fail, finite difference method
+is used as a fallback. For ≥50 parameters Zygote.jl is used.
 More refinements to the techniques are planned.
 
 ## Default Optimizer Choice
@@ -98,7 +98,7 @@ function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
             error("Automatic optimizer determination requires deterministic loss functions (and no data) or maxiters must be specified.")
         end
 
-        if isempty(args) && deterministic
+        if isempty(args) && deterministic && lower_bounds === nothing && upper_bounds === nothing
             # If determinsitic then ADAM -> finish with BFGS
             if maxiters === nothing
                 res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters=300, kwargs...)
@@ -110,6 +110,9 @@ function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
                 optfunc, res1.u; lb=lower_bounds, ub=upper_bounds, kwargs...)
             res1 = GalacticOptim.solve(
                 optprob2, BFGS(initial_stepnorm=0.01), args...; maxiters, kwargs...)
+        elseif isempty(args) && deterministic
+            res1 = GalacticOptim.solve(
+                optprob, BFGS(initial_stepnorm=0.01), args...; maxiters, kwargs...)
         else
             res1 = GalacticOptim.solve(optprob, ADAM(0.1), args...; maxiters, kwargs...)
         end
