@@ -40,11 +40,25 @@ struct FastDense{F,F2} <: FastLayer
   σ::F
   initial_params::F2
   bias::Bool
+  precache::Bool
+  cs :: NamedTuple
   function FastDense(in::Integer, out::Integer, σ = identity;
-                 bias = true, initW = Flux.glorot_uniform, initb = Flux.zeros32)
+                 bias = true, precache=true, initW = Flux.glorot_uniform, initb = Flux.zeros32)
     temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
     initial_params() = temp
-    new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params,bias)
+    cs = (
+      zbar = zeros(out, 1),
+      Wbar = zeros(out, in),
+      bbar = zeros(out, 1),
+      xbar = zeros(in, 1),
+      pbar = if bias == true
+          zeros((out*in)+out)
+        else
+          zeros(out*in)
+        end
+      )
+      new{typeof(σ), typeof(initial_params)}(out,in,σ,initial_params,bias,precache,cs)
+      # new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params,bias)
   end
 end
 
@@ -78,28 +92,53 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   y = f.σ.(r)
 
   function FastDense_adjoint(ȳ)
-    if typeof(f.σ) <: typeof(tanh)
-      zbar = ȳ .* (1 .- y.^2)
-    elseif typeof(f.σ) <: typeof(identity)
-      zbar = ȳ
+    if(f.precache == true)
+      if typeof(f.σ) <: typeof(tanh)
+        f.cs.zbar = ȳ .* (1 .- y.^2)
+      elseif typeof(f.σ) <: typeof(identity)
+        f.cs.zbar = ȳ
+      else
+        f.cs.zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+      end
+      f.cs.Wbar = f.cs.zbar * x'
+      f.cs.bbar = f.cs.zbar
+      f.cs.xbar = W' * f.cs.zbar
+      f.cs.pbar = if f.bias == true
+          tmp = typeof(f.cs.bbar) <: AbstractVector ? #how to find if bbar is AbstractVector and allocate its shape and size
+                           vec(vcat(vec(f.cs.Wbar),f.cs.bbar)) :
+                           vec(vcat(vec(f.cs.Wbar),sum(f.cs.bbar,dims=2)))
+          ifgpufree(f.cs.bbar)
+          tmp
+      else
+          vec(f.cs.Wbar)
+      end
+      ifgpufree(f.cs.Wbar)
+      ifgpufree(r)
+      nothing,f.cs.xbar,f.cs.pbar
     else
-      zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+      if typeof(f.σ) <: typeof(tanh)
+        zbar = ȳ .* (1 .- y.^2)
+      elseif typeof(f.σ) <: typeof(identity)
+        zbar = ȳ
+      else
+        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+      end
+      Wbar = zbar * x'
+      bbar = zbar
+      xbar = W' * zbar
+      pbar = if f.bias == true
+          tmp = typeof(bbar) <: AbstractVector ?
+                           vec(vcat(vec(Wbar),bbar)) :
+                           vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+          ifgpufree(bbar)
+          tmp
+      else
+          vec(Wbar)
+      end
+      ifgpufree(Wbar)
+      ifgpufree(r)
+      nothing,xbar,pbar
     end
-    Wbar = zbar * x'
-    bbar = zbar
-    xbar = W' * zbar
-    pbar = if f.bias == true
-        tmp = typeof(bbar) <: AbstractVector ?
-                         vec(vcat(vec(Wbar),bbar)) :
-                         vec(vcat(vec(Wbar),sum(bbar,dims=2)))
-        ifgpufree(bbar)
-        tmp
-    else
-        vec(Wbar)
-    end
-    ifgpufree(Wbar)
-    ifgpufree(r)
-    nothing,xbar,pbar
   end
   y,FastDense_adjoint
 end
