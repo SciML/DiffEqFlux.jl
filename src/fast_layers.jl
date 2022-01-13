@@ -34,30 +34,35 @@ the layer and it defaults to true.
 Note that this function has specializations on `tanh` for a slightly faster
 adjoint with Zygote.
 """
-struct FastDense{F,F2} <: FastLayer
+struct FastDense{F,F2,C} <: FastLayer
   out::Int
   in::Int
   σ::F
   initial_params::F2
   bias::Bool
-  precache::Bool
-  cs :: NamedTuple
+  cache :: C
   function FastDense(in::Integer, out::Integer, σ = identity;
                  bias = true, precache=true, initW = Flux.glorot_uniform, initb = Flux.zeros32)
     temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
     initial_params() = temp
-    cs = (
-      zbar = zeros(out, 1),
-      Wbar = zeros(out, in),
-      bbar = zeros(out, 1),
-      xbar = zeros(in, 1),
-      pbar = if bias == true
-          zeros((out*in)+out)
-        else
-          zeros(out*in)
-        end
-      )
-      new{typeof(σ), typeof(initial_params)}(out,in,σ,initial_params,bias,precache,cs)
+    if precache == true
+      cache = (
+        y = zeros(out),
+        r = zeros(out),
+        zbar = zeros(out, 1),
+        Wbar = zeros(out, in),
+        bbar = zeros(out, 1),
+        xbar = zeros(in, 1),
+        pbar = if bias == true
+            zeros((out*in)+out)
+          else
+            zeros(out*in)
+          end
+        )
+      else
+        cache = nothing
+      end
+      new{typeof(σ), typeof(initial_params), typeof(cache)}(out,in,σ,initial_params,bias,cache)
       # new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params,bias)
   end
 end
@@ -72,12 +77,21 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     W = reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
   end
 
-  if f.bias == true
-    b = p[(f.out*f.in + 1):end]
-    r = W*x .+ b
-    ifgpufree(b)
+  if f.cache == nothing
+    if f.bias == true
+      b = p[(f.out*f.in + 1):end]
+      r = W*x .+ b
+      ifgpufree(b)
+    else
+      r = W*x
+    end
+    y = f.σ.(r)
   else
-    r = W*x
+    mul!(f.cache.r, W, x); ###alloc
+    if f.bias == true
+      f.cache.r .+= p[(f.out*f.in + 1):end]
+    end
+    f.cache.y .= f.σ.(f.cache.r)
   end
 
   # if typeof(x) <: AbstractVector
@@ -89,33 +103,8 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
   #   mul!(r,W,x,one(eltype(x)),one(eltype(x)))
   # end
 
-  y = f.σ.(r)
-
   function FastDense_adjoint(ȳ)
-    if(f.precache == true)
-      if typeof(f.σ) <: typeof(tanh)
-        f.cs.zbar = ȳ .* (1 .- y.^2)
-      elseif typeof(f.σ) <: typeof(identity)
-        f.cs.zbar = ȳ
-      else
-        f.cs.zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
-      end
-      f.cs.Wbar = f.cs.zbar * x'
-      f.cs.bbar = f.cs.zbar
-      f.cs.xbar = W' * f.cs.zbar
-      f.cs.pbar = if f.bias == true
-          tmp = typeof(f.cs.bbar) <: AbstractVector ? #how to find if bbar is AbstractVector and allocate its shape and size
-                           vec(vcat(vec(f.cs.Wbar),f.cs.bbar)) :
-                           vec(vcat(vec(f.cs.Wbar),sum(f.cs.bbar,dims=2)))
-          ifgpufree(f.cs.bbar)
-          tmp
-      else
-          vec(f.cs.Wbar)
-      end
-      ifgpufree(f.cs.Wbar)
-      ifgpufree(r)
-      nothing,f.cs.xbar,f.cs.pbar
-    else
+    if f.cache == nothing
       if typeof(f.σ) <: typeof(tanh)
         zbar = ȳ .* (1 .- y.^2)
       elseif typeof(f.σ) <: typeof(identity)
@@ -138,9 +127,35 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
       ifgpufree(Wbar)
       ifgpufree(r)
       nothing,xbar,pbar
+    else
+      if typeof(f.σ) <: typeof(tanh)
+        f.cache.zbar .= ȳ .* (1 .- f.cache.y.^2)
+      elseif typeof(f.σ) <: typeof(identity)
+        f.cache.zbar .= ȳ
+      else
+        f.cache.zbar .= ȳ .* ForwardDiff.derivative.(f.σ,f.cache.r)
+      end
+      # f.cache.Wbar .= f.cache.zbar * x'
+      mul!(f.cache.Wbar, f.cache.zbar, x');
+      f.cache.bbar .= f.cache.zbar
+      # f.cache.xbar .= W' * f.cache.zbar
+      mul!(f.cache.xbar, W', f.cache.zbar);#alloc
+      f.cache.pbar .= if f.bias == true
+          tmp = typeof(f.cache.bbar) <: AbstractVector ?
+                           vec(vcat(vec(f.cache.Wbar),f.cache.bbar)) :
+                           vec(vcat(vec(f.cache.Wbar),sum(f.cache.bbar,dims=2)))
+          tmp
+      else
+          vec(f.cache.Wbar)
+      end
+      nothing,f.cache.xbar,f.cache.pbar
     end
   end
-  y,FastDense_adjoint
+  if f.cache == nothing
+    y,FastDense_adjoint
+  else
+    f.cache.y, FastDense_adjoint
+  end
 end
 paramlength(f::FastDense) = f.out*(f.in+f.bias)
 initial_params(f::FastDense) = f.initial_params()
