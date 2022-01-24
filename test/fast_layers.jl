@@ -3,12 +3,18 @@ using DiffEqFlux, StaticArrays, Test
 fd = FastDense(2,25,tanh)
 pd = initial_params(fd)
 fd(ones(2),pd)
+fdc = FastDense(2,25,tanh,precache=true)
+fdc(ones(2),pd)
 
 f1 = FastDense(2,25,tanh)
 f2 = FastDense(25,2,tanh)
 p1 = initial_params(f1)
 p2 = initial_params(f2)
 @test FastChain(f1,f2)(ones(2),[p1;p2]) == f2(f1(ones(2),p1),p2)
+
+fc1 = FastDense(2,25,tanh,precache=true)
+fc2 = FastDense(25,2,tanh,precache=true)
+@test FastChain(fc1,fc2)(ones(2),[p1;p2]) == fc2(fc1(ones(2),p1),p2)
 
 f = FastChain(FastDense(2,25,tanh),FastDense(25,2,tanh))
 p = initial_params(f)
@@ -37,6 +43,12 @@ fdgrad = Flux.Zygote.gradient((x,p)->sum(fd(x,p)),x,pd)
 fsgrad = Flux.Zygote.gradient((x,p)->sum(fs(x,p)),x,pd)
 @test fdgrad[1] ≈ fsgrad[1]
 @test fdgrad[2] ≈ fsgrad[2] rtol=1e-5
+
+fdcgrad = Flux.Zygote.gradient((x,p)->sum(fdc(x,p)),x,pd)
+@test fdgrad[1] ≈ fdcgrad[1]
+@test fdgrad[2] ≈ fdcgrad[2] rtol=1e-5
+@allocated fdc(x, pd);
+@test @allocated fdc(x, pd) == 1024
 
 # Now test vs Zygote
 struct TestDense{F,F2} <: DiffEqFlux.FastLayer
