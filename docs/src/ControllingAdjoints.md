@@ -62,29 +62,26 @@ With each of these solvers, `autojacvec` can be utilized to choose how
 the internal vector-Jacobian products of the `f` function are computed.
 The choices are:
 
-- `ReverseDiffVJP(compile::Bool)`
-- `TrackerVJP`
-- `ZygoteVJP`
-- `nothing` (a default choice given characteristics of the types in your model)
-- `true` (Forward-mode AD Jacobian-vector products)
-- `false` (Numerical Jacobian-vector products)
+- `ReverseDiffVJP(compile::Bool)`: Usually the fastest when scalarized operations exist in the `f` function (like
+  in scientific machine learning applications like Universal Differential
+  Equations) and the boolean `compile` (i.e. `ReverseDiffVJP(true)`)
+  is the absolute fastest but requires that the `f` function of the
+  ODE/DAE/SDE/DDE has no branching. Does not support GPUs. 
 
-As a quick summary of the VJP choices, `ReverseDiffVJP` is usually the
-fastest when scalarized operations exist in the `f` function (like
-in scientific machine learning applications like Universal Differential
-Equations) and the boolean `compile` (i.e. `ReverseDiffVJP(true)`)
-is the absolute fastest but requires that the `f` function of the
-ODE/DAE/SDE/DDE has no branching. However, if the ODE/DAE/SDE/DDE
-is written with mostly vectorized functions (like neural networks and
-other layers from [Flux.jl](https://fluxml.ai/)), then `ZygoteVJP`
-tends to be the fastest VJP method. Note that `ReverseDiffVJP` does
-not support GPUs, while `TrackerAdjoint` is not as efficient but
-supports GPUs. As other vector-Jacobian product systems become available
+- `TrackerVJP`: Not as efficient as `ReverseDiffVJP`, but supports GPUs. 
+
+- `ZygoteVJP`: Tends to be the fastest VJP method if the ODE/DAE/SDE/DDE is written with mostly vectorized functions (like neural networks and
+  other layers from [Flux.jl](https://fluxml.ai/)). Bear in mind that Zygote does not allow mutation, making the solve more memory expensive and therefore slow.
+
+- `nothing`: Default choice given characteristics of the types in your model.
+- `true`: Forward-mode AD Jacobian-vector products. Should only be used on sufficiently small equations
+
+- `false`: Numerical Jacobian-vector products. Should only be used if the `f` function is not differentiable
+  (i.e. is a Fortran code).
+
+As other vector-Jacobian product systems become available
 in Julia they will be added to this system so that no user code changes
-are required to interface with these methodologies. Forward-mode AD
-should only be used on sufficiently small equations, and numerical
-autojacvecs should only be used if the `f` function is not differentiable
-(i.e. is a Fortran code).
+are required to interface with these methodologies. 
 
 ## Manual VJPs
 
