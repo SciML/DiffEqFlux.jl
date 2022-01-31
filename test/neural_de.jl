@@ -60,9 +60,9 @@ grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @info "Test some fast layers"
 
 node = NeuralODE(fastdudt,tspan,Tsit5(),save_everystep=false,save_start=false)
-grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-@test ! iszero(grads[x])
-@test ! iszero(grads[node.p])
+gradsnc = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
+@test ! iszero(gradsnc[x])
+@test ! iszero(gradsnc[node.p])
 
 grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @test ! iszero(grads[xs])
@@ -92,9 +92,11 @@ goodgrad2 = grads[node.p]
 @test goodgrad ≈ goodgrad2 # Make sure adjoint overloads are correct
 
 node = NeuralODE(fastcdudt,tspan,Tsit5(),save_everystep=false,save_start=false)
-grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-@test ! iszero(grads[x])
-@test ! iszero(grads[node.p])
+gradsc = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
+@test ! iszero(gradsc[x])
+@test ! iszero(gradsc[node.p])
+@test gradsnc[x] ≈ gradsc[x]
+@test gradsnc[node.p] ≈ gradsc[node.p] rtol=1e-12
 
 grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @test ! iszero(grads[xs])

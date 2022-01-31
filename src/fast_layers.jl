@@ -43,13 +43,14 @@ struct FastDense{F,F2,C} <: FastLayer
   initial_params::F2
   cache :: C
   bias::Bool
-  numcols::Int64
+  numcols::Int
   function FastDense(in::Integer, out::Integer, σ = identity;
                  bias = true, numcols=1, precache=false, initW = Flux.glorot_uniform, initb = Flux.zeros32)
     temp = ((bias == false) ? vcat(vec(initW(out, in))) : vcat(vec(initW(out, in)),initb(out)))
     initial_params() = temp
     if precache == true
       cache = (
+        cols = zeros(Int, 1),
         W = zeros(out, in),
         y = zeros(out, numcols),
         r = zeros(out, numcols),
@@ -71,12 +72,12 @@ struct FastDense{F,F2,C} <: FastLayer
 end
 
 # (f::FastDense)(x,p) = f.σ.(reshape(uview(p,1:(f.out*f.in)),f.out,f.in)*x .+ uview(p,(f.out*f.in+1):lastindex(p)))
-(f::FastDense)(x,p) = ((f.bias == true) ? (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])) : (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)))
+(f::FastDense)(x::AbstractVector,p) = ((f.bias == true) ? (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])) : (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)))
 
-ZygoteRules.@adjoint function (f::FastDense)(x,p)
+ZygoteRules.@adjoint function (f::FastDense)(x::AbstractVector,p)
   if typeof(f.cache) <: Nothing
     if !isgpu(p)
-      W = @view p[reshape(1:(f.out*f.in),f.out,f.in)]
+      W = @view(p[reshape(1:(f.out*f.in),f.out,f.in)])
     else
       W = reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
     end
@@ -89,29 +90,16 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
     end
     y = f.σ.(r)
   else
-    cols = length(size(x)) == 1 ? 1 : size(x)[2]
     if !isgpu(p)
-      f.cache.W .= @view p[reshape(1:(f.out*f.in),f.out,f.in)]
+      f.cache.W .= @view(p[reshape(1:(f.out*f.in),f.out,f.in)])
     else
       f.cache.W .= reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
     end
-    if f.numcols == cols
-      mul!(f.cache.r, f.cache.W, x)
-      if f.bias == true
-        f.cache.r .+= p[(f.out*f.in + 1):end]
-      end
-      f.cache.y .= f.σ.(f.cache.r)
-    else
-      r = view(f.cache.r,:,cols)
-      y = view(f.cache.y,:,cols)
-      zbar = view(f.cache.zbar,:,cols)
-      xbar = view(f.cache.xbar,:,cols)
-      mul!(r, f.cache.W, x)
-      if f.bias == true
-        r .+= p[(f.out*f.in + 1):end]
-      end
-      y .= f.σ.(r)
+    mul!(@view(f.cache.r[:,1]), f.cache.W, x)
+    if f.bias == true
+      f.cache.r[:,1] .+= @view(p[(f.out*f.in + 1):end])
     end
+    f.cache.y[:,1] .= f.σ.(@view(f.cache.r[:,1]))
   end
   function FastDense_adjoint(ȳ)
     if typeof(f.cache) <: Nothing
@@ -137,48 +125,110 @@ ZygoteRules.@adjoint function (f::FastDense)(x,p)
       ifgpufree(Wbar)
       ifgpufree(r)
       nothing,xbar,pbar
-    elseif f.numcols == cols # numcols == no. of columns in x
+    else
       if typeof(f.σ) <: typeof(tanh)
-        f.cache.zbar .= ȳ .* (1 .- f.cache.y.^2)
+        f.cache.zbar[:,1] .= ȳ .* (1 .- (@view(f.cache.y[:,1])).^2)
       elseif typeof(f.σ) <: typeof(identity)
-        f.cache.zbar .= ȳ
+        f.cache.zbar[:,1] .= ȳ
       else
-        f.cache.zbar .= ȳ .* ForwardDiff.derivative.(f.σ,f.cache.r)
+        f.cache.zbar[:,1] .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1]))
       end
-      mul!(f.cache.Wbar, f.cache.zbar, x')
-      mul!(f.cache.xbar, f.cache.W', f.cache.zbar)
+      mul!(f.cache.Wbar, @view(f.cache.zbar[:,1]), x')
+      mul!(@view(f.cache.xbar[:,1]), f.cache.W', @view(f.cache.zbar[:,1]))
       f.cache.pbar .= if f.bias == true
-          cols == 1 ? vec(vcat(vec(f.cache.Wbar),f.cache.zbar)) : # bbar = zbar
-                      vec(vcat(vec(f.cache.Wbar),sum(f.cache.zbar,dims=2)))
+        vec(vcat(vec(f.cache.Wbar),@view(f.cache.zbar[:,1])))# bbar = zbar
       else
-          vec(f.cache.Wbar)
+        vec(f.cache.Wbar)
       end
-      nothing,f.cache.xbar,f.cache.pbar
-    else # if x has less no. of cols than numcols
-      if typeof(f.σ) <: typeof(tanh)
-        zbar .= ȳ .* (1 .- y.^2)
-      elseif typeof(f.σ) <: typeof(identity)
-        zbar .= ȳ
-      else
-        zbar .= ȳ .* ForwardDiff.derivative.(f.σ,r)
-      end
-      mul!(f.cache.Wbar, zbar, x')
-      mul!(xbar, f.cache.W', zbar)
-      f.cache.pbar .= if f.bias == true
-          cols == 1 ? vec(vcat(vec(f.cache.Wbar),zbar)) :
-                     vec(vcat(vec(f.cache.Wbar),sum(zbar,dims=2)))
-      else
-          vec(f.cache.Wbar)
-      end
-      nothing,xbar,f.cache.pbar
+      nothing,@view(f.cache.xbar[:,1]),f.cache.pbar
     end
   end
-  if !(typeof(f.cache) <: Nothing) && (f.numcols == cols)
-    f.cache.y, FastDense_adjoint
+  if typeof(f.cache) <: Nothing
+    y,FastDense_adjoint
   else
-    y, FastDense_adjoint
+    @view(f.cache.y[:,1]),FastDense_adjoint
   end
 end
+
+(f::FastDense)(x::AbstractMatrix,p) = ((f.bias == true) ? (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])) : (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)))
+
+ZygoteRules.@adjoint function (f::FastDense)(x::AbstractMatrix,p)
+  if typeof(f.cache) <: Nothing
+    if !isgpu(p)
+      W = @view(p[reshape(1:(f.out*f.in),f.out,f.in)])
+    else
+      W = reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
+    end
+    if f.bias == true
+      b = p[(f.out*f.in + 1):end]
+      r = W*x .+ b
+      ifgpufree(b)
+    else
+      r = W*x
+    end
+    y = f.σ.(r)
+  else
+    if !isgpu(p)
+      f.cache.W .= @view(p[reshape(1:(f.out*f.in),f.out,f.in)])
+    else
+      f.cache.W .= reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
+    end
+    f.cache.cols[1] = size(x)[2]
+    mul!(@view(f.cache.r[:,1:f.cache.cols[1]]), f.cache.W, x)
+    if f.bias == true
+      f.cache.r[:,1:f.cache.cols[1]] .+= @view(p[(f.out*f.in + 1):end])
+    end
+    f.cache.y[:,1:f.cache.cols[1]] .= f.σ.(@view(f.cache.r[:,1:f.cache.cols[1]]))
+  end
+  function FastDense_adjoint(ȳ)
+    if typeof(f.cache) <: Nothing
+      if typeof(f.σ) <: typeof(tanh)
+        zbar = ȳ .* (1 .- y.^2)
+      elseif typeof(f.σ) <: typeof(identity)
+        zbar = ȳ
+      else
+        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+      end
+      Wbar = zbar * x'
+      bbar = zbar
+      xbar = W' * zbar
+      pbar = if f.bias == true
+          tmp = typeof(bbar) <: AbstractVector ?
+                           vec(vcat(vec(Wbar),bbar)) :
+                           vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+          ifgpufree(bbar)
+          tmp
+      else
+          vec(Wbar)
+      end
+      ifgpufree(Wbar)
+      ifgpufree(r)
+      nothing,xbar,pbar
+    else
+      if typeof(f.σ) <: typeof(tanh)
+        f.cache.zbar[:,1:f.cache.cols[1]] .= ȳ .* (1 .- @view(f.cache.y[:,1:f.cache.cols[1]]).^2)
+      elseif typeof(f.σ) <: typeof(identity)
+        f.cache.zbar[:,1:f.cache.cols[1]] .= ȳ
+      else
+        f.cache.zbar[:,1:f.cache.cols[1]] .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1:f.cache.cols[1]]))
+      end
+      mul!(f.cache.Wbar, @view(f.cache.zbar[:,1:f.cache.cols[1]]), x')
+      mul!(@view(f.cache.xbar[:,1:f.cache.cols[1]]), f.cache.W', @view(f.cache.zbar[:,1:f.cache.cols[1]]))
+      f.cache.pbar .= if f.bias == true
+        vec(vcat(vec(f.cache.Wbar),sum(@view(f.cache.zbar[:,1:f.cache.cols[1]]),dims=2)))# bbar = zbar
+      else
+        vec(f.cache.Wbar)
+      end
+      nothing,@view(f.cache.xbar[:,1:f.cache.cols[1]]),f.cache.pbar
+    end
+  end
+  if typeof(f.cache) <: Nothing
+    y,FastDense_adjoint
+  else
+    @view(f.cache.y[:,1:f.cache.cols[1]]),FastDense_adjoint
+  end
+end
+
 paramlength(f::FastDense) = f.out*(f.in+f.bias)
 initial_params(f::FastDense) = f.initial_params()
 
