@@ -48,7 +48,7 @@ fdcgrad = Flux.Zygote.gradient((x,p)->sum(fdc(x,p)),x,pd)
 @test fdgrad[1] ≈ fdcgrad[1]
 @test fdgrad[2] ≈ fdcgrad[2] rtol=1e-12
 @allocated(Zygote.pullback(fdc, x, pd))
-@test @allocated(Zygote.pullback(fdc, x, pd)) == 1840
+@test @allocated(Zygote.pullback(fdc, x, pd)) < 1450
 
 # Now test vs Zygote
 struct TestDense{F,F2} <: DiffEqFlux.FastLayer
