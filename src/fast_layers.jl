@@ -225,6 +225,8 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractMatrix,p)
   end
   if typeof(f.cache) <: Nothing
     y,FastDense_adjoint
+  elseif f.numcols == f.cache.cols[1]
+    f.cache.y,FastDense_adjoint
   else
     @view(f.cache.y[:,1:f.cache.cols[1]]),FastDense_adjoint
   end
