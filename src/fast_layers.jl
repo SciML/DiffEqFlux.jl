@@ -67,8 +67,8 @@ struct FastDense{F,F2,C} <: FastLayer
       else
         cache = nothing
       end
-      new{typeof(σ), typeof(initial_params), typeof(cache)}(out,in,σ,initial_params,cache,bias,numcols)
-      # new{typeof(σ),typeof(initial_params)}(out,in,σ,initial_params,bias)
+      _σ = NNlib.fast_act(σ)
+      new{typeof(_σ), typeof(initial_params), typeof(cache)}(out,in,_σ,initial_params,cache,bias,numcols)
   end
 end
 
@@ -106,7 +106,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractVector,p)
   end
   function FastDense_adjoint(ȳ)
     if typeof(f.cache) <: Nothing
-      if typeof(f.σ) <: typeof(tanh)
+      if typeof(f.σ) <: typeof(NNlib.tanh_fast)
         zbar = ȳ .* (1 .- y.^2)
       elseif typeof(f.σ) <: typeof(identity)
         zbar = ȳ
@@ -129,7 +129,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractVector,p)
       ifgpufree(r)
       nothing,xbar,pbar
     else
-      if typeof(f.σ) <: typeof(tanh)
+      if typeof(f.σ) <: typeof(NNlib.tanh_fast)
         @view(f.cache.zbar[:,1]) .= ȳ .* (1 .- (f.cache.yvec).^2)
       elseif typeof(f.σ) <: typeof(identity)
         @view(f.cache.zbar[:,1]) .= ȳ
@@ -185,7 +185,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractMatrix,p)
   end
   function FastDense_adjoint(ȳ)
     if typeof(f.cache) <: Nothing
-      if typeof(f.σ) <: typeof(tanh)
+      if typeof(f.σ) <: typeof(NNlib.tanh_fast)
         zbar = ȳ .* (1 .- y.^2)
       elseif typeof(f.σ) <: typeof(identity)
         zbar = ȳ
@@ -208,7 +208,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractMatrix,p)
       ifgpufree(r)
       nothing,xbar,pbar
     else
-      if typeof(f.σ) <: typeof(tanh)
+      if typeof(f.σ) <: typeof(NNlib.tanh_fast)
         @view(f.cache.zbar[:,1:f.cache.cols[1]]) .= ȳ .* (1 .- @view(f.cache.y[:,1:f.cache.cols[1]]).^2)
       elseif typeof(f.σ) <: typeof(identity)
         @view(f.cache.zbar[:,1:f.cache.cols[1]]) .= ȳ
