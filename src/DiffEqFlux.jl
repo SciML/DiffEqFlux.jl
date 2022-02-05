@@ -6,6 +6,8 @@ using Adapt, Base.Iterators, Cassette, ConsoleProgressMonitor, DataInterpolation
     Optim, Printf, ProgressLogging, Random, RecursiveArrayTools, Reexport,
     Requires, SciMLBase, StaticArrays, TerminalLoggers, Zygote, ZygoteRules
 
+import NNlib
+
 @reexport using DiffEqSensitivity
 @reexport using Flux
 @reexport using Optim
