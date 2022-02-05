@@ -98,7 +98,9 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractVector,p)
     end
     mul!(@view(f.cache.r[:,1]), f.cache.W, x)
     if f.bias == true
-      @view(f.cache.r[:,1]) .+= @view(p[(f.out*f.in + 1):end])
+      # @view(f.cache.r[:,1]) .+= @view(p[(f.out*f.in + 1):end])
+      b = @view(p[(f.out*f.in + 1):end])
+      @view(f.cache.r[:,1]) .+= b
     end
     f.cache.yvec .= f.σ.(@view(f.cache.r[:,1]))
   end

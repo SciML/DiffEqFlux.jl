@@ -45,8 +45,8 @@ fsgrad = Flux.Zygote.gradient((x,p)->sum(fs(x,p)),x,pd)
 @test fdgrad[2] ≈ fsgrad[2] rtol=1e-5
 
 fdcgrad = Flux.Zygote.gradient((x,p)->sum(fdc(x,p)),x,pd)
-@test fdgrad[1] ≈ fdcgrad[1]
-@test fdgrad[2] ≈ fdcgrad[2] rtol=1e-12
+@test fdgrad[1] ≈ fdcgrad[1] rtol=1e-12 #x above is Float64
+@test fdgrad[2] ≈ fdcgrad[2] rtol=1e-6 #Parameters are Float32
 @allocated(Zygote.pullback(fdc, x, pd))
 @test @allocated(Zygote.pullback(fdc, x, pd)) < 1450
 
