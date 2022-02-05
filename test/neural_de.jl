@@ -291,7 +291,7 @@ end
     @test_broken ! iszero(grads[node.p])
 
     node = NeuralODE(fastcdudt,tspan,Tsit5(),saveat=0.0:0.1:1.0,sensealg=TrackerAdjoint())
-    grads = Zygote.gradient(()->sum(node(x)),Flux,params(x,node))
+    grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
     @test ! iszero(grads[x])
     @test ! iszero(grads[node.p])
 
