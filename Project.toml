@@ -1,7 +1,7 @@
 name = "DiffEqFlux"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "1.44.1"
+version = "1.45.0"
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -47,7 +47,7 @@ Flux = "0.12.6"
 ForwardDiff = "0.10"
 GalacticOptim = "1, 2"
 LoggingExtras = "0.4"
-NNlib = "0.8"
+NNlib = "0.7, 0.8"
 Optim = "1"
 ProgressLogging = "0.1"
 RecursiveArrayTools = "2"
