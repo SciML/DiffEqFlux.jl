@@ -60,6 +60,6 @@ the event terminates the time evolution and several states are saved. Currently,
 the continuous adjoint sensitivities do not support multiple events per time point.
 
 All methods based on discrete sensitivity analysis via automatic differentiation,
-like `ReverseDiffAdjoint`,m`TrackerAdjoint`, or `ForwardDiffAdjoint` are the methods
+like `ReverseDiffAdjoint`, `TrackerAdjoint`, or `ForwardDiffSensitivity` are the methods
 to use (and `ReverseDiffAdjoint` is demonstrated above), are compatible with events.
 This applies to SDEs, DAEs, and DDEs as well.
