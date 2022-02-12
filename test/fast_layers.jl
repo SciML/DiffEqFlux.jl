@@ -50,6 +50,16 @@ fdcgrad = Flux.Zygote.gradient((x,p)->sum(fdc(x,p)),x,pd)
 @allocated(Zygote.pullback(fdc, x, pd))
 @test @allocated(Zygote.pullback(fdc, x, pd)) < 1450
 
+#gradient test between pre-cached layer with scalar i/p and uncached vector i/p layer
+fdsclr = FastDense(1, 2, precache=true)
+pdsc = initial_params(fdsclr)
+x1 = 2
+fdvec = FastDense(1, 2)
+x2 = [2]
+fdsclrgrad = Zygote.pullback(fdsclr, x1, pdsc)
+fdvecgrad = Zygote.pullback(fdvec, x2, pdsc)
+@test fdsclrgrad[1] ≈ fdvecgrad[1] rtol=1e-6
+
 # Now test vs Zygote
 struct TestDense{F,F2} <: DiffEqFlux.FastLayer
   out::Int
