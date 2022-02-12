@@ -143,7 +143,8 @@ ZygoteRules.@adjoint function (f::FastDense)(x::Number,p)
       else
         vec(f.cache.Wbar)
       end
-      nothing,@view(f.cache.xbar[:,1]),f.cache.pbar
+      xbar = f.cache.xbar[1,1]
+      nothing,xbar,f.cache.pbar
     end
   end
   if typeof(f.cache) <: Nothing
