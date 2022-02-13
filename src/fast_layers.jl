@@ -127,7 +127,8 @@ ZygoteRules.@adjoint function (f::FastDense)(x::Number,p)
       end
       ifgpufree(Wbar)
       ifgpufree(r)
-      nothing,xbar,pbar
+      xb = xbar[1,1]
+      nothing,xb,pbar
     else
       if typeof(f.σ) <: typeof(NNlib.tanh_fast)
         @view(f.cache.zbar[:,1]) .= ȳ .* (1 .- (f.cache.yvec).^2)
