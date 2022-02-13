@@ -72,6 +72,89 @@ struct FastDense{F,F2,C} <: FastLayer
   end
 end
 
+# To work with scalars(x::Number)
+(f::FastDense)(x::Number,p) = ((f.bias == true) ? (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])) : (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)))
+
+ZygoteRules.@adjoint function (f::FastDense)(x::Number,p)
+  if typeof(f.cache) <: Nothing
+    if !isgpu(p)
+      W = @view(p[reshape(1:(f.out*f.in),f.out,f.in)])
+    else
+      W = reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
+    end
+    if f.bias == true
+      b = p[(f.out*f.in + 1):end]
+      r = W*x .+ b
+      ifgpufree(b)
+    else
+      r = W*x
+    end
+    y = f.σ.(r)
+  else
+    if !isgpu(p)
+      f.cache.W .= @view(p[reshape(1:(f.out*f.in),f.out,f.in)])
+    else
+      f.cache.W .= reshape(@view(p[1:(f.out*f.in)]),f.out,f.in)
+    end
+    mul!(@view(f.cache.r[:,1]), f.cache.W, x)
+    if f.bias == true
+      # @view(f.cache.r[:,1]) .+= @view(p[(f.out*f.in + 1):end])
+      b = @view(p[(f.out*f.in + 1):end])
+      @view(f.cache.r[:,1]) .+= b
+    end
+    f.cache.yvec .= f.σ.(@view(f.cache.r[:,1]))
+  end
+  function FastDense_adjoint(ȳ)
+    if typeof(f.cache) <: Nothing
+      if typeof(f.σ) <: typeof(NNlib.tanh_fast)
+        zbar = ȳ .* (1 .- y.^2)
+      elseif typeof(f.σ) <: typeof(identity)
+        zbar = ȳ
+      else
+        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+      end
+      Wbar = zbar * x'
+      bbar = zbar
+      xbar = W' * zbar
+      pbar = if f.bias == true
+          tmp = typeof(bbar) <: AbstractVector ?
+                           vec(vcat(vec(Wbar),bbar)) :
+                           vec(vcat(vec(Wbar),sum(bbar,dims=2)))
+          ifgpufree(bbar)
+          tmp
+      else
+          vec(Wbar)
+      end
+      ifgpufree(Wbar)
+      ifgpufree(r)
+      xb = xbar[1,1]
+      nothing,xb,pbar
+    else
+      if typeof(f.σ) <: typeof(NNlib.tanh_fast)
+        @view(f.cache.zbar[:,1]) .= ȳ .* (1 .- (f.cache.yvec).^2)
+      elseif typeof(f.σ) <: typeof(identity)
+        @view(f.cache.zbar[:,1]) .= ȳ
+      else
+        @view(f.cache.zbar[:,1]) .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1]))
+      end
+      mul!(f.cache.Wbar, @view(f.cache.zbar[:,1]), x')
+      mul!(@view(f.cache.xbar[:,1]), f.cache.W', @view(f.cache.zbar[:,1]))
+      f.cache.pbar .= if f.bias == true
+        vec(vcat(vec(f.cache.Wbar),@view(f.cache.zbar[:,1])))# bbar = zbar
+      else
+        vec(f.cache.Wbar)
+      end
+      xbar = f.cache.xbar[1,1]
+      nothing,xbar,f.cache.pbar
+    end
+  end
+  if typeof(f.cache) <: Nothing
+    y,FastDense_adjoint
+  else
+    f.cache.yvec,FastDense_adjoint
+  end
+end
+
 # (f::FastDense)(x,p) = f.σ.(reshape(uview(p,1:(f.out*f.in)),f.out,f.in)*x .+ uview(p,(f.out*f.in+1):lastindex(p)))
 (f::FastDense)(x::AbstractVector,p) = ((f.bias == true) ? (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x .+ p[(f.out*f.in+1):end])) : (f.σ.(reshape(p[1:(f.out*f.in)],f.out,f.in)*x)))
 

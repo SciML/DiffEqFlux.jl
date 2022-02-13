@@ -50,6 +50,20 @@ fdcgrad = Flux.Zygote.gradient((x,p)->sum(fdc(x,p)),x,pd)
 @allocated(Zygote.pullback(fdc, x, pd))
 @test @allocated(Zygote.pullback(fdc, x, pd)) < 1450
 
+fdsclr = FastDense(1, 2, precache=true)
+fduc = FastDense(1, 2)
+pdsc = initial_params(fdsclr)
+x1 = 2.0
+fdvec = FastDense(1, 2)
+x2 = [2.]
+fdsclrgrad = Flux.Zygote.gradient((x,p)->sum(fdsclr(x,p)),x1,pdsc)
+fducgrad = Flux.Zygote.gradient((x,p)->sum(fduc(x,p)),x1,pdsc)
+fdvecgrad = Flux.Zygote.gradient((x,p)->sum(fdvec(x,p)),x2,pdsc)
+@test fdsclrgrad[1] ≈ fducgrad[1] rtol=1e-12
+@test fdsclrgrad[2] ≈ fducgrad[2] rtol=1e-12
+@test fdsclrgrad[1] ≈ fdvecgrad[1][1] rtol=1e-12
+@test fdsclrgrad[2] ≈ fdvecgrad[2] rtol=1e-12
+
 # Now test vs Zygote
 struct TestDense{F,F2} <: DiffEqFlux.FastLayer
   out::Int
