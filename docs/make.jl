@@ -31,6 +31,7 @@ makedocs(
         "Training Techniques" => Any[
             "examples/multiple_shooting.md",
             "examples/local_minima.md",
+            "examples/prediction_error_method.md",
             "examples/divergence.md",
             "examples/multiple_nn.md",
             "examples/data_parallel.md",
