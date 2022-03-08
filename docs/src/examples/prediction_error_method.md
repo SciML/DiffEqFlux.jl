@@ -4,6 +4,9 @@ When identifying linear systems from noisy data, the prediction-error method [^L
 Fundamentally, PEM changes the problem from minimizing a loss based on the simulation performance, to minimizing a loss based on shorter-term predictions. There are several benefits of doing so, and this example will highlight two:
 - The loss is often easier to optimize.
 - In addition to an accurate simulator, you also obtain a prediction for the system.
+- With PEM, it's possible to estimate *disturbance models*.
+
+The last point will not be illustrated in this tutorial, but we will briefly expand upon it here. Gaussian, zero-mean measurement noise is usually not very hard to handle. Disturbances that affect the state of the system may, however, cause all sorts of havoc on the estimate. Consider wind affecting an aircraft, deriving a statistical and dynamical model of the wind may be doable, but unless you measure the exact wind affecting the aircraft, making use of the model during parameter estimation is impossible. The wind is an *unmeasured load disturbance* that affects the state of the system through its own dynamics model. Using the techniques illustrated in this tutorial, it's possible to estimate the influence of the wind during the experiment that generated the data and reduce or eliminate the bias it otherwise causes in the parameter estimates. 
 
 We will start by illustrating a common problem with simulation-error minimization. Imagine a pendulum with unknown length that is to be estimated. A small error in the pendulum length causes the frequency of oscillation to change. Over sufficiently large horizon, two sinusoidal signals with different frequencies become close to orthogonal to each other. If some form of squared-error loss is used, the loss landscape will be horribly non-convex in this case, indeed, we will illustrate exactly this below.
 
