@@ -405,6 +405,40 @@ end
 paramlength(f::StaticDense{out,in,bias}) where {out,in,bias} = out*(in + bias)
 initial_params(f::StaticDense) = f.initial_params()
 
+
+"""
+Multi Scale Fourier Feature Network implemented as per the paper - https://arxiv.org/abs/2012.10047
+At a high level, it performs the following: 
+1. Seperates the network into Spatial and Time Domains
+2. Encodes Fourier Features for each Domain based on the scale parameters 
+3. Propogates through the Hidden Layers
+4. Concatenates the Fourier Features within each domain and element-wise multiplies them 
+5. Propogates through the Final Layer to get the output 
+
+``julia
+MSFFSpacetimeNetwork(in, out, nHidden, nspace, ntime, nFourierSpace, XscaleParameters, nFourierTime, TscaleParameters, σ= identity, widthHiddenInt(((2/3)*in + out)))
+```
+
+The activation function defaults to identity and the width of the hidden layer is set to 2/3 of the input size + output size as per general practice.
+nspace and ntime define the number of spatial and time input dimensions respectively.
+nFourierSpace and nFourierTime define the number of Fourier Features to be used for each domain.
+XscaleParameters and TscaleParameters define the scale parameters for each Fourier Feature respective to each domain.
+"""
+
+function MSFFSpacetimeNetwork(in::Int,out::Int, nHidden::Int, nspace::Int, ntime::Int,  nFourierSpace::Int, XscaleParameters::Vector{Float64}, nFourierTime::Int, TscaleParameters::Vector{Float64}, σ = identity, widthHidden=Int(((2/3)*in + out)))
+Wx, Wt = [randn(Float64, [1, in//2])*i for i in XscaleParameters], [randn(Float32, [1, in//2])*i for i in TscaleParameters]
+return FastChain(MSFF((nspace,out), hidden, Wx, activationFunction, widthHidden) * MSFF((ntime,out), hidden, Wt, activationFunction, widthHidden) , FastDense(widthHidden, out))
+end
+
+function MSFFNetwork(in::Int, out::Int, nHidden::Int, W::Vector{Float32}, activationFunction=tanh, widthHidden=Int((((2/3)*in + out))))
+return [FourierFeatureNetwork((in,out), hidden, activationFunction, widthHidden, i) for i in W]
+end
+
+function FourierFeatureNetwork(in::Int ,out::Int, nHidden::Int, widthHidden::Int, σ = identity, W=randn(Float32, [1, in//2]))
+return  FastChain(x-> [sin(x*W) cos(x*W)], Maxout(() -> FastDense(in, widthHidden , activationFunction), nHidden))
+end
+
+
 # Override FastDense to exclude the branch from the check
 function Cassette.overdub(ctx::DiffEqSensitivity.HasBranchingCtx, f::FastDense, x, p)
     y = reshape(p[1:(f.out*f.in)],f.out,f.in)*x
