@@ -67,7 +67,7 @@ function (n::NeuralODE)(x,p=n.p)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,getfield(n,:tspan),p)
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sense=sense,n.kwargs...)
+    solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
 function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
