@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Test # , Plots
+using DiffEqFlux, GalacticOptim, GalacticFlux, GalacticOptimJL, OrdinaryDiffEq, Test # , Plots
 
 x = Float32[0.8; 0.8]
 tspan = (0.0f0,10.0f0)

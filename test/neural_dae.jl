@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim, OrdinaryDiffEq
+using DiffEqFlux, GalacticOptim, GalacticOptimJL, OrdinaryDiffEq
 
 #A desired MWE for now, not a test yet.
 

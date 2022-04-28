@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Test
+using DiffEqFlux, GalacticOptim, GalacticOptimJL, OrdinaryDiffEq, Test
 
 #A desired MWE for now, not a test yet.
 function f(du,u,p,t)

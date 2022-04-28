@@ -1,4 +1,5 @@
-using DiffEqFlux, GalacticOptim, NLopt, OrdinaryDiffEq, Test # , Plots
+using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Test # , Plots
+using GalacticOptimJL, GalacticFlux, GalacticNLopt
 
 function lotka_volterra(du,u,p,t)
   x, y = u
