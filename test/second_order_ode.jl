@@ -1,4 +1,5 @@
-using DiffEqFlux, GalacticOptim, GalacticFlux, OrdinaryDiffEq, RecursiveArrayTools
+using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, RecursiveArrayTools
+
 
 u0 = Float32[0.; 2.]
 du0 = Float32[0.; 0.]
