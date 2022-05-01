@@ -1,4 +1,5 @@
-using DiffEqFlux, GalacticOptim, GalacticOptimJL, OrdinaryDiffEq, Random, Test
+using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Random, Test
+
 
 Random.seed!(100)
 
