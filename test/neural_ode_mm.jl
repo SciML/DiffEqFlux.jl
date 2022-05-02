@@ -41,5 +41,5 @@ end
 l1 = first(loss(ndae.p))
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, ndae.p)
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.001), cb = cb, maxiters = 100)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.001), callback = cb, maxiters = 100)
 @test res.minimum < l1
