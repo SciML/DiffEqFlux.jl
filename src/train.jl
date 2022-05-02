@@ -6,7 +6,7 @@
 ```julia
 function sciml_train(loss, _θ, opt = DEFAULT_OPT, adtype = DEFAULT_AD,
                      _data = DEFAULT_DATA, args...;
-                     cb = (args...) -> false, maxiters = get_maxiters(data),
+                     callback = (args...) -> false, maxiters = get_maxiters(data),
                      kwargs...)
 ```
 
@@ -16,7 +16,7 @@ function sciml_train(loss, _θ, opt = DEFAULT_OPT, adtype = DEFAULT_AD,
 function sciml_train(loss, θ, opt = DEFAULT_OPT, adtype = DEFAULT_AD,
                      data = DEFAULT_DATA, args...;
                      lower_bounds, upper_bounds,
-                     cb = (args...) -> (false), maxiters = get_maxiters(data),
+                     callback = (args...) -> (false), maxiters = get_maxiters(data),
                      kwargs...)
 ```
 
@@ -32,7 +32,7 @@ arguments can be used from here.
 Loss functions in `sciml_train` treat the first returned value as the return.
 For example, if one returns `(1.0, [2.0])`, then the value the optimizer will
 see is `1.0`. The other values are passed to the callback function. The callback
-function is `cb(p, args...)` where the arguments are the extra returns from the
+function is `callback(p, args...)` where the arguments are the extra returns from the
 loss. This allows for reusing instead of recalculating. The callback function
 must return a boolean where if `true`, then the optimizer will prematurely end
 the optimization. It is called after every successful step, something that is
@@ -53,7 +53,7 @@ ADAM -> BFGS is used, otherwise ADAM is used (and a choice of maxiters is requir
 """
 function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
                      lower_bounds=nothing, upper_bounds=nothing,
-                     cb = (args...) -> (false),
+                     callback = (args...) -> (false),
                      maxiters=nothing, kwargs...)
     if adtype === nothing
         if length(θ) < 50
@@ -89,9 +89,9 @@ function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
     optprob = GalacticOptim.OptimizationProblem(optfunc, θ; lb=lower_bounds, ub=upper_bounds, kwargs...)
     if opt !== nothing
         if maxiters !== nothing
-            GalacticOptim.solve(optprob, opt, args...; maxiters, callback = cb, kwargs...)
+            GalacticOptim.solve(optprob, opt, args...; maxiters, callback = callback, kwargs...)
         else
-            GalacticOptim.solve(optprob, opt, args...; callback = cb, kwargs...)
+            GalacticOptim.solve(optprob, opt, args...; callback = callback, kwargs...)
         end
     else
         deterministic = first(loss(θ)) == first(loss(θ))
@@ -102,20 +102,20 @@ function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
         if isempty(args) && deterministic && lower_bounds === nothing && upper_bounds === nothing
             # If determinsitic then ADAM -> finish with BFGS
             if maxiters === nothing
-                res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters=300, callback = cb, kwargs...)
+                res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters=300, callback = callback, kwargs...)
             else
-                res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters, callback = cb, kwargs...)
+                res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters, callback = callback, kwargs...)
             end
 
             optprob2 = GalacticOptim.OptimizationProblem(
-                optfunc, res1.u; lb=lower_bounds, ub=upper_bounds, callback = cb, kwargs...)
+                optfunc, res1.u; lb=lower_bounds, ub=upper_bounds, callback = callback, kwargs...)
             res1 = GalacticOptim.solve(
-                optprob2, BFGS(initial_stepnorm=0.01), args...; maxiters, callback = cb, kwargs...)
+                optprob2, BFGS(initial_stepnorm=0.01), args...; maxiters, callback = callback, kwargs...)
         elseif isempty(args) && deterministic
             res1 = GalacticOptim.solve(
-                optprob, BFGS(initial_stepnorm=0.01), args...; maxiters, callback = cb, kwargs...)
+                optprob, BFGS(initial_stepnorm=0.01), args...; maxiters, callback = callback, kwargs...)
         else
-            res1 = GalacticOptim.solve(optprob, ADAM(0.1), args...; maxiters, callback = cb, kwargs...)
+            res1 = GalacticOptim.solve(optprob, ADAM(0.1), args...; maxiters, callback = callback, kwargs...)
         end
     end
 end

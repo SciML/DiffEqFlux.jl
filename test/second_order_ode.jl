@@ -27,14 +27,14 @@ opt = ADAM(0.01)
 
 l1 = loss_n_ode(p)
 
-cb = function (p,l,pred)
+callback = function (p,l,pred)
     @show l
     l < 0.01 && Flux.stop()
 end
 
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
-res = GalacticOptim.solve(optprob, opt, cb=cb, maxiters = 100)
+res = GalacticOptim.solve(optprob, opt, callback=callback, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
@@ -54,13 +54,13 @@ opt = ADAM(0.01)
 
 loss_n_ode(p)
 
-cb = function (p,l,pred)
+callback = function (p,l,pred)
     @show l
     l < 0.01 && Flux.stop()
 end
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
-res = GalacticOptim.solve(optprob, opt, cb=cb, maxiters = 100)
+res = GalacticOptim.solve(optprob, opt, callback=callback, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
@@ -80,13 +80,13 @@ opt = ADAM(0.01)
 
 loss_n_ode(p)
 
-cb = function (p,l,pred)
+callback = function (p,l,pred)
     @show l
     l < 0.01 && Flux.stop()
 end
 
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, p)
-res = GalacticOptim.solve(optprob, opt, cb=cb, maxiters = 100)
+res = GalacticOptim.solve(optprob, opt, callback=callback, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1

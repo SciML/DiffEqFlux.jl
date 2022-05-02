@@ -11,17 +11,17 @@ function run_test(f, layer, atol)
         return loss
     end
 
-    function cb(p,l)
+    function callback(p,l)
         @show l
         return false
     end
 
     optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), GalacticOptim.AutoZygote())
     optprob = GalacticOptim.OptimizationProblem(optfunc, layer.saved_points)
-    res = GalacticOptim.solve(optprob, ADAM(0.1), cb=cb, maxiters = 100)
+    res = GalacticOptim.solve(optprob, ADAM(0.1), callback=callback, maxiters = 100)
 
     optprob = GalacticOptim.OptimizationProblem(optfunc, res.minimizer)
-    res = GalacticOptim.solve(optprob, ADAM(0.1), cb=cb, maxiters = 100)
+    res = GalacticOptim.solve(optprob, ADAM(0.1), callback=callback, maxiters = 100)
     opt = res.minimizer
 
     data_validate_vals = rand(100)
