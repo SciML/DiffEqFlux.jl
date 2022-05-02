@@ -36,7 +36,7 @@ cb(θ,l)
 loss1 = loss_rd(θ)
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, θ)
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb)
 loss2 = res.minimum
 @test 3loss2 < loss1
 
