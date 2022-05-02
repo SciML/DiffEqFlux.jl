@@ -53,6 +53,7 @@ ADAM -> BFGS is used, otherwise ADAM is used (and a choice of maxiters is requir
 """
 function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
                      lower_bounds=nothing, upper_bounds=nothing,
+                     cb = nothing,
                      maxiters=nothing, kwargs...)
     if adtype === nothing
         if length(θ) < 50
@@ -88,9 +89,9 @@ function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
     optprob = GalacticOptim.OptimizationProblem(optfunc, θ; lb=lower_bounds, ub=upper_bounds, kwargs...)
     if opt !== nothing
         if maxiters !== nothing
-            GalacticOptim.solve(optprob, opt, args...; maxiters, kwargs...)
+            GalacticOptim.solve(optprob, opt, args...; maxiters, callback = cb, kwargs...)
         else
-            GalacticOptim.solve(optprob, opt, args...; kwargs...)
+            GalacticOptim.solve(optprob, opt, args...; callback = cb, kwargs...)
         end
     else
         deterministic = first(loss(θ)) == first(loss(θ))
@@ -101,20 +102,20 @@ function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
         if isempty(args) && deterministic && lower_bounds === nothing && upper_bounds === nothing
             # If determinsitic then ADAM -> finish with BFGS
             if maxiters === nothing
-                res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters=300, kwargs...)
+                res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters=300, callback = cb, kwargs...)
             else
-                res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters, kwargs...)
+                res1 = GalacticOptim.solve(optprob, ADAM(0.01), args...; maxiters, callback = cb, kwargs...)
             end
 
             optprob2 = GalacticOptim.OptimizationProblem(
-                optfunc, res1.u; lb=lower_bounds, ub=upper_bounds, kwargs...)
+                optfunc, res1.u; lb=lower_bounds, ub=upper_bounds, callback = cb, kwargs...)
             res1 = GalacticOptim.solve(
-                optprob2, BFGS(initial_stepnorm=0.01), args...; maxiters, kwargs...)
+                optprob2, BFGS(initial_stepnorm=0.01), args...; maxiters, callback = cb, kwargs...)
         elseif isempty(args) && deterministic
             res1 = GalacticOptim.solve(
-                optprob, BFGS(initial_stepnorm=0.01), args...; maxiters, kwargs...)
+                optprob, BFGS(initial_stepnorm=0.01), args...; maxiters, callback = cb, kwargs...)
         else
-            res1 = GalacticOptim.solve(optprob, ADAM(0.1), args...; maxiters, kwargs...)
+            res1 = GalacticOptim.solve(optprob, ADAM(0.1), args...; maxiters, callback = cb, kwargs...)
         end
     end
 end
