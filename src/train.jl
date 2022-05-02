@@ -53,7 +53,7 @@ ADAM -> BFGS is used, otherwise ADAM is used (and a choice of maxiters is requir
 """
 function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
                      lower_bounds=nothing, upper_bounds=nothing,
-                     cb = nothing,
+                     cb = (args...) -> (false),
                      maxiters=nothing, kwargs...)
     if adtype === nothing
         if length(θ) < 50
