@@ -24,7 +24,7 @@ nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
 l1 = loss_function(nODE.p)
 
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 100, callback=cb)
+res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), GalacticOptim.AutoZygote(), maxiters=100, cb=cb) #ensure backwards compatibility of `cb`
 @test loss_function(res.minimizer) < l1
 res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), GalacticOptim.AutoZygote(), maxiters = 100, callback=cb)
 @test loss_function(res.minimizer) < l1
