@@ -52,7 +52,7 @@ By default, if the loss function is deterministic than an optimizer chain of
 ADAM -> BFGS is used, otherwise ADAM is used (and a choice of maxiters is required).
 """
 function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
-                     lower_bounds=nothing, upper_bounds=nothing,
+                     lower_bounds=nothing, upper_bounds=nothing, cb = nothing,
                      callback = (args...) -> (false),
                      maxiters=nothing, kwargs...)
     if adtype === nothing
@@ -83,7 +83,10 @@ function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
             adtype = GalacticOptim.AutoZygote()
         end
     end
-
+    if !isnothing(cb)
+      callback = cb
+    end
+  
     optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
     optfunc = GalacticOptim.instantiate_function(optf, θ, adtype, nothing)
     optprob = GalacticOptim.OptimizationProblem(optfunc, θ; lb=lower_bounds, ub=upper_bounds, kwargs...)
