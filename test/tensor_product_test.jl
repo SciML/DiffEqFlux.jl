@@ -18,11 +18,11 @@ function run_test(f, layer, atol)
 
     optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), GalacticOptim.AutoZygote())
     optprob = GalacticOptim.OptimizationProblem(optfunc, layer.p)
-    res = GalacticOptim.solve(optprob, ADAM(0.1), cb=cb, maxiters = 100)
+    res = GalacticOptim.solve(optprob, ADAM(0.1), callback=cb, maxiters = 100)
     optprob = GalacticOptim.OptimizationProblem(optfunc, res.minimizer)
-    res = GalacticOptim.solve(optprob, ADAM(0.01), cb=cb, maxiters = 100)
+    res = GalacticOptim.solve(optprob, ADAM(0.01), callback=cb, maxiters = 100)
     optprob = GalacticOptim.OptimizationProblem(optfunc, res.minimizer)
-    res = GalacticOptim.solve(optprob, BFGS(), cb=cb, maxiters = 200)
+    res = GalacticOptim.solve(optprob, BFGS(), callback=cb, maxiters = 200)
     opt = res.minimizer
 
     data_validate_vals = [rand(length(layer.model)) for k in 1:100]

@@ -1,5 +1,6 @@
 using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Test # , Plots
 
+
 x = Float32[0.8; 0.8]
 tspan = (0.0f0,10.0f0)
 
@@ -35,7 +36,7 @@ cb(θ,l)
 loss1 = loss_rd(θ)
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, θ)
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb)
 loss2 = res.minimum
 @test 3loss2 < loss1
 
@@ -77,9 +78,9 @@ cb(θ,l)
 loss1 = loss_adjoint(θ)
 optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), GalacticOptim.AutoZygote())
 optprob = GalacticOptim.OptimizationProblem(optfunc, θ)
-res1 = GalacticOptim.solve(optprob, ADAM(0.01), cb = cb, maxiters = 100)
+res1 = GalacticOptim.solve(optprob, ADAM(0.01), callback = cb, maxiters = 100)
 
 optprob = GalacticOptim.OptimizationProblem(optfunc, res1.minimizer)
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), cb = cb)
+res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb)
 loss2 = res.minimum
 @test 3loss2 < loss1
