@@ -1,8 +1,7 @@
 abstract type FastLayer <: Function end
 
 paramlength(f) = 0
-initial_params(f) = Float32[]
-initial_params(f::Chain) = Flux.destructure(f)[1]
+initial_params(f) = Flux.destructure(f)[1]
 
 struct FastChain{T<:Tuple} <: FastLayer
   layers::T
@@ -104,14 +103,14 @@ ZygoteRules.@adjoint function (f::FastDense)(x::Number,p)
     end
     f.cache.yvec .= f.σ.(@view(f.cache.r[:,1]))
   end
-  function FastDense_adjoint(ȳ)
+  function FastDense_adjoint(ȳ)
     if typeof(f.cache) <: Nothing
       if typeof(f.σ) <: typeof(NNlib.tanh_fast)
-        zbar = ȳ .* (1 .- y.^2)
+        zbar = ȳ .* (1 .- y.^2)
       elseif typeof(f.σ) <: typeof(identity)
-        zbar = ȳ
+        zbar = ȳ
       else
-        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
       end
       Wbar = zbar * x'
       bbar = zbar
@@ -131,11 +130,11 @@ ZygoteRules.@adjoint function (f::FastDense)(x::Number,p)
       nothing,xb,pbar
     else
       if typeof(f.σ) <: typeof(NNlib.tanh_fast)
-        @view(f.cache.zbar[:,1]) .= ȳ .* (1 .- (f.cache.yvec).^2)
+        @view(f.cache.zbar[:,1]) .= ȳ .* (1 .- (f.cache.yvec).^2)
       elseif typeof(f.σ) <: typeof(identity)
-        @view(f.cache.zbar[:,1]) .= ȳ
+        @view(f.cache.zbar[:,1]) .= ȳ
       else
-        @view(f.cache.zbar[:,1]) .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1]))
+        @view(f.cache.zbar[:,1]) .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1]))
       end
       mul!(f.cache.Wbar, @view(f.cache.zbar[:,1]), x')
       mul!(@view(f.cache.xbar[:,1]), f.cache.W', @view(f.cache.zbar[:,1]))
@@ -187,14 +186,14 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractVector,p)
     end
     f.cache.yvec .= f.σ.(@view(f.cache.r[:,1]))
   end
-  function FastDense_adjoint(ȳ)
+  function FastDense_adjoint(ȳ)
     if typeof(f.cache) <: Nothing
       if typeof(f.σ) <: typeof(NNlib.tanh_fast)
-        zbar = ȳ .* (1 .- y.^2)
+        zbar = ȳ .* (1 .- y.^2)
       elseif typeof(f.σ) <: typeof(identity)
-        zbar = ȳ
+        zbar = ȳ
       else
-        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
       end
       Wbar = zbar * x'
       bbar = zbar
@@ -213,11 +212,11 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractVector,p)
       nothing,xbar,pbar
     else
       if typeof(f.σ) <: typeof(NNlib.tanh_fast)
-        @view(f.cache.zbar[:,1]) .= ȳ .* (1 .- (f.cache.yvec).^2)
+        @view(f.cache.zbar[:,1]) .= ȳ .* (1 .- (f.cache.yvec).^2)
       elseif typeof(f.σ) <: typeof(identity)
-        @view(f.cache.zbar[:,1]) .= ȳ
+        @view(f.cache.zbar[:,1]) .= ȳ
       else
-        @view(f.cache.zbar[:,1]) .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1]))
+        @view(f.cache.zbar[:,1]) .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1]))
       end
       mul!(f.cache.Wbar, @view(f.cache.zbar[:,1]), x')
       mul!(@view(f.cache.xbar[:,1]), f.cache.W', @view(f.cache.zbar[:,1]))
@@ -266,14 +265,14 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractMatrix,p)
     end
     @view(f.cache.y[:,1:f.cache.cols[1]]) .= f.σ.(@view(f.cache.r[:,1:f.cache.cols[1]]))
   end
-  function FastDense_adjoint(ȳ)
+  function FastDense_adjoint(ȳ)
     if typeof(f.cache) <: Nothing
       if typeof(f.σ) <: typeof(NNlib.tanh_fast)
-        zbar = ȳ .* (1 .- y.^2)
+        zbar = ȳ .* (1 .- y.^2)
       elseif typeof(f.σ) <: typeof(identity)
-        zbar = ȳ
+        zbar = ȳ
       else
-        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
+        zbar = ȳ .* ForwardDiff.derivative.(f.σ,r)
       end
       Wbar = zbar * x'
       bbar = zbar
@@ -292,11 +291,11 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractMatrix,p)
       nothing,xbar,pbar
     else
       if typeof(f.σ) <: typeof(NNlib.tanh_fast)
-        @view(f.cache.zbar[:,1:f.cache.cols[1]]) .= ȳ .* (1 .- @view(f.cache.y[:,1:f.cache.cols[1]]).^2)
+        @view(f.cache.zbar[:,1:f.cache.cols[1]]) .= ȳ .* (1 .- @view(f.cache.y[:,1:f.cache.cols[1]]).^2)
       elseif typeof(f.σ) <: typeof(identity)
-        @view(f.cache.zbar[:,1:f.cache.cols[1]]) .= ȳ
+        @view(f.cache.zbar[:,1:f.cache.cols[1]]) .= ȳ
       else
-        @view(f.cache.zbar[:,1:f.cache.cols[1]]) .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1:f.cache.cols[1]]))
+        @view(f.cache.zbar[:,1:f.cache.cols[1]]) .= ȳ .* ForwardDiff.derivative.(f.σ, @view(f.cache.r[:,1:f.cache.cols[1]]))
       end
       mul!(f.cache.Wbar, @view(f.cache.zbar[:,1:f.cache.cols[1]]), x')
       mul!(@view(f.cache.xbar[:,1:f.cache.cols[1]]), f.cache.W', @view(f.cache.zbar[:,1:f.cache.cols[1]]))
@@ -375,16 +374,16 @@ ZygoteRules.@adjoint function (f::StaticDense{out,in,bias})(x,p) where {out,in,b
     r = W*x
   end
   y = f.σ.(r)
-  function StaticDense_adjoint(ȳ)
+  function StaticDense_adjoint(ȳ)
     if typeof(f.σ) <: typeof(tanh)
       σbar = 1 .- y.^2
     else
       σbar = ForwardDiff.derivative.(f.σ,r)
     end
-    if typeof(ȳ) <: AbstractMatrix
+    if typeof(ȳ) <: AbstractMatrix
       error("StaticDense only supports vector data")
     end
-    zbar = SVector{out}(ȳ) .* σbar
+    zbar = SVector{out}(ȳ) .* σbar
     Wbar = zbar * SVector{in}(x)'
     bbar = zbar
     xbar = W' * zbar
