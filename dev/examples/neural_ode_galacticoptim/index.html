@@ -46,21 +46,19 @@ end
 
 # use GalacticOptim.jl to solve the problem
 adtype = GalacticOptim.AutoZygote()
-
 optf = GalacticOptim.OptimizationFunction((x, p) -&gt; loss_neuralode(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
+optprob = GalacticOptim.OptimizationProblem(optf, prob_neuralode.p)
 
 result_neuralode = GalacticOptim.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
 
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = GalacticOptim.solve(optprob2,
                                         LBFGS(),
-                                        cb = callback,
+                                        callback = callback,
                                         allow_f_increases = false)</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif" alt="Neural ODE"/></p><h2 id="Explanation"><a class="docs-heading-anchor" href="#Explanation">Explanation</a><a id="Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Explanation" title="Permalink"></a></h2><p>Let&#39;s get a time series array from the Lotka-Volterra equation as data:</p><pre><code class="language-julia hljs">using DiffEqFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
@@ -97,17 +95,16 @@ callback = function (p, l, pred; doplot = false)
     display(plot(plt))
   end
   return false
-end</code></pre><p>We then train the neural network to learn the ODE.</p><p>Here we showcase starting the optimization with <code>ADAM</code> to more quickly find a minimum, and then honing in on the minimum by using <code>LBFGS</code>. By using the two together, we are able to fit the neural ODE in 9 seconds! (Note, the timing commented out the plotting). You can easily incorporate the procedure below to set up custom optimization problems. For more information on the usage of <a href="https://github.com/SciML/GalacticOptim.jl">GalacticOptim.jl</a>, please consult <a href="https://galacticoptim.sciml.ai/stable/">this</a> documentation.</p><p>The <code>x</code> and <code>p</code> variables in the optimization function are different than <code>x</code> and <code>p</code> above. The optimization function runs over the space of parameters of the original problem, so <code>x_optimization</code> == <code>p_original</code>.</p><pre><code class="language-julia hljs"># Train using the ADAM optimizer
+end</code></pre><p>We then train the neural network to learn the ODE.</p><p>Here we showcase starting the optimization with <code>ADAM</code> to more quickly find a minimum, and then honing in on the minimum by using <code>LBFGS</code>. By using the two together, we are able to fit the neural ODE in 9 seconds! (Note, the timing commented out the plotting). You can easily incorporate the procedure below to set up custom optimization problems. For more information on the usage of <a href="https://github.com/SciML/GalacticOptim.jl">GalacticOptim.jl</a>, please consult <a href="https://galacticoptim.sciml.ai/stable/">this</a> documentation.</p><p>The <code>x</code> and <code>p</code> variables in the optimization function are different than <code>x</code> and <code>p</code> above. The optimization function runs over the space of parameters of the original problem, so <code>x_optimization</code> == <code>p_original</code>.</p><pre><code class="language-julia hljs"># use GalacticOptim.jl to solve the problem
 adtype = GalacticOptim.AutoZygote()
-
-optf = GalacticOptim.OptimizationFunction((x_optimization, p_optimization) -&gt; loss_neuralode(x_optimization), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
+optf = GalacticOptim.OptimizationFunction((x, p) -&gt; loss_neuralode(x), adtype)
+optprob = GalacticOptim.OptimizationProblem(optf, prob_neuralode.p)
 
 result_neuralode = GalacticOptim.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
+
 # output
 * Status: success
 
@@ -122,7 +119,7 @@ optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = GalacticOptim.solve(optprob2,
                                         LBFGS(),
-                                        cb = callback,
+                                        callback = callback,
                                         allow_f_increases = false)
 # output
 * Status: success
@@ -146,4 +143,4 @@ result_neuralode2 = GalacticOptim.solve(optprob2,
    Seconds run:   4  (vs limit Inf)
    Iterations:    35
    f(x) calls:    336
-   ∇f(x) calls:   336</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../normalizing_flows/">« Continuous Normalizing Flows with GalacticOptim.jl</a><a class="docs-footer-nextpage" href="../neural_ode_flux/">Neural Ordinary Differential Equations with Flux.train! »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.16 on <span class="colophon-date" title="Thursday 5 May 2022 13:27">Thursday 5 May 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+   ∇f(x) calls:   336</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../normalizing_flows/">« Continuous Normalizing Flows with GalacticOptim.jl</a><a class="docs-footer-nextpage" href="../neural_ode_flux/">Neural Ordinary Differential Equations with Flux.train! »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.18 on <span class="colophon-date" title="Saturday 28 May 2022 12:56">Saturday 28 May 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
