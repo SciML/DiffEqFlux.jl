@@ -62,21 +62,19 @@ end
 
 # use GalacticOptim.jl to solve the problem
 adtype = GalacticOptim.AutoZygote()
-
 optf = GalacticOptim.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
+optprob = GalacticOptim.OptimizationProblem(optf, prob_neuralode.p)
 
 result_neuralode = GalacticOptim.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
 
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = GalacticOptim.solve(optprob2,
                                         LBFGS(),
-                                        cb = callback,
+                                        callback = callback,
                                         allow_f_increases = false)
 ```
 
@@ -173,17 +171,16 @@ The `x` and `p` variables in the optimization function are different than
 `x` and `p` above. The optimization function runs over the space of parameters of
 the original problem, so `x_optimization` == `p_original`.
 ```julia
-# Train using the ADAM optimizer
+# use GalacticOptim.jl to solve the problem
 adtype = GalacticOptim.AutoZygote()
-
-optf = GalacticOptim.OptimizationFunction((x_optimization, p_optimization) -> loss_neuralode(x_optimization), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
+optprob = GalacticOptim.OptimizationProblem(optf, prob_neuralode.p)
 
 result_neuralode = GalacticOptim.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
+
 # output
 * Status: success
 
@@ -206,7 +203,7 @@ optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = GalacticOptim.solve(optprob2,
                                         LBFGS(),
-                                        cb = callback,
+                                        callback = callback,
                                         allow_f_increases = false)
 # output
 * Status: success
