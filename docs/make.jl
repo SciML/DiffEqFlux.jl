@@ -27,9 +27,9 @@ makedocs(
             "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
             "Hamiltonian Neural Network Layer" => "layers/HamiltonianNN.md"
         ],
-        "Manual and APIs" => Any[
-            "Use with Flux Chain and train!" => "Flux.md",
-            "Smoothed Collocation" => "Collocation.md",
+        "Utility Function APIs" => Any[
+            "Smoothed Collocation" => "utilities/Collocation.md",
+            "Multiple Shooting Functionality" => "utilities/MultipleShooting.md",
         ],
     ]
 )
