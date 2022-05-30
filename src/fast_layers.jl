@@ -6,6 +6,7 @@ initial_params(f) = Flux.destructure(f)[1]
 struct FastChain{T<:Tuple} <: FastLayer
   layers::T
   function FastChain(xs...)
+    @warn "FastChain is being deprecated in favor of Lux.jl. Lux.jl uses functions with explicit parameters f(u,p) like FastChain, but is fully featured and documented machine learning library. See the Lux.jl documentation for more details."
     layers = getfunc.(xs)
     new{typeof(layers)}(layers)
   end
