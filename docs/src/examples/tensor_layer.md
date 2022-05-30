@@ -1,4 +1,4 @@
-# Physics Informed Machine Learning with TensorLayer
+# Physics-Informed Machine Learning (PIML) with TensorLayer
 
 In this tutorial, we show how to use the `DiffEqFlux` TensorLayer to solve problems
 in Physics Informed Machine Learning.
