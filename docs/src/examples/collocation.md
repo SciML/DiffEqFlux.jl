@@ -5,7 +5,7 @@ pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
 ```julia
-using DiffEqFlux, DifferentialEquations, GalacticOptim, GalacticOptimJL, Plots
+using DiffEqFlux, DifferentialEquations, GalacticOptim, GalacticFlux, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
