@@ -5,7 +5,7 @@ pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
 ```julia
-using DiffEqFlux, DifferentialEquations, Plots
+using DiffEqFlux, DifferentialEquations, GalacticOptim, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -47,7 +47,7 @@ callback = function (p, l)
   return false
 end
 
-result_neuralode = DiffEqFlux.sciml_train(loss, pinit,
+result_neuralode = GalacticOptim.solve(loss, pinit,
                                           ADAM(0.05), cb = callback,
                                           maxiters = 10000)
 
@@ -67,7 +67,7 @@ function loss_neuralode(p)
     return loss
 end
 
-@time numerical_neuralode = DiffEqFlux.sciml_train(loss_neuralode, result_neuralode.u,
+@time numerical_neuralode = GalacticOptim.solve(loss_neuralode, result_neuralode.u,
                                                 ADAM(0.05), cb = callback,
                                                 maxiters = 300)
 
@@ -139,7 +139,7 @@ callback = function (p, l)
   return false
 end
 
-result_neuralode = DiffEqFlux.sciml_train(loss, pinit,
+result_neuralode = GalacticOptim.solve(loss, pinit,
                                           ADAM(0.05), cb = callback,
                                           maxiters = 10000)
 
@@ -167,7 +167,7 @@ function loss_neuralode(p)
     return loss
 end
 
-@time numerical_neuralode = DiffEqFlux.sciml_train(loss_neuralode, result_neuralode.u,
+@time numerical_neuralode = GalacticOptim.solve(loss_neuralode, result_neuralode.u,
                                                 ADAM(0.05), cb = callback,
                                                 maxiters = 300)
 

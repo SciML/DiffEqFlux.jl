@@ -27,8 +27,8 @@ function loss(θ)
 end
 
 adtype = GalacticOptim.AutoZygote()
-res1 = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=100)
-res2 = DiffEqFlux.sciml_train(loss, res1.u, LBFGS(), adtype; allow_f_increases=false)
+res1 = GalacticOptim.solve(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=100)
+res2 = GalacticOptim(loss, res1.u, LBFGS(), adtype; allow_f_increases=false)
 
 # Evaluation
 using Distances
@@ -85,7 +85,7 @@ Here we showcase starting the optimization with `ADAM` to more quickly find a mi
 
 ```julia
 adtype = GalacticOptim.AutoZygote()
-res1 = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=100)
+res1 = GalacticOptim.solve(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=100)
 
 # output
 * Status: success
@@ -103,7 +103,7 @@ res1 = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=10
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
 
 ```julia
-res2 = DiffEqFlux.sciml_train(loss, res1.u, LBFGS(), adtype; allow_f_increases=false)
+res2 = GalacticOptim.solve(loss, res1.u, LBFGS(), adtype; allow_f_increases=false)
 
 # output
 * Status: success
