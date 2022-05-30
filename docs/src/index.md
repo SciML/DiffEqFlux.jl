@@ -5,6 +5,13 @@ a high level interface that pulls together all of the tools with heuristics
 and helper functions to make solving inverse problems and inferring models
 as easy as possible without losing efficiency.
 
+!!!! note
+
+    DiffEqFlux.jl is only for pre-built architectures and utility functions
+    for model callibration and mixing differential equations with machine
+    learning. For details on automatic differentiation of equation solvers
+    and adjoint techniques, see [SciMLSensitivity.jl](https://sensitivity.sciml.ai/dev/)
+
 ## Pre-Built Architectures
 
 The approach of this package is the easy and efficient training of
