@@ -8,7 +8,7 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```julia
-using DiffEqFlux, DifferentialEquations, GalacticOptim, Distributions
+using DiffEqFlux, DifferentialEquations, GalacticOptim, GalacticOptimJL, Distributions
 
 nn = Chain(
     Dense(1, 3, tanh),
@@ -47,7 +47,7 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```julia
-using DiffEqFlux, DifferentialEquations, GalacticOptim, Distributions
+using DiffEqFlux, DifferentialEquations, GalacticOptim, GalacticOptimJL, Distributions
 
 nn = Chain(
     Dense(1, 3, tanh),

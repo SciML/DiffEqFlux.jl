@@ -13,7 +13,7 @@ To obtain the training data, we solve the equation of motion using one of the
 solvers in `DifferentialEquations`:
 
 ```julia
-using DiffEqFlux, GalacticOptim, DifferentialEquations, LinearAlgebra
+using DiffEqFlux, GalacticOptim, GalacticOptimJL, DifferentialEquations, LinearAlgebra
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0,10.0)
 
