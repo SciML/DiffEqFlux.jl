@@ -5,7 +5,7 @@ a high level interface that pulls together all of the tools with heuristics
 and helper functions to make solving inverse problems and inferring models
 as easy as possible without losing efficiency.
 
-!!!! note
+!!! note
 
     DiffEqFlux.jl is only for pre-built architectures and utility functions
     for model callibration and mixing differential equations with machine
