@@ -1,5 +1,5 @@
 # Multiple Shooting Functionality
 
 ```@docs
-multiple_shooting
+multiple_shoot
 ```
