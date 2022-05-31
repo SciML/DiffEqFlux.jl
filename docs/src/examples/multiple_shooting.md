@@ -86,7 +86,11 @@ function loss_multiple_shooting(p)
                           group_size; continuity_term)
 end
 
-res_ms = GalacticOptim.solve(loss_multiple_shooting, PolyOpt(), p_init,
+adtype = GalacticOptim.AutoZygote()
+optf = GalacticOptim.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, p_init, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, p_init)
+res_ms = GalacticOptim.solve(optprob, PolyOpt(),
                                 cb = callback)
 gif(anim, "multiple_shooting.gif", fps=15)
 
