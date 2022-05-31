@@ -27,8 +27,18 @@ function loss(θ)
 end
 
 adtype = GalacticOptim.AutoZygote()
-res1 = GalacticOptim.solve(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=100)
-res2 = GalacticOptim.solve(loss, res1.u, Optim.LBFGS(), adtype; allow_f_increases=false)
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, ffjord_mdl.p, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, ffjord_mdl.p)
+
+res1 = GalacticOptim.solve(optprob,
+                          ADAM(0.1),
+                          maxiters = 100)
+optfunc2 = GalacticOptim.instantiate_function(optf, res1.u, adtype, nothing)
+optprob2 = GalacticOptim.OptimizationProblem(optfunc2, res1.u)
+res2 = GalacticOptim.solve(optprob2,
+                          Optim.LBFGS(),
+                          allow_f_increases=false)
 
 # Evaluation
 using Distances
@@ -85,7 +95,13 @@ Here we showcase starting the optimization with `ADAM` to more quickly find a mi
 
 ```julia
 adtype = GalacticOptim.AutoZygote()
-res1 = GalacticOptim.solve(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=100)
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, ffjord_mdl.p, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, ffjord_mdl.p)
+
+res1 = GalacticOptim.solve(optprob,
+                          ADAM(0.1);
+                          maxiters = 100)
 
 # output
 * Status: success
@@ -103,7 +119,11 @@ res1 = GalacticOptim.solve(loss, ffjord_mdl.p, ADAM(0.1), adtype; maxiters=100)
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
 
 ```julia
-res2 = GalacticOptim.solve(loss, res1.u, LBFGS(), adtype; allow_f_increases=false)
+optfunc2 = GalacticOptim.instantiate_function(optf, res1.u, adtype, nothing)
+optprob2 = GalacticOptim.OptimizationProblem(optfunc2, res1.u)
+res2 = GalacticOptim.solve(optprob2,
+                          Optim.LBFGS(),
+                          allow_f_increases=false)
 
 # output
 * Status: success

@@ -67,9 +67,15 @@ function loss_neuralode(p)
     return loss
 end
 
-@time numerical_neuralode = GalacticOptim.solve(loss_neuralode, result_neuralode.u,
-                                                ADAM(0.05), cb = callback,
-                                                maxiters = 300)
+adtype = GalacticOptim.AutoZygote()
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, pinit, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, pinit)
+
+result_neuralode = GalacticOptim.solve(optprob,
+                                       ADAM(0.05),
+                                       cb = callback,
+                                       maxiters = 10000)
 
 nn_sol = prob_neuralode(u0, numerical_neuralode.u)
 scatter(tsteps,data')
@@ -139,9 +145,15 @@ callback = function (p, l)
   return false
 end
 
-result_neuralode = GalacticOptim.solve(loss, pinit,
-                                          ADAM(0.05), cb = callback,
-                                          maxiters = 10000)
+adtype = GalacticOptim.AutoZygote()
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, pinit, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, pinit)
+
+result_neuralode = GalacticOptim.solve(optprob,
+                                       ADAM(0.05),
+                                       cb = callback,
+                                       maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 nn_sol = prob_neuralode(u0, result_neuralode.u)
