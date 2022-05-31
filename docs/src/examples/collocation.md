@@ -47,7 +47,12 @@ callback = function (p, l)
   return false
 end
 
-result_neuralode = GalacticOptim.solve(loss, pinit,
+adtype = GalacticOptim.AutoZygote()
+optf = GalacticOptim.OptimizationFunction((x,p) -> loss(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, pinit, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, pinit)
+
+result_neuralode = GalacticOptim.solve(optprob,
                                           ADAM(0.05), cb = callback,
                                           maxiters = 10000)
 
@@ -68,9 +73,9 @@ function loss_neuralode(p)
 end
 
 adtype = GalacticOptim.AutoZygote()
-optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, pinit, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, pinit)
+optf = GalacticOptim.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
+optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
+optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
 
 result_neuralode = GalacticOptim.solve(optprob,
                                        ADAM(0.05),
