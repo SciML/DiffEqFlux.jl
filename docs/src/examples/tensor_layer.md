@@ -13,7 +13,7 @@ To obtain the training data, we solve the equation of motion using one of the
 solvers in `DifferentialEquations`:
 
 ```julia
-using DiffEqFlux, GalacticOptim, GalacticOptimJL, DifferentialEquations, LinearAlgebra
+using DiffEqFlux, Optimization, OptimizationOptimJL, DifferentialEquations, LinearAlgebra
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0,10.0)
 
@@ -79,15 +79,15 @@ end
 and we train the network using two rounds of `ADAM`:
 
 ```julia
-adtype = GalacticOptim.AutoZygote()
-optf = GalacticOptim.OptimizationFunction((x,p) -> loss_adjoint(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, α, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, α)
-res1 = GalacticOptim.solve(optprob, ADAM(0.05), cb = cb, maxiters = 150)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x,p) -> loss_adjoint(x), adtype)
+optfunc = Optimization.instantiate_function(optf, α, adtype, nothing)
+optprob = Optimization.OptimizationProblem(optfunc, α)
+res1 = Optimization.solve(optprob, ADAM(0.05), cb = cb, maxiters = 150)
 
-optfunc2 = GalacticOptim.instantiate_function(optf, res1.u, adtype, nothing)
-optprob2 = GalacticOptim.OptimizationProblem(optfunc2, res1.u)
-res2 = GalacticOptim.solve(optprob2, ADAM(0.001), cb = cb,maxiters = 150)
+optfunc2 = Optimization.instantiate_function(optf, res1.u, adtype, nothing)
+optprob2 = Optimization.OptimizationProblem(optfunc2, res1.u)
+res2 = Optimization.solve(optprob2, ADAM(0.001), cb = cb,maxiters = 150)
 opt = res2.u
 ```
 

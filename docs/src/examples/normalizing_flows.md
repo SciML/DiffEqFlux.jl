@@ -8,7 +8,7 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```julia
-using DiffEqFlux, DifferentialEquations, GalacticOptim, GalacticFlux, GalacticOptimJL, Distributions
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
 
 nn = Chain(
     Dense(1, 3, tanh),
@@ -26,17 +26,17 @@ function loss(θ)
     -mean(logpx)
 end
 
-adtype = GalacticOptim.AutoZygote()
-optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, ffjord_mdl.p, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, ffjord_mdl.p)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
+optfunc = Optimization.instantiate_function(optf, ffjord_mdl.p, adtype, nothing)
+optprob = Optimization.OptimizationProblem(optfunc, ffjord_mdl.p)
 
-res1 = GalacticOptim.solve(optprob,
+res1 = Optimization.solve(optprob,
                           ADAM(0.1),
                           maxiters = 100)
-optfunc2 = GalacticOptim.instantiate_function(optf, res1.u, adtype, nothing)
-optprob2 = GalacticOptim.OptimizationProblem(optfunc2, res1.u)
-res2 = GalacticOptim.solve(optprob2,
+optfunc2 = Optimization.instantiate_function(optf, res1.u, adtype, nothing)
+optprob2 = Optimization.OptimizationProblem(optfunc2, res1.u)
+res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
                           allow_f_increases=false)
 
@@ -57,7 +57,7 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```julia
-using DiffEqFlux, DifferentialEquations, GalacticOptim, GalacticFlux, GalacticOptimJL, Distributions
+using DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
 
 nn = Chain(
     Dense(1, 3, tanh),
@@ -94,12 +94,12 @@ We then train the neural network to learn the distribution of `x`.
 Here we showcase starting the optimization with `ADAM` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
 ```julia
-adtype = GalacticOptim.AutoZygote()
-optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, ffjord_mdl.p, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, ffjord_mdl.p)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
+optfunc = Optimization.instantiate_function(optf, ffjord_mdl.p, adtype, nothing)
+optprob = Optimization.OptimizationProblem(optfunc, ffjord_mdl.p)
 
-res1 = GalacticOptim.solve(optprob,
+res1 = Optimization.solve(optprob,
                           ADAM(0.1);
                           maxiters = 100)
 
@@ -119,9 +119,9 @@ res1 = GalacticOptim.solve(optprob,
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
 
 ```julia
-optfunc2 = GalacticOptim.instantiate_function(optf, res1.u, adtype, nothing)
-optprob2 = GalacticOptim.OptimizationProblem(optfunc2, res1.u)
-res2 = GalacticOptim.solve(optprob2,
+optfunc2 = Optimization.instantiate_function(optf, res1.u, adtype, nothing)
+optprob2 = Optimization.OptimizationProblem(optfunc2, res1.u)
+res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
                           allow_f_increases=false)
 

@@ -18,7 +18,7 @@ high penalties in case the solver predicts discontinuous values.
 The following is a working demo, using Multiple Shooting
 
 ```julia
-using DiffEqFlux, GalacticOptim, GalacticPolyalgorithms, DifferentialEquations, Plots
+using Flux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, DifferentialEquations, Plots
 using DiffEqFlux: group_ranges
 
 # Define initial conditions and time steps
@@ -38,9 +38,9 @@ ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
 
 # Define the Neural Network
-nn = FastChain((x, p) -> x.^3,
-                  FastDense(2, 16, tanh),
-                  FastDense(16, 2))
+nn = Chain((x, p) -> x.^3,
+                  Dense(2, 16, tanh),
+                  Dense(16, 2))
 p_init = initial_params(nn)
 
 neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
@@ -86,11 +86,11 @@ function loss_multiple_shooting(p)
                           group_size; continuity_term)
 end
 
-adtype = GalacticOptim.AutoZygote()
-optf = GalacticOptim.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, p_init, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, p_init)
-res_ms = GalacticOptim.solve(optprob, PolyOpt(),
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adtype)
+optfunc = Optimization.instantiate_function(optf, p_init, adtype, nothing)
+optprob = Optimization.OptimizationProblem(optfunc, p_init)
+res_ms = Optimization.solve(optprob, PolyOpt(),
                                 cb = callback)
 gif(anim, "multiple_shooting.gif", fps=15)
 

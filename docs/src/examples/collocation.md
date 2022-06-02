@@ -5,7 +5,7 @@ pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
 ```julia
-using DiffEqFlux, DifferentialEquations, GalacticOptim, GalacticFlux, Plots
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizatonFlux, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -28,9 +28,9 @@ savefig("colloc.png")
 plot(tsteps,du')
 savefig("colloc_du.png")
 
-dudt2 = FastChain((x, p) -> x.^3,
-                  FastDense(2, 50, tanh),
-                  FastDense(50, 2))
+dudt2 = Chain((x, p) -> x.^3,
+                  Dense(2, 50, tanh),
+                  Dense(50, 2))
 
 function loss(p)
     cost = zero(first(p))
@@ -47,12 +47,12 @@ callback = function (p, l)
   return false
 end
 
-adtype = GalacticOptim.AutoZygote()
-optf = GalacticOptim.OptimizationFunction((x,p) -> loss(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, pinit, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, pinit)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x,p) -> loss(x), adtype)
+optfunc = Optimization.instantiate_function(optf, pinit, adtype, nothing)
+optprob = Optimization.OptimizationProblem(optfunc, pinit)
 
-result_neuralode = GalacticOptim.solve(optprob,
+result_neuralode = Optimization.solve(optprob,
                                           ADAM(0.05), cb = callback,
                                           maxiters = 10000)
 
@@ -72,12 +72,12 @@ function loss_neuralode(p)
     return loss
 end
 
-adtype = GalacticOptim.AutoZygote()
-optf = GalacticOptim.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, prob_neuralode.p)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
+optfunc = Optimization.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
+optprob = Optimization.OptimizationProblem(optfunc, prob_neuralode.p)
 
-result_neuralode = GalacticOptim.solve(optprob,
+result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
                                        cb = callback,
                                        maxiters = 10000)
@@ -94,7 +94,7 @@ The smoothed collocation is a spline fit of the datapoints which allows
 us to get a an estimate of the approximate noiseless dynamics:
 
 ```julia
-using DiffEqFlux, DifferentialEquations, Plots
+using Flux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -131,9 +131,9 @@ calculates the squared difference between `f(u,p,t)` and `u'` at each
 point, and find the parameters which minimize this difference:
 
 ```julia
-dudt2 = FastChain((x, p) -> x.^3,
-                  FastDense(2, 50, tanh),
-                  FastDense(50, 2))
+dudt2 = Chain((x, p) -> x.^3,
+                  Dense(2, 50, tanh),
+                  Dense(50, 2))
 
 function loss(p)
     cost = zero(first(p))
@@ -150,12 +150,12 @@ callback = function (p, l)
   return false
 end
 
-adtype = GalacticOptim.AutoZygote()
-optf = GalacticOptim.OptimizationFunction((x, p) -> loss(x), adtype)
-optfunc = GalacticOptim.instantiate_function(optf, pinit, adtype, nothing)
-optprob = GalacticOptim.OptimizationProblem(optfunc, pinit)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
+optfunc = Optimization.instantiate_function(optf, pinit, adtype, nothing)
+optprob = Optimization.OptimizationProblem(optfunc, pinit)
 
-result_neuralode = GalacticOptim.solve(optprob,
+result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
                                        cb = callback,
                                        maxiters = 10000)
@@ -184,9 +184,13 @@ function loss_neuralode(p)
     return loss
 end
 
-@time numerical_neuralode = GalacticOptim.solve(loss_neuralode, result_neuralode.u,
-                                                ADAM(0.05), cb = callback,
-                                                maxiters = 300)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
+optfunc = Optimization.instantiate_function(optf, result_neuralode.u, adtype, nothing)
+optprob = Optimization.OptimizationProblem(optfunc, result_neuralode.u)
+@time numerical_neuralode = Optimization.solve(optprob,
+                                              ADAM(0.05), cb = callback,
+                                              maxiters = 300)
 
 nn_sol = prob_neuralode(u0, numerical_neuralode.u)
 scatter(tsteps,data')
