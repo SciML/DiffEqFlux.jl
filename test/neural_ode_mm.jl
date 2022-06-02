@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, Test
+using DiffEqFlux, Optimization, OrdinaryDiffEq, Test
 
 
 #A desired MWE for now, not a test yet.
@@ -39,7 +39,7 @@ cb = function (p,l,pred) #callback function to observe training
 end
 
 l1 = first(loss(ndae.p))
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), GalacticOptim.AutoZygote())
-optprob = GalacticOptim.OptimizationProblem(optfunc, ndae.p)
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.001), callback = cb, maxiters = 100)
+optfunc = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optfunc, ndae.p)
+res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.001), callback = cb, maxiters = 100)
 @test res.minimum < l1

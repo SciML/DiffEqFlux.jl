@@ -8,7 +8,7 @@ const is_CI = haskey(ENV,"CI")
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
     @safetestset "Layers Tests" begin include("layers.jl") end
     @safetestset "Fast Layers" begin include("fast_layers.jl") end
-    @safetestset "GalacticOptim Tests" begin include("galacticoptim.jl") end
+    @safetestset "Optimization Tests" begin include("optimization.jl") end
     @safetestset "Layers SDE" begin include("layers_sde.jl") end
     @safetestset "Layers DDE" begin include("layers_dde.jl") end
     @safetestset "hasbranching Overloads" begin include("hasbranching.jl") end

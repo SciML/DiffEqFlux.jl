@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim, GalacticNLopt, OrdinaryDiffEq, Test # , Plots
+using DiffEqFlux, Optimization, OptimizationNLopt, OrdinaryDiffEq, Test # , Plots
 
 function lotka_volterra(du,u,p,t)
   x, y = u
@@ -32,19 +32,19 @@ end
 # Display the ODE with the current parameter values.
 loss1 = loss_rd(p)
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_rd(x), GalacticOptim.AutoForwardDiff())
-optprob = GalacticOptim.OptimizationProblem(optfunc, p)
-res = GalacticOptim.solve(optprob, ADAM(0.1), callback = cb, maxiters = 100)
+optfunc = Optimization.OptimizationFunction((x, p) -> loss_rd(x), Optimization.AutoForwardDiff())
+optprob = Optimization.OptimizationProblem(optfunc, p)
+res = Optimization.solve(optprob, ADAM(0.1), callback = cb, maxiters = 100)
 @test 10res.minimum < loss1
 
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb, allow_f_increases=false)
+res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb, allow_f_increases=false)
 @test 10res.minimum < loss1
 
-optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
-res = GalacticOptim.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), callback = cb, allow_f_increases=false)
+optprob = Optimization.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
+res = Optimization.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), callback = cb, allow_f_increases=false)
 @test 10res.minimum < loss1
 
-res = GalacticOptim.solve(optprob, Opt(:LN_BOBYQA, 4), maxiters=100, callback = cb)
+res = Optimization.solve(optprob, Opt(:LN_BOBYQA, 4), maxiters=100, callback = cb)
 @test res.minimum < loss1
 
 # Forward-mode, R^n -> R^m layer
@@ -68,13 +68,13 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_fd(p)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_fd(x), GalacticOptim.AutoZygote())
-optprob = GalacticOptim.OptimizationProblem(optfunc, p)
+optfunc = Optimization.OptimizationFunction((x, p) -> loss_fd(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optfunc, p)
 
-res = GalacticOptim.solve(optprob, opt, callback = cb, maxiters = 100)
+res = Optimization.solve(optprob, opt, callback = cb, maxiters = 100)
 @test 10res.minimum < loss1
 
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb)
+res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb)
 @test 10res.minimum < loss1
 
 # Adjoint sensitivity
@@ -99,21 +99,21 @@ end
 
 # Display the ODE with the current parameter values.
 loss1 = loss_adjoint(p)
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), GalacticOptim.AutoFiniteDiff())
-optprob = GalacticOptim.OptimizationProblem(optfunc, p)
+optfunc = Optimization.OptimizationFunction((x, p) -> loss_adjoint(x), Optimization.AutoFiniteDiff())
+optprob = Optimization.OptimizationProblem(optfunc, p)
 
-res = GalacticOptim.solve(optprob, opt, callback = cb, maxiters = 100)
+res = Optimization.solve(optprob, opt, callback = cb, maxiters = 100)
 @test 10res.minimum < loss1
 
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb)
+res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.01), callback = cb)
 @test 10res.minimum < loss1
 
-optprob = GalacticOptim.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
-res = GalacticOptim.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), callback = cb, maxiters = 100, time_limit = 5, f_calls_limit = 100)
+optprob = Optimization.OptimizationProblem(optfunc, p, lb = [0.0 for i in 1:4], ub = [5.0 for i in 1:4])
+res = Optimization.solve(optprob, Fminbox(BFGS(initial_stepnorm = 0.01)), callback = cb, maxiters = 100, time_limit = 5, f_calls_limit = 100)
 @test 10res.minimum < loss1
 
 opt = Opt(:LD_MMA, 4)
-res = GalacticOptim.solve(optprob, opt, maxiters = 100)
+res = Optimization.solve(optprob, opt, maxiters = 100)
 @test 10res.minimum < loss1
 
 function lotka_volterra2(u,p,t)
@@ -131,15 +131,15 @@ function predict_adjoint(p)
 end
 loss_reduction(sol) = sum(abs2,x-1 for x in vec(sol))
 loss_adjoint(p) = loss_reduction(predict_adjoint(p))
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_adjoint(x), GalacticOptim.AutoZygote())
-optprob = GalacticOptim.OptimizationProblem(optfunc, p)
+optfunc = Optimization.OptimizationFunction((x, p) -> loss_adjoint(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optfunc, p)
 
 
-res = GalacticOptim.solve(optprob, Newton(), maxiters = 100)
+res = Optimization.solve(optprob, Newton(), maxiters = 100)
 @test 10res.minimum < loss1
 
-res = GalacticOptim.solve(optprob, NewtonTrustRegion(), maxiters = 100)
+res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters = 100)
 @test 10res.minimum < loss1
 
-res = GalacticOptim.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 100)
+res = Optimization.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 100)
 @test 10res.minimum < loss1

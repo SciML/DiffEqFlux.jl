@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim, OrdinaryDiffEq
+using DiffEqFlux, Optimization, OrdinaryDiffEq
 
 #A desired MWE for now, not a test yet.
 
@@ -38,6 +38,6 @@ end
 
 p = p .+ rand(3) .* p
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss(x), GalacticOptim.AutoZygote())
-optprob = GalacticOptim.OptimizationProblem(optfunc, p)
-res = GalacticOptim.solve(optprob, BFGS(initial_stepnorm = 0.0001))
+optfunc = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optfunc, p)
+res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.0001))

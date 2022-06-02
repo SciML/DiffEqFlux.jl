@@ -1,4 +1,4 @@
-using DiffEqFlux, Distances, Distributions, DistributionsAD, GalacticOptim,
+using DiffEqFlux, Distances, Distributions, DistributionsAD, Optimization,
     LinearAlgebra, OrdinaryDiffEq, Random, Test
 
 Random.seed!(1999)
@@ -25,7 +25,7 @@ end
     end
 
     @testset "AutoForwardDiff as adtype" begin
-        adtype = GalacticOptim.AutoForwardDiff()
+        adtype = Optimization.AutoForwardDiff()
 
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
@@ -53,7 +53,7 @@ end
         end
     end
     @testset "AutoReverseDiff as adtype" begin
-        adtype = GalacticOptim.AutoReverseDiff()
+        adtype = Optimization.AutoReverseDiff()
 
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
@@ -81,7 +81,7 @@ end
         end
     end
     @testset "AutoTracker as adtype" begin
-        adtype = GalacticOptim.AutoTracker()
+        adtype = Optimization.AutoTracker()
 
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
@@ -109,7 +109,7 @@ end
         end
     end
     @testset "AutoZygote as adtype" begin
-        adtype = GalacticOptim.AutoZygote()
+        adtype = Optimization.AutoZygote()
 
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
@@ -137,7 +137,7 @@ end
         end
     end
     @testset "AutoFiniteDiff as adtype" begin
-        adtype = GalacticOptim.AutoFiniteDiff()
+        adtype = Optimization.AutoFiniteDiff()
 
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
@@ -180,7 +180,7 @@ end
         -mean(logpx)
     end
 
-    adtype = GalacticOptim.AutoZygote()
+    adtype = Optimization.AutoZygote()
 
     regularize = false
     monte_carlo = false
@@ -210,7 +210,7 @@ end
         -mean(logpx)
     end
 
-    adtype = GalacticOptim.AutoZygote()
+    adtype = Optimization.AutoZygote()
     res = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; callback= callback, maxiters=100)
 
     actual_pdf = pdf.(data_dist, test_data)
@@ -238,7 +238,7 @@ end
         -mean(logpx)
     end
 
-    adtype = GalacticOptim.AutoZygote()
+    adtype = Optimization.AutoZygote()
     res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=100)
 
     actual_pdf = pdf.(data_dist, test_data)
@@ -267,7 +267,7 @@ end
         -mean(logpx)
     end
 
-    adtype = GalacticOptim.AutoZygote()
+    adtype = Optimization.AutoZygote()
     res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=300)
 
     actual_pdf = pdf(data_dist, test_data)
@@ -296,7 +296,7 @@ end
         mean(-logpx .+ 0.1 * λ₁ .+ 0.1 * λ₂)
     end
 
-    adtype = GalacticOptim.AutoZygote()
+    adtype = Optimization.AutoZygote()
     res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=300)
 
     actual_pdf = pdf(data_dist, test_data)

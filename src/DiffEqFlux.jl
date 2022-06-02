@@ -2,7 +2,7 @@ module DiffEqFlux
 
 using Adapt, Base.Iterators, Cassette, ConsoleProgressMonitor, DataInterpolations,
     DiffEqBase, DiffEqSensitivity, DiffResults, Distributions, DistributionsAD,
-    ForwardDiff, GalacticOptim, LinearAlgebra,
+    ForwardDiff, Optimization, OptimizationPolyalgorithms, LinearAlgebra,
     Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
     Reexport, Requires, SciMLBase, StaticArrays, TerminalLoggers, Zygote, ZygoteRules
 
@@ -10,8 +10,8 @@ import NNlib
 
 @reexport using DiffEqSensitivity
 @reexport using Zygote
-@reexport using GalacticFlux
-@reexport using GalacticOptimJL
+@reexport using OptimizationFlux
+@reexport using OptimizationOptimJL
 
 gpu_or_cpu(x) = Array
 

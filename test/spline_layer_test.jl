@@ -1,4 +1,4 @@
-using DiffEqFlux, DataInterpolations, Distributions, GalacticOptim, LinearAlgebra, Test
+using DiffEqFlux, DataInterpolations, Distributions, Optimization, LinearAlgebra, Test
 
 function run_test(f, layer, atol)
 
@@ -16,12 +16,12 @@ function run_test(f, layer, atol)
         return false
     end
 
-    optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_function(x), GalacticOptim.AutoZygote())
-    optprob = GalacticOptim.OptimizationProblem(optfunc, layer.saved_points)
-    res = GalacticOptim.solve(optprob, ADAM(0.1), callback=callback, maxiters = 100)
+    optfunc = Optimization.OptimizationFunction((x, p) -> loss_function(x), Optimization.AutoZygote())
+    optprob = Optimization.OptimizationProblem(optfunc, layer.saved_points)
+    res = Optimization.solve(optprob, ADAM(0.1), callback=callback, maxiters = 100)
 
-    optprob = GalacticOptim.OptimizationProblem(optfunc, res.minimizer)
-    res = GalacticOptim.solve(optprob, ADAM(0.1), callback=callback, maxiters = 100)
+    optprob = Optimization.OptimizationProblem(optfunc, res.minimizer)
+    res = Optimization.solve(optprob, ADAM(0.1), callback=callback, maxiters = 100)
     opt = res.minimizer
 
     data_validate_vals = rand(100)
