@@ -55,6 +55,9 @@ function sciml_train(loss, θ, opt=nothing, adtype=nothing, args...;
                      lower_bounds=nothing, upper_bounds=nothing, cb = nothing,
                      callback = (args...) -> (false),
                      maxiters=nothing, kwargs...)
+    
+    @warn "sciml_train is being deprecated in favor of direct usage of GalacticOptim.jl. Please consult the GalacticOptim.jl documentation for more details. GalacticOptim's PolyOpt solver is the polyalgorithm of sciml_train"
+
     if adtype === nothing
         if length(θ) < 50
             fdtime = try
