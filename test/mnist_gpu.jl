@@ -3,13 +3,13 @@ using Flux.Losses: logitcrossentropy
 using MLDatasets: MNIST
 
 CUDA.allowscalar(false)
+ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 
 function loadmnist(batchsize = bs)
 	# Use MLDataUtils LabelEnc for natural onehot conversion
   	onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
 	# Load MNIST
-	MNIST.download(i_accept_the_terms_of_use=true)
-	imgs, labels_raw = MNIST.traindata()
+	imgs, labels_raw = MNIST(split = :train)
 	# Process images into (H,W,C,BS) batches
 	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |> gpu
 	x_train = batchview(x_train,batchsize)
