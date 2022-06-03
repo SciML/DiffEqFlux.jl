@@ -1,4 +1,4 @@
-using DiffEqFlux, Optimization, OrdinaryDiffEq, Random, Test
+using DiffEqFlux, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
 
 
 Random.seed!(100)
@@ -40,7 +40,7 @@ l1 = loss_function(nODE.p)
 optfunc = Optimization.OptimizationFunction((x, p) -> loss_function(x), Optimization.AutoZygote())
 optprob = Optimization.OptimizationProblem(optfunc, nODE.p,)
 
-res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters = 100, callback=cb)
+res = Optimization.solve(optprob, Optim.NewtonTrustRegion(), maxiters = 100, callback=cb)
 @test loss_function(res.minimizer) < l1
 res = Optimization.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 100, callback=cb)
 @test loss_function(res.minimizer) < l1
