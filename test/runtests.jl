@@ -6,7 +6,6 @@ const is_CI = haskey(ENV,"CI")
 
 @time begin
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"   
-    @safetestset "hasbranching Overloads" begin include("hasbranching.jl") end
     @safetestset "Collocation Regression" begin include("collocation_regression.jl") end
     @safetestset "Stiff Nested AD Tests" begin include("stiff_nested_ad.jl") end
 end

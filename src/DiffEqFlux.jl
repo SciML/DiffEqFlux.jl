@@ -6,10 +6,11 @@ using Adapt, Base.Iterators, Cassette, ConsoleProgressMonitor, DataInterpolation
     Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
     Reexport, Requires, SciMLBase, StaticArrays, TerminalLoggers, Zygote, ZygoteRules
 
-import NNlib, Flux
+import NNlib
 
 @reexport using DiffEqSensitivity
 @reexport using Zygote
+@reexport using Flux
 
 gpu_or_cpu(x) = Array
 
