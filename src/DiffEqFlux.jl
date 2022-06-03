@@ -10,8 +10,6 @@ import NNlib
 
 @reexport using DiffEqSensitivity
 @reexport using Zygote
-@reexport using OptimizationFlux
-@reexport using OptimizationOptimJL
 
 gpu_or_cpu(x) = Array
 
