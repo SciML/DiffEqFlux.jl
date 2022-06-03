@@ -11,7 +11,8 @@ function loadmnist(batchsize = bs, train_split = 0.9)
     onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw,
                                       LabelEnc.NativeLabels(collect(0:9)))
     # Load MNIST
-    imgs, labels_raw = MNIST(split = :train)
+    mnist = MNIST(split = :train)
+    imgs, labels_raw = mnist.features, mnist.targets
     # Process images into (H,W,C,BS) batches
     x_data = Float32.(reshape(imgs, size(imgs,1), size(imgs,2), 1, size(imgs,3)))
     y_data = onehot(labels_raw)
