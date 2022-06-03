@@ -8,7 +8,6 @@ using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
 
 @reexport using DiffEqSensitivity
 @reexport using Zygote
-@reexport using Flux
 
 # deprecate
 
@@ -16,6 +15,8 @@ import OptimizationFlux
 import NNlib
 using Requires
 using Cassette
+@reexport using Flux
+@reexport using OptimizationOptimJL
 
 gpu_or_cpu(x) = Array
 
