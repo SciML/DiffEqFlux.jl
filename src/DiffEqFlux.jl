@@ -1,23 +1,14 @@
 module DiffEqFlux
 
 using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
-    DiffEqBase, DiffEqSensitivity, DiffResults, Distributions, DistributionsAD,
-    ForwardDiff, Optimization, OptimizationPolyalgorithms, LinearAlgebra,
+    DiffEqBase, DiffEqSensitivity, Distributions, DistributionsAD,
+    ForwardDiff, LinearAlgebra,
     Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
-    Reexport, SciMLBase, StaticArrays, TerminalLoggers, Zygote, ZygoteRules
+    Reexport, SciMLBase, TerminalLoggers, Zygote, ZygoteRules
 
+import Flux, Lux
 @reexport using DiffEqSensitivity
 @reexport using Zygote
-
-# deprecate
-
-import OptimizationFlux
-import NNlib
-import Lux
-using Requires
-using Cassette
-@reexport using Flux
-@reexport using OptimizationOptimJL
 
 gpu_or_cpu(x) = Array
 
