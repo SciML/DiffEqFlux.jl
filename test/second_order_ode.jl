@@ -1,4 +1,4 @@
-using DiffEqFlux, GalacticOptim, OrdinaryDiffEq, RecursiveArrayTools
+using DiffEqFlux, Optimization, OrdinaryDiffEq, RecursiveArrayTools
 
 
 u0 = Float32[0.; 2.]
@@ -32,9 +32,9 @@ callback = function (p,l,pred)
     l < 0.01 && Flux.stop()
 end
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), GalacticOptim.AutoZygote())
-optprob = GalacticOptim.OptimizationProblem(optfunc, p)
-res = GalacticOptim.solve(optprob, opt, callback=callback, maxiters = 100)
+optfunc = Optimization.OptimizationFunction((x, p) -> loss_n_ode(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optfunc, p)
+res = Optimization.solve(optprob, opt, callback=callback, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
@@ -58,9 +58,9 @@ callback = function (p,l,pred)
     @show l
     l < 0.01 && Flux.stop()
 end
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), GalacticOptim.AutoZygote())
-optprob = GalacticOptim.OptimizationProblem(optfunc, p)
-res = GalacticOptim.solve(optprob, opt, callback=callback, maxiters = 100)
+optfunc = Optimization.OptimizationFunction((x, p) -> loss_n_ode(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optfunc, p)
+res = Optimization.solve(optprob, opt, callback=callback, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1
 
@@ -85,8 +85,8 @@ callback = function (p,l,pred)
     l < 0.01 && Flux.stop()
 end
 
-optfunc = GalacticOptim.OptimizationFunction((x, p) -> loss_n_ode(x), GalacticOptim.AutoZygote())
-optprob = GalacticOptim.OptimizationProblem(optfunc, p)
-res = GalacticOptim.solve(optprob, opt, callback=callback, maxiters = 100)
+optfunc = Optimization.OptimizationFunction((x, p) -> loss_n_ode(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optfunc, p)
+res = Optimization.solve(optprob, opt, callback=callback, maxiters = 100)
 l2 = loss_n_ode(res.minimizer)
 @test l2 < l1

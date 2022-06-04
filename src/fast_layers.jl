@@ -339,6 +339,7 @@ struct StaticDense{out,in,bias,F,F2} <: FastLayer
   initial_params::F2
   function StaticDense(in::Integer, out::Integer, σ = identity;
                  bias::Bool = true, initW = Flux.glorot_uniform, initb = Flux.zeros32)
+    @warn "StaticDense is being deprecated in favor of SimpleChains.jl. SimpleChain.jl is a non-allocating neural network library specialized to the small neural network cases. See its documentation for more details."
     temp = ((bias == true) ? vcat(vec(initW(out, in)),initb(out)) : vcat(vec(initW(out, in))))
     initial_params() = temp
     new{out,in,bias,typeof(σ),typeof(initial_params)}(σ,initial_params)

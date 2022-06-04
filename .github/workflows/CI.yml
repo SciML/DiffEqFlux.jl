@@ -16,7 +16,6 @@ jobs:
           - Layers
           - BasicNeuralDE
           - AdvancedNeuralDE
-          - Integration
           - Newton
         version:
           - 1
