@@ -81,12 +81,10 @@ and we train the network using two rounds of `ADAM`:
 ```julia
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss_adjoint(x), adtype)
-optfunc = Optimization.instantiate_function(optf, α, adtype, nothing)
-optprob = Optimization.OptimizationProblem(optfunc, α)
+optprob = Optimization.OptimizationProblem(optf, α)
 res1 = Optimization.solve(optprob, ADAM(0.05), cb = cb, maxiters = 150)
 
-optfunc2 = Optimization.instantiate_function(optf, res1.u, adtype, nothing)
-optprob2 = Optimization.OptimizationProblem(optfunc2, res1.u)
+optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2, ADAM(0.001), cb = cb,maxiters = 150)
 opt = res2.u
 ```

@@ -28,14 +28,13 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optfunc = Optimization.instantiate_function(optf, ffjord_mdl.p, adtype, nothing)
-optprob = Optimization.OptimizationProblem(optfunc, ffjord_mdl.p)
+optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
                           maxiters = 100)
-optfunc2 = Optimization.instantiate_function(optf, res1.u, adtype, nothing)
-optprob2 = Optimization.OptimizationProblem(optfunc2, res1.u)
+
+optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
                           allow_f_increases=false)
@@ -96,8 +95,7 @@ Here we showcase starting the optimization with `ADAM` to more quickly find a mi
 ```julia
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optfunc = Optimization.instantiate_function(optf, ffjord_mdl.p, adtype, nothing)
-optprob = Optimization.OptimizationProblem(optfunc, ffjord_mdl.p)
+optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1);
@@ -119,8 +117,7 @@ res1 = Optimization.solve(optprob,
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
 
 ```julia
-optfunc2 = Optimization.instantiate_function(optf, res1.u, adtype, nothing)
-optprob2 = Optimization.OptimizationProblem(optfunc2, res1.u)
+optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
                           allow_f_increases=false)

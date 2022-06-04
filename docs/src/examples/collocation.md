@@ -49,8 +49,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss(x), adtype)
-optfunc = Optimization.instantiate_function(optf, pinit, adtype, nothing)
-optprob = Optimization.OptimizationProblem(optfunc, pinit)
+optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
                                           ADAM(0.05), cb = callback,
@@ -74,8 +73,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optfunc = Optimization.instantiate_function(optf, prob_neuralode.p, adtype, nothing)
-optprob = Optimization.OptimizationProblem(optfunc, prob_neuralode.p)
+optprob = Optimization.OptimizationProblem(optf, prob_neuralode.p)
 
 result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
@@ -152,8 +150,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optfunc = Optimization.instantiate_function(optf, pinit, adtype, nothing)
-optprob = Optimization.OptimizationProblem(optfunc, pinit)
+optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
@@ -186,8 +183,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optfunc = Optimization.instantiate_function(optf, result_neuralode.u, adtype, nothing)
-optprob = Optimization.OptimizationProblem(optfunc, result_neuralode.u)
+optprob = Optimization.OptimizationProblem(optf, result_neuralode.u)
 @time numerical_neuralode = Optimization.solve(optprob,
                                               ADAM(0.05), cb = callback,
                                               maxiters = 300)
