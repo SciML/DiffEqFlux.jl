@@ -9,6 +9,7 @@ using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
 import Flux, Lux
 @reexport using DiffEqSensitivity
 @reexport using Zygote
+@reexport using Flux
 
 gpu_or_cpu(x) = Array
 
