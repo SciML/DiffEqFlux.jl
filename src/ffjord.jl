@@ -121,7 +121,7 @@ References:
 [3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
 
 """
-struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Union{Function, Nothing}, D <: Distribution, T, A, K}
+struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, ST, RE <: Union{Function, Lux.AbstractExplicitLayer}, D <: Distribution, T, A, K}
     model::M
     p::P
     st::ST
@@ -132,7 +132,7 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVecto
     kwargs::K
 
     function FFJORD(model::Lux.Chain,tspan,args...;p=nothing,st=nothing,basedist=nothing,kwargs...)
-        re = nothing
+        re = model
         _p, st = Lux.setup(rng, model)
         if isnothing(p)
             p = _p
@@ -149,7 +149,7 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVecto
 end
 
 function FFJORD(model, tspan, args...;
-                p::P=nothing, st::ST=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, ST <: Nothing, RE <: Function, D <: Union{Distribution, Nothing}}
+                p::P=nothing, st=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}}
     _p, re = Flux.destructure(model)
     if isnothing(p)
         p = _p
@@ -170,8 +170,22 @@ function jacobian_fn(f, x::AbstractVector)
     vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
 end
 
-function jacobian_fn(f, x::AbstractMatrix)
+function jacobian_fn(f, x::AbstractMatrix, args...)
     y, back = Zygote.pullback(f, x)
+    z = Zygote.@ignore similar(y)
+    Zygote.@ignore fill!(z, zero(eltype(x)))
+    vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
+    for i in 1:size(y, 1)
+        Zygote.@ignore z[i, :] .= one(eltype(x))
+        vec[i, :, :] = back(z)[1]
+        Zygote.@ignore z[i, :] .= zero(eltype(x))
+    end
+    copy(vec)
+end
+
+function jacobian_fn(f::Lux.Chain, x::AbstractMatrix, args...)
+    p,st = args
+    y, back = Zygote.pullback((z,ps,s)->f(z,ps,s)[1], x, p, st)
     z = Zygote.@ignore similar(y)
     Zygote.@ignore fill!(z, zero(eltype(x)))
     vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
@@ -186,14 +200,9 @@ end
 _trace_batched(x::AbstractArray{T, 3}) where T =
     reshape([tr(x[:, :, i]) for i in 1:size(x, 3)], 1, size(x, 3))
 
-function ffjord(u, p, t, re, e;
+function ffjord(u, p, t, re, e, st;
                 regularize=false, monte_carlo=true)
-    # m = re(p)
-    if isnothing(re)
-        m = p
-    else
-        m = re(p)
-    end
+    m = re(p)
     if regularize
         z = u[1:end - 3, :]
         if monte_carlo
@@ -219,6 +228,33 @@ function ffjord(u, p, t, re, e;
     end
 end
 
+function ffjord(u, p, t, re::Lux.Chain, e, st;
+    regularize=false, monte_carlo=true)
+    if regularize
+        z = u[1:end - 3, :]
+        if monte_carlo
+            mz, back = Zygote.pullback((x,ps,s)->re(x,ps,s)[1], z, p, st)
+            eJ = back(e)[1]
+            trace_jac = sum(eJ .* e, dims=1)
+        else
+            mz = re(z, ps, st)[1]
+            trace_jac = _trace_batched(jacobian_fn(re, z, p, st))
+        end
+        vcat(mz, -trace_jac, sum(abs2, mz, dims=1), _norm_batched(eJ))
+    else
+        z = u[1:end - 1, :]
+        if monte_carlo
+            mz, back = Zygote.pullback((x,ps,s)->re(x,ps,s)[1], z, p, st)
+            eJ = back(e)[1]
+            trace_jac = sum(eJ .* e, dims=1)
+        else
+            mz = re(z, p, st)[1]
+            trace_jac = _trace_batched(jacobian_fn(re, z, p, st))
+        end
+        vcat(mz, -trace_jac)
+    end
+end
+
 # When running on GPU e needs to be passed separately
 (n::FFJORD)(args...; kwargs...) = forward_ffjord(n, args...; kwargs...)
 
@@ -226,7 +262,8 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
                         regularize=false, monte_carlo=true)
     pz = n.basedist
     sensealg = InterpolatingAdjoint()
-    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, n.st; regularize, monte_carlo)
+    # ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
     if regularize
         _z = Zygote.@ignore similar(x, 3, size(x, 2))
         Zygote.@ignore fill!(_z, zero(eltype(x)))
@@ -257,7 +294,7 @@ function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].
     px = n.basedist
     x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
     sensealg = InterpolatingAdjoint()
-    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, n.st; regularize, monte_carlo)
     if regularize
         _z = Zygote.@ignore similar(x, 3, size(x, 2))
         Zygote.@ignore fill!(_z, zero(eltype(x)))

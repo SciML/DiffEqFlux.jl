@@ -65,9 +65,6 @@ struct NeuralODE{M,P,ST,RE,T,A,K} <: NeuralDELayer
 
     function NeuralODE(model::Lux.AbstractExplicitLayer,tspan,args...;p=nothing,st=nothing,kwargs...)
       re = nothing
-      if p == nothing && st == nothing
-        p, st = Lux.setup(rng, model)
-      end
       new{typeof(model),typeof(p),typeof(st),typeof(re),
           typeof(tspan),typeof(args),typeof(kwargs)}(
           model,p,st,re,tspan,args,kwargs)
@@ -90,12 +87,15 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
-function (n::NeuralODE{M})(x,p=n.p,st=n.st) where {M<:Lux.AbstractExplicitLayer}
-  dudt_(u,p,t) = n.model(u,p,st)[1]
-  ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
-  prob = ODEProblem{false}(ff,x,n.tspan,p)
+function (n::NeuralODE{M})(x,ps,st) where {M<:Lux.AbstractExplicitLayer}
+  function dudt(u,p,t)
+    u_, st = n.model(u,p,st)
+    return u_
+  end
+  ff = ODEFunction{false}(dudt,tgrad=basic_tgrad)
+  prob = ODEProblem{false}(ff,x,n.tspan,ps)
   sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-  solve(prob,n.args...;sensealg=sense,n.kwargs...)
+  return solve(prob,n.args...;sensealg=sense,n.kwargs...), st
 end
 
 """
