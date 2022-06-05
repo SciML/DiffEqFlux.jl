@@ -5,7 +5,10 @@ pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
 ```julia
-using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizatonFlux, Plots
+using Lux, DiffEqFlux, OrdinaryDiffEq, DiffEqSensitivity, Optimization, OptimizationFlux, Plots
+
+using Random
+rng = Random.default_rng()
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -28,32 +31,31 @@ savefig("colloc.png")
 plot(tsteps,du')
 savefig("colloc_du.png")
 
-dudt2 = Chain((x, p) -> x.^3,
-                  Dense(2, 50, tanh),
-                  Dense(50, 2))
+dudt2 = Lux.Chain(ActivationFunction(x -> x.^3),
+                  Lux.Dense(2, 50, tanh),
+                  Lux.Dense(50, 2))
 
 function loss(p)
     cost = zero(first(p))
     for i in 1:size(du,2)
-      _du = dudt2(@view(u[:,i]),p)
+      _du, _ = dudt2(@view(u[:,i]),p, st)
       dui = @view du[:,i]
       cost += sum(abs2,dui .- _du)
     end
     sqrt(cost)
 end
 
-pinit = initial_params(dudt2)
+pinit, st = Lux.setup(rng, dudt2)
+
 callback = function (p, l)
   return false
 end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, pinit)
+optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
 
-result_neuralode = Optimization.solve(optprob,
-                                          ADAM(0.05), cb = callback,
-                                          maxiters = 10000)
+result_neuralode = Optimization.solve(optprob, ADAM(0.05), callback = callback, maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 nn_sol = prob_neuralode(u0, result_neuralode.u)
@@ -73,12 +75,12 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, prob_neuralode.p)
+optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(prob_neuralode.p))
 
-result_neuralode = Optimization.solve(optprob,
+numerical_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
                                        cb = callback,
-                                       maxiters = 10000)
+                                       maxiters = 300)
 
 nn_sol = prob_neuralode(u0, numerical_neuralode.u)
 scatter(tsteps,data')
@@ -129,33 +131,31 @@ calculates the squared difference between `f(u,p,t)` and `u'` at each
 point, and find the parameters which minimize this difference:
 
 ```julia
-dudt2 = Chain((x, p) -> x.^3,
-                  Dense(2, 50, tanh),
-                  Dense(50, 2))
+dudt2 = Lux.Chain(ActivationFunction(x -> x.^3),
+                  Lux.Dense(2, 50, tanh),
+                  Lux.Dense(50, 2))
 
 function loss(p)
     cost = zero(first(p))
     for i in 1:size(du,2)
-      _du = dudt2(@view(u[:,i]),p)
+      _du, _ = dudt2(@view(u[:,i]),p, st)
       dui = @view du[:,i]
       cost += sum(abs2,dui .- _du)
     end
     sqrt(cost)
 end
 
-pinit = initial_params(dudt2)
+pinit, st = Lux.setup(rng, dudt2)
+
 callback = function (p, l)
   return false
 end
 
 adtype = Optimization.AutoZygote()
-optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, pinit)
+optf = Optimization.OptimizationFunction((x,p) -> loss(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
 
-result_neuralode = Optimization.solve(optprob,
-                                       ADAM(0.05),
-                                       cb = callback,
-                                       maxiters = 10000)
+result_neuralode = Optimization.solve(optprob, ADAM(0.05), callback = callback, maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 nn_sol = prob_neuralode(u0, result_neuralode.u)
@@ -183,10 +183,12 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, result_neuralode.u)
-@time numerical_neuralode = Optimization.solve(optprob,
-                                              ADAM(0.05), cb = callback,
-                                              maxiters = 300)
+optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(prob_neuralode.p))
+
+numerical_neuralode = Optimization.solve(optprob,
+                                       ADAM(0.05),
+                                       cb = callback,
+                                       maxiters = 300)
 
 nn_sol = prob_neuralode(u0, numerical_neuralode.u)
 scatter(tsteps,data')

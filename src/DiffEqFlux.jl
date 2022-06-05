@@ -15,6 +15,7 @@ import OptimizationFlux
 import NNlib
 using Requires
 using Cassette
+using Lux
 @reexport using Flux
 @reexport using OptimizationOptimJL
 

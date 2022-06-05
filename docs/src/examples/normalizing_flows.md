@@ -8,13 +8,14 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```julia
-using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
+using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
 
-nn = Chain(
-    Dense(1, 3, tanh),
-    Dense(3, 1, tanh),
+nn = Lux.Chain(
+    Lux.Dense(1, 3, tanh),
+    Lux.Dense(3, 1, tanh),
 ) |> f32
 tspan = (0.0f0, 10.0f0)
+
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
 # Training
@@ -28,7 +29,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
@@ -56,13 +57,14 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```julia
-using DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
+using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
 
-nn = Chain(
-    Dense(1, 3, tanh),
-    Dense(3, 1, tanh),
+nn = Lux.Chain(
+    Lux.Dense(1, 3, tanh),
+    Lux.Dense(3, 1, tanh),
 ) |> f32
 tspan = (0.0f0, 10.0f0)
+
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 ```
 
@@ -95,10 +97,10 @@ Here we showcase starting the optimization with `ADAM` to more quickly find a mi
 ```julia
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
 
 res1 = Optimization.solve(optprob,
-                          ADAM(0.1);
+                          ADAM(0.1),
                           maxiters = 100)
 
 # output

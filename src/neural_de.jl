@@ -1,3 +1,4 @@
+rng = Random.default_rng()
 abstract type NeuralDELayer <: Function end
 basic_tgrad(u,p,t) = zero(u)
 Flux.trainable(m::NeuralDELayer) = (m.p,)
@@ -36,29 +37,40 @@ References:
 [1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
 
 """
-struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
+struct NeuralODE{M,P,ST,RE,T,A,K} <: NeuralDELayer
     model::M
     p::P
+    st::ST
     re::RE
     tspan::T
     args::A
     kwargs::K
 
-    function NeuralODE(model,tspan,args...;p = nothing,kwargs...)
+    function NeuralODE(model,tspan,args...;p = nothing,st=nothing,kwargs...)
         _p,re = Flux.destructure(model)
         if p === nothing
             p = _p
         end
-        new{typeof(model),typeof(p),typeof(re),
+        new{typeof(model),typeof(p),typeof(st),typeof(re),
             typeof(tspan),typeof(args),typeof(kwargs)}(
-            model,p,re,tspan,args,kwargs)
+            model,p,st,re,tspan,args,kwargs)
     end
 
-    function NeuralODE(model::FastChain,tspan,args...;p = initial_params(model),kwargs...)
+    function NeuralODE(model::FastChain,tspan,args...;p = initial_params(model),st=nothing,kwargs...)
         re = nothing
-        new{typeof(model),typeof(p),typeof(re),
+        new{typeof(model),typeof(p),typeof(st),typeof(re),
             typeof(tspan),typeof(args),typeof(kwargs)}(
-            model,p,re,tspan,args,kwargs)
+            model,p,st,re,tspan,args,kwargs)
+    end
+
+    function NeuralODE(model::Lux.Chain,tspan,args...;p=nothing,st=nothing,kwargs...)
+      re = nothing
+      if p == nothing && st == nothing
+        p, st = Lux.setup(rng, model)
+      end
+      new{typeof(model),typeof(p),typeof(st),typeof(re),
+          typeof(tspan),typeof(args),typeof(kwargs)}(
+          model,p,st,re,tspan,args,kwargs)
     end
 end
 
@@ -76,6 +88,14 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     prob = ODEProblem{false}(ff,x,n.tspan,p)
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
     solve(prob,n.args...;sensealg=sense,n.kwargs...)
+end
+
+function (n::NeuralODE{M})(x,p=n.p,st=n.st) where {M<:Lux.Chain}
+  dudt_(u,p,t) = n.model(u,p,st)[1]
+  ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
+  prob = ODEProblem{false}(ff,x,n.tspan,p)
+  sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
+  solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
 """

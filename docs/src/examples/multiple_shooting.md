@@ -18,8 +18,11 @@ high penalties in case the solver predicts discontinuous values.
 The following is a working demo, using Multiple Shooting
 
 ```julia
-using Flux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, DifferentialEquations, Plots
+using Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, DifferentialEquations
 using DiffEqFlux: group_ranges
+
+using Random
+rng = Random.default_rng()
 
 # Define initial conditions and time steps
 datasize = 30
@@ -38,13 +41,13 @@ ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
 
 # Define the Neural Network
-nn = Chain((x, p) -> x.^3,
-                  Dense(2, 16, tanh),
-                  Dense(16, 2))
-p_init = initial_params(nn)
+nn = Lux.Chain(ActivationFunction(x -> x.^3),
+                  Lux.Dense(2, 16, tanh),
+                  Lux.Dense(16, 2))
+p_init, st = Lux.setup(rng, nn)
 
 neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
-prob_node = ODEProblem((u,p,t)->nn(u,p), u0, tspan, p_init)
+prob_node = ODEProblem((u,p,t)->nn(u,p,st)[1], u0, tspan, Lux.ComponentArray(p_init))
 
 
 function plot_multiple_shoot(plt, preds, group_size)
@@ -88,7 +91,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, p_init)
+optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p_init))
 res_ms = Optimization.solve(optprob, PolyOpt(),
                                 cb = callback)
 gif(anim, "multiple_shooting.gif", fps=15)

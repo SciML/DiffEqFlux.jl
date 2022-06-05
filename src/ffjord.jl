@@ -86,6 +86,8 @@ function (n::DeterministicCNF)(x, p=n.p)
     logpx[1]
 end
 
+rng = Random.default_rng()
+
 """
 Constructs a continuous-time recurrent neural network, also known as a neural
 ordinary differential equation (neural ODE), with fast gradient calculation
@@ -119,18 +121,35 @@ References:
 [3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
 
 """
-struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Function, D <: Distribution, T, A, K}
+struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, RE <: Union{Function, Nothing}, D <: Distribution, T, A, K}
     model::M
     p::P
+    st::ST
     re::RE
     basedist::D
     tspan::T
     args::A
     kwargs::K
+
+    function FFJORD(model::Lux.Chain,tspan,args...;p=nothing,st=nothing,basedist=nothing,kwargs...)
+        re = nothing
+        _p, st = Lux.setup(rng, model)
+        if isnothing(p)
+            p = _p
+        end
+        if isnothing(basedist)
+            size_input = size(p.layer_1.weight, 2)
+            type_input = eltype(p.layer_1.weight)
+            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
+        end
+        new{typeof(model),typeof(p),typeof(st),typeof(re),
+          typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
+          model,p,st,re,basedist,tspan,args,kwargs)
+    end
 end
 
 function FFJORD(model, tspan, args...;
-                p::P=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}}
+                p::P=nothing, st::ST=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, ST <: Nothing, RE <: Function, D <: Union{Distribution, Nothing}}
     _p, re = Flux.destructure(model)
     if isnothing(p)
         p = _p
@@ -140,7 +159,7 @@ function FFJORD(model, tspan, args...;
         type_input = eltype(model[1].weight)
         basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
     end
-    FFJORD(model, p, re, basedist, tspan, args, kwargs)
+    FFJORD(model, p, st, re, basedist, tspan, args, kwargs)
 end
 
 _norm_batched(x::AbstractMatrix) = sqrt.(sum(x.^2, dims=1))
@@ -169,7 +188,12 @@ _trace_batched(x::AbstractArray{T, 3}) where T =
 
 function ffjord(u, p, t, re, e;
                 regularize=false, monte_carlo=true)
-    m = re(p)
+    # m = re(p)
+    if isnothing(re)
+        m = p
+    else
+        m = re(p)
+    end
     if regularize
         z = u[1:end - 3, :]
         if monte_carlo
