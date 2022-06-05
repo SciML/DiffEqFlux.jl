@@ -90,7 +90,7 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
     solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
-function (n::NeuralODE{M})(x,p=n.p,st=n.st) where {M<:Lux.Chain}
+function (n::NeuralODE{M})(x,p=n.p,st=n.st) where {M<:Lux.AbstractExplicitLayer}
   dudt_(u,p,t) = n.model(u,p,st)[1]
   ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
   prob = ODEProblem{false}(ff,x,n.tspan,p)
