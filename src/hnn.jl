@@ -20,11 +20,11 @@ to define a training loop to circumvent this issue.
 
 ```julia
 HamiltonianNN(model; p = nothing)
-HamiltonianNN(model::FastChain; p = initial_params(model))
+HamiltonianNN(model::Lux.AbstractExplicitLayer; p = initial_params(model))
 ```
 
 Arguments:
-1. `model`: A Chain or FastChain neural network that returns the Hamiltonian of the
+1. `model`: A Chain or Lux.AbstractExplicitLayer neural network that returns the Hamiltonian of the
             system.
 2. `p`: The initial parameters of the neural network.
 
@@ -45,11 +45,6 @@ struct HamiltonianNN{M, R, P}
         end
         return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
     end
-
-    function HamiltonianNN(model::FastChain; p = initial_params(model))
-        re = nothing
-        return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
-    end
 end
 
 Flux.trainable(hnn::HamiltonianNN) = (hnn.p,)
@@ -60,16 +55,7 @@ function _hamiltonian_forward(re, p, x)
     return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
 end
 
-function _hamiltonian_forward(m::FastChain, p, x)
-    H = Flux.gradient(x -> sum(m(x, p)), x)[1]
-    n = size(x, 1) ÷ 2
-    return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
-end
-
 (hnn::HamiltonianNN)(x, p = hnn.p) = _hamiltonian_forward(hnn.re, p, x)
-
-(hnn::HamiltonianNN{M})(x, p = hnn.p) where {M<:FastChain} =
-    _hamiltonian_forward(hnn.model, p, x)
 
 
 """
@@ -82,7 +68,7 @@ NeuralHamiltonianDE(model, tspan, args...; kwargs...)
 
 Arguments:
 
-- `model`: A Chain, FastChain or Hamiltonian Neural Network that predicts the
+- `model`: A Chain, Lux.AbstractExplicitLayer or Hamiltonian Neural Network that predicts the
            Hamiltonian of the system.
 - `tspan`: The timespan to be solved on.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
