@@ -63,7 +63,7 @@ struct NeuralODE{M,P,ST,RE,T,A,K} <: NeuralDELayer
             model,p,st,re,tspan,args,kwargs)
     end
 
-    function NeuralODE(model::Lux.Chain,tspan,args...;p=nothing,st=nothing,kwargs...)
+    function NeuralODE(model::Lux.AbstractExplicitLayer,tspan,args...;p=nothing,st=nothing,kwargs...)
       re = nothing
       if p == nothing && st == nothing
         p, st = Lux.setup(rng, model)
