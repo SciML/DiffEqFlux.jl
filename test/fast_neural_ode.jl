@@ -42,9 +42,9 @@ function static_loss_n_ode(p)
     loss,pred
 end
 
-dudt2 = Chain((x) -> x.^3,
-             Dense(2,50,tanh),
-             Dense(50,2))
+dudt2 = Flux.Chain((x) -> x.^3,
+                Flux.Dense(2,50,tanh),
+                Flux.Dense(50,2))
 n_ode = NeuralODE(dudt2,tspan,Tsit5(),saveat=t)
 
 function predict_n_ode(p)

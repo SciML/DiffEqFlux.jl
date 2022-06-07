@@ -10,8 +10,8 @@ function callback(p, l)
 end
 
 @testset "Smoke test for FFJORD" begin
-    nn = Chain(
-        Dense(1, 1, tanh),
+    nn = Flux.Chain(
+        Flux.Dense(1, 1, tanh),
     ) |> f32
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
@@ -166,8 +166,8 @@ end
     end
 end
 @testset "Smoke test for FFJORDDistribution (sampling & pdf)" begin
-    nn = Chain(
-        Dense(1, 1, tanh),
+    nn = Flux.Chain(
+        Flux.Dense(1, 1, tanh),
     ) |> f32
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
@@ -193,8 +193,8 @@ end
     @test !isnothing(rand(ffjord_d, 10))
 end
 @testset "Test for default base distribution and deterministic trace FFJORD" begin
-    nn = Chain(
-        Dense(1, 1, tanh),
+    nn = Flux.Chain(
+        Flux.Dense(1, 1, tanh),
     ) |> f32
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
@@ -220,9 +220,9 @@ end
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.9
 end
 @testset "Test for alternative base distribution and deterministic trace FFJORD" begin
-    nn = Chain(
-        Dense(1, 3, tanh),
-        Dense(3, 1, tanh),
+    nn = Flux.Chain(
+        Flux.Dense(1, 3, tanh),
+        Flux.Dense(3, 1, tanh),
     ) |> f32
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, Tsit5(); basedist=MvNormal([0.0f0], Diagonal([4.0f0])))
@@ -248,8 +248,8 @@ end
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
 end
 @testset "Test for multivariate distribution and deterministic trace FFJORD" begin
-    nn = Chain(
-        Dense(2, 2, tanh),
+    nn = Flux.Chain(
+        Flux.Dense(2, 2, tanh),
     ) |> f32
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
@@ -277,8 +277,8 @@ end
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
 end
 @testset "Test for default multivariate distribution and FFJORD with regularizers" begin
-    nn = Chain(
-        Dense(2, 2, tanh),
+    nn = Flux.Chain(
+        Flux.Dense(2, 2, tanh),
     ) |> f32
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())

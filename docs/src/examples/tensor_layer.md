@@ -13,7 +13,7 @@ To obtain the training data, we solve the equation of motion using one of the
 solvers in `DifferentialEquations`:
 
 ```julia
-using DiffEqFlux, DifferentialEquations, LinearAlgebra
+using DiffEqFlux, Optimization, OptimizationOptimJL, DifferentialEquations, LinearAlgebra
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0,10.0)
 
@@ -79,8 +79,13 @@ end
 and we train the network using two rounds of `ADAM`:
 
 ```julia
-res1 = DiffEqFlux.sciml_train(loss_adjoint, α, ADAM(0.05), cb = cb, maxiters = 150)
-res2 = DiffEqFlux.sciml_train(loss_adjoint, res1.u, ADAM(0.001), cb = cb,maxiters = 150)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x,p) -> loss_adjoint(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, α)
+res1 = Optimization.solve(optprob, ADAM(0.05), cb = cb, maxiters = 150)
+
+optprob2 = Optimization.OptimizationProblem(optf, res1.u)
+res2 = Optimization.solve(optprob2, ADAM(0.001), cb = cb,maxiters = 150)
 opt = res2.u
 ```
 

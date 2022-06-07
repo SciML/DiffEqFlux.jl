@@ -13,6 +13,7 @@ using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
 
 import OptimizationFlux
 import NNlib
+import Lux
 using Requires
 using Cassette
 @reexport using Flux

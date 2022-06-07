@@ -12,7 +12,7 @@ features = [-10.0f0 -9.0f0 9.0f0 10.0f0
 target = [1.0 1.0 0.0 0.0
           0.0 0.0 1.0 1.0]
 
-model = Chain(
+model = Flux.Chain(
     NeuralODE(
         GCNConv(adj_mat, 2=>2),
         (0.f0, 1.f0), Tsit5(), save_everystep = false,

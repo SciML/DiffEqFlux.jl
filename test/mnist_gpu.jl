@@ -25,16 +25,16 @@ end
 const bs = 128
 x_train, y_train = loadmnist(bs)
 
-down = Chain(x->reshape(x,(28*28,:)),
-             Dense(784,20,tanh)
+down = Flux.Chain(x->reshape(x,(28*28,:)),
+            Flux.Dense(784,20,tanh)
             ) |> gpu
 nfe = 0
-nn = Chain(
-           Dense(20,10,tanh),
-           Dense(10,10,tanh),
-           Dense(10,20,tanh)
+nn = Flux.Chain(
+            Flux.Dense(20,10,tanh),
+            Flux.Dense(10,10,tanh),
+            Flux.Dense(10,20,tanh)
           ) |> gpu
-fc = Chain(Dense(20,10)) |> gpu
+fc = Flux.Chain(Flux.Dense(20,10)) |> gpu
 
 nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                         save_everystep = false,
@@ -52,12 +52,12 @@ function DiffEqArray_to_Array(x)
 end
 
 #Build our over-all model topology
-m = Chain(down,
+m = Flux.Chain(down,
     nn_ode,
     DiffEqArray_to_Array,
     fc) |> gpu
 #We can also build the model topology without a NN-ODE
-m_no_ode = Chain(down, nn, fc) |> gpu
+m_no_ode = Flux.Chain(down, nn, fc) |> gpu
 
 #To understand the intermediate NN-ODE layer, we can examine it's dimensionality
 x_d = down(x_train[1])
