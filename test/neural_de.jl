@@ -4,7 +4,7 @@ mp = Float32[0.1,0.1]
 x = Float32[2.; 0.]
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))
 tspan = (0.0f0,1.0f0)
-dudt = Chain(Dense(2,50,tanh),Dense(50,2))
+dudt = Flux.Chain(Flux.Dense(2,50,tanh),Flux.Dense(50,2))
 fastdudt = FastChain(FastDense(2,50,tanh),FastDense(50,2))
 fastcdudt = FastChain(FastDense(2,50,tanh,precache=true,numcols=size(xs)[2]),FastDense(50,2,precache=true,numcols=size(xs)[2]))
 staticdudt = FastChain(StaticDense(2,50,tanh),StaticDense(50,2))
@@ -320,7 +320,7 @@ end
 
 @info "Test non-ODEs"
 
-dudt2 = Chain(Dense(2,50,tanh),Dense(50,2))
+dudt2 = Flux.Chain(Flux.Dense(2,50,tanh),Flux.Dense(50,2))
 fastdudt2 = FastChain(FastDense(2,50,tanh),FastDense(50,2))
 fastcdudt2 = FastChain(FastDense(2,50,tanh,numcols=size(xs)[2],precache=true),FastDense(50,2,numcols=size(xs)[2],precache=true))
 NeuralDSDE(dudt,dudt2,(0.0f0,.1f0),SOSRI(),saveat=0.1)(x)
@@ -365,7 +365,7 @@ gradsc2 = Zygote.gradient(()->sum(sodec(xs)),Flux.params(xs,sodec))
 @test ! iszero(gradsc2[sodec.p])
 @test ! iszero(gradsc2[sodec.p][end])
 
-dudt22 = Chain(Dense(2,50,tanh),Dense(50,4),x->reshape(x,2,2))
+dudt22 = Flux.Chain(Flux.Dense(2,50,tanh),Flux.Dense(50,4),x->reshape(x,2,2))
 fastdudt22 = FastChain(FastDense(2,50,tanh),FastDense(50,4),(x,p)->reshape(x,2,2))
 fastcdudt22 = FastChain(FastDense(2,50,tanh,numcols=size(xs)[2],precache=true),FastDense(50,4,numcols=size(xs)[2],precache=true),(x,p)->reshape(x,2,2))
 NeuralSDE(dudt,dudt22,(0.0f0,.1f0),2,LambaEM(),saveat=0.01)(x)
@@ -409,7 +409,7 @@ gradsc = Zygote.gradient(()->sum(sodec(x)),Flux.params(x,sodec))
 @test ! iszero(gradsc[sodec.p])
 @test ! iszero(gradsc[sodec.p][end])
 
-ddudt = Chain(Dense(6,50,tanh),Dense(50,2))
+ddudt = Flux.Chain(Flux.Dense(6,50,tanh),Flux.Dense(50,2))
 NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.1)(x)
 dode = NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.0:0.1:2.0)
 

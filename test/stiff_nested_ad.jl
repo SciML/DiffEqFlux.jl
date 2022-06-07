@@ -12,9 +12,9 @@ t = range(tspan[1],tspan[2],length=datasize)
 prob = ODEProblem(trueODEfunc,u0,tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 
-model = Chain(x -> x.^3,
-             Dense(2,50,tanh),
-             Dense(50,2))
+model = Flux.Chain(x -> x.^3,
+            Flux.Dense(2,50,tanh),
+            Flux.Dense(50,2))
 neuralde = NeuralODE(model,tspan,Rodas5(),saveat=t,reltol=1e-7,abstol=1e-9)
 
 function predict_n_ode()

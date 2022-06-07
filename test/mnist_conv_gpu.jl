@@ -33,15 +33,15 @@ const bs = 128
 const train_split = 0.9
 train_dataloader, test_dataloader = loadmnist(bs, train_split)
 
-down = Chain(Conv((3, 3), 1=>64, relu, stride = 1), GroupNorm(64, 64),
+down = Flux.Chain(Conv((3, 3), 1=>64, relu, stride = 1), GroupNorm(64, 64),
              Conv((4, 4), 64=>64, relu, stride = 2, pad=1), GroupNorm(64, 64),
              Conv((4, 4), 64=>64, stride = 2, pad = 1)) |>gpu
 
-dudt = Chain(Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
+dudt = Flux.Chain(Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
              Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |>gpu
 
-fc = Chain(GroupNorm(64, 64), x -> relu.(x), MeanPool((6, 6)),
-           x -> reshape(x, (64, :)), Dense(64,10)) |> gpu
+fc = Flux.Chain(GroupNorm(64, 64), x -> relu.(x), MeanPool((6, 6)),
+           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> gpu
 
 nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
@@ -54,7 +54,7 @@ function DiffEqArray_to_Array(x)
 end
 
 # Build our over-all model topology
-model = Chain(down,                 # (28, 28, 1, BS) -> (6, 6, 64, BS)
+model = Flux.Chain(down,                 # (28, 28, 1, BS) -> (6, 6, 64, BS)
               nn_ode,               # (6, 6, 64, BS) -> (6, 6, 64, BS, 1)
               DiffEqArray_to_Array, # (6, 6, 64, BS, 1) -> (6, 6, 64, BS)
               fc)                   # (6, 6, 64, BS) -> (10, BS)

@@ -3,14 +3,14 @@ using DiffEqFlux, OrdinaryDiffEq, ReverseDiff, Test
 # Checks for Shapes and Non-Zero Gradients
 u0 = rand(Float32, 6, 1)
 
-hnn = HamiltonianNN(Chain(Dense(6, 12, relu), Dense(12, 1)))
+hnn = HamiltonianNN(Flux.Chain(Flux.Dense(6, 12, relu), Flux.Dense(12, 1)))
 p = hnn.p
 
 @test size(hnn(u0)) == (6, 1)
 
 @test ! iszero(ReverseDiff.gradient(p -> sum(hnn(u0, p)), p))
 
-hnn = HamiltonianNN(Chain(Dense(6, 12, relu), Dense(12, 1)))
+hnn = HamiltonianNN(Flux.Chain(Flux.Dense(6, 12, relu), Flux.Dense(12, 1)))
 p = hnn.p
 
 @test size(hnn(u0)) == (6, 1)
@@ -28,7 +28,7 @@ dpdt = -2π_32 .* q_t
 data = cat(q_t, p_t, dims = 1)
 target = cat(dqdt, dpdt, dims = 1)
 
-hnn = HamiltonianNN(Chain(Dense(2, 16, relu), Dense(16, 1)))
+hnn = HamiltonianNN(Flux.Chain(Flux.Dense(2, 16, relu), Flux.Dense(16, 1)))
 p = hnn.p
 
 opt = ADAM(0.01)

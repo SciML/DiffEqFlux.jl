@@ -15,8 +15,8 @@ cb = function (p,l)
   false
 end
 
-NN = Chain(Dense(n, 5n, tanh),
-           Dense(5n, n))
+NN = Flux.Chain(Flux.Dense(n, 5n, tanh),
+                Flux.Dense(5n, n))
 
 @info "ROCK4"
 nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])

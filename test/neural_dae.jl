@@ -17,7 +17,7 @@ prob_mm = ODEProblem(ODEFunction(rober,mass_matrix=M),[1.0,0.0,0.0],(0.0,10.0),(
 sol = solve(prob_mm,Rodas5(),reltol=1e-8,abstol=1e-8)
 
 
-dudt2 = Chain(x -> x.^3,Dense(6,50,tanh),Dense(50,2))
+dudt2 = Flux.Chain(x -> x.^3,Flux.Dense(6,50,tanh),Flux.Dense(50,2))
 
 ndae = NeuralDAE(dudt2, (u,p,t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler(),
                         differential_vars = [true,true,false])
