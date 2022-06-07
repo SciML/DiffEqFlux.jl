@@ -164,7 +164,7 @@ end
 
 _norm_batched(x::AbstractMatrix) = sqrt.(sum(x.^2, dims=1))
 
-function jacobian_fn(f, x::AbstractVector)
+function jacobian_fn(f, x::AbstractVector, args...)
     y::AbstractVector, back = Zygote.pullback(f, x)
     ȳ(i) = [i == j for j = 1:length(y)]
     vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
