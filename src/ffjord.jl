@@ -1,6 +1,6 @@
 abstract type CNFLayer <: Function end
 Flux.trainable(m::CNFLayer) = (m.p,)
-
+rng = Random.default_rng()
 """
 Constructs a continuous-time recurrent neural network, also known as a neural
 ordinary differential equation (neural ODE), with fast gradient calculation
@@ -146,21 +146,38 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVecto
           typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
           model,p,st,re,basedist,tspan,args,kwargs)
     end
+
+    function FFJORD(model, tspan, args...;p=nothing, st=nothing, basedist=nothing, kwargs...)
+        #
+        _p, re = Flux.destructure(model)
+        if isnothing(p)
+            p = _p
+        end
+        if isnothing(basedist)
+            size_input = size(model[1].weight, 2)
+            type_input = eltype(model[1].weight)
+            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
+        end
+        new{typeof(model),typeof(p),typeof(st),typeof(re),
+            typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
+                model,p,st,re,basedist,tspan,args,kwargs)
+        # FFJORD(model, p, st, re, basedist, tspan, args, kwargs)
+    end
 end
 
-function FFJORD(model, tspan, args...;
-                p::P=nothing, st=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}}
-    _p, re = Flux.destructure(model)
-    if isnothing(p)
-        p = _p
-    end
-    if isnothing(basedist)
-        size_input = size(model[1].weight, 2)
-        type_input = eltype(model[1].weight)
-        basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
-    end
-    FFJORD(model, p, st, re, basedist, tspan, args, kwargs)
-end
+# function FFJORD(model, tspan, args...;
+#                 p::P=nothing, st=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}}
+#     _p, re = Flux.destructure(model)
+#     if isnothing(p)
+#         p = _p
+#     end
+#     if isnothing(basedist)
+#         size_input = size(model[1].weight, 2)
+#         type_input = eltype(model[1].weight)
+#         basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
+#     end
+#     FFJORD(model, p, st, re, basedist, tspan, args, kwargs)
+# end
 
 _norm_batched(x::AbstractMatrix) = sqrt.(sum(x.^2, dims=1))
 
