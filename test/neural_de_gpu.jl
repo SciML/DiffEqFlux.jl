@@ -2,12 +2,12 @@ using DiffEqFlux, CUDA, OrdinaryDiffEq, StochasticDiffEq, Test
 
 CUDA.allowscalar(false)
 
-mp = Flux.Chain(Dense(2,2)) |> gpu
+mp = Flux.Chain(Flux.Dense(2,2)) |> gpu
 x = Float32[2.; 0.] |> gpu
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.])) |> gpu
 tspan = (0.0f0,25.0f0)
-dudt = Flux.Chain(Dense(2,50,tanh),Dense(50,2)) |> gpu
-dudt_tracker = Flux.Chain(Dense(2,50,CUDA.tanh),Dense(50,2)) |> gpu
+dudt = Flux.Chain(Flux.Dense(2,50,tanh),Flux.Dense(50,2)) |> gpu
+dudt_tracker = Flux.Chain(Flux.Dense(2,50,CUDA.tanh),Flux.Dense(50,2)) |> gpu
 
 NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)(x)
 NeuralODE(dudt,tspan,Tsit5(),saveat=0.1)(x)
