@@ -1,16 +1,10 @@
-# Neural Ordinary Differential Equations with Optimization.jl
+# Neural Ordinary Differential Equations
 
-Optimization.jl defines `Optimization.solve` and its sublibrary OptimizationPolyalgorithms defines `PolyOpt()` which is a hight level utility that automates
-a lot of the choices, using heuristics to determine a potentially efficient method.
-However, in some cases you may want more control over the optimization process.
-
-In this tutorial we will show how to more deeply interact with the optimization
-library to tweak its processes.
-
-We can use a neural ODE as our example. A neural ODE is an ODE where a neural
+A neural ODE is an ODE where a neural
 network defines its derivative function. Thus for example, with the multilayer
 perceptron neural network `Lux.Chain(Lux.Dense(2, 50, tanh), Lux.Dense(50, 2))`,
-we obtain  the following results.
+we can define a differential equation which is `u' = NN(u)`. This is done simply
+by the `NeuralODE` struct. Let's take a look at an example.
 
 ## Copy-Pasteable Code
 
@@ -83,7 +77,7 @@ result_neuralode2 = Optimization.solve(optprob2,
 
 ## Explanation
 
-Let's get a time series array from the Lotka-Volterra equation as data:
+Let's get a time series array from a sprial ODE to train against.
 
 ```julia
 using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, Random, Plots
