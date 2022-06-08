@@ -125,13 +125,12 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralDELayer
     end
 
     function NeuralDSDE(model1::Lux.Chain,model2::Lux.Chain,tspan,args...;
-                        p1 =nothing,
                         p = nothing, kwargs...)
         re1 = nothing
         re2 = nothing
         new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
             typeof(tspan),typeof(args),typeof(kwargs)}(p,
-            length(p1),model1,re1,model2,re2,tspan,args,kwargs)
+            Int(1),model1,re1,model2,re2,tspan,args,kwargs)
     end
 end
 
@@ -143,13 +142,13 @@ function (n::NeuralDSDE)(x,p=n.p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralDSDE{M})(x,p1,p2,st1,st2) where {M<:Lux.AbstractExplicitLayer}
+function (n::NeuralDSDE{M})(x,p,st1,st2) where {M<:Lux.AbstractExplicitLayer}
     function dudt_(u,p,t)
-      u_, st1 = n.model1(u,p1,st1)
+      u_, st1 = n.model1(u,p.p1,st1)
       return u_
     end
     function g(u,p,t)
-      u_, st2 = n.model2(u,p2,st2)
+      u_, st2 = n.model2(u,p.p2,st2)
       return u_
     end
     
@@ -205,6 +204,14 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralDELayer
             typeof(tspan),typeof(args),typeof(kwargs)}(
             p,length(p1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
     end
+
+    function NeuralSDE(model1::Lux.Chain,model2::Lux.Chain,tspan,nbrown,args...;p=nothing,kwargs...)
+        re1 = nothing
+        re2 = nothing
+        new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+            p,Int(1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
+      end
 end
 
 function (n::NeuralSDE)(x,p=n.p)
@@ -213,6 +220,20 @@ function (n::NeuralSDE)(x,p=n.p)
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+function (n::NeuralSDE)(x,p,st1,st2) where {M<:Lux.AbstractExplicitLayer,M2<:Lux.AbstractExplicitLayer}
+  function dudt_(u,p,t)
+    u_, st1 = n.model1(u,p.p1,st1)
+    return u_
+  end
+  function g(u,p,t)
+    u_, st2 = n.model2(u,p.p2,st2)
+    return u_
+  end
+  ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
+  prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
+  return solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...), st1, st2
 end
 
 """
@@ -263,6 +284,12 @@ struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
             typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
             re,hist,lags,tspan,args,kwargs)
     end
+
+    function NeuralCDDE(model::Lux.Chain,tspan,hist,lags,args...;p=nothing,kwargs...)
+      new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
+          typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
+          re,hist,lags,tspan,args,kwargs)
+    end
 end
 
 function (n::NeuralCDDE)(x,p=n.p)
@@ -273,6 +300,18 @@ function (n::NeuralCDDE)(x,p=n.p)
     ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+function (n::NeuralCDDE)(x,p,st) where {M<:Lux.AbstractExplicitLayer}
+  function dudt_(u,h,p,t)
+      _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
+      n.re(p)(_u)
+      u_, st = n.model(_u,p,st)
+      return u_
+  end
+  ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
+  prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
+  return solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...), st
 end
 
 """
@@ -326,6 +365,15 @@ struct NeuralDAE{P,M,M2,D,RE,T,DV,A,K} <: NeuralDELayer
             model,constraints_model,p,du0,re,tspan,differential_vars,
             args,kwargs)
     end
+
+    function NeuralDAE(model::Lux.Chain,constraints_model,tspan,du0=nothing,args...;p=nothing,differential_vars=nothing,kwargs...)
+
+      new{typeof(p),typeof(model),typeof(constraints_model),
+          typeof(du0),typeof(re),typeof(tspan),
+          typeof(differential_vars),typeof(args),typeof(kwargs)}(
+          model,constraints_model,p,du0,re,tspan,differential_vars,
+          args,kwargs)
+  end
 end
 
 function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
@@ -346,6 +394,27 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     end
     prob = DAEProblem{false}(f,du0,x,n.tspan,p,differential_vars=n.differential_vars)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+function (n::NeuralDAE)(x,du0=n.du0,p,st) where {M<:Lux.AbstractExplicitLayer}
+  function f(du,u,p,t)
+      _u = vcat(u,du)
+      nn_out, st = n.model(_u, p, st)
+      alg_out = n.constraints_model(u,p,t)
+      iter_nn = 0
+      iter_consts = 0
+      map(n.differential_vars) do isdiff
+          if isdiff
+              iter_nn += 1
+              nn_out[iter_nn]
+          else
+              iter_consts += 1
+              alg_out[iter_consts]
+          end
+      end
+  end
+  prob = DAEProblem{false}(f,du0,x,n.tspan,p,differential_vars=n.differential_vars)
+  return solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...), st
 end
 
 """
