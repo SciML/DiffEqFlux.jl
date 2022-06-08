@@ -144,11 +144,11 @@ end
 
 function (n::NeuralDSDE{M})(x,p,st1,st2) where {M<:Lux.AbstractExplicitLayer}
     function dudt_(u,p,t)
-      u_, st1 = n.model1(u,p.p1,st1)
+      u_, st1 = n.model1(u,p[1],st1)
       return u_
     end
     function g(u,p,t)
-      u_, st2 = n.model2(u,p.p2,st2)
+      u_, st2 = n.model2(u,p[2],st2)
       return u_
     end
     
@@ -222,13 +222,13 @@ function (n::NeuralSDE)(x,p=n.p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralSDE{M,M2})(x,p,st1,st2) where {M<:Lux.AbstractExplicitLayer,M2<:Lux.AbstractExplicitLayer}
+function (n::NeuralSDE{M})(x,p,st1,st2) where {M<:Lux.AbstractExplicitLayer}
   function dudt_(u,p,t)
-    u_, st1 = n.model1(u,p.p1,st1)
+    u_, st1 = n.model1(u,p[1],st1)
     return u_
   end
   function g(u,p,t)
-    u_, st2 = n.model2(u,p.p2,st2)
+    u_, st2 = n.model2(u,p[2],st2)
     return u_
   end
   ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
@@ -396,7 +396,7 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralDAE{M})(x,du0=n.du0,p,st) where {M<:Lux.AbstractExplicitLayer}
+function (n::NeuralDAE{M})(x,p,st,du0=n.du0) where {M<:Lux.AbstractExplicitLayer}
   function f(du,u,p,t)
       _u = vcat(u,du)
       nn_out, st = n.model(_u, p, st)

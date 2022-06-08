@@ -59,7 +59,7 @@ function _hamiltonian_forward(re, p, x, args...)
     return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
 end
 
-function _hamiltonian_forward(re::Lux.chain, p, x, args...)
+function _hamiltonian_forward(re::Lux.Chain, p, x, args...)
     st = args[1]
     H = Lux.gradient(x -> sum(Lux.apply(re,x,p,st)[1]), x)[1]
     n = size(x, 1) ÷ 2
