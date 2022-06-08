@@ -1,6 +1,7 @@
 pages = [
         "DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures" => "index.md",
         "Differential Equation Machine Learning Tutorials" => Any[
+            "examples/neural_ode_Optimization.md",
             "examples/augmented_neural_ode.md",
             "examples/collocation.md",
             "examples/hamiltonian_nn.md",
