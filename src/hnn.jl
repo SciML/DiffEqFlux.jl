@@ -45,17 +45,29 @@ struct HamiltonianNN{M, R, P}
         end
         return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
     end
+
+    function HamiltonianNN(model::Lux.Chain; p = nothing)
+        return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
+    end
 end
 
 Flux.trainable(hnn::HamiltonianNN) = (hnn.p,)
 
-function _hamiltonian_forward(re, p, x)
+function _hamiltonian_forward(re, p, x, args...)
     H = Flux.gradient(x -> sum(re(p)(x)), x)[1]
     n = size(x, 1) ÷ 2
     return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
 end
 
+function _hamiltonian_forward(re::Lux.chain, p, x, args...)
+    st = args[1]
+    H = Lux.gradient(x -> sum(Lux.apply(re,x,p,st)[1]), x)[1]
+    n = size(x, 1) ÷ 2
+    return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1), st
+end
+
 (hnn::HamiltonianNN)(x, p = hnn.p) = _hamiltonian_forward(hnn.re, p, x)
+(hnn::HamiltonianNN{M})(x, p, st) where {M<:Lux.AbstractExplicitLayer} = _hamiltonian_forward(hnn.model, p, x, st)
 
 
 """
@@ -99,6 +111,16 @@ end
 function (nhde::NeuralHamiltonianDE)(x, p = nhde.p)
     function neural_hamiltonian!(du, u, p, t)
         du .= reshape(nhde.hnn(u, p), size(du))
+    end
+    prob = ODEProblem(neural_hamiltonian!, x, nhde.tspan, p)
+    # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP
+    sense = InterpolatingAdjoint(autojacvec = false)
+    solve(prob, nhde.args...; sensealg = sense, nhde.kwargs...)
+end
+
+function (nhde::NeuralHamiltonianDE{M})(x, p, st) where {M<:Lux.AbstractExplicitLayer}
+    function neural_hamiltonian!(du, u, p, t)
+        du .= reshape(nhde.hnn(u, p, st)[1], size(du))
     end
     prob = ODEProblem(neural_hamiltonian!, x, nhde.tspan, p)
     # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP
