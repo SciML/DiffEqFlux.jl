@@ -63,13 +63,14 @@ optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p))
 
 result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
 
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        LBFGS(),
+                                        Optim.LBFGS(initial_stepnorm=0.01),
+                                        callback=callback,
                                         allow_f_increases = false)
 ```
 
@@ -176,7 +177,7 @@ optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p))
 
 result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
 # output
 * Status: success
@@ -199,7 +200,8 @@ halt when near the minimum.
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        LBFGS(),
+                                        Optim.LBFGS(initial_stepnorm=0.01),
+                                        callback = callback,
                                         allow_f_increases = false)
 # output
 * Status: success
