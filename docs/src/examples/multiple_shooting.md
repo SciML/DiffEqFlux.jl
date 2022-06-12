@@ -17,7 +17,7 @@ high penalties in case the solver predicts discontinuous values.
 
 The following is a working demo, using Multiple Shooting
 
-```julia
+```@example multipleshoot
 using Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, DifferentialEquations
 using DiffEqFlux: group_ranges
 

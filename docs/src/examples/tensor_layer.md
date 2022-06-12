@@ -12,7 +12,7 @@ ẍ = - kx - αx³ - βẋ -γẋ³.
 To obtain the training data, we solve the equation of motion using one of the
 solvers in `DifferentialEquations`:
 
-```julia
+```@example tensor
 using DiffEqFlux, Optimization, OptimizationOptimJL, DifferentialEquations, LinearAlgebra
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0,10.0)
@@ -31,7 +31,7 @@ data_train = Array(solve(prob_train,Tsit5(),saveat=ts))
 Now, we create a TensorLayer that will be able to perform 10th order expansions in
 a Legendre Basis:
 
-```julia
+```@example tensor
 A = [LegendreBasis(10), LegendreBasis(10)]
 nn = TensorLayer(A, 1)
 ```
@@ -39,7 +39,7 @@ nn = TensorLayer(A, 1)
 and we also instantiate the model we are trying to learn, "informing" the neural
 about the `∝x` and `∝v` dependencies in the equation of motion:
 
-```julia
+```@example tensor
 f = x -> min(30one(x),x)
 
 function dxdt_pred(du,u,p,t)
@@ -58,7 +58,7 @@ in order to obtain a faster convergence for this particular example.
 
 Finally, we introduce the corresponding loss function:
 
-```julia
+```@example tensor
 
 function predict_adjoint(θ)
   x = Array(solve(prob_pred,Tsit5(),p=θ,saveat=ts))
@@ -78,7 +78,7 @@ end
 
 and we train the network using two rounds of `ADAM`:
 
-```julia
+```@example tensor
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss_adjoint(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, α)
@@ -91,7 +91,7 @@ opt = res2.u
 
 We plot the results and we obtain a fairly accurate learned model:
 
-```julia
+```@example tensor
 using Plots
 data_pred = predict_adjoint(opt)
 plot(ts, data_train[1,:], label = "X (ODE)")

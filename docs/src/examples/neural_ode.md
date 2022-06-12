@@ -11,7 +11,7 @@ by the `NeuralODE` struct. Let's take a look at an example.
 Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
-```julia
+```@example neuralode_cp
 using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, Random, Plots
 
 rng = Random.default_rng()
@@ -80,7 +80,7 @@ result_neuralode2 = Optimization.solve(optprob2,
 
 Let's get a time series array from a sprial ODE to train against.
 
-```julia
+```@example neuralode
 using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, Random, Plots
 
 rng = Random.default_rng()
@@ -102,7 +102,7 @@ Now let's define a neural network with a `NeuralODE` layer. First we define
 the layer. Here we're going to use `Lux.Chain`, which is a suitable neural network
 structure for NeuralODEs with separate handling of state variables:
 
-```julia
+```@example neuralode
 dudt2 = Lux.Chain(ActivationFunction(x -> x.^3),
                   Lux.Dense(2, 50, tanh),
                   Lux.Dense(50, 2))
@@ -127,7 +127,7 @@ second argument for new parameters which we will use to iteratively change the
 neural network in our training loop. We will use the L2 loss of the network's
 output against the time series data:
 
-```julia
+```@example neuralode
 function predict_neuralode(p)
   Array(prob_neuralode(u0, p, st)[1])
 end
@@ -168,7 +168,8 @@ set up custom optimization problems. For more information on the usage of
 The `x` and `p` variables in the optimization function are different than
 `x` and `p` above. The optimization function runs over the space of parameters of
 the original problem, so `x_optimization` == `p_original`.
-```julia
+
+```@example neuralode
 # Train using the ADAM optimizer
 adtype = Optimization.AutoZygote()
 
@@ -179,6 +180,9 @@ result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
                                        callback = callback,
                                        maxiters = 300)
+```
+
+```julia
 # output
 * Status: success
 
@@ -195,7 +199,7 @@ We then complete the training using a different optimizer starting from where
 `ADAM` stopped. We do `allow_f_increases=false` to make the optimization automatically
 halt when near the minimum.
 
-```julia
+```@example neuralode
 # Retrain using the LBFGS optimizer
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
@@ -203,6 +207,9 @@ result_neuralode2 = Optimization.solve(optprob2,
                                         Optim.LBFGS(initial_stepnorm=0.01),
                                         callback = callback,
                                         allow_f_increases = false)
+```
+
+```julia
 # output
 * Status: success
 

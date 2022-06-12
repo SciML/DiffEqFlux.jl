@@ -4,7 +4,7 @@ One can avoid a lot of the computational cost of the ODE solver by
 pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
-```julia
+```@example collocation_cp
 using Lux, DiffEqFlux, OrdinaryDiffEq, DiffEqSensitivity, Optimization, OptimizationFlux, Plots
 
 using Random
@@ -93,7 +93,7 @@ savefig("post_trained.png")
 The smoothed collocation is a spline fit of the datapoints which allows
 us to get a an estimate of the approximate noiseless dynamics:
 
-```julia
+```@example collocation
 using Flux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
@@ -130,7 +130,7 @@ Because we have `(u',u)` pairs, we can write a loss function that
 calculates the squared difference between `f(u,p,t)` and `u'` at each
 point, and find the parameters which minimize this difference:
 
-```julia
+```@example collocation
 dudt2 = Lux.Chain(ActivationFunction(x -> x.^3),
                   Lux.Dense(2, 50, tanh),
                   Lux.Dense(50, 2))
@@ -170,7 +170,7 @@ full solution all throughout the timeseries, but it does have a drift.
 We can continue to optimize like this, or we can use this as the
 initial condition to the next phase of our fitting:
 
-```julia
+```@example collocation
 function predict_neuralode(p)
   Array(prob_neuralode(u0, p, st)[1])
 end
