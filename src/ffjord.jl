@@ -224,7 +224,7 @@ function ffjord(u, p, t, re, e, st;
         z = u[1:end - 3, :]
         mz = m(z)
         if monte_carlo
-            Je = auto_jacvec(m, z, e)
+            Je = num_jacvec(m, z, e)
             trace_jac = sum(e' * Je, dims=1)
         else
             trace_jac = _trace_batched(jacobian_fn(m, z))
@@ -234,7 +234,7 @@ function ffjord(u, p, t, re, e, st;
         z = u[1:end - 1, :]
         mz = m(z)
         if monte_carlo
-            Je = auto_jacvec(m, z, e)
+            Je = num_jacvec(m, z, e)
             trace_jac = sum(e' * Je, dims=1)
 
         else
