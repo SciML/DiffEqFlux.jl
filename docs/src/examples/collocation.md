@@ -94,7 +94,7 @@ The smoothed collocation is a spline fit of the datapoints which allows
 us to get a an estimate of the approximate noiseless dynamics:
 
 ```@example collocation
-using Flux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
+using Lux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -120,7 +120,7 @@ plot!(tsteps,u',lw=5)
 We can then differentiate the smoothed function to get estimates of the
 derivative at each datapoint:
 
-```julia
+```@example collocation
 plot(tsteps,du')
 ```
 

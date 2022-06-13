@@ -9,7 +9,7 @@ m\ddot(x) + kx = 0
 Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. Analytically solving this equation, we get ``x = sin(t)``. Hence, ``q = sin(t)``, and ``p = cos(t)``. Using these solutions we generate our dataset and fit the `NeuralHamiltonianDE` to learn the dynamics of this system.
 
 ```@example hamiltonian_cp
-using DiffEqFlux, DifferentialEquations, Statistics, Plots
+using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots
 
 t = range(0.0f0, 1.0f0, length = 1024)
 π_32 = Float32(π)
@@ -66,6 +66,8 @@ ylabel!("Momentum (p)")
 The HNN predicts the gradients ``(\dot(q), \dot(p))`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally to supervise the training we also generate the gradients. Next we use use Flux DataLoader for automatically batching our dataset.
 
 ```@example hamiltonian
+using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots
+
 t = range(0.0f0, 1.0f0, length = 1024)
 π_32 = Float32(π)
 q_t = reshape(sin.(2π_32 * t), 1, :)

@@ -69,7 +69,7 @@ result_neuralode = Optimization.solve(optprob,
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.LBFGS(initial_stepnorm=0.01),
+                                        Optim.BFGS(initial_stepnorm=0.01),
                                         callback=callback,
                                         allow_f_increases = false)
 ```
@@ -141,7 +141,7 @@ end
 
 We define a callback function.
 
-```julia
+```@example neuralode
 # Callback function to observe training
 callback = function (p, l, pred; doplot = false)
   display(l)
@@ -204,7 +204,7 @@ halt when near the minimum.
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.LBFGS(initial_stepnorm=0.01),
+                                        Optim.BFGS(initial_stepnorm=0.01),
                                         callback = callback,
                                         allow_f_increases = false)
 ```
