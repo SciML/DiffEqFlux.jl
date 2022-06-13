@@ -1,5 +1,8 @@
 using Documenter, DiffEqFlux
 
+ENV["GKSwstype"] = "100"
+using Plots
+
 include("pages.jl")
 
 makedocs(
