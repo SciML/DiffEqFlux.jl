@@ -265,9 +265,9 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
-    p::P
+struct NeuralCDDE{M,P,RE,H,L,T,A,K} <: NeuralDELayer
     model::M
+    p::P
     re::RE
     hist::H
     lags::L
@@ -280,14 +280,15 @@ struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
         if p === nothing
             p = _p
         end
-        new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
-            typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
+        new{typeof(model),typeof(p),typeof(re),typeof(hist),typeof(lags),
+            typeof(tspan),typeof(args),typeof(kwargs)}(model,p,
             re,hist,lags,tspan,args,kwargs)
     end
 
     function NeuralCDDE(model::Lux.Chain,tspan,hist,lags,args...;p=nothing,kwargs...)
-      new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
-          typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
+      re = nothing
+      new{typeof(model),typeof(p),typeof(re),typeof(hist),typeof(lags),
+          typeof(tspan),typeof(args),typeof(kwargs)}(model,p,
           re,hist,lags,tspan,args,kwargs)
     end
 end
@@ -305,7 +306,6 @@ end
 function (n::NeuralCDDE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
   function dudt_(u,h,p,t)
       _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
-      n.re(p)(_u)
       u_, st = n.model(_u,p,st)
       return u_
   end
