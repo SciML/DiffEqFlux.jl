@@ -60,7 +60,7 @@ function plot_multiple_shoot(plt, preds, group_size)
 end
 
 # Animate training
-anim = Animation()
+anim = Plots.Animation()
 callback = function (p, l, preds; doplot = true)
   display(l)
   if doplot
@@ -93,7 +93,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p_init))
 res_ms = Optimization.solve(optprob, PolyOpt(),
-                                cb = callback)
+                                callback = callback)
 gif(anim, "multiple_shooting.gif", fps=15)
 
 ```

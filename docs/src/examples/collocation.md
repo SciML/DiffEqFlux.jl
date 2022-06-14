@@ -79,7 +79,7 @@ optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
 
 numerical_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
@@ -95,6 +95,9 @@ us to get a an estimate of the approximate noiseless dynamics:
 
 ```@example collocation
 using Lux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
+
+using Random
+rng = Random.default_rng()
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -187,7 +190,7 @@ optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
 
 numerical_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
