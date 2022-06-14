@@ -1,6 +1,7 @@
-using DiffEqFlux, OrdinaryDiffEq, Test
+using DiffEqFlux, Lux, Optimization, OrdinaryDiffEq, Test, Random
 using DiffEqFlux: group_ranges
 
+rng = Random.default_rng()
 ## Test group partitioning helper function
 @test group_ranges(10, 4) == [1:4, 4:7, 7:10]
 @test group_ranges(10, 5) == [1:5, 5:9, 9:10]
@@ -23,16 +24,17 @@ prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
 # Define the Neural Network
-nn = FastChain((x, p) -> x.^3,
-                FastDense(2, 16, tanh),
-                FastDense(16, 2))
-p_init = initial_params(nn)
+nn = Lux.Chain(ActivationFunction(x -> x.^3),
+                Lux.Dense(2, 16, tanh),
+                Lux.Dense(16, 2))
+p_init, st = Lux.setup(rng, nn)
+p_init = Lux.ComponentArray(p_init)
 
 neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
-prob_node = ODEProblem((u,p,t)->nn(u,p), u0, tspan, p_init)
+prob_node = ODEProblem((u,p,t)->nn(u,p,st)[1], u0, tspan, p_init)
 
 function predict_single_shooting(p)
-    return Array(neuralode(u0, p))
+    return Array(neuralode(u0, p, st)[1])
 end
 
 # Define loss function
@@ -47,7 +49,10 @@ function loss_single_shooting(p)
     return l, pred
 end
 
-res_single_shooting = DiffEqFlux.sciml_train(loss_single_shooting, neuralode.p,
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((p)->loss_single_shooting(p), adtype)
+optprob = Optimization.OptimizationProblem(optf, p_init)
+res_single_shooting = Optimization.solve(loss_single_shooting, p_init,
                                           ADAM(0.05),
 										  maxiters = 300)
 
@@ -64,8 +69,11 @@ function loss_multiple_shooting(p)
                           abstol=1e-8, reltol=1e-6) # test solver kwargs
 end
 
-res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, neuralode.p,
-                                ADAM(0.05), maxiters = 300)
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((p)->loss_multiple_shooting(p), adtype)
+optprob = Optimization.OptimizationProblem(optf, p_init)
+res_ms = Optimization.solve(optprob,
+                            ADAM(0.05), maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
 loss_ms, _ = loss_single_shooting(res_ms.minimizer)
@@ -86,7 +94,10 @@ function loss_multiple_shooting_abs2(p)
                           group_size; continuity_term)
 end
 
-res_ms_abs2 = DiffEqFlux.sciml_train(loss_multiple_shooting_abs2, neuralode.p,
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((p)->loss_multiple_shooting_abs2(p), adtype)
+optprob = Optimization.OptimizationProblem(optf, p_init)
+res_ms_abs2 = Optimization.solve(optprob,
                                      ADAM(0.05), maxiters = 300)
 
 loss_ms_abs2, _ = loss_single_shooting(res_ms_abs2.minimizer)
@@ -101,7 +112,10 @@ function loss_multiple_shooting_fd(p)
                           sensealg=ForwardDiffSensitivity())
 end
 
-res_ms_fd = DiffEqFlux.sciml_train(loss_multiple_shooting_fd, neuralode.p,
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((p)->loss_multiple_shooting_fd(p), adtype)
+optprob = Optimization.OptimizationProblem(optf, p_init)
+res_ms_fd = Optimization.solve(optprob,
                                 ADAM(0.05), maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
@@ -141,8 +155,10 @@ function loss_multiple_shooting_ens(p)
                           trajectories,
                           abstol=1e-8, reltol=1e-6) # test solver kwargs
 end
-
-res_ms_ensembles = DiffEqFlux.sciml_train(loss_multiple_shooting_ens, neuralode.p,
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((p)->loss_multiple_shooting_ens(p), adtype)
+optprob = Optimization.OptimizationProblem(optf, p_init)
+res_ms_ensembles = Optimization.solve(optprob,
                                 ADAM(0.05), maxiters = 300)
 
 loss_ms_ensembles, _ = loss_single_shooting(res_ms_ensembles.minimizer)
