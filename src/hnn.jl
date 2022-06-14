@@ -20,11 +20,11 @@ to define a training loop to circumvent this issue.
 
 ```julia
 HamiltonianNN(model; p = nothing)
-HamiltonianNN(model::Lux.AbstractExplicitLayer; p = initial_params(model))
+HamiltonianNN(model::Lux.AbstractExplicitLayer; p = nothing)
 ```
 
 Arguments:
-1. `model`: A Chain or Lux.AbstractExplicitLayer neural network that returns the Hamiltonian of the
+1. `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that returns the Hamiltonian of the
             system.
 2. `p`: The initial parameters of the neural network.
 

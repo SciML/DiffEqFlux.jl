@@ -18,7 +18,7 @@ After these steps one may use the NN model and the learned θ to predict the den
 FFJORD(model, basedist=nothing, monte_carlo=false, tspan, args...; kwargs...)
 ```
 Arguments:
-- `model`: A Chain neural network that defines the dynamics of the model.
+- `model`: A Flux.Chain or Lux.AbstractExplicitLayer that defines the dynamics of the model.
 - `basedist`: Distribution of the base variable. Set to the unit normal by default.
 - `tspan`: The timespan to be solved on.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
@@ -61,7 +61,6 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVecto
     end
 
     function FFJORD(model, tspan, args...;p=nothing, st=nothing, basedist=nothing, kwargs...)
-        #
         _p, re = Flux.destructure(model)
         if isnothing(p)
             p = _p
@@ -74,23 +73,8 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVecto
         new{typeof(model),typeof(p),typeof(st),typeof(re),
             typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
                 model,p,st,re,basedist,tspan,args,kwargs)
-        # FFJORD(model, p, st, re, basedist, tspan, args, kwargs)
     end
 end
-
-# function FFJORD(model, tspan, args...;
-#                 p::P=nothing, st=nothing, basedist::D=nothing, kwargs...) where {P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Function, D <: Union{Distribution, Nothing}}
-#     _p, re = Flux.destructure(model)
-#     if isnothing(p)
-#         p = _p
-#     end
-#     if isnothing(basedist)
-#         size_input = size(model[1].weight, 2)
-#         type_input = eltype(model[1].weight)
-#         basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
-#     end
-#     FFJORD(model, p, st, re, basedist, tspan, args, kwargs)
-# end
 
 _norm_batched(x::AbstractMatrix) = sqrt.(sum(x.^2, dims=1))
 
