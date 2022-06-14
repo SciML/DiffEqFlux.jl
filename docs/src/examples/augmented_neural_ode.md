@@ -81,7 +81,7 @@ iter = 0
 println("Training Neural ODE")
 
 for _ in 1:10
-    Flux.train!(loss_node, Flux.params([parameters, model]), dataloader, opt, cb = cb)
+    Flux.train!(loss_node, Flux.params(parameters, model), dataloader, opt, cb = cb)
 end
 
 plt_node = plot_contour(model)
@@ -94,7 +94,7 @@ println()
 println("Training Augmented Neural ODE")
 
 for _ in 1:10
-    Flux.train!(loss_node, Flux.params([parameters, model]), dataloader, opt, cb = cb)
+    Flux.train!(loss_node, Flux.params(parameters, model), dataloader, opt, cb = cb)
 end
 
 plt_anode = plot_contour(model)
@@ -250,7 +250,7 @@ for `20` epochs.
 model, parameters = construct_model(1, 2, 64, 0)
 
 for _ in 1:10
-    Flux.train!(loss_node, Flux.params([model, parameters]), dataloader, opt, cb = cb)
+    Flux.train!(loss_node, Flux.params(model, parameters), dataloader, opt, cb = cb)
 end
 ```
 
@@ -269,7 +269,7 @@ a function which can be expressed by the neural ode. For more details and proofs
 model, parameters = construct_model(1, 2, 64, 1)
 
 for _ in 1:10
-    Flux.train!(loss_node, Flux.params([model, parameters]), dataloader, opt, cb = cb)
+    Flux.train!(loss_node, Flux.params(model, parameters), dataloader, opt, cb = cb)
 end
 ```
 
