@@ -9,7 +9,7 @@ m\ddot(x) + kx = 0
 Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. Analytically solving this equation, we get ``x = sin(t)``. Hence, ``q = sin(t)``, and ``p = cos(t)``. Using these solutions we generate our dataset and fit the `NeuralHamiltonianDE` to learn the dynamics of this system.
 
 ```@example hamiltonian_cp
-using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots
+using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff
 
 t = range(0.0f0, 1.0f0, length = 1024)
 π_32 = Float32(π)

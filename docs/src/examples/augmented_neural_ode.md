@@ -28,7 +28,7 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
     end
     data = cat(data..., dims=2)
     labels = cat(labels..., dims=2)
-    return DataLoader((data |> gpu, labels |> gpu); batchsize=batch_size, shuffle=true,
+ DataLoader((data |> gpu, labels |> gpu); batchsize=batch_size, shuffle=true,
                       partial=false)
 end
 
@@ -43,6 +43,7 @@ function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
                      reltol = 1e-3, abstol = 1e-3, save_start = false) |> gpu
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
     return Chain((x, p=node.p) -> node(x, p),
+                 Array,
                  diffeqarray_to_array,
                  Dense(input_dim, out_dim) |> gpu), node.p |> gpu
 end
