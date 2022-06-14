@@ -145,7 +145,7 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
     end
     data = cat(data..., dims=2)
     labels = cat(labels..., dims=2)
-    return DataLoader(data |> gpu, labels |> gpu; batchsize=batch_size, shuffle=true,
+    return DataLoader((data |> gpu, labels |> gpu); batchsize=batch_size, shuffle=true,
                       partial=false)
 end
 ```

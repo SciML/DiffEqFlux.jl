@@ -20,7 +20,7 @@ dpdt = -2π_32 .* q_t
 
 data = cat(q_t, p_t, dims = 1)
 target = cat(dqdt, dpdt, dims = 1)
-dataloader = Flux.Data.DataLoader(data, target; batchsize=256, shuffle=true)
+dataloader = Flux.Data.DataLoader((data, target); batchsize=256, shuffle=true)
 
 hnn = HamiltonianNN(
     Chain(Dense(2, 64, relu), Dense(64, 1))
@@ -77,7 +77,7 @@ dpdt = -2π_32 .* q_t
 
 data = cat(q_t, p_t, dims = 1)
 target = cat(dqdt, dpdt, dims = 1)
-dataloader = Flux.Data.DataLoader(data, target; batchsize=256, shuffle=true)
+dataloader = Flux.Data.DataLoader((data, target); batchsize=256, shuffle=true)
 ```
 
 ### Training the HamiltonianNN
