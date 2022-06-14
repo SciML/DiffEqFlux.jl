@@ -1,14 +1,15 @@
-using DiffEqFlux, Optimization, OrdinaryDiffEq, RecursiveArrayTools
+using DiffEqFlux, Lux, Random, Optimization, OrdinaryDiffEq, RecursiveArrayTools
 
-
+rng = Random.default_rng()
 u0 = Float32[0.; 2.]
 du0 = Float32[0.; 0.]
 tspan = (0.0f0, 1.0f0)
 t = range(tspan[1], tspan[2], length=20)
 
-model = FastChain(FastDense(2, 50, tanh), FastDense(50, 2))
-p = initial_params(model)
-ff(du,u,p,t) = model(u,p)
+model = Lux.Chain(Lux.Dense(2, 50, tanh), Lux.Dense(50, 2))
+p, st = Lux.setup(rng, model)
+p = Lux.ComponentArray(p)
+ff(du,u,p,t) = model(u,p,st)[1]
 prob = SecondOrderODEProblem{false}(ff, du0, u0, tspan, p)
 
 function predict(p)

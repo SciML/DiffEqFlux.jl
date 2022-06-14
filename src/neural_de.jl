@@ -341,10 +341,10 @@ Arguments:
   documentation for more details.
 
 """
-struct NeuralDAE{P,M,M2,D,RE,T,DV,A,K} <: NeuralDELayer
+struct NeuralDAE{M,P,M2,D,RE,T,DV,A,K} <: NeuralDELayer
     model::M
-    constraints_model::M2
     p::P
+    constraints_model::M2
     du0::D
     re::RE
     tspan::T
@@ -359,19 +359,19 @@ struct NeuralDAE{P,M,M2,D,RE,T,DV,A,K} <: NeuralDELayer
             p = _p
         end
 
-        new{typeof(p),typeof(model),typeof(constraints_model),
+        new{typeof(model),typeof(p),typeof(constraints_model),
             typeof(du0),typeof(re),typeof(tspan),
             typeof(differential_vars),typeof(args),typeof(kwargs)}(
-            model,constraints_model,p,du0,re,tspan,differential_vars,
+            model,p,constraints_model,du0,re,tspan,differential_vars,
             args,kwargs)
     end
 
     function NeuralDAE(model::Lux.Chain,constraints_model,tspan,du0=nothing,args...;p=nothing,differential_vars=nothing,kwargs...)
 
-      new{typeof(p),typeof(model),typeof(constraints_model),
+      new{typeof(model),typeof(p),typeof(constraints_model),
           typeof(du0),typeof(re),typeof(tspan),
           typeof(differential_vars),typeof(args),typeof(kwargs)}(
-          model,constraints_model,p,du0,re,tspan,differential_vars,
+          model,p,constraints_model,du0,re,tspan,differential_vars,
           args,kwargs)
   end
 end

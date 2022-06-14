@@ -1,4 +1,4 @@
-using DiffEqFlux, Lux, Optimization, OptimizationFlux, OrdinaryDiffEq, Test, Random
+using DiffEqFlux, Lux, Optimization, OrdinaryDiffEq, Test, Random
 using DiffEqFlux: group_ranges
 
 rng = Random.default_rng()

@@ -16,7 +16,7 @@ if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
     #@safetestset "Neural Graph DE" begin include("neural_gde.jl") end
     
     @safetestset "Neural ODE MM Tests" begin include("neural_ode_mm.jl") end
-    @safetestset "Fast Neural ODE Tests" begin include("fast_neural_ode.jl") end
+    @safetestset "Lux Neural ODE Tests" begin include("lux_neural_ode.jl") end
     @safetestset "Tensor Product Layer" begin include("tensor_product_test.jl") end
     @safetestset "Spline Layer" begin include("spline_layer_test.jl") end
     @safetestset "Multiple shooting" begin include("multiple_shoot.jl") end
