@@ -1,19 +1,20 @@
 [deps]
-DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 DiffEqFlux = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
 DiffEqSensitivity = "41bf760c-e81c-5289-8e54-58b1f1f8abe2"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
-Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 OptimizationFlux = "253f991c-a7b2-45f8-8852-8b9a9df78a86"
 OptimizationOptimJL = "36348300-93cb-4f02-beb5-3c3902f8871e"
 OptimizationPolyalgorithms = "500b13db-7e66-49ce-bda4-eed966be6282"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
