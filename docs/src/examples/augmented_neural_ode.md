@@ -28,7 +28,7 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
     end
     data = cat(data..., dims=2)
     labels = cat(labels..., dims=2)
- DataLoader((data |> gpu, labels |> gpu); batchsize=batch_size, shuffle=true,
+    DataLoader((data |> gpu, labels |> gpu); batchsize=batch_size, shuffle=true,
                       partial=false)
 end
 
@@ -68,6 +68,7 @@ println("Generating Dataset")
 
 dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size = 256)
 
+iter = 0
 cb = function()
     global iter += 1
     if iter % 10 == 0
@@ -77,7 +78,7 @@ end
 
 model, parameters = construct_model(1, 2, 64, 0)
 opt = ADAM(0.005)
-iter = 0
+# global iter = 0
 
 println("Training Neural ODE")
 
