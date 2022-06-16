@@ -139,10 +139,19 @@ grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 goodgrad2 = grads[node.p]
 @test goodgradc ≈ goodgrad2 rtol=1e-6
 
-node = NeuralODE(staticdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint(),p=p)
+node = NeuralODE(staticdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint(autojacvec=false),p=p)
 grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
 @test ! iszero(grads[x])
 @test ! iszero(grads[node.p])
+
+grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
+goodgrad2 = grads[node.p]
+@test goodgrad ≈ goodgrad2 rtol = 1e-6
+
+node = NeuralODE(staticdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint(autojacvec=ZygoteVJP()),p=p)
+grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
+@test !iszero(grads[x])
+@test !iszero(grads[node.p])
 
 @test_throws ErrorException grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 
