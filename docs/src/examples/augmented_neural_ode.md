@@ -70,7 +70,8 @@ dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size
 
 iter = 0
 cb = function()
-    global iter += 1
+    global iter 
+    iter += 1
     if iter % 10 == 0
         println("Iteration $iter || Loss = $(loss_node(dataloader.data[1], dataloader.data[2]))")
     end
@@ -78,7 +79,6 @@ end
 
 model, parameters = construct_model(1, 2, 64, 0)
 opt = ADAM(0.005)
-# global iter = 0
 
 println("Training Neural ODE")
 
@@ -90,7 +90,6 @@ plt_node = plot_contour(model)
 
 model, parameters = construct_model(1, 2, 64, 1)
 opt = ADAM(0.005)
-iter = 0
 
 println()
 println("Training Augmented Neural ODE")
@@ -227,6 +226,7 @@ dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size
 Additionally we define a callback function which displays the total loss at specific intervals.
 
 ```@example augneuralode
+iter = 0
 cb = function()
     global iter += 1
     if iter % 10 == 1

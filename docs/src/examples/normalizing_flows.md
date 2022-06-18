@@ -8,7 +8,8 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example cnf_cp
-using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
+using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+      OptimizationOptimJL, Distributions, ReverseDiff
 
 nn = Lux.Chain(
     Lux.Dense(1, 3, tanh),
@@ -27,7 +28,7 @@ function loss(θ)
     -mean(logpx)
 end
 
-adtype = Optimization.AutoZygote()
+adtype = Optimization.AutoReverseDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
 
@@ -57,7 +58,8 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```@example cnf
-using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
+using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+      OptimizationOptimJL, Distributions, ReverseDiff
 
 nn = Lux.Chain(
     Lux.Dense(1, 3, tanh),
@@ -94,8 +96,14 @@ We then train the neural network to learn the distribution of `x`.
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
+!!! note
+
+   Here we use `Optimization.AutoReverseDiff()`, i.e ReverseDiff.jl automatic differentiation
+   on the outside, because Zygote over Zygote is not possible. This does ReverseDiff.jl over
+   the internal use of Zygote.jl in the FFJORD implementation, which does work.
+
 ```@example cnf
-adtype = Optimization.AutoZygote()
+adtype = Optimization.AutoReverseDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
 
