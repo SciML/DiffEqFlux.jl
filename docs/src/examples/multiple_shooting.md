@@ -66,7 +66,7 @@ callback = function (p, l, preds; doplot = true)
   display(l)
   global iter
   iter += 1
-  if doplot && iter%%10 == 0
+  if doplot && iter%10 == 0
     # plot the original data
     plt = scatter(tsteps, ode_data[1,:], label = "Data")
 
