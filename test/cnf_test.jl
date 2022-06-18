@@ -59,13 +59,13 @@ end
             regularize = false
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
@@ -77,7 +77,7 @@ end
             regularize = true
             monte_carlo = true
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
         end
     end
     @testset "AutoTracker as adtype" begin
@@ -87,13 +87,13 @@ end
             regularize = false
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
@@ -105,7 +105,7 @@ end
             regularize = true
             monte_carlo = true
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
         end
     end
     @testset "AutoZygote as adtype" begin

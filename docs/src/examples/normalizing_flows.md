@@ -9,7 +9,7 @@ follow a full explanation of the definition and training process:
 
 ```@example cnf_cp
 using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
-      OptimizationOptimJL, Distributions, ReverseDiff
+      OptimizationOptimJL, Distributions
 
 nn = Lux.Chain(
     Lux.Dense(1, 3, tanh),
@@ -28,7 +28,7 @@ function loss(θ)
     -mean(logpx)
 end
 
-adtype = Optimization.AutoReverseDiff()
+adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
 
@@ -59,7 +59,7 @@ We can use DiffEqFlux.jl to define, train and output the densities computed by C
 
 ```@example cnf
 using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
-      OptimizationOptimJL, Distributions, ReverseDiff
+      OptimizationOptimJL, Distributions
 
 nn = Lux.Chain(
     Lux.Dense(1, 3, tanh),
@@ -96,14 +96,8 @@ We then train the neural network to learn the distribution of `x`.
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
-!!! note
-
-   Here we use `Optimization.AutoReverseDiff()`, i.e ReverseDiff.jl automatic differentiation
-   on the outside, because Zygote over Zygote is not possible. This does ReverseDiff.jl over
-   the internal use of Zygote.jl in the FFJORD implementation, which does work.
-
 ```@example cnf
-adtype = Optimization.AutoReverseDiff()
+adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
 
