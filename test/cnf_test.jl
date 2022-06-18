@@ -1,4 +1,4 @@
-using Flux, Distances, Distributions, DistributionsAD, Optimization,
+using DiffEqFlux, Distances, Distributions, DistributionsAD, Optimization,
     LinearAlgebra, OrdinaryDiffEq, Random, Test
 
 Random.seed!(1999)
