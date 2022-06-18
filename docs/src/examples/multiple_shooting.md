@@ -61,14 +61,17 @@ end
 
 # Animate training
 anim = Plots.Animation()
+iter = 0
 callback = function (p, l, preds; doplot = true)
   display(l)
-  if doplot
-	# plot the original data
-	plt = scatter(tsteps, ode_data[1,:], label = "Data")
+  global iter
+  iter += 1
+  if doplot && iter%%10 == 0
+    # plot the original data
+    plt = scatter(tsteps, ode_data[1,:], label = "Data")
 
-	# plot the different predictions for individual shoot
-	plot_multiple_shoot(plt, preds, group_size)
+    # plot the different predictions for individual shoot
+    plot_multiple_shoot(plt, preds, group_size)
 
     frame(anim)
     display(plot(plt))
@@ -94,7 +97,7 @@ optf = Optimization.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adt
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p_init))
 res_ms = Optimization.solve(optprob, PolyOpt(),
                                 callback = callback)
-gif(anim, "multiple_shooting.gif", fps=15)
+gif(anim, "multiple_shooting.gif", fps=5)
 
 ```
 Here's the animation that we get from above
