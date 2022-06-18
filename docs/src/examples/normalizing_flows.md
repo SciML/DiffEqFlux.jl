@@ -30,7 +30,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
+optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
@@ -99,7 +99,7 @@ Here we showcase starting the optimization with `ADAM` to more quickly find a mi
 ```@example cnf
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
+optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
