@@ -8,12 +8,12 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example cnf_cp
-using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
       OptimizationOptimJL, Distributions
 
-nn = Lux.Chain(
-    Lux.Dense(1, 3, tanh),
-    Lux.Dense(3, 1, tanh),
+nn = Flux.Chain(
+    Flux.Dense(1, 3, tanh),
+    Flux.Dense(3, 1, tanh),
 ) |> f32
 tspan = (0.0f0, 10.0f0)
 
@@ -58,12 +58,12 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```@example cnf
-using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
       OptimizationOptimJL, Distributions
 
-nn = Lux.Chain(
-    Lux.Dense(1, 3, tanh),
-    Lux.Dense(3, 1, tanh),
+nn = Flux.Chain(
+    Flux.Dense(1, 3, tanh),
+    Flux.Dense(3, 1, tanh),
 ) |> f32
 tspan = (0.0f0, 10.0f0)
 
@@ -106,20 +106,6 @@ res1 = Optimization.solve(optprob,
                           maxiters = 100)
 ```
 
-```
-# output
-* Status: success
-
-* Candidate solution
-   u: [-1.88e+00, 2.44e+00, 2.01e-01,  ...]
-   Minimum:   1.240627e+00
-
-* Found with
-   Algorithm:     ADAM
-   Initial Point: [9.33e-01, 1.13e+00, 2.92e-01,  ...]
-
-```
-
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
 
 ```@example cnf
@@ -127,32 +113,6 @@ optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
                           allow_f_increases=false)
-```
-
-```
-# output
-* Status: success
-
-* Candidate solution
-   u: [-1.06e+00, 2.24e+00, 8.77e-01,  ...]
-   Minimum:   1.157672e+00
-
-* Found with
-   Algorithm:     L-BFGS
-   Initial Point: [-1.88e+00, 2.44e+00, 2.01e-01,  ...]
-
-* Convergence measures
-   |x - x'|               = 0.00e+00 ≰ 0.0e+00
-   |x - x'|/|x'|          = 0.00e+00 ≰ 0.0e+00
-   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
-   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-   |g(x)|                 = 4.09e-03 ≰ 1.0e-08
-
-* Work counters
-   Seconds run:   514  (vs limit Inf)
-   Iterations:    44
-   f(x) calls:    244
-   ∇f(x) calls:   244
 ```
 
 ### Evaluation
