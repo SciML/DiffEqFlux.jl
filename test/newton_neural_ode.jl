@@ -23,7 +23,8 @@ nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
 l1 = loss_function(nODE.p)
-optf = Optimization.OptimizationFunction((p)->loss_function(p), Optimization.AutoZygote())
+optf = Optimization.OptimizationFunction((x,p)->loss_function(x), Optimization.AutoZygote())
+
 optprob = Optimization.OptimizationProblem(optf, nODE.p)
 res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters=100, callback=cb) #ensure backwards compatibility of `cb`
 @test loss_function(res.minimizer) < l1
