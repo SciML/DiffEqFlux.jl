@@ -59,14 +59,14 @@ function plot_multiple_shoot(plt, preds, group_size)
 	end
 end
 
-# Animate training
-anim = Plots.Animation()
+# Animate training, cannot make animation on CI server
+# anim = Plots.Animation()
 iter = 0
-callback = function (p, l, preds; doplot = true)
+callback = function (p, l, preds; doplot = false)
   display(l)
   global iter
   iter += 1
-  if doplot && iter%10 == 0
+  if doplot && iter%1 == 0
     # plot the original data
     plt = scatter(tsteps, ode_data[1,:], label = "Data")
 
@@ -97,10 +97,11 @@ optf = Optimization.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adt
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p_init))
 res_ms = Optimization.solve(optprob, PolyOpt(),
                                 callback = callback)
-gif(anim, "multiple_shooting.gif", fps=5)
-
+gif(anim, "multiple_shooting.gif", fps=15)
 ```
-Here's the animation that we get from above
+
+Here's the animation that we get from above when `doplot=true` and the
+animation code is uncommented:
 
 ![pic](https://camo.githubusercontent.com/9f1a4b38895ebaa47b7d90e53268e6f10d04da684b58549624c637e85c22d27b/68747470733a2f2f692e696d6775722e636f6d2f636d507a716a722e676966)
 The connected lines show the predictions of each group (Notice that there
