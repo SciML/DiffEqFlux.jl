@@ -4,10 +4,11 @@ pages = [
             "examples/neural_ode.md",
             "examples/augmented_neural_ode.md",
             "examples/collocation.md",
-            "examples/hamiltonian_nn.md",
+            #"examples/hamiltonian_nn.md",
             "examples/tensor_layer.md",
             #"examples/multiple_shooting.md"
         ],
+        #=
         "Layer APIs" => Any[
             "Classical Basis Layers" => "layers/BasisLayers.md",
             "Tensor Product Layer" => "layers/TensorLayer.md",
@@ -20,4 +21,5 @@ pages = [
             "Smoothed Collocation" => "utilities/Collocation.md",
             "Multiple Shooting Functionality" => "utilities/MultipleShooting.md",
         ],
+        =#
     ]
