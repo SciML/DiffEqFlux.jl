@@ -97,7 +97,7 @@ optf = Optimization.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adt
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p_init))
 res_ms = Optimization.solve(optprob, PolyOpt(),
                                 callback = callback)
-gif(anim, "multiple_shooting.gif", fps=15)
+#gif(anim, "multiple_shooting.gif", fps=15)
 ```
 
 Here's the animation that we get from above when `doplot=true` and the
