@@ -18,6 +18,6 @@ pages = [
         ],
         "Utility Function APIs" => Any[
             "Smoothed Collocation" => "utilities/Collocation.md",
-            "Multiple Shooting Functionality" => "utilities/MultipleShooting.md",
+            #"Multiple Shooting Functionality" => "utilities/MultipleShooting.md",
         ],
     ]
