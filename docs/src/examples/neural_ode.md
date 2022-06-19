@@ -44,7 +44,9 @@ function loss_neuralode(p)
     return loss, pred
 end
 
-callback = function (p, l, pred; doplot = true)
+# Do not plot by default for the documentation
+# Users should change doplot=true to see the plots callbacks
+callback = function (p, l, pred; doplot = false)
   display(l)
   # plot current prediction against data
   plt = scatter(tsteps, ode_data[1,:], label = "data")
@@ -55,11 +57,14 @@ callback = function (p, l, pred; doplot = true)
   return false
 end
 
+pinit = Lux.ComponentArray(p)
+callback(pinit, loss_neuralode(pinit)...; doplot=true)
+
 # use Optimization.jl to solve the problem
 adtype = Optimization.AutoZygote()
 
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p))
+optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
@@ -72,6 +77,8 @@ result_neuralode2 = Optimization.solve(optprob2,
                                         Optim.BFGS(initial_stepnorm=0.01),
                                         callback=callback,
                                         allow_f_increases = false)
+
+callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=true)
 ```
 
 ![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
@@ -139,7 +146,9 @@ function loss_neuralode(p)
 end
 ```
 
-We define a callback function.
+We define a callback function. In this example we set `doplot = false` because otherwise
+it would show every step and overflow the documentation, but for your use case
+**set doplot=true to see a live animation of the training process!**.
 
 ```@example neuralode
 # Callback function to observe training
@@ -153,6 +162,9 @@ callback = function (p, l, pred; doplot = false)
   end
   return false
 end
+
+pinit = Lux.ComponentArray(p)
+callback(pinit, loss_neuralode(pinit)...)
 ```
 
 We then train the neural network to learn the ODE.
@@ -174,25 +186,12 @@ the original problem, so `x_optimization` == `p_original`.
 adtype = Optimization.AutoZygote()
 
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p))
+optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
                                        callback = callback,
                                        maxiters = 300)
-```
-
-```julia
-# output
-* Status: success
-
-* Candidate solution
-   u: [4.38e-01, -6.02e-01, 4.98e-01,  ...]
-   Minimum:   8.691715e-02
-
-* Found with
-   Algorithm:     ADAM
-   Initial Point: [-3.02e-02, -5.40e-02, 2.78e-01,  ...]
 ```
 
 We then complete the training using a different optimizer starting from where
@@ -209,28 +208,8 @@ result_neuralode2 = Optimization.solve(optprob2,
                                         allow_f_increases = false)
 ```
 
-```julia
-# output
-* Status: success
+And then we use the callback with `doplot=true` to see the final plot:
 
-* Candidate solution
-   u: [4.23e-01, -6.24e-01, 4.41e-01,  ...]
-   Minimum:   1.429496e-02
-
-* Found with
-   Algorithm:     L-BFGS
-   Initial Point: [4.38e-01, -6.02e-01, 4.98e-01,  ...]
-
-* Convergence measures
-   |x - x'|               = 1.46e-11 ≰ 0.0e+00
-   |x - x'|/|x'|          = 1.26e-11 ≰ 0.0e+00
-   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
-   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-   |g(x)|                 = 4.28e-02 ≰ 1.0e-08
-
-* Work counters
-   Seconds run:   4  (vs limit Inf)
-   Iterations:    35
-   f(x) calls:    336
-   ∇f(x) calls:   336
+```@example neuralode
+callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=true)
 ```
