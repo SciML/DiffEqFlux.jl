@@ -6,7 +6,7 @@ pages = [
             "examples/collocation.md",
             "examples/hamiltonian_nn.md",
             "examples/tensor_layer.md",
-            "examples/multiple_shooting.md"
+            #"examples/multiple_shooting.md"
         ],
         "Layer APIs" => Any[
             "Classical Basis Layers" => "layers/BasisLayers.md",
@@ -18,6 +18,6 @@ pages = [
         ],
         "Utility Function APIs" => Any[
             "Smoothed Collocation" => "utilities/Collocation.md",
-            #"Multiple Shooting Functionality" => "utilities/MultipleShooting.md",
+            "Multiple Shooting Functionality" => "utilities/MultipleShooting.md",
         ],
     ]
