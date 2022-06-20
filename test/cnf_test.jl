@@ -293,7 +293,7 @@ end
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-        mean(-logpx .+ 0.1 * λ₁ .+ 0.1 * λ₂)
+        mean(-logpx .+ 1f-1 * λ₁ .+ 1f-1 * λ₂)
     end
 
     adtype = Optimization.AutoZygote()

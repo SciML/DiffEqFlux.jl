@@ -253,12 +253,6 @@ gradsnc2 = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
 @test ! iszero(gradsnc2[sode.p])
 @test ! iszero(gradsnc2[sode.p][end])
 
-gradsc2 = Zygote.gradient(()->sum(sodec(xs)),Flux.params(xs,sodec))
-@test_broken gradsc2 isa Tuple
-@test ! iszero(gradsc2[xs])
-@test ! iszero(gradsc2[sodec.p])
-@test ! iszero(gradsc2[sodec.p][end])
-
 dudt22 = Flux.Chain(Flux.Dense(2,50,tanh),Flux.Dense(50,4),x->reshape(x,2,2))
 fastdudt22 = FastChain(FastDense(2,50,tanh),FastDense(50,4),(x,p)->reshape(x,2,2))
 NeuralSDE(dudt,dudt22,(0.0f0,.1f0),2,LambaEM(),saveat=0.01)(x)
@@ -288,11 +282,6 @@ gradsnc = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
 @test ! iszero(gradsnc[sode.p])
 @test ! iszero(gradsnc[sode.p][end])
 
-@test_broken gradsc = Zygote.gradient(()->sum(sodec(xs)),Flux.params(xs,sodec))
-@test_broken ! iszero(gradsc[xs])
-@test ! iszero(gradsc[sodec.p])
-@test ! iszero(gradsc[sodec.p][end])
-
 ddudt = Flux.Chain(Flux.Dense(6,50,tanh),Flux.Dense(50,2))
 NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.1)(x)
 dode = NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.0:0.1:2.0)
@@ -305,7 +294,6 @@ grads = Zygote.gradient(()->sum(dode(x)),Flux.params(x,dode))
 @test_broken ! iszero(grads[xs])
 @test ! iszero(grads[dode.p])
 
-
 fastddudt = FastChain(FastDense(6,50,tanh),FastDense(50,2))
 NeuralCDDE(fastddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.1)(x)
 dode = NeuralCDDE(fastddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.0:0.1:2.0)
@@ -317,17 +305,3 @@ gradsnc = Zygote.gradient(()->sum(dode(x)),Flux.params(x,dode))
 @test_broken gradsnc = Zygote.gradient(()->sum(dode(xs)),Flux.params(xs,dode)) isa Tuple
 @test_broken ! iszero(gradsnc[xs])
 @test ! iszero(gradsnc[dode.p])
-
-fastcddudt = FastChain(FastDense(6,50,tanh,numcols=size(xs)[2],precache=true),FastDense(50,2,numcols=size(xs)[2],precache=true))
-NeuralCDDE(fastcddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.1)(x)
-dodec = NeuralCDDE(fastcddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.0:0.1:2.0,p=pd)
-
-gradsc = Zygote.gradient(()->sum(dodec(x)),Flux.params(x,dodec))
-@test ! iszero(gradsc[x])
-@test ! iszero(gradsc[dodec.p])
-@test gradsnc[x] ≈ gradsc[x] rtol=1e-6
-@test gradsnc[dode.p] ≈ gradsc[dodec.p] rtol=1e-6
-
-@test_broken gradsc = Zygote.gradient(()->sum(dodec(xs)),Flux.params(xs,dodec)) isa Tuple
-@test_broken ! iszero(gradsc[xs])
-@test ! iszero(gradsc[dodec.p])
