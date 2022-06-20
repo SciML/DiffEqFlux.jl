@@ -7,7 +7,6 @@ tspan = (0.0f0,1.0f0)
 dudt = Flux.Chain(Flux.Dense(2,50,tanh),Flux.Dense(50,2))
 fastdudt = FastChain(FastDense(2,50,tanh),FastDense(50,2))
 fastcdudt = FastChain(FastDense(2,50,tanh,precache=true,numcols=size(xs)[2]),FastDense(50,2,precache=true,numcols=size(xs)[2]))
-staticdudt = FastChain(StaticDense(2,50,tanh),StaticDense(50,2))
 
 NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)(x)
 NeuralODE(dudt,tspan,Tsit5(),saveat=0.1)(x)
@@ -139,19 +138,9 @@ grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 goodgrad2 = grads[node.p]
 @test goodgradc ≈ goodgrad2 rtol=1e-6
 
-node = NeuralODE(staticdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint(autojacvec=false),p=p)
-grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-@test ! iszero(grads[x])
-@test ! iszero(grads[node.p])
-
 grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 goodgrad2 = grads[node.p]
 @test goodgrad ≈ goodgrad2 rtol = 1e-6
-
-node = NeuralODE(staticdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint(autojacvec=ZygoteVJP()),p=p)
-grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-@test !iszero(grads[x])
-@test !iszero(grads[node.p])
 
 @test_throws ErrorException grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 
