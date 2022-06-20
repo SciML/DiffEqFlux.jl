@@ -67,11 +67,6 @@ gradsnc2 = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
 @test ! iszero(gradsnc2[xs])
 @test ! iszero(gradsnc2[node.p])
 
-gradsc2 = Zygote.gradient(()->sum(nodec(xs)),Flux.params(xs,nodec))
-@test ! iszero(gradsc2[xs])
-@test ! iszero(gradsc2[nodec.p])
-@test gradsnc2[xs] ≈ gradsc2[xs] rtol=1e-6
-@test gradsnc2[node.p] ≈ gradsc2[nodec.p] rtol=1e-6
 #test with low tolerance ode solver
 node = NeuralODE(fastdudt, tspan, Tsit5(), abstol=1e-12, reltol=1e-12, save_everystep=false, save_start=false)
 pd = Flux.params(node)[1]
