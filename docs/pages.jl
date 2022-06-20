@@ -3,9 +3,9 @@ pages = [
         "Differential Equation Machine Learning Tutorials" => Any[
             "examples/neural_ode.md",
             #"examples/augmented_neural_ode.md",
-            "examples/collocation.md",
+            #"examples/collocation.md",
             #"examples/hamiltonian_nn.md",
-            "examples/tensor_layer.md",
+            #"examples/tensor_layer.md",
             #"examples/multiple_shooting.md"
         ],
         #=
