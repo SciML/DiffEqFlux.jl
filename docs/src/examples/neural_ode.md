@@ -153,7 +153,7 @@ it would show every step and overflow the documentation, but for your use case
 ```@example neuralode
 # Callback function to observe training
 callback = function (p, l, pred; doplot = false)
-  display(l)
+  println(l)
   # plot current prediction against data
   plt = scatter(tsteps, ode_data[1,:], label = "data")
   scatter!(plt, tsteps, pred[1,:], label = "prediction")
