@@ -1,14 +1,13 @@
 pages = [
         "DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures" => "index.md",
         "Differential Equation Machine Learning Tutorials" => Any[
-            #"examples/neural_ode.md",
-            #"examples/augmented_neural_ode.md",
-            #"examples/collocation.md",
-            #"examples/hamiltonian_nn.md",
-            #"examples/tensor_layer.md",
-            #"examples/multiple_shooting.md"
+            "examples/neural_ode.md",
+            "examples/augmented_neural_ode.md",
+            "examples/collocation.md",
+            "examples/hamiltonian_nn.md",
+            "examples/tensor_layer.md",
+            "examples/multiple_shooting.md"
         ],
-        #=
         "Layer APIs" => Any[
             "Classical Basis Layers" => "layers/BasisLayers.md",
             "Tensor Product Layer" => "layers/TensorLayer.md",
@@ -21,5 +20,4 @@ pages = [
             "Smoothed Collocation" => "utilities/Collocation.md",
             "Multiple Shooting Functionality" => "utilities/MultipleShooting.md",
         ],
-        =#
     ]
