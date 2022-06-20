@@ -47,7 +47,7 @@ end
 # Do not plot by default for the documentation
 # Users should change doplot=true to see the plots callbacks
 callback = function (p, l, pred; doplot = false)
-  display(l)
+  println(l)
   # plot current prediction against data
   plt = scatter(tsteps, ode_data[1,:], label = "data")
   scatter!(plt, tsteps, pred[1,:], label = "prediction")
