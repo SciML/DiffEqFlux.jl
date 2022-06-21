@@ -33,7 +33,7 @@ First let's build training data from the same example as the neural ODE:
 
 ```@example nsde
 using Plots, Statistics
-using Lux, Optimization, OptimizationFlux, DiffEqFlux, StochasticDiffEq, DiffEqBase.EnsembleAnalysis, Random
+using Lux, Optimization, OptimizationFlux, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
 
 rng = Random.default_rng()
 u0 = Float32[2.; 0.]
