@@ -76,14 +76,14 @@ where we also pass as an input the desired timespan for which the differential e
 
 First, let's get an array from a normal distribution as the training data
 
-```@example cnf
+```julia
 data_dist = Normal(6.0f0, 0.7f0)
 train_data = rand(data_dist, 1, 100)
 ```
 
 Now we define a loss function that we wish to minimize
 
-```@example cnf
+```julia
 function loss(θ)
     logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
     -mean(logpx)
