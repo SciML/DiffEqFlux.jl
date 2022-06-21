@@ -17,7 +17,7 @@ end
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
     data_dist = Beta(2.0f0, 2.0f0)
-    train_data = rand(data_dist, 1, 100)
+    train_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ; regularize, monte_carlo)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -167,7 +167,7 @@ end
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
     data_dist = Beta(2.0f0, 2.0f0)
-    train_data = rand(data_dist, 1, 100)
+    train_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ; regularize, monte_carlo)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -196,8 +196,8 @@ end
     monte_carlo = false
 
     data_dist = Beta(7.0f0, 7.0f0)
-    train_data = rand(data_dist, 1, 100)
-    test_data = rand(data_dist, 1, 100)
+    train_data = Float32.(rand(data_dist, 1, 100))
+    test_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -224,8 +224,8 @@ end
     monte_carlo = false
 
     data_dist = Normal(6.0f0, 0.7f0)
-    train_data = rand(data_dist, 1, 100)
-    test_data = rand(data_dist, 1, 100)
+    train_data = Float32.(rand(data_dist, 1, 100))
+    test_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -253,8 +253,8 @@ end
     μ = ones(Float32, 2)
     Σ = Diagonal([7.0f0, 7.0f0])
     data_dist = MvNormal(μ, Σ)
-    train_data = rand(data_dist, 100)
-    test_data = rand(data_dist, 100)
+    train_data = Float32.(rand(data_dist, 100))
+    test_data = Float32.(rand(data_dist, 100))
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -282,8 +282,8 @@ end
     μ = ones(Float32, 2)
     Σ = Diagonal([7.0f0, 7.0f0])
     data_dist = MvNormal(μ, Σ)
-    train_data = rand(data_dist, 100)
-    test_data = rand(data_dist, 100)
+    train_data = Float32.(rand(data_dist, 100))
+    test_data = Float32.(rand(data_dist, 100))
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)

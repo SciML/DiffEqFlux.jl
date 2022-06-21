@@ -7,7 +7,7 @@ Now, we study a single layer neural network that can estimate the density `p_x` 
 Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
-```julia
+```@example cnf
 using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
       OptimizationOptimJL, Distributions
 
@@ -15,13 +15,13 @@ nn = Flux.Chain(
     Flux.Dense(1, 3, tanh),
     Flux.Dense(3, 1, tanh),
 ) |> f32
-tspan = (0.0f0, 10.0f0)
+tspan = (0.0f0, 1.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
 # Training
 data_dist = Normal(6.0f0, 0.7f0)
-train_data = rand(data_dist, 1, 100)
+train_data = Float32.(rand(data_dist, 1, 100))
 
 function loss(θ)
     logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
@@ -57,7 +57,7 @@ new_data = rand(ffjord_dist, 100)
 
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
-```julia
+```@example cnf2
 using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
       OptimizationOptimJL, Distributions
 
@@ -74,16 +74,17 @@ where we also pass as an input the desired timespan for which the differential e
 
 ### Training
 
-First, let's get an array from a normal distribution as the training data
+First, let's get an array from a normal distribution as the training data. Note that we want the data in Float32
+values to match how we have setup the neural network weights and the state space of the ODE.
 
-```julia
+```@example cnf2
 data_dist = Normal(6.0f0, 0.7f0)
-train_data = rand(data_dist, 1, 100)
+train_data = Float32.(rand(data_dist, 1, 100))
 ```
 
 Now we define a loss function that we wish to minimize
 
-```julia
+```@example cnf2
 function loss(θ)
     logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
     -mean(logpx)
@@ -96,7 +97,7 @@ We then train the neural network to learn the distribution of `x`.
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
-```julia
+```@example cnf2
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
@@ -108,7 +109,7 @@ res1 = Optimization.solve(optprob,
 
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
 
-```julia
+```@example cnf2
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
@@ -119,7 +120,7 @@ res2 = Optimization.solve(optprob2,
 
 For evaluating the result, we can use `totalvariation` function from `Distances.jl`. First, we compute densities using actual distribution and FFJORD model. then we use a distance function.
 
-```julia
+```@example cnf2
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
@@ -131,7 +132,7 @@ train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 What's more, we can generate new data by using FFJORD as a distribution in `rand`.
 
-```julia
+```@example cnf2
 ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
 new_data = rand(ffjord_dist, 100)
 ```
