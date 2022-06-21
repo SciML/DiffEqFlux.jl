@@ -4,7 +4,7 @@ pages = [
             "examples/neural_ode.md",
             "examples/augmented_neural_ode.md",
             "examples/collocation.md",
-            "examples/noramlizing_flows.md",
+            "examples/normalizing_flows.md",
             "examples/hamiltonian_nn.md",
             "examples/tensor_layer.md",
             "examples/multiple_shooting.md"
