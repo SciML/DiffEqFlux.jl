@@ -69,7 +69,7 @@ result_neuralode = Optimization.solve(optprob,
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.LBFGS(initial_stepnorm=0.01),
+                                        Optim.LBFGS(),
                                         callback=callback,
                                         allow_f_increases = false)
 ```
@@ -200,7 +200,7 @@ halt when near the minimum.
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.LBFGS(initial_stepnorm=0.01),
+                                        Optim.LBFGS(),
                                         callback = callback,
                                         allow_f_increases = false)
 # output
