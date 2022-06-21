@@ -31,25 +31,25 @@ end
             regularize = false
             monte_carlo = false
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
     end
     @testset "AutoReverseDiff as adtype" begin
@@ -58,26 +58,23 @@ end
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
             monte_carlo = false
-
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
-
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
-
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
     end
     @testset "AutoTracker as adtype" begin
@@ -86,26 +83,23 @@ end
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
             monte_carlo = false
-
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
-
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
-
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
     end
     @testset "AutoZygote as adtype" begin
@@ -115,25 +109,25 @@ end
             regularize = false
             monte_carlo = false
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
     end
     @testset "AutoFiniteDiff as adtype" begin
@@ -143,25 +137,25 @@ end
             regularize = false
             monte_carlo = false
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
     end
 end
@@ -185,7 +179,7 @@ end
     regularize = false
     monte_carlo = false
 
-    res = DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback= callback, maxiters=10)
+    res = DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback= callback, maxiters=10)
     ffjord_d = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res.u); regularize, monte_carlo)
 
     @test !isnothing(pdf(ffjord_d, train_data))
@@ -211,7 +205,7 @@ end
     end
 
     adtype = Optimization.AutoZygote()
-    res = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(0.1), adtype; callback= callback, maxiters=100)
+    res = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(1f-1), adtype; callback= callback, maxiters=100)
 
     actual_pdf = pdf.(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
@@ -239,7 +233,7 @@ end
     end
 
     adtype = Optimization.AutoZygote()
-    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=100)
+    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=100)
 
     actual_pdf = pdf.(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
@@ -268,7 +262,7 @@ end
     end
 
     adtype = Optimization.AutoZygote()
-    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=300)
+    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=300)
 
     actual_pdf = pdf(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
@@ -293,11 +287,11 @@ end
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-        mean(-logpx .+ 0.1 * λ₁ .+ 0.1 * λ₂)
+        mean(-logpx .+ 1f-1 * λ₁ .+ 1f-1 * λ₂)
     end
 
     adtype = Optimization.AutoZygote()
-    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=300)
+    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=300)
 
     actual_pdf = pdf(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])

@@ -159,7 +159,7 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralDELayer
         re2 = nothing
         new{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
             typeof(tspan),typeof(args),typeof(kwargs)}(p,
-            length(p1),model1,re1,model2,re2,tspan,args,kwargs)
+            Int(1),model1,re1,model2,re2,tspan,args,kwargs)
     end
 end
 
@@ -179,13 +179,13 @@ function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralDSDE{M})(x,p1,p2,st1,st2) where {M<:Lux.AbstractExplicitLayer}
+function (n::NeuralDSDE{M})(x,p,st1,st2) where {M<:Lux.AbstractExplicitLayer}
     function dudt_(u,p,t)
-      u_, st1 = n.model1(u,p1,st1)
+      u_, st1 = n.model1(u,p[1],st1)
       return u_
     end
     function g(u,p,t)
-      u_, st2 = n.model2(u,p2,st2)
+      u_, st2 = n.model2(u,p[2],st2)
       return u_
     end
     
