@@ -11,7 +11,7 @@ by the `NeuralODE` struct. Let's take a look at an example.
 Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
-```julia
+```@example neuralode_cp
 using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, Random, Plots
 
 rng = Random.default_rng()
@@ -44,8 +44,10 @@ function loss_neuralode(p)
     return loss, pred
 end
 
-callback = function (p, l, pred; doplot = true)
-  display(l)
+# Do not plot by default for the documentation
+# Users should change doplot=true to see the plots callbacks
+callback = function (p, l, pred; doplot = false)
+  println(l)
   # plot current prediction against data
   plt = scatter(tsteps, ode_data[1,:], label = "data")
   scatter!(plt, tsteps, pred[1,:], label = "prediction")
@@ -55,11 +57,14 @@ callback = function (p, l, pred; doplot = true)
   return false
 end
 
+pinit = Lux.ComponentArray(p)
+callback(pinit, loss_neuralode(pinit)...; doplot=true)
+
 # use Optimization.jl to solve the problem
 adtype = Optimization.AutoZygote()
 
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p))
+optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
@@ -69,9 +74,11 @@ result_neuralode = Optimization.solve(optprob,
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.LBFGS(initial_stepnorm=0.01),
+                                        Optim.BFGS(initial_stepnorm=0.01),
                                         callback=callback,
                                         allow_f_increases = false)
+
+callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=true)
 ```
 
 ![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
@@ -80,7 +87,7 @@ result_neuralode2 = Optimization.solve(optprob2,
 
 Let's get a time series array from a sprial ODE to train against.
 
-```julia
+```@example neuralode
 using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, Random, Plots
 
 rng = Random.default_rng()
@@ -102,7 +109,7 @@ Now let's define a neural network with a `NeuralODE` layer. First we define
 the layer. Here we're going to use `Lux.Chain`, which is a suitable neural network
 structure for NeuralODEs with separate handling of state variables:
 
-```julia
+```@example neuralode
 dudt2 = Lux.Chain(ActivationFunction(x -> x.^3),
                   Lux.Dense(2, 50, tanh),
                   Lux.Dense(50, 2))
@@ -127,7 +134,7 @@ second argument for new parameters which we will use to iteratively change the
 neural network in our training loop. We will use the L2 loss of the network's
 output against the time series data:
 
-```julia
+```@example neuralode
 function predict_neuralode(p)
   Array(prob_neuralode(u0, p, st)[1])
 end
@@ -139,12 +146,14 @@ function loss_neuralode(p)
 end
 ```
 
-We define a callback function.
+We define a callback function. In this example we set `doplot = false` because otherwise
+it would show every step and overflow the documentation, but for your use case
+**set doplot=true to see a live animation of the training process!**.
 
-```julia
+```@example neuralode
 # Callback function to observe training
 callback = function (p, l, pred; doplot = false)
-  display(l)
+  println(l)
   # plot current prediction against data
   plt = scatter(tsteps, ode_data[1,:], label = "data")
   scatter!(plt, tsteps, pred[1,:], label = "prediction")
@@ -153,6 +162,9 @@ callback = function (p, l, pred; doplot = false)
   end
   return false
 end
+
+pinit = Lux.ComponentArray(p)
+callback(pinit, loss_neuralode(pinit)...)
 ```
 
 We then train the neural network to learn the ODE.
@@ -168,62 +180,36 @@ set up custom optimization problems. For more information on the usage of
 The `x` and `p` variables in the optimization function are different than
 `x` and `p` above. The optimization function runs over the space of parameters of
 the original problem, so `x_optimization` == `p_original`.
-```julia
+
+```@example neuralode
 # Train using the ADAM optimizer
 adtype = Optimization.AutoZygote()
 
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p))
+optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
                                        callback = callback,
                                        maxiters = 300)
-# output
-* Status: success
-
-* Candidate solution
-   u: [4.38e-01, -6.02e-01, 4.98e-01,  ...]
-   Minimum:   8.691715e-02
-
-* Found with
-   Algorithm:     ADAM
-   Initial Point: [-3.02e-02, -5.40e-02, 2.78e-01,  ...]
 ```
 
 We then complete the training using a different optimizer starting from where
 `ADAM` stopped. We do `allow_f_increases=false` to make the optimization automatically
 halt when near the minimum.
 
-```julia
+```@example neuralode
 # Retrain using the LBFGS optimizer
 optprob2 = remake(optprob,u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.LBFGS(initial_stepnorm=0.01),
+                                        Optim.BFGS(initial_stepnorm=0.01),
                                         callback = callback,
                                         allow_f_increases = false)
-# output
-* Status: success
+```
 
-* Candidate solution
-   u: [4.23e-01, -6.24e-01, 4.41e-01,  ...]
-   Minimum:   1.429496e-02
+And then we use the callback with `doplot=true` to see the final plot:
 
-* Found with
-   Algorithm:     L-BFGS
-   Initial Point: [4.38e-01, -6.02e-01, 4.98e-01,  ...]
-
-* Convergence measures
-   |x - x'|               = 1.46e-11 ≰ 0.0e+00
-   |x - x'|/|x'|          = 1.26e-11 ≰ 0.0e+00
-   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
-   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-   |g(x)|                 = 4.28e-02 ≰ 1.0e-08
-
-* Work counters
-   Seconds run:   4  (vs limit Inf)
-   Iterations:    35
-   f(x) calls:    336
-   ∇f(x) calls:   336
+```@example neuralode
+callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=true)
 ```
