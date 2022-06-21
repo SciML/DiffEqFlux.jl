@@ -24,7 +24,7 @@ end
 
 u0 = [1.0,0.0]
 ts = collect(0.0:0.1:tspan[2])
-prob_train = ODEProblem{true}(dxdt_train,u0,tspan,p)
+prob_train = ODEProblem{true}(dxdt_train,u0,tspan)
 data_train = Array(solve(prob_train,Tsit5(),saveat=ts))
 ```
 
