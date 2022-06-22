@@ -196,18 +196,20 @@ function Lux.initialstates(rng::AbstractRNG, n::NeuralDSDE)
 end
 
 function (n::NeuralDSDE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
-    function dudt_(u,p,t;st=st)
-      u_, st.state1 = n.model1(u,p.p1,st.state1)
+    st1 = st.state1
+    st2 = st.state2
+    function dudt_(u,p,t;st=st1)
+      u_, st = n.model1(u,p.p1,st)
       return u_
     end
-    function g(u,p,t;st=st)
-      u_, st.state2 = n.model2(u,p.p2,st.state2)
+    function g(u,p,t;st=st2)
+      u_, st = n.model2(u,p.p2,st)
       return u_
     end
     
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    return solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...), st
+    return solve(prob,n.args...;sensealg=InterpolatingAdjoint(),n.kwargs...), (state1 = st1, state2 = st2)
 end
 
 """
@@ -306,18 +308,20 @@ function Lux.initialstates(rng::AbstractRNG, n::NeuralSDE)
 end
 
 function (n::NeuralSDE{P,M})(x,p,st) where {P,M<:Lux.AbstractExplicitLayer}
-    function dudt_(u,p,t;st=st)
-        u_, st.state1 = n.model1(u,p.p1,st.state1)
+    st1 = st.state1
+    st2 = st.state2
+    function dudt_(u,p,t;st=st1)
+        u_, st = n.model1(u,p.p1,st)
         return u_
     end
-    function g(u,p,t;st=st)
-        u_, st.state2 = n.model2(u,p.p2,st.state2)
+    function g(u,p,t;st=st2)
+        u_, st = n.model2(u,p.p2,st)
         return u_
     end
 
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    solve(prob,n.args...;sensealg=ReverseDiffAdjoint(),n.kwargs...), st
+    solve(prob,n.args...;sensealg=InterpolatingAdjoint(),n.kwargs...), (state1 = st1, state2 = st2)
 end
 
 """
