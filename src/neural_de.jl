@@ -1,4 +1,4 @@
-abstract type NeuralDELayer <: Function end
+abstract type NeuralDELayer <: Lux.AbstractExplicitLayer end
 basic_tgrad(u,p,t) = zero(u)
 Flux.trainable(m::NeuralDELayer) = (m.p,)
 
@@ -69,6 +69,9 @@ struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
     end
 end
 
+Lux.initialparameters(rng::AbstractRNG, n::NeuralODE) = Lux.initialparameters(rng, n.model)
+Lux.initialstates(rng::AbstractRNG, n::NeuralODE) = Lux.initialstates(rng, n.model)
+
 function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
@@ -86,10 +89,11 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
 end
 
 function (n::NeuralODE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
-  function dudt(u,p,t)
+  function dudt(u,p,t;st=st)
     u_, st = n.model(u,p,st)
     return u_
   end
+
   ff = ODEFunction{false}(dudt,tgrad=basic_tgrad)
   prob = ODEProblem{false}(ff,x,n.tspan,p)
   sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
@@ -121,8 +125,7 @@ Arguments:
   documentation for more details.
 
 """
-# struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralDELayer
-struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: Lux.AbstractExplicitLayer
+struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralDELayer
     p::P
     len::Int
     model1::M
@@ -180,13 +183,13 @@ function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function initialparameters(rng::AbstractRNG, n::NeuralDSDE)
+function Lux.initialparameters(rng::AbstractRNG, n::NeuralDSDE)
     p1 = Lux.initialparameters(rng, n.model1)
     p2 = Lux.initialparameters(rng, n.model2)
     return Lux.ComponentArray((p1 = p1, p2 = p2))
 end
 
-function initialstates(rng::AbstractRNG, n::NeuralDSDE)
+function Lux.initialstates(rng::AbstractRNG, n::NeuralDSDE)
     st1 = Lux.initialstates(rng, n.model1)
     st2 = Lux.initialstates(rng, n.model2)
     return (state1 = st1, state2 = st2)
@@ -291,14 +294,14 @@ function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function initialparameters(rng::AbstractRNG, n::NeuralSDE)
-    p1 = initialparameters(rng, n.model1)
-    p2 = initialparameters(rng, n.model2)
+function Lux.initialparameters(rng::AbstractRNG, n::NeuralSDE)
+    p1 = Lux.initialparameters(rng, n.model1)
+    p2 = Lux.initialparameters(rng, n.model2)
     return Lux.ComponentArray((p1 = p1, p2 = p2))
 end
-function initialstates(rng::AbstractRNG, n::NeuralSDE)
-    st1 = initialstates(rng, n.model1)
-    st2 = initialstates(rng, n.model2)
+function Lux.initialstates(rng::AbstractRNG, n::NeuralSDE)
+    st1 = Lux.initialstates(rng, n.model1)
+    st2 = Lux.initialstates(rng, n.model2)
     return (state1 = st1, state2 = st2)
 end
 
