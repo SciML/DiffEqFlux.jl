@@ -209,7 +209,7 @@ function (n::NeuralDSDE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
     
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    return solve(prob,n.args...;sensealg=InterpolatingAdjoint(),n.kwargs...), (state1 = st1, state2 = st2)
+    return solve(prob,n.args...;sensealg=ReverseDiffAdjoint(),n.kwargs...), (state1 = st1, state2 = st2)
 end
 
 """
@@ -321,7 +321,7 @@ function (n::NeuralSDE{P,M})(x,p,st) where {P,M<:Lux.AbstractExplicitLayer}
 
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    solve(prob,n.args...;sensealg=InterpolatingAdjoint(),n.kwargs...), (state1 = st1, state2 = st2)
+    solve(prob,n.args...;sensealg=ReverseDiffAdjoint(),n.kwargs...), (state1 = st1, state2 = st2)
 end
 
 """
