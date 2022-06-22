@@ -76,28 +76,24 @@ neural SDE with diagonal noise layer function:
 drift_dudt = Lux.Chain(ActivationFunction(x -> x.^3),
                        Lux.Dense(2, 50, tanh),
                        Lux.Dense(50, 2))
-p1, st1 = Lux.setup(rng, drift_dudt)
 
 diffusion_dudt = Lux.Chain(Lux.Dense(2, 2))
-p2, st2 = Lux.setup(rng, diffusion_dudt)
 
-p1 = Lux.ComponentArray(p1)
-p2 = Lux.ComponentArray(p2)
-#Component Arrays doesn't provide a name to the first ComponentVector, only subsequent ones get a name for dereferencing
-p = [p1, p2]
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
                        saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
+
+p, st = Lux.setup(rng, neuralsde)
 ```
 
 Let's see what that looks like:
 
 ```@example nsde
 # Get the prediction using the correct initial condition
-prediction0, st1, st2 = neuralsde(u0,p,st1,st2)
+prediction0, st = neuralsde(u0,p,st)
 
-drift_(u, p, t) = drift_dudt(u, p[1], st1)[1]
-diffusion_(u, p, t) = diffusion_dudt(u, p[2], st2)[1]
+drift_(u, p, t) = drift_dudt(u, p.p1, st.state1)[1]
+diffusion_(u, p, t) = diffusion_dudt(u, p.p2, st.state2)[1]
 
 prob_neuralsde = SDEProblem(drift_, diffusion_, u0,(0.0f0, 1.2f0), p)
 
@@ -119,7 +115,7 @@ the data values:
 
 ```@example nsde
 function predict_neuralsde(p, u = u0)
-  return Array(neuralsde(u, p, st1, st2)[1])
+  return Array(neuralsde(u, p, st)[1])
 end
 
 function loss_neuralsde(p; n = 100)
