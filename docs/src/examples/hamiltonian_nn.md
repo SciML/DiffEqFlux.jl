@@ -3,7 +3,7 @@
 Hamiltonian Neural Networks introduced in [1] allow models to "learn and respect exact conservation laws in an unsupervised manner". In this example, we will train a model to learn the Hamiltonian for a 1D Spring mass system. This system is described by the equation:
 
 ```math
-m\ddot(x) + kx = 0
+m\ddot x + kx = 0
 ```
 
 Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. Analytically solving this equation, we get ``x = sin(t)``. Hence, ``q = sin(t)``, and ``p = cos(t)``. Using these solutions we generate our dataset and fit the `NeuralHamiltonianDE` to learn the dynamics of this system.
@@ -63,7 +63,7 @@ ylabel!("Momentum (p)")
 
 ### Data Generation
 
-The HNN predicts the gradients ``(\dot(q), \dot(p))`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally to supervise the training we also generate the gradients. Next we use use Flux DataLoader for automatically batching our dataset.
+The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally to supervise the training we also generate the gradients. Next we use use Flux DataLoader for automatically batching our dataset.
 
 ```@example hamiltonian
 using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff
