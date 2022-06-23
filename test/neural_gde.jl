@@ -1,24 +1,34 @@
 using DiffEqFlux, GeometricFlux, GraphSignals, OrdinaryDiffEq, Test
 
 # Fully Connected Graph
-adj_mat = FeaturedGraph(Float32[0 1 1 1
-                                1 0 1 1
-                                1 1 0 1
-                                1 1 1 0])
+adj_mat = FeaturedGraph(Float32[
+    0 1 1 1
+    1 0 1 1
+    1 1 0 1
+    1 1 1 0
+])
 
-features = [-10.0f0 -9.0f0 9.0f0 10.0f0
-              0.0f0  0.0f0 0.0f0  0.0f0]
+features = [
+    -10.0f0 -9.0f0 9.0f0 10.0f0
+    0.0f0 0.0f0 0.0f0 0.0f0
+]
 
-target = [1.0 1.0 0.0 0.0
-          0.0 0.0 1.0 1.0]
+target = [
+    1.0 1.0 0.0 0.0
+    0.0 0.0 1.0 1.0
+]
 
 model = Flux.Chain(
     NeuralODE(
-        GCNConv(adj_mat, 2=>2),
-        (0.f0, 1.f0), Tsit5(), save_everystep = false,
-        reltol = 1e-3, abstol = 1e-3, save_start = false
+        GCNConv(adj_mat, 2 => 2),
+        (0.0f0, 1.0f0),
+        Tsit5(),
+        save_everystep = false,
+        reltol = 1e-3,
+        abstol = 1e-3,
+        save_start = false,
     ),
-    x -> reshape(cpu(x), size(x)[1:2])
+    x -> reshape(cpu(x), size(x)[1:2]),
 )
 
 ps = Flux.params(model)

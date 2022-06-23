@@ -13,30 +13,31 @@ Arguments:
 - `out`: Dimension of the output.
 - `p`: Optional initialization of the layer's weight. Initialized to standard normal by default.
 """
-struct TensorLayer{M<:Array{TensorProductBasis},P<:AbstractArray,Int} <: AbstractTensorProductLayer
+struct TensorLayer{M<:Array{TensorProductBasis},P<:AbstractArray,Int} <:
+       AbstractTensorProductLayer
     model::M
     p::P
     in::Int
     out::Int
-    function TensorLayer(model,out,p=nothing)
+    function TensorLayer(model, out, p = nothing)
         number_of_weights = 1
         for basis in model
             number_of_weights *= basis.n
         end
         if p === nothing
-            p = randn(out*number_of_weights)
+            p = randn(out * number_of_weights)
         end
-        new{Array{TensorProductBasis},typeof(p),Int}(model,p,length(model),out)
+        new{Array{TensorProductBasis},typeof(p),Int}(model, p, length(model), out)
     end
 end
 
-function (layer::TensorLayer)(x,p=layer.p)
-    model,out = layer.model,layer.out
-    W = reshape(p, out, Int(length(p)/out))
+function (layer::TensorLayer)(x, p = layer.p)
+    model, out = layer.model, layer.out
+    W = reshape(p, out, Int(length(p) / out))
     tensor_prod = model[1](x[1])
-    for i in 2:length(model)
-        tensor_prod = kron(tensor_prod,model[i](x[i]))
+    for i = 2:length(model)
+        tensor_prod = kron(tensor_prod, model[i](x[i]))
     end
-    z = W*tensor_prod
+    z = W * tensor_prod
     return z
 end

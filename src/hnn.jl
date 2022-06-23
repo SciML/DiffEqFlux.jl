@@ -33,7 +33,7 @@ References:
 [1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. "Hamiltonian Neural Networks." Advances in Neural Information Processing Systems 32 (2019): 15379-15389.
 
 """
-struct HamiltonianNN{M, R, P}
+struct HamiltonianNN{M,R,P}
     model::M
     re::R
     p::P
@@ -43,12 +43,12 @@ struct HamiltonianNN{M, R, P}
         if p === nothing
             p = _p
         end
-        return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
+        return new{typeof(model),typeof(re),typeof(p)}(model, re, p)
     end
 
     function HamiltonianNN(model::FastChain; p = initial_params(model))
         re = nothing
-        return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
+        return new{typeof(model),typeof(re),typeof(p)}(model, re, p)
     end
 end
 
@@ -57,13 +57,13 @@ Flux.trainable(hnn::HamiltonianNN) = (hnn.p,)
 function _hamiltonian_forward(re, p, x)
     H = Flux.gradient(x -> sum(re(p)(x)), x)[1]
     n = size(x, 1) ÷ 2
-    return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
+    return cat(H[(n+1):2n, :], -H[1:n, :], dims = 1)
 end
 
 function _hamiltonian_forward(m::FastChain, p, x)
     H = Flux.gradient(x -> sum(m(x, p)), x)[1]
     n = size(x, 1) ÷ 2
-    return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
+    return cat(H[(n+1):2n, :], -H[1:n, :], dims = 1)
 end
 
 (hnn::HamiltonianNN)(x, p = hnn.p) = _hamiltonian_forward(hnn.re, p, x)
@@ -97,16 +97,37 @@ struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     kwargs::K
 
     function NeuralHamiltonianDE(model, tspan, args...; p = nothing, kwargs...)
-        hnn = HamiltonianNN(model, p=p)
-        new{typeof(hnn.model), typeof(hnn.p), typeof(hnn.re),
-            typeof(tspan), typeof(args), typeof(kwargs)}(
-            hnn, hnn.p, tspan, args, kwargs)
+        hnn = HamiltonianNN(model, p = p)
+        new{
+            typeof(hnn.model),
+            typeof(hnn.p),
+            typeof(hnn.re),
+            typeof(tspan),
+            typeof(args),
+            typeof(kwargs),
+        }(
+            hnn,
+            hnn.p,
+            tspan,
+            args,
+            kwargs,
+        )
     end
 
-    function NeuralHamiltonianDE(hnn::HamiltonianNN{M,RE,P}, tspan, args...;
-                                 p = hnn.p, kwargs...) where {M,RE,P}
-        new{M, P, RE, typeof(tspan), typeof(args),
-            typeof(kwargs)}(hnn, hnn.p, tspan, args, kwargs)
+    function NeuralHamiltonianDE(
+        hnn::HamiltonianNN{M,RE,P},
+        tspan,
+        args...;
+        p = hnn.p,
+        kwargs...,
+    ) where {M,RE,P}
+        new{M,P,RE,typeof(tspan),typeof(args),typeof(kwargs)}(
+            hnn,
+            hnn.p,
+            tspan,
+            args,
+            kwargs,
+        )
     end
 end
 

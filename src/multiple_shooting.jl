@@ -44,8 +44,8 @@ function multiple_shoot(
     continuity_loss,
     solver::DiffEqBase.AbstractODEAlgorithm,
     group_size::Integer;
-    continuity_term::Real=100,
-    kwargs...
+    continuity_term::Real = 100,
+    kwargs...,
 )
     datasize = size(ode_data, 2)
 
@@ -61,13 +61,13 @@ function multiple_shoot(
         solve(
             remake(
                 prob;
-                p=p,
-                tspan=(tsteps[first(rg)], tsteps[last(rg)]),
-                u0=ode_data[:, first(rg)],
+                p = p,
+                tspan = (tsteps[first(rg)], tsteps[last(rg)]),
+                u0 = ode_data[:, first(rg)],
             ),
             solver;
-            saveat=tsteps[rg],
-            kwargs...
+            saveat = tsteps[rg],
+            kwargs...,
         ) for rg in ranges
     ]
     group_predictions = Array.(sols)
@@ -89,7 +89,7 @@ function multiple_shoot(
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
             loss +=
-                continuity_term * continuity_loss(group_predictions[i - 1][:, end], u[:, 1])
+                continuity_term * continuity_loss(group_predictions[i-1][:, end], u[:, 1])
         end
     end
 
@@ -169,8 +169,8 @@ function multiple_shoot(
     continuity_loss,
     solver::DiffEqBase.AbstractODEAlgorithm,
     group_size::Integer;
-    continuity_term::Real=100,
-    kwargs...
+    continuity_term::Real = 100,
+    kwargs...,
 )
     datasize = size(ode_data, 2)
     prob = ensembleprob.prob
@@ -180,8 +180,8 @@ function multiple_shoot(
     end
 
     @assert ndims(ode_data) == 3 "ode_data must have three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
-    @assert size(ode_data,2) == length(tsteps)
-    @assert size(ode_data,3) == kwargs[:trajectories]
+    @assert size(ode_data, 2) == length(tsteps)
+    @assert size(ode_data, 3) == kwargs[:trajectories]
 
     # Get ranges that partition data to groups of size group_size
     ranges = group_ranges(datasize, group_size)
@@ -190,33 +190,27 @@ function multiple_shoot(
     # by using map we avoid mutating an array
     sols = map(
         rg -> begin
-            newprob = remake(
-                    prob;
-                    p=p,
-                    tspan=(tsteps[first(rg)], tsteps[last(rg)]),
-                    )
+            newprob = remake(prob; p = p, tspan = (tsteps[first(rg)], tsteps[last(rg)]))
             function prob_func(prob, i, repeat)
                 remake(prob, u0 = ode_data[:, first(rg), i])
             end
-            newensembleprob = EnsembleProblem(newprob,
-                                            prob_func,
-                                            ensembleprob.output_func,
-                                            ensembleprob.reduction,
-                                            ensembleprob.u_init,
-                                            ensembleprob.safetycopy);
-            solve(newensembleprob,
-                solver,
-                ensemblealg;
-                saveat=tsteps[rg],
-                kwargs...
+            newensembleprob = EnsembleProblem(
+                newprob,
+                prob_func,
+                ensembleprob.output_func,
+                ensembleprob.reduction,
+                ensembleprob.u_init,
+                ensembleprob.safetycopy,
             )
+            solve(newensembleprob, solver, ensemblealg; saveat = tsteps[rg], kwargs...)
         end,
-        ranges)
+        ranges,
+    )
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations did not converge?
     convergeds = [sol.converged for sol in sols]
-    if any(.! convergeds)
+    if any(.!convergeds)
         return Inf, group_predictions
     end
 
@@ -234,7 +228,8 @@ function multiple_shoot(
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
             loss +=
-                continuity_term * continuity_loss(group_predictions[i - 1][:, end, :], u[:, 1, :])
+                continuity_term *
+                continuity_loss(group_predictions[i-1][:, end, :], u[:, 1, :])
         end
     end
 
@@ -250,8 +245,8 @@ function multiple_shoot(
     loss_function::Function,
     solver::DiffEqBase.AbstractODEAlgorithm,
     group_size::Integer;
-    continuity_term::Real=100,
-    kwargs...
+    continuity_term::Real = 100,
+    kwargs...,
 )
 
     return multiple_shoot(
@@ -265,7 +260,7 @@ function multiple_shoot(
         solver,
         group_size;
         continuity_term,
-        kwargs...
+        kwargs...,
     )
 
 end
@@ -299,12 +294,11 @@ function group_ranges(datasize::Integer, groupsize::Integer)
             "datasize must be positive and groupsize must to be within [2, datasize]",
         ),
     )
-    return [i:min(datasize, i + groupsize - 1) for i in 1:groupsize-1:datasize-1]
+    return [i:min(datasize, i + groupsize - 1) for i = 1:groupsize-1:datasize-1]
 end
 
 # Default ontinuity loss between last state in previous prediction
 # and current initial condition in ode_data
-function _default_continuity_loss(û_end::AbstractArray,
-                                  u_0::AbstractArray)
+function _default_continuity_loss(û_end::AbstractArray, u_0::AbstractArray)
     return sum(abs, û_end - u_0)
 end

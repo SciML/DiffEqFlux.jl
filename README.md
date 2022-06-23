@@ -5,8 +5,7 @@
 [![Build status](https://badge.buildkite.com/a1fecf87b085b452fe0f3d3968ddacb5c1d5570806834e1d52.svg)](https://buildkite.com/julialang/diffeqflux-dot-jl)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](http://diffeqflux.sciml.ai/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](http://diffeqflux.sciml.ai/dev/)
-[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
-
+[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor%27s%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
 DiffEqFlux.jl fuses the world of differential equations with machine learning
 by helping users put diffeq solvers into neural networks. This package utilizes
@@ -38,12 +37,12 @@ Scientific Machine Learning](https://arxiv.org/abs/2001.04385).
 
 As such, it is the first package to support and demonstrate:
 
-- Stiff and non-stiff universal ordinary differential equations (universal ODEs)
-- Universal stochastic differential equations (universal SDEs)
-- Universal delay differential equations (universal DDEs)
-- Universal partial differential equations (universal PDEs)
-- Universal jump stochastic differential equations (universal jump diffusions)
-- Hybrid universal differential equations (universal DEs with event handling)
+  - Stiff and non-stiff universal ordinary differential equations (universal ODEs)
+  - Universal stochastic differential equations (universal SDEs)
+  - Universal delay differential equations (universal DDEs)
+  - Universal partial differential equations (universal PDEs)
+  - Universal jump stochastic differential equations (universal jump diffusions)
+  - Hybrid universal differential equations (universal DEs with event handling)
 
 with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc.
 methods. For examples, please refer to
@@ -56,10 +55,10 @@ PDEs and neural jump SDEs, can be found
 Do not limit yourself to the current neuralization. With this package, you can
 explore various ways to integrate the two methodologies:
 
-- Neural networks can be defined where the “activations” are nonlinear functions
-  described by differential equations
-- Neural networks can be defined where some layers are ODE solves
-- ODEs can be defined where some terms are neural networks
-- Cost functions on ODEs can define neural networks
+  - Neural networks can be defined where the “activations” are nonlinear functions
+    described by differential equations
+  - Neural networks can be defined where some layers are ODE solves
+  - ODEs can be defined where some terms are neural networks
+  - Cost functions on ODEs can define neural networks
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)

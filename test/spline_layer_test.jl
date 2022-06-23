@@ -7,52 +7,55 @@ function run_test(f, layer, atol)
 
     function loss_function(θ)
         data_pred = [layer(x, θ) for x in data_train_vals]
-        loss = sum(abs.(data_pred.-data_train_fn))/length(data_train_fn)
+        loss = sum(abs.(data_pred .- data_train_fn)) / length(data_train_fn)
         return loss
     end
 
-    function callback(p,l)
+    function callback(p, l)
         @show l
         return false
     end
 
-    optfunc = Optimization.OptimizationFunction((x, p) -> loss_function(x), Optimization.AutoZygote())
+    optfunc = Optimization.OptimizationFunction(
+        (x, p) -> loss_function(x),
+        Optimization.AutoZygote(),
+    )
     optprob = Optimization.OptimizationProblem(optfunc, layer.saved_points)
-    res = Optimization.solve(optprob, ADAM(0.1), callback=callback, maxiters = 100)
+    res = Optimization.solve(optprob, ADAM(0.1), callback = callback, maxiters = 100)
 
     optprob = Optimization.OptimizationProblem(optfunc, res.minimizer)
-    res = Optimization.solve(optprob, ADAM(0.1), callback=callback, maxiters = 100)
+    res = Optimization.solve(optprob, ADAM(0.1), callback = callback, maxiters = 100)
     opt = res.minimizer
 
     data_validate_vals = rand(100)
     data_validate_fn = f.(data_validate_vals)
 
-    data_validate_pred = [layer(x,opt) for x in data_validate_vals]
+    data_validate_pred = [layer(x, opt) for x in data_validate_vals]
 
-    output = sum(abs.(data_validate_pred.-data_validate_fn))/length(data_validate_fn)
+    output = sum(abs.(data_validate_pred .- data_validate_fn)) / length(data_validate_fn)
     @show output
     return output < atol
 end
 
 ##test 01: affine function, Linear Interpolation
 a, b = rand(2)
-f = x -> a*x + b
-layer = SplineLayer((0.0,1.0),0.01,LinearInterpolation)
+f = x -> a * x + b
+layer = SplineLayer((0.0, 1.0), 0.01, LinearInterpolation)
 @test run_test(f, layer, 0.1)
 
 ##test 02: non-linear function, Quadratic Interpolation
 a, b, c = rand(3)
-f = x -> a*x^2+ b*x + x
-layer = SplineLayer((0.0,1.0),0.01,QuadraticInterpolation)
+f = x -> a * x^2 + b * x + x
+layer = SplineLayer((0.0, 1.0), 0.01, QuadraticInterpolation)
 @test run_test(f, layer, 0.1)
 
 ##test 03: non-linear function, Quadratic Spline
 a, b, c = rand(3)
-f = x -> a*sin(b*x+c)
-layer = SplineLayer((0.0,1.0),0.1,QuadraticSpline)
+f = x -> a * sin(b * x + c)
+layer = SplineLayer((0.0, 1.0), 0.1, QuadraticSpline)
 @test run_test(f, layer, 0.1)
 
 ##test 04: non-linear function, Cubic Spline
-f = x -> exp(x)*x^2
-layer = SplineLayer((0.0,1.0),0.1,CubicSpline)
+f = x -> exp(x) * x^2
+layer = SplineLayer((0.0, 1.0), 0.1, CubicSpline)
 @test run_test(f, layer, 0.1)

@@ -8,14 +8,14 @@ p = hnn.p
 
 @test size(hnn(u0)) == (6, 1)
 
-@test ! iszero(ReverseDiff.gradient(p -> sum(hnn(u0, p)), p))
+@test !iszero(ReverseDiff.gradient(p -> sum(hnn(u0, p)), p))
 
 hnn = HamiltonianNN(Flux.Chain(Flux.Dense(6, 12, relu), Flux.Dense(12, 1)))
 p = hnn.p
 
 @test size(hnn(u0)) == (6, 1)
 
-@test ! iszero(ReverseDiff.gradient(p -> sum(hnn(u0, p)), p))
+@test !iszero(ReverseDiff.gradient(p -> sum(hnn(u0, p)), p))
 
 # Test Convergence on a toy problem
 t = range(0.0f0, 1.0f0, length = 64)
@@ -37,7 +37,7 @@ loss(x, y, p) = sum((hnn(x, p) .- y) .^ 2)
 initial_loss = loss(data, target, p)
 
 epochs = 100
-for epoch in 1:epochs
+for epoch = 1:epochs
     gs = ReverseDiff.gradient(p -> loss(data, target, p), p)
     Flux.Optimise.update!(opt, p, gs)
 end
@@ -50,9 +50,12 @@ final_loss = loss(data, target, p)
 tspan = (0.0f0, 1.0f0)
 
 model = NeuralHamiltonianDE(
-    hnn, tspan, Tsit5(),
-    save_everystep = false, save_start = true,
-    saveat = range(tspan[1], tspan[2], length=10)
+    hnn,
+    tspan,
+    Tsit5(),
+    save_everystep = false,
+    save_start = true,
+    saveat = range(tspan[1], tspan[2], length = 10),
 )
 sol = Array(model(data[:, 1]))
 @test size(sol) == (2, 10)
@@ -60,4 +63,4 @@ sol = Array(model(data[:, 1]))
 ps = Flux.params(model)
 gs = Flux.gradient(() -> sum(Array(model(data[:, 1]))), ps)
 
-@test ! iszero(gs[model.p])
+@test !iszero(gs[model.p])
