@@ -1,4 +1,4 @@
-abstract type NeuralDELayer <: Function end
+abstract type NeuralDELayer <: Lux.AbstractExplicitLayer end
 basic_tgrad(u,p,t) = zero(u)
 Flux.trainable(m::NeuralDELayer) = (m.p,)
 
@@ -69,6 +69,9 @@ struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
     end
 end
 
+Lux.initialparameters(rng::AbstractRNG, n::NeuralODE) = Lux.initialparameters(rng, n.model)
+Lux.initialstates(rng::AbstractRNG, n::NeuralODE) = Lux.initialstates(rng, n.model)
+
 function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
@@ -86,10 +89,11 @@ function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
 end
 
 function (n::NeuralODE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
-  function dudt(u,p,t)
+  function dudt(u,p,t;st=st)
     u_, st = n.model(u,p,st)
     return u_
   end
+
   ff = ODEFunction{false}(dudt,tgrad=basic_tgrad)
   prob = ODEProblem{false}(ff,x,n.tspan,p)
   sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
@@ -179,19 +183,33 @@ function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralDSDE{M})(x,p,st1,st2) where {M<:Lux.AbstractExplicitLayer}
-    function dudt_(u,p,t)
-      u_, st1 = n.model1(u,p[1],st1)
+function Lux.initialparameters(rng::AbstractRNG, n::NeuralDSDE)
+    p1 = Lux.initialparameters(rng, n.model1)
+    p2 = Lux.initialparameters(rng, n.model2)
+    return Lux.ComponentArray((p1 = p1, p2 = p2))
+end
+
+function Lux.initialstates(rng::AbstractRNG, n::NeuralDSDE)
+    st1 = Lux.initialstates(rng, n.model1)
+    st2 = Lux.initialstates(rng, n.model2)
+    return (state1 = st1, state2 = st2)
+end
+
+function (n::NeuralDSDE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
+    st1 = st.state1
+    st2 = st.state2
+    function dudt_(u,p,t;st=st1)
+      u_, st = n.model1(u,p.p1,st)
       return u_
     end
-    function g(u,p,t)
-      u_, st2 = n.model2(u,p[2],st2)
+    function g(u,p,t;st=st2)
+      u_, st = n.model2(u,p.p2,st)
       return u_
     end
     
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    return solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...), st1, st2
+    return solve(prob,n.args...;sensealg=InterpolatingAdjoint(),n.kwargs...), (state1 = st1, state2 = st2)
 end
 
 """
@@ -251,6 +269,15 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralDELayer
             typeof(tspan),typeof(args),typeof(kwargs)}(
             p,length(p1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
     end
+    
+    function NeuralSDE(model1::Lux.AbstractExplicitLayer, model2::Lux.AbstractExplicitLayer,tspan,nbrown,args...;
+                        p1 = nothing, p = nothing, kwargs...)
+        re1 = nothing
+        re2 = nothing
+        new{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
+            typeof(tspan),typeof(args),typeof(kwargs)}(
+              p,Int(1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
+    end
 end
 
 function (n::NeuralSDE)(x,p=n.p)
@@ -267,6 +294,34 @@ function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
+end
+
+function Lux.initialparameters(rng::AbstractRNG, n::NeuralSDE)
+    p1 = Lux.initialparameters(rng, n.model1)
+    p2 = Lux.initialparameters(rng, n.model2)
+    return Lux.ComponentArray((p1 = p1, p2 = p2))
+end
+function Lux.initialstates(rng::AbstractRNG, n::NeuralSDE)
+    st1 = Lux.initialstates(rng, n.model1)
+    st2 = Lux.initialstates(rng, n.model2)
+    return (state1 = st1, state2 = st2)
+end
+
+function (n::NeuralSDE{P,M})(x,p,st) where {P,M<:Lux.AbstractExplicitLayer}
+    st1 = st.state1
+    st2 = st.state2
+    function dudt_(u,p,t;st=st1)
+        u_, st = n.model1(u,p.p1,st)
+        return u_
+    end
+    function g(u,p,t;st=st2)
+        u_, st = n.model2(u,p.p2,st)
+        return u_
+    end
+
+    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
+    prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
+    solve(prob,n.args...;sensealg=InterpolatingAdjoint(),n.kwargs...), (state1 = st1, state2 = st2)
 end
 
 """
