@@ -2,6 +2,7 @@ using Documenter, DiffEqFlux
 
 ENV["GKSwstype"] = "100"
 using Plots
+ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 
 include("pages.jl")
 
