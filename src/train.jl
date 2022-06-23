@@ -1,8 +1,8 @@
-function sciml_train(loss, θ, opt=OptimizationPolyalgorithms.PolyOpt(), adtype=nothing, args...;
-                     lower_bounds=nothing, upper_bounds=nothing, cb = nothing,
+function sciml_train(loss, θ, opt = OptimizationPolyalgorithms.PolyOpt(), adtype = nothing,
+                     args...;
+                     lower_bounds = nothing, upper_bounds = nothing, cb = nothing,
                      callback = (args...) -> (false),
-                     maxiters=nothing, kwargs...)
-
+                     maxiters = nothing, kwargs...)
     @warn "sciml_train is being deprecated in favor of direct usage of Optimization.jl. Please consult the Optimization.jl documentation for more details. Optimization.jl's PolyOpt solver is the polyalgorithm of sciml_train"
 
     if adtype === nothing
@@ -34,11 +34,12 @@ function sciml_train(loss, θ, opt=OptimizationPolyalgorithms.PolyOpt(), adtype=
         end
     end
     if !isnothing(cb)
-      callback = cb
+        callback = cb
     end
 
     optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-    optprob = Optimization.OptimizationProblem(optf, θ; lb=lower_bounds, ub=upper_bounds, kwargs...)
+    optprob = Optimization.OptimizationProblem(optf, θ; lb = lower_bounds,
+                                               ub = upper_bounds, kwargs...)
     if maxiters !== nothing
         Optimization.solve(optprob, opt, args...; maxiters, callback = callback, kwargs...)
     else

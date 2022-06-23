@@ -13,7 +13,7 @@ struct ChebyshevBasis <: TensorProductBasis
 end
 
 function (basis::ChebyshevBasis)(x)
-    return map(j -> cos(j*acos(x)), 1:basis.n)
+    return map(j -> cos(j * acos(x)), 1:(basis.n))
 end
 
 """
@@ -29,7 +29,7 @@ struct SinBasis <: TensorProductBasis
 end
 
 function (basis::SinBasis)(x)
-    return map(j -> sin(j*x), 1:basis.n)
+    return map(j -> sin(j * x), 1:(basis.n))
 end
 
 """
@@ -45,12 +45,12 @@ struct CosBasis <: TensorProductBasis
 end
 
 function (basis::CosBasis)(x)
-    return map(j -> cos(j*x), 1:basis.n)
+    return map(j -> cos(j * x), 1:(basis.n))
 end
 
 #auxiliary function
 function fourier(i::Int, x::Real)
-    return iseven(i) ? cos(i*x/2) : sin(i*x/2)
+    return iseven(i) ? cos(i * x / 2) : sin(i * x / 2)
 end
 
 """
@@ -66,7 +66,7 @@ struct FourierBasis <: TensorProductBasis
 end
 
 function (basis::FourierBasis)(x)
-    return map(j -> fourier(j,x), 1:basis.n)
+    return map(j -> fourier(j, x), 1:(basis.n))
 end
 
 #auxiliary function
@@ -82,7 +82,7 @@ function legendre_poly(x, p::Integer)
     end
 
     for j in 2:p
-        a, b = b, ((2j-1)*x*b - (j-1)*a) / j
+        a, b = b, ((2j - 1) * x * b - (j - 1) * a) / j
     end
 
     b
@@ -101,8 +101,8 @@ struct LegendreBasis <: TensorProductBasis
 end
 
 function (basis::LegendreBasis)(x)
-    f = k -> legendre_poly(x,k-1)
-    return map(f, 1:basis.n)
+    f = k -> legendre_poly(x, k - 1)
+    return map(f, 1:(basis.n))
 end
 
 """
@@ -118,5 +118,5 @@ struct PolynomialBasis <: TensorProductBasis
 end
 
 function (basis::PolynomialBasis)(x)
-    return [evalpoly(x, (I+zeros(basis.n,basis.n))[k,:]) for k in 1:basis.n]
+    return [evalpoly(x, (I + zeros(basis.n, basis.n))[k, :]) for k in 1:(basis.n)]
 end

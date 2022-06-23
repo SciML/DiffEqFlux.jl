@@ -17,19 +17,19 @@ tsteps = range(tspan[1], tspan[2], length = datasize)
 # Get the data
 function trueODEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
-    du .= ((u.^3)'true_A)'
+    du .= ((u .^ 3)'true_A)'
 end
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
 # Define the Neural Network
-nn = FastChain((x, p) -> x.^3,
-                FastDense(2, 16, tanh),
-                FastDense(16, 2))
+nn = FastChain((x, p) -> x .^ 3,
+               FastDense(2, 16, tanh),
+               FastDense(16, 2))
 p_init = initial_params(nn)
 
 neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
-prob_node = ODEProblem((u,p,t)->nn(u,p), u0, tspan, p_init)
+prob_node = ODEProblem((u, p, t) -> nn(u, p), u0, tspan, p_init)
 
 function predict_single_shooting(p)
     return Array(neuralode(u0, p))
@@ -37,7 +37,7 @@ end
 
 # Define loss function
 function loss_function(data, pred)
-	return sum(abs2, data - pred)
+    return sum(abs2, data - pred)
 end
 
 ## Evaluate Single Shooting
@@ -48,8 +48,8 @@ function loss_single_shooting(p)
 end
 
 res_single_shooting = DiffEqFlux.sciml_train(loss_single_shooting, neuralode.p,
-                                          ADAM(0.05),
-										  maxiters = 300)
+                                             ADAM(0.05),
+                                             maxiters = 300)
 
 loss_ss, _ = loss_single_shooting(res_single_shooting.minimizer)
 println("Single shooting loss: $(loss_ss)")
@@ -61,7 +61,7 @@ continuity_term = 200
 function loss_multiple_shooting(p)
     return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
                           group_size; continuity_term,
-                          abstol=1e-8, reltol=1e-6) # test solver kwargs
+                          abstol = 1e-8, reltol = 1e-6) # test solver kwargs
 end
 
 res_ms = DiffEqFlux.sciml_train(loss_multiple_shooting, neuralode.p,
@@ -98,11 +98,11 @@ function loss_multiple_shooting_fd(p)
     return multiple_shoot(p, ode_data, tsteps, prob_node,
                           loss_function, continuity_loss_abs2, Tsit5(),
                           group_size; continuity_term,
-                          sensealg=ForwardDiffSensitivity())
+                          sensealg = ForwardDiffSensitivity())
 end
 
 res_ms_fd = DiffEqFlux.sciml_train(loss_multiple_shooting_fd, neuralode.p,
-                                ADAM(0.05), maxiters = 300)
+                                   ADAM(0.05), maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
 loss_ms_fd, _ = loss_single_shooting(res_ms_fd.minimizer)
@@ -112,7 +112,7 @@ println("Multiple shooting loss with ForwardDiffSensitivity: $(loss_ms_fd)")
 # Integration return codes `!= :Success` should return infinite loss.
 # In this case, we trigger `retcode = :MaxIters` by setting the solver option `maxiters=1`.
 loss_fail, _ = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function, Tsit5(),
-                              datasize; maxiters=1, verbose=false)
+                              datasize; maxiters = 1, verbose = false)
 @test loss_fail == Inf
 
 ## Test for DomainErrors
@@ -130,7 +130,8 @@ ensemble_prob = EnsembleProblem(prob_node, prob_func = prob_func)
 ensemble_prob_trueODE = EnsembleProblem(prob_trueode, prob_func = prob_func)
 ensemble_alg = EnsembleThreads()
 trajectories = 2
-ode_data_ensemble = Array(solve(ensemble_prob_trueODE, Tsit5(), ensemble_alg, trajectories = trajectories, saveat = tsteps))
+ode_data_ensemble = Array(solve(ensemble_prob_trueODE, Tsit5(), ensemble_alg,
+                                trajectories = trajectories, saveat = tsteps))
 
 group_size = 3
 continuity_term = 200
@@ -139,11 +140,11 @@ function loss_multiple_shooting_ens(p)
                           loss_function, Tsit5(),
                           group_size; continuity_term,
                           trajectories,
-                          abstol=1e-8, reltol=1e-6) # test solver kwargs
+                          abstol = 1e-8, reltol = 1e-6) # test solver kwargs
 end
 
 res_ms_ensembles = DiffEqFlux.sciml_train(loss_multiple_shooting_ens, neuralode.p,
-                                ADAM(0.05), maxiters = 300)
+                                          ADAM(0.05), maxiters = 300)
 
 loss_ms_ensembles, _ = loss_single_shooting(res_ms_ensembles.minimizer)
 

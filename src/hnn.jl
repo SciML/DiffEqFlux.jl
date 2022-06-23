@@ -57,20 +57,20 @@ Flux.trainable(hnn::HamiltonianNN) = (hnn.p,)
 function _hamiltonian_forward(re, p, x)
     H = Flux.gradient(x -> sum(re(p)(x)), x)[1]
     n = size(x, 1) ÷ 2
-    return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
+    return cat(H[(n + 1):(2n), :], -H[1:n, :], dims = 1)
 end
 
 function _hamiltonian_forward(m::FastChain, p, x)
     H = Flux.gradient(x -> sum(m(x, p)), x)[1]
     n = size(x, 1) ÷ 2
-    return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
+    return cat(H[(n + 1):(2n), :], -H[1:n, :], dims = 1)
 end
 
 (hnn::HamiltonianNN)(x, p = hnn.p) = _hamiltonian_forward(hnn.re, p, x)
 
-(hnn::HamiltonianNN{M})(x, p = hnn.p) where {M<:FastChain} =
+function (hnn::HamiltonianNN{M})(x, p = hnn.p) where {M <: FastChain}
     _hamiltonian_forward(hnn.model, p, x)
-
+end
 
 """
 Contructs a Neural Hamiltonian DE Layer for solving Hamiltonian Problems
@@ -89,22 +89,21 @@ Arguments:
             [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
             documentation for more details.
 """
-struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
-    hnn::HamiltonianNN{M,RE,P}
+struct NeuralHamiltonianDE{M, P, RE, T, A, K} <: NeuralDELayer
+    hnn::HamiltonianNN{M, RE, P}
     p::P
     tspan::T
     args::A
     kwargs::K
 
     function NeuralHamiltonianDE(model, tspan, args...; p = nothing, kwargs...)
-        hnn = HamiltonianNN(model, p=p)
+        hnn = HamiltonianNN(model, p = p)
         new{typeof(hnn.model), typeof(hnn.p), typeof(hnn.re),
-            typeof(tspan), typeof(args), typeof(kwargs)}(
-            hnn, hnn.p, tspan, args, kwargs)
+            typeof(tspan), typeof(args), typeof(kwargs)}(hnn, hnn.p, tspan, args, kwargs)
     end
 
-    function NeuralHamiltonianDE(hnn::HamiltonianNN{M,RE,P}, tspan, args...;
-                                 p = hnn.p, kwargs...) where {M,RE,P}
+    function NeuralHamiltonianDE(hnn::HamiltonianNN{M, RE, P}, tspan, args...;
+                                 p = hnn.p, kwargs...) where {M, RE, P}
         new{M, P, RE, typeof(tspan), typeof(args),
             typeof(kwargs)}(hnn, hnn.p, tspan, args, kwargs)
     end
