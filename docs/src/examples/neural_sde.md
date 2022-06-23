@@ -90,8 +90,8 @@ Let's see what that looks like:
 # Get the prediction using the correct initial condition
 prediction0 = neuralsde(u0)
 
-drift_(u, p, t) = drift_dudt(u,p[1:neuralsde.len])
-diffusion_(u, p, t) = diffusion_dudt(u, p[neuralsde.len+1])
+drift_(u, p, t) = re1(p[1:neuralsde.len])(u)
+diffusion_(u, p, t) = re2(p[neuralsde.len+1:end])(u)
 
 prob_neuralsde = SDEProblem(drift_, diffusion_, u0,(0.0f0, 1.2f0), neuralsde.p)
 
