@@ -46,7 +46,7 @@ train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 # Data Generation
 ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
 new_data = rand(ffjord_dist, 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1×100 Matrix{Float32}:
- 1.24593  0.390534  1.72951  -2.23115  …  0.925216  2.20883  1.38555  1.20019</code></pre><h2 id="Step-by-Step-Explanation"><a class="docs-heading-anchor" href="#Step-by-Step-Explanation">Step-by-Step Explanation</a><a id="Step-by-Step-Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Explanation" title="Permalink"></a></h2><p>We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:</p><pre><code class="language-julia hljs">using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux,
+ 1.37747  1.78318  1.81068  1.74035  1.35595  …  0.536682  0.752926  1.13014</code></pre><h2 id="Step-by-Step-Explanation"><a class="docs-heading-anchor" href="#Step-by-Step-Explanation">Step-by-Step Explanation</a><a id="Step-by-Step-Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Explanation" title="Permalink"></a></h2><p>We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:</p><pre><code class="language-julia hljs">using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux,
       OptimizationOptimJL, Distributions
 
 nn = Flux.Chain(
@@ -57,7 +57,7 @@ tspan = (0.0f0, 10.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(::FFJORD{Chain{Tuple{Dense{typeof(tanh), Matrix{Float32}, Vector{Float32}}, Dense{typeof(tanh), Matrix{Float32}, Vector{Float32}}}}, Vector{Float32}, Nothing, Optimisers.Restructure{Chain{Tuple{Dense{typeof(tanh), Matrix{Float32}, Vector{Float32}}, Dense{typeof(tanh), Matrix{Float32}, Vector{Float32}}}}, NamedTuple{(:layers,), Tuple{Tuple{NamedTuple{(:weight, :bias, :σ), Tuple{Int64, Int64, Tuple{}}}, NamedTuple{(:weight, :bias, :σ), Tuple{Int64, Int64, Tuple{}}}}}}}, Distributions.MvNormal{Float32, PDMats.PDiagMat{Float32, Vector{Float32}}, Vector{Float32}}, Tuple{Float32, Float32}, Tuple{OrdinaryDiffEq.Tsit5{typeof(OrdinaryDiffEq.trivial_limiter!), typeof(OrdinaryDiffEq.trivial_limiter!), Static.False}}, Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}}}) (generic function with 1 method)</code></pre><p>where we also pass as an input the desired timespan for which the differential equation that defines <code>log p_x</code> and <code>z(t)</code> will be solved.</p><h3 id="Training"><a class="docs-heading-anchor" href="#Training">Training</a><a id="Training-1"></a><a class="docs-heading-anchor-permalink" href="#Training" title="Permalink"></a></h3><p>First, let&#39;s get an array from a normal distribution as the training data. Note that we want the data in Float32 values to match how we have setup the neural network weights and the state space of the ODE.</p><pre><code class="language-julia hljs">data_dist = Normal(6.0f0, 0.7f0)
 train_data = Float32.(rand(data_dist, 1, 100))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1×100 Matrix{Float32}:
- 6.11568  6.09624  5.88587  4.62206  …  5.75642  5.54098  5.09735  6.35941</code></pre><p>Now we define a loss function that we wish to minimize</p><pre><code class="language-julia hljs">function loss(θ)
+ 6.78245  5.62577  7.30765  5.85103  …  6.25798  5.80644  6.69565  6.34892</code></pre><p>Now we define a loss function that we wish to minimize</p><pre><code class="language-julia hljs">function loss(θ)
     logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
     -mean(logpx)
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">loss (generic function with 1 method)</code></pre><p>In this example, we wish to choose the parameters of the network such that the likelihood of the re-parameterized variable is maximized. Other loss functions may be used depending on the application. Furthermore, the CNF layer gives the log of the density of the variable x, as one may guess from the code above.</p><p>We then train the neural network to learn the distribution of <code>x</code>.</p><p>Here we showcase starting the optimization with <code>ADAM</code> to more quickly find a minimum, and then honing in on the minimum by using <code>LBFGS</code>.</p><pre><code class="language-julia hljs">adtype = Optimization.AutoZygote()
@@ -67,32 +67,32 @@ optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
                           maxiters = 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">u: 10-element Vector{Float32}:
-  1.0448012
- -0.45576614
-  1.1427641
- -0.23311974
- -0.5942722
- -0.49369204
- -0.7352389
- -0.48615566
-  0.649101
- -1.0179392</code></pre><p>We then complete the training using a different optimizer starting from where <code>ADAM</code> stopped.</p><pre><code class="language-julia hljs">optprob2 = Optimization.OptimizationProblem(optf, res1.u)
+  0.12718122
+ -0.14081123
+ -0.59682465
+ -0.574877
+ -0.595896
+  0.5538474
+  0.22035533
+  0.43001804
+ -0.4734359
+ -0.6996838</code></pre><p>We then complete the training using a different optimizer starting from where <code>ADAM</code> stopped.</p><pre><code class="language-julia hljs">optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
                           allow_f_increases=false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">u: 10-element Vector{Float32}:
-  1.045159
- -0.45556107
-  1.1424242
- -0.23283623
- -0.59409267
- -0.4940077
- -0.73710114
- -0.4843164
-  0.64730364
- -1.0200526</code></pre><h3 id="Evaluation"><a class="docs-heading-anchor" href="#Evaluation">Evaluation</a><a id="Evaluation-1"></a><a class="docs-heading-anchor-permalink" href="#Evaluation" title="Permalink"></a></h3><p>For evaluating the result, we can use <code>totalvariation</code> function from <code>Distances.jl</code>. First, we compute densities using actual distribution and FFJORD model. then we use a distance function.</p><pre><code class="language-julia hljs">using Distances
+  0.12723945
+ -0.14077678
+ -0.5968249
+ -0.5748695
+ -0.5958989
+  0.5538512
+  0.2203726
+  0.4299863
+ -0.4734974
+ -0.69965875</code></pre><h3 id="Evaluation"><a class="docs-heading-anchor" href="#Evaluation">Evaluation</a><a id="Evaluation-1"></a><a class="docs-heading-anchor-permalink" href="#Evaluation" title="Permalink"></a></h3><p>For evaluating the result, we can use <code>totalvariation</code> function from <code>Distances.jl</code>. First, we compute densities using actual distribution and FFJORD model. then we use a distance function.</p><pre><code class="language-julia hljs">using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
 learned_pdf = exp.(ffjord_mdl(train_data, res2.u)[1])
-train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.057985067f0</code></pre><h3 id="Data-Generation"><a class="docs-heading-anchor" href="#Data-Generation">Data Generation</a><a id="Data-Generation-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Generation" title="Permalink"></a></h3><p>What&#39;s more, we can generate new data by using FFJORD as a distribution in <code>rand</code>.</p><pre><code class="language-julia hljs">ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
+train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.24647579f0</code></pre><h3 id="Data-Generation"><a class="docs-heading-anchor" href="#Data-Generation">Data Generation</a><a id="Data-Generation-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Generation" title="Permalink"></a></h3><p>What&#39;s more, we can generate new data by using FFJORD as a distribution in <code>rand</code>.</p><pre><code class="language-julia hljs">ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
 new_data = rand(ffjord_dist, 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1×100 Matrix{Float32}:
- 5.86135  4.89465  4.37474  5.85875  …  6.12035  5.93873  7.23102  6.10615</code></pre><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. &quot;Ffjord: Free-form continuous dynamics for scalable reversible generative models.&quot; arXiv preprint arXiv:1810.01367 (2018).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../collocation/">« Smoothed Collocation for Fast Two-Stage Training</a><a class="docs-footer-nextpage" href="../hamiltonian_nn/">Hamiltonian Neural Network »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.19 on <span class="colophon-date" title="Thursday 23 June 2022 02:46">Thursday 23 June 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 5.93486  6.27386  5.63009  8.05517  …  7.11752  6.32091  6.24364  5.52978</code></pre><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. &quot;Ffjord: Free-form continuous dynamics for scalable reversible generative models.&quot; arXiv preprint arXiv:1810.01367 (2018).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../collocation/">« Smoothed Collocation for Fast Two-Stage Training</a><a class="docs-footer-nextpage" href="../hamiltonian_nn/">Hamiltonian Neural Network »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.19 on <span class="colophon-date" title="Thursday 23 June 2022 09:41">Thursday 23 June 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
