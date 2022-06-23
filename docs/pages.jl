@@ -6,6 +6,7 @@ pages = [
             "examples/mnist_neural_ode.md",
             "examples/mnist_conv_neural_ode.md",
             "examples/augmented_neural_ode.md",
+            "examples/neural_sde.md",
             "examples/collocation.md",
             "examples/normalizing_flows.md",
             "examples/hamiltonian_nn.md",
