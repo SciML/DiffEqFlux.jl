@@ -1,4 +1,4 @@
-# Continuous Normalizing Flows with GalacticOptim.jl
+# Continuous Normalizing Flows
 
 Now, we study a single layer neural network that can estimate the density `p_x` of a variable of interest `x` by re-parameterizing a base variable `z` with known density `p_z` through the Neural Network model passed to the layer.
 
