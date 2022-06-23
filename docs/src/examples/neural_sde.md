@@ -33,9 +33,8 @@ First let's build training data from the same example as the neural ODE:
 
 ```@example nsde
 using Plots, Statistics
-using Lux, Optimization, OptimizationFlux, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
+using Flux, Optimization, OptimizationFlux, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis
 
-rng = Random.default_rng()
 u0 = Float32[2.; 0.]
 datasize = 30
 tspan = (0.0f0, 1.0f0)
@@ -73,29 +72,29 @@ Now we build a neural SDE. For simplicity we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
 ```@example nsde
-drift_dudt = Lux.Chain(ActivationFunction(x -> x.^3),
-                       Lux.Dense(2, 50, tanh),
-                       Lux.Dense(50, 2))
+drift_dudt = Flux.Chain(x -> x.^3,
+                       Flux.Dense(2, 50, tanh),
+                       Flux.Dense(50, 2))
+p1, re1 = Flux.destructure(drift_dudt)
 
-diffusion_dudt = Lux.Chain(Lux.Dense(2, 2))
+diffusion_dudt = Flux.Chain(Flux.Dense(2, 2))
+p2, re2 = Flux.destructure(diffusion_dudt)
 
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
                        saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
-
-p, st = Lux.setup(rng, neuralsde)
 ```
 
 Let's see what that looks like:
 
 ```@example nsde
 # Get the prediction using the correct initial condition
-prediction0, st = neuralsde(u0,p,st)
+prediction0 = neuralsde(u0)
 
-drift_(u, p, t) = drift_dudt(u, p.p1, st.state1)[1]
-diffusion_(u, p, t) = diffusion_dudt(u, p.p2, st.state2)[1]
+drift_(u, p, t) = drift_dudt(u,p[1:neuralsde.len])
+diffusion_(u, p, t) = diffusion_dudt(u, p[neuralsde.len+1])
 
-prob_neuralsde = SDEProblem(drift_, diffusion_, u0,(0.0f0, 1.2f0), p)
+prob_neuralsde = SDEProblem(drift_, diffusion_, u0,(0.0f0, 1.2f0), neuralsde.p)
 
 ensemble_nprob = EnsembleProblem(prob_neuralsde)
 ensemble_nsol = solve(ensemble_nprob, SOSRI(), trajectories = 100,
@@ -115,7 +114,7 @@ the data values:
 
 ```@example nsde
 function predict_neuralsde(p, u = u0)
-  return Array(neuralsde(u, p, st)[1])
+  return Array(neuralsde(u, p))
 end
 
 function loss_neuralsde(p; n = 100)
@@ -168,7 +167,7 @@ opt = ADAM(0.025)
 # First round of training with n = 10
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss_neuralsde(x, n=10), adtype)
-optprob = Optimization.OptimizationProblem(optf, p)
+optprob = Optimization.OptimizationProblem(optf, neuralsde.p)
 result1 = Optimization.solve(optprob, opt,
                                  callback = callback, maxiters = 100)
 ```
