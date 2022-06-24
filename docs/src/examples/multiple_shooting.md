@@ -41,7 +41,7 @@ ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
 
 # Define the Neural Network
-nn = Lux.Chain(x -> x^3,
+nn = Lux.Chain(x -> x.^3,
                   Lux.Dense(2, 16, tanh),
                   Lux.Dense(16, 2))
 p_init, st = Lux.setup(rng, nn)

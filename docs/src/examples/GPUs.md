@@ -37,7 +37,7 @@ If one is using `Lux.Chain`, then the computation takes place on the GPU with
 ```julia
 import Lux
 
-dudt2 = Lux.Chain(x -> x^3,
+dudt2 = Lux.Chain(x -> x.^3,
             Lux.Dense(2,50,tanh),
             Lux.Dense(50,2))
 

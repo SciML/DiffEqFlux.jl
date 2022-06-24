@@ -31,7 +31,7 @@ savefig("colloc.png")
 plot(tsteps,du')
 savefig("colloc_du.png")
 
-dudt2 = Lux.Chain(x -> x^3,
+dudt2 = Lux.Chain(x -> x.^3,
                   Lux.Dense(2, 50, tanh),
                   Lux.Dense(50, 2))
 
@@ -134,7 +134,7 @@ calculates the squared difference between `f(u,p,t)` and `u'` at each
 point, and find the parameters which minimize this difference:
 
 ```@example collocation
-dudt2 = Lux.Chain(x -> x^3,
+dudt2 = Lux.Chain(x -> x.^3,
                   Lux.Dense(2, 50, tanh),
                   Lux.Dense(50, 2))
 
