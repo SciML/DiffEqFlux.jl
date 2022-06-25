@@ -12,7 +12,7 @@ derivatives of the loss backwards in time.
 ```julia
 NeuralODE(model,tspan,alg=nothing,args...;kwargs...)
 NeuralODE(model::FastChain,tspan,alg=nothing,args...;
-          sensealg=InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
+          sensealg=InterpolatingAdjoint(autojacvec=SciMLSensitivity.ReverseDiffVJP(true)),
           kwargs...)
 ```
 
@@ -490,7 +490,7 @@ the constraint equations.
 ```julia
 NeuralODEMM(model,constraints_model,tspan,mass_matrix,alg=nothing,args...;kwargs...)
 NeuralODEMM(model::FastChain,tspan,mass_matrix,alg=nothing,args...;
-          sensealg=InterpolatingAdjoint(autojacvec=DiffEqSensitivity.ReverseDiffVJP(true)),
+          sensealg=InterpolatingAdjoint(autojacvec=SciMLSensitivity.ReverseDiffVJP(true)),
           kwargs...)
 ```
 
