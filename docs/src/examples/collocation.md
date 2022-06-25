@@ -5,7 +5,7 @@ pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
 ```@example collocation_cp
-using Lux, DiffEqFlux, OrdinaryDiffEq, DiffEqSensitivity, Optimization, OptimizationFlux, Plots
+using Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization, OptimizationFlux, Plots
 
 using Random
 rng = Random.default_rng()

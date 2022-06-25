@@ -5,7 +5,7 @@ condition is a GPU array. Thus, for example, we can define a neural ODE by hand
 that runs on the GPU (if no GPU is available, the calculation defaults back to the CPU):
 
 ```julia
-using DifferentialEquations, Flux, DiffEqFlux, DiffEqSensitivity
+using DifferentialEquations, Flux, DiffEqFlux, SciMLSensitivity
 
 using Random
 rng = Random.default_rng()
@@ -70,7 +70,7 @@ same code works on CPUs and GPUs, dependent on `using CUDA`.
 
 ```julia
 using Flux, DiffEqFlux, Optimization, OptimizationFlux, Zygote, 
-      OrdinaryDiffEq, Plots, CUDA, DiffEqSensitivity, Random, ComponentArrays
+      OrdinaryDiffEq, Plots, CUDA, SciMLSensitivity, Random, ComponentArrays
 CUDA.allowscalar(false) # Makes sure no slow operations are occuring
 
 #rng for Lux.setup

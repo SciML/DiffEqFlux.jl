@@ -1,12 +1,12 @@
 module DiffEqFlux
 
 using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
-    DiffEqBase, DiffEqSensitivity, DiffResults, Distributions, DistributionsAD,
+    DiffEqBase, SciMLSensitivity, DiffResults, Distributions, DistributionsAD,
     ForwardDiff, Optimization, OptimizationPolyalgorithms, LinearAlgebra,
     Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
     Reexport, SciMLBase, StaticArrays, TerminalLoggers, Zygote, ZygoteRules
 
-@reexport using DiffEqSensitivity
+@reexport using SciMLSensitivity
 @reexport using Zygote
 
 # deprecate
