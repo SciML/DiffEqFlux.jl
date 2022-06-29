@@ -1,13 +1,13 @@
 module DiffEqFlux
 
 using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
-    DiffEqBase, DiffEqSensitivity, Distributions, DistributionsAD,
+    DiffEqBase, SciMLSensitivity, Distributions, DistributionsAD,
     ForwardDiff, LinearAlgebra,
     Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
     Reexport, SciMLBase, TerminalLoggers, Zygote, ZygoteRules
 
 import Flux, Lux
-@reexport using DiffEqSensitivity
+@reexport using SciMLSensitivity
 @reexport using Zygote
 @reexport using Flux
 

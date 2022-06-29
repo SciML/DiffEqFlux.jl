@@ -4,8 +4,8 @@ One can avoid a lot of the computational cost of the ODE solver by
 pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
-```julia
-using Lux, DiffEqFlux, OrdinaryDiffEq, DiffEqSensitivity, Optimization, OptimizationFlux, Plots
+```@example collocation_cp
+using Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization, OptimizationFlux, Plots
 
 using Random
 rng = Random.default_rng()
@@ -31,7 +31,7 @@ savefig("colloc.png")
 plot(tsteps,du')
 savefig("colloc_du.png")
 
-dudt2 = Lux.Chain(ActivationFunction(x -> x.^3),
+dudt2 = Lux.Chain(x -> x.^3,
                   Lux.Dense(2, 50, tanh),
                   Lux.Dense(50, 2))
 
@@ -79,7 +79,7 @@ optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
 
 numerical_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
@@ -93,8 +93,11 @@ savefig("post_trained.png")
 The smoothed collocation is a spline fit of the datapoints which allows
 us to get a an estimate of the approximate noiseless dynamics:
 
-```julia
-using Flux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
+```@example collocation
+using Lux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
+
+using Random
+rng = Random.default_rng()
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -120,7 +123,7 @@ plot!(tsteps,u',lw=5)
 We can then differentiate the smoothed function to get estimates of the
 derivative at each datapoint:
 
-```julia
+```@example collocation
 plot(tsteps,du')
 ```
 
@@ -130,8 +133,8 @@ Because we have `(u',u)` pairs, we can write a loss function that
 calculates the squared difference between `f(u,p,t)` and `u'` at each
 point, and find the parameters which minimize this difference:
 
-```julia
-dudt2 = Lux.Chain(ActivationFunction(x -> x.^3),
+```@example collocation
+dudt2 = Lux.Chain(x -> x.^3,
                   Lux.Dense(2, 50, tanh),
                   Lux.Dense(50, 2))
 
@@ -170,7 +173,7 @@ full solution all throughout the timeseries, but it does have a drift.
 We can continue to optimize like this, or we can use this as the
 initial condition to the next phase of our fitting:
 
-```julia
+```@example collocation
 function predict_neuralode(p)
   Array(prob_neuralode(u0, p, st)[1])
 end
@@ -187,7 +190,7 @@ optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
 
 numerical_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
-                                       cb = callback,
+                                       callback = callback,
                                        maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)

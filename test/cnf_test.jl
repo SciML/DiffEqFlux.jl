@@ -17,7 +17,7 @@ end
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
     data_dist = Beta(2.0f0, 2.0f0)
-    train_data = rand(data_dist, 1, 100)
+    train_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ; regularize, monte_carlo)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -66,8 +66,7 @@ end
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
             monte_carlo = false
-
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(0.1), adtype; callback = callback, maxiters=10))
+            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
@@ -211,7 +210,7 @@ end
     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
     data_dist = Beta(2.0f0, 2.0f0)
-    train_data = rand(data_dist, 1, 100)
+    train_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ; regularize, monte_carlo)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -242,8 +241,8 @@ end
     monte_carlo = false
 
     data_dist = Beta(7.0f0, 7.0f0)
-    train_data = rand(data_dist, 1, 100)
-    test_data = rand(data_dist, 1, 100)
+    train_data = Float32.(rand(data_dist, 1, 100))
+    test_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -272,8 +271,8 @@ end
     monte_carlo = false
 
     data_dist = Normal(6.0f0, 0.7f0)
-    train_data = rand(data_dist, 1, 100)
-    test_data = rand(data_dist, 1, 100)
+    train_data = Float32.(rand(data_dist, 1, 100))
+    test_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -303,8 +302,8 @@ end
     μ = ones(Float32, 2)
     Σ = Diagonal([7.0f0, 7.0f0])
     data_dist = MvNormal(μ, Σ)
-    train_data = rand(data_dist, 100)
-    test_data = rand(data_dist, 100)
+    train_data = Float32.(rand(data_dist, 100))
+    test_data = Float32.(rand(data_dist, 100))
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
@@ -334,12 +333,12 @@ end
     μ = ones(Float32, 2)
     Σ = Diagonal([7.0f0, 7.0f0])
     data_dist = MvNormal(μ, Σ)
-    train_data = rand(data_dist, 100)
-    test_data = rand(data_dist, 100)
+    train_data = Float32.(rand(data_dist, 100))
+    test_data = Float32.(rand(data_dist, 100))
 
     function loss(θ)
         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-        mean(-logpx .+ 0.1 * λ₁ .+ 0.1 * λ₂)
+        mean(-logpx .+ 1f-1 * λ₁ .+ 1f-1 * λ₂)
     end
 
     adtype = Optimization.AutoZygote()

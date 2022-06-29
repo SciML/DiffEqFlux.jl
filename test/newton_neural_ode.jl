@@ -4,11 +4,11 @@ using DiffEqFlux, Flux, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Rando
 Random.seed!(100)
 
 n = 1 # number of ODEs
-tspan = (0.0, 1.0)
+tspan = (0f0, 1f0)
 
 d = 5 # number of data pairs
-x = rand(n, 5)
-y = rand(n, 5)
+x = rand(Float32, n, 5)
+y = rand(Float32, n, 5)
 
 cb = function (p,l)
   @show l
@@ -19,7 +19,7 @@ NN = Flux.Chain(Flux.Dense(n, 5n, tanh),
                 Flux.Dense(5n, n))
 
 @info "ROCK4"
-nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1e-4, saveat=[tspan[end]])
+nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1f-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
 l1 = loss_function(nODE.p)
@@ -33,7 +33,7 @@ res = Optimization.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 100, cal
 @test loss_function(res.minimizer) < l1
 
 @info "ROCK2"
-nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1e-4, saveat=[tspan[end]])
+nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1f-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
 l1 = loss_function(nODE.p)

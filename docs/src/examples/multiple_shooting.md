@@ -18,7 +18,7 @@ high penalties in case the solver predicts discontinuous values.
 The following is a working demo, using Multiple Shooting
 
 ```julia
-using Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, DifferentialEquations
+using Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, DifferentialEquations, Plots
 using DiffEqFlux: group_ranges
 
 using Random
@@ -41,7 +41,7 @@ ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
 
 # Define the Neural Network
-nn = Lux.Chain(ActivationFunction(x -> x.^3),
+nn = Lux.Chain(x -> x.^3,
                   Lux.Dense(2, 16, tanh),
                   Lux.Dense(16, 2))
 p_init, st = Lux.setup(rng, nn)
@@ -59,16 +59,19 @@ function plot_multiple_shoot(plt, preds, group_size)
 	end
 end
 
-# Animate training
-anim = Animation()
-callback = function (p, l, preds; doplot = true)
+# Animate training, cannot make animation on CI server
+# anim = Plots.Animation()
+iter = 0
+callback = function (p, l, preds; doplot = false)
   display(l)
-  if doplot
-	# plot the original data
-	plt = scatter(tsteps, ode_data[1,:], label = "Data")
+  global iter
+  iter += 1
+  if doplot && iter%1 == 0
+    # plot the original data
+    plt = scatter(tsteps, ode_data[1,:], label = "Data")
 
-	# plot the different predictions for individual shoot
-	plot_multiple_shoot(plt, preds, group_size)
+    # plot the different predictions for individual shoot
+    plot_multiple_shoot(plt, preds, group_size)
 
     frame(anim)
     display(plot(plt))
@@ -93,11 +96,12 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p_init))
 res_ms = Optimization.solve(optprob, PolyOpt(),
-                                cb = callback)
-gif(anim, "multiple_shooting.gif", fps=15)
-
+                                callback = callback)
+#gif(anim, "multiple_shooting.gif", fps=15)
 ```
-Here's the animation that we get from above
+
+Here's the animation that we get from above when `doplot=true` and the
+animation code is uncommented:
 
 ![pic](https://camo.githubusercontent.com/9f1a4b38895ebaa47b7d90e53268e6f10d04da684b58549624c637e85c22d27b/68747470733a2f2f692e696d6775722e636f6d2f636d507a716a722e676966)
 The connected lines show the predictions of each group (Notice that there

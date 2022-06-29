@@ -3,13 +3,13 @@
 Hamiltonian Neural Networks introduced in [1] allow models to "learn and respect exact conservation laws in an unsupervised manner". In this example, we will train a model to learn the Hamiltonian for a 1D Spring mass system. This system is described by the equation:
 
 ```math
-m\ddot(x) + kx = 0
+m\ddot x + kx = 0
 ```
 
 Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. Analytically solving this equation, we get ``x = sin(t)``. Hence, ``q = sin(t)``, and ``p = cos(t)``. Using these solutions we generate our dataset and fit the `NeuralHamiltonianDE` to learn the dynamics of this system.
 
-```julia
-using DiffEqFlux, DifferentialEquations, Statistics, Plots
+```@example hamiltonian_cp
+using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff
 
 t = range(0.0f0, 1.0f0, length = 1024)
 π_32 = Float32(π)
@@ -20,7 +20,7 @@ dpdt = -2π_32 .* q_t
 
 data = cat(q_t, p_t, dims = 1)
 target = cat(dqdt, dpdt, dims = 1)
-dataloader = Flux.Data.DataLoader(data, target; batchsize=256, shuffle=true)
+dataloader = Flux.Data.DataLoader((data, target); batchsize=256, shuffle=true)
 
 hnn = HamiltonianNN(
     Chain(Dense(2, 64, relu), Dense(64, 1))
@@ -63,9 +63,11 @@ ylabel!("Momentum (p)")
 
 ### Data Generation
 
-The HNN predicts the gradients ``(\dot(q), \dot(p))`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally to supervise the training we also generate the gradients. Next we use use Flux DataLoader for automatically batching our dataset.
+The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally to supervise the training we also generate the gradients. Next we use use Flux DataLoader for automatically batching our dataset.
 
-```julia
+```@example hamiltonian
+using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff
+
 t = range(0.0f0, 1.0f0, length = 1024)
 π_32 = Float32(π)
 q_t = reshape(sin.(2π_32 * t), 1, :)
@@ -75,14 +77,14 @@ dpdt = -2π_32 .* q_t
 
 data = cat(q_t, p_t, dims = 1)
 target = cat(dqdt, dpdt, dims = 1)
-dataloader = Flux.Data.DataLoader(data, target; batchsize=256, shuffle=true)
+dataloader = Flux.Data.DataLoader((data, target); batchsize=256, shuffle=true)
 ```
 
 ### Training the HamiltonianNN
 
 We parameterize the HamiltonianNN with a small MultiLayered Perceptron (HNN also works with the Fast* Layers provided in DiffEqFlux). HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn't support nesting itself, so we will be using ReverseDiff in the training loop to compute the gradients of the HNN Layer for Optimization.
 
-```julia
+```@example hamiltonian
 hnn = HamiltonianNN(
     Chain(Dense(2, 64, relu), Dense(64, 1))
 )
@@ -112,7 +114,7 @@ callback()
 
 In order to visualize the learned trajectories, we need to solve the ODE. We will use the `NeuralHamiltonianDE` layer which is essentially a wrapper over `HamiltonianNN` layer and solves the ODE.
 
-```julia
+```@example hamiltonian
 model = NeuralHamiltonianDE(
     hnn, (0.0f0, 1.0f0),
     Tsit5(), save_everystep = false,

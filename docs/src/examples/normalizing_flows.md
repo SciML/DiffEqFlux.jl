@@ -1,4 +1,4 @@
-# Continuous Normalizing Flows with GalacticOptim.jl
+# Continuous Normalizing Flows
 
 Now, we study a single layer neural network that can estimate the density `p_x` of a variable of interest `x` by re-parameterizing a base variable `z` with known density `p_z` through the Neural Network model passed to the layer.
 
@@ -7,20 +7,21 @@ Now, we study a single layer neural network that can estimate the density `p_x` 
 Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
-```julia
-using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
+```@example cnf
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+      OptimizationOptimJL, Distributions
 
-nn = Lux.Chain(
-    Lux.Dense(1, 3, tanh),
-    Lux.Dense(3, 1, tanh),
+nn = Flux.Chain(
+    Flux.Dense(1, 3, tanh),
+    Flux.Dense(3, 1, tanh),
 ) |> f32
-tspan = (0.0f0, 10.0f0)
+tspan = (0.0f0, 1.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
 # Training
 data_dist = Normal(6.0f0, 0.7f0)
-train_data = rand(data_dist, 1, 100)
+train_data = Float32.(rand(data_dist, 1, 100))
 
 function loss(θ)
     logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
@@ -29,7 +30,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
+optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
@@ -56,12 +57,13 @@ new_data = rand(ffjord_dist, 100)
 
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
-```julia
-using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, OptimizationOptimJL, Distributions
+```@example cnf2
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+      OptimizationOptimJL, Distributions
 
-nn = Lux.Chain(
-    Lux.Dense(1, 3, tanh),
-    Lux.Dense(3, 1, tanh),
+nn = Flux.Chain(
+    Flux.Dense(1, 3, tanh),
+    Flux.Dense(3, 1, tanh),
 ) |> f32
 tspan = (0.0f0, 10.0f0)
 
@@ -72,16 +74,17 @@ where we also pass as an input the desired timespan for which the differential e
 
 ### Training
 
-First, let's get an array from a normal distribution as the training data
+First, let's get an array from a normal distribution as the training data. Note that we want the data in Float32
+values to match how we have setup the neural network weights and the state space of the ODE.
 
-```julia
+```@example cnf2
 data_dist = Normal(6.0f0, 0.7f0)
-train_data = rand(data_dist, 1, 100)
+train_data = Float32.(rand(data_dist, 1, 100))
 ```
 
 Now we define a loss function that we wish to minimize
 
-```julia
+```@example cnf2
 function loss(θ)
     logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
     -mean(logpx)
@@ -94,66 +97,30 @@ We then train the neural network to learn the distribution of `x`.
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
-```julia
+```@example cnf2
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(ffjord_mdl.p))
+optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
                           maxiters = 100)
-
-# output
-* Status: success
-
-* Candidate solution
-   u: [-1.88e+00, 2.44e+00, 2.01e-01,  ...]
-   Minimum:   1.240627e+00
-
-* Found with
-   Algorithm:     ADAM
-   Initial Point: [9.33e-01, 1.13e+00, 2.92e-01,  ...]
-
 ```
 
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
 
-```julia
+```@example cnf2
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
                           allow_f_increases=false)
-
-# output
-* Status: success
-
-* Candidate solution
-   u: [-1.06e+00, 2.24e+00, 8.77e-01,  ...]
-   Minimum:   1.157672e+00
-
-* Found with
-   Algorithm:     L-BFGS
-   Initial Point: [-1.88e+00, 2.44e+00, 2.01e-01,  ...]
-
-* Convergence measures
-   |x - x'|               = 0.00e+00 ≰ 0.0e+00
-   |x - x'|/|x'|          = 0.00e+00 ≰ 0.0e+00
-   |f(x) - f(x')|         = 0.00e+00 ≤ 0.0e+00
-   |f(x) - f(x')|/|f(x')| = 0.00e+00 ≤ 0.0e+00
-   |g(x)|                 = 4.09e-03 ≰ 1.0e-08
-
-* Work counters
-   Seconds run:   514  (vs limit Inf)
-   Iterations:    44
-   f(x) calls:    244
-   ∇f(x) calls:   244
 ```
 
 ### Evaluation
 
 For evaluating the result, we can use `totalvariation` function from `Distances.jl`. First, we compute densities using actual distribution and FFJORD model. then we use a distance function.
 
-```julia
+```@example cnf2
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
@@ -165,7 +132,7 @@ train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 What's more, we can generate new data by using FFJORD as a distribution in `rand`.
 
-```julia
+```@example cnf2
 ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
 new_data = rand(ffjord_dist, 100)
 ```
