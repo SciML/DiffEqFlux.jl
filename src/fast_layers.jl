@@ -120,7 +120,6 @@ ZygoteRules.@adjoint function (f::FastDense)(x::Number,p)
           tmp = typeof(bbar) <: AbstractVector ?
                            vec(vcat(vec(Wbar),bbar)) :
                            vec(vcat(vec(Wbar),sum(bbar,dims=2)))
-          ifgpufree(bbar)
           tmp
       else
           vec(Wbar)
@@ -203,7 +202,7 @@ ZygoteRules.@adjoint function (f::FastDense)(x::AbstractVector,p)
           tmp = typeof(bbar) <: AbstractVector ?
                            vec(vcat(vec(Wbar),bbar)) :
                            vec(vcat(vec(Wbar),sum(bbar,dims=2)))
-          ifgpufree(bbar)
+          !(typeof(f.σ) <: typeof(identity)) && ifgpufree(bbar)
           tmp
       else
           vec(Wbar)
