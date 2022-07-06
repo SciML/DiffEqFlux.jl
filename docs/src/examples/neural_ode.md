@@ -49,9 +49,9 @@ end
 callback = function (p, l, pred; doplot = false)
   println(l)
   # plot current prediction against data
-  plt = scatter(tsteps, ode_data[1,:], label = "data")
-  scatter!(plt, tsteps, pred[1,:], label = "prediction")
   if doplot
+    plt = scatter(tsteps, ode_data[1,:], label = "data")
+    scatter!(plt, tsteps, pred[1,:], label = "prediction")
     display(plot(plt))
   end
   return false
@@ -155,9 +155,9 @@ it would show every step and overflow the documentation, but for your use case
 callback = function (p, l, pred; doplot = false)
   println(l)
   # plot current prediction against data
-  plt = scatter(tsteps, ode_data[1,:], label = "data")
-  scatter!(plt, tsteps, pred[1,:], label = "prediction")
   if doplot
+    plt = scatter(tsteps, ode_data[1,:], label = "data")
+    scatter!(plt, tsteps, pred[1,:], label = "prediction")
     display(plot(plt))
   end
   return false
