@@ -16,6 +16,7 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 specifically neural differential equations and universal differential equations,
 to add physical information into traditional machine learning.
 
+
 ## Tutorials and Documentation
 
 For information on using the package,
