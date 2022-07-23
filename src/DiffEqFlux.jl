@@ -62,6 +62,7 @@ export HamiltonianNN
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
 export FastDense, StaticDense, FastChain, initial_params
 export FFJORDDistribution
+export DimMover, FluxBatchOrder
 
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel
 export TriweightKernel, TricubeKernel, GaussianKernel, CosineKernel
