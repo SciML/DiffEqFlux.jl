@@ -627,6 +627,8 @@ augment(x::AbstractArray{S, T}, augment_dim::Int) where {S, T} =
 Base.getproperty(ande::AugmentedNDELayer, sym::Symbol) =
     hasproperty(ande, sym) ? getfield(ande, sym) : getfield(ande.nde, sym)
 
+abstract type HelperLayer <: Function end
+
 """
 Constructs a Dimension Mover Layer.
 
@@ -634,7 +636,7 @@ Constructs a Dimension Mover Layer.
 DimMover(from, to)
 ````
 """
-struct DimMover
+struct DimMover <: HelperLayer
     from::Integer
     to::Integer
 end
