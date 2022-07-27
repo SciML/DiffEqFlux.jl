@@ -634,7 +634,7 @@ Constructs a Dimension Mover Layer.
 
 ```julia
 DimMover(from, to)
-````
+```
 """
 struct DimMover <: HelperLayer
     from::Integer
@@ -658,6 +658,6 @@ considering that each time point is a channel.
 
 ```julia
 FluxBatchOrder = DimMover(-2, -1)
-````
+```
 """
 const FluxBatchOrder = DimMover(-2, -1)
