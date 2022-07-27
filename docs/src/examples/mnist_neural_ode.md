@@ -168,7 +168,7 @@ end
 
 and then loaded from main:
 
-```
+```julia
 # Main
 const bs = 128
 x_train, y_train = loadmnist(bs)
