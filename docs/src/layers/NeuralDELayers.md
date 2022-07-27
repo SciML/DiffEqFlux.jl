@@ -15,3 +15,10 @@ NeuralDAE
 NeuralODEMM
 AugmentedNDELayer
 ```
+
+# Helper Layer Functions
+
+```@docs
+DimMover
+FluxBatchOrder
+```
