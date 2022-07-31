@@ -189,13 +189,13 @@ end
 
 function jacobian_fn(f, x::AbstractMatrix, args...)
     y, back = Zygote.pullback(f, x)
-    z = Zygote.@ignore similar(y)
-    Zygote.@ignore fill!(z, zero(eltype(x)))
+    z = ChainRulesCore.@ignore_derivatives similar(y)
+    ChainRulesCore.@ignore_derivatives fill!(z, zero(eltype(x)))
     vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
     for i in 1:size(y, 1)
-        Zygote.@ignore z[i, :] .= one(eltype(x))
+        ChainRulesCore.@ignore_derivatives z[i, :] .= one(eltype(x))
         vec[i, :, :] = back(z)[1]
-        Zygote.@ignore z[i, :] .= zero(eltype(x))
+        ChainRulesCore.@ignore_derivatives z[i, :] .= zero(eltype(x))
     end
     copy(vec)
 end
@@ -203,13 +203,13 @@ end
 function jacobian_fn(f::Lux.Chain, x::AbstractMatrix, args...)
     p,st = args
     y, back = Zygote.pullback((z,ps,s)->f(z,ps,s)[1], x, p, st)
-    z = Zygote.@ignore similar(y)
-    Zygote.@ignore fill!(z, zero(eltype(x)))
+    z = ChainRulesCore.@ignore_derivatives similar(y)
+    ChainRulesCore.@ignore_derivatives fill!(z, zero(eltype(x)))
     vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
     for i in 1:size(y, 1)
-        Zygote.@ignore z[i, :] .= one(eltype(x))
+        ChainRulesCore.@ignore_derivatives z[i, :] .= one(eltype(x))
         vec[i, :, :] = back(z)[1]
-        Zygote.@ignore z[i, :] .= zero(eltype(x))
+        ChainRulesCore.@ignore_derivatives z[i, :] .= zero(eltype(x))
     end
     copy(vec)
 end
@@ -282,8 +282,8 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
     ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, n.st; regularize, monte_carlo)
     # ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
     if regularize
-        _z = Zygote.@ignore similar(x, 3, size(x, 2))
-        Zygote.@ignore fill!(_z, zero(eltype(x)))
+        _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
+        ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), n.tspan, p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
         z = pred[1:end - 3, :]
@@ -291,8 +291,8 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
         λ₁ = pred[end - 1, :]
         λ₂ = pred[end, :]
     else
-        _z = Zygote.@ignore similar(x, 1, size(x, 2))
-        Zygote.@ignore fill!(_z, zero(eltype(x)))
+        _z = ChainRulesCore.@ignore_derivatives similar(x, 1, size(x, 2))
+        ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), n.tspan, p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
         z = pred[1:end - 1, :]
@@ -313,14 +313,14 @@ function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].
     sensealg = InterpolatingAdjoint()
     ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, n.st; regularize, monte_carlo)
     if regularize
-        _z = Zygote.@ignore similar(x, 3, size(x, 2))
-        Zygote.@ignore fill!(_z, zero(eltype(x)))
+        _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
+        ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
         z = pred[1:end - 3, :]
     else
-        _z = Zygote.@ignore similar(x, 1, size(x, 2))
-        Zygote.@ignore fill!(_z, zero(eltype(x)))
+        _z = ChainRulesCore.@ignore_derivatives similar(x, 1, size(x, 2))
+        ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
         z = pred[1:end - 1, :]

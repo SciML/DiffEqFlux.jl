@@ -193,7 +193,7 @@ function (n::NeuralDSDE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
       u_, st = n.model2(u,p.model2,st)
       return u_
     end
-    
+
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
     return solve(prob,n.args...;sensealg=ReverseDiffAdjoint(),n.kwargs...), (model1 = st1, model2 = st2)
@@ -256,7 +256,7 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralSDELayer
             typeof(tspan),typeof(args),typeof(kwargs)}(
             p,length(p1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
     end
-    
+
     function NeuralSDE(model1::Lux.AbstractExplicitLayer, model2::Lux.AbstractExplicitLayer,tspan,nbrown,args...;
                         p1 = nothing, p = nothing, kwargs...)
         re1 = nothing
@@ -650,3 +650,38 @@ augment(x::AbstractArray{S, T}, augment_dim::Int) where {S, T} =
 
 Base.getproperty(ande::AugmentedNDELayer, sym::Symbol) =
     hasproperty(ande, sym) ? getfield(ande, sym) : getfield(ande.nde, sym)
+
+abstract type HelperLayer <: Function end
+
+"""
+Constructs a Dimension Mover Layer.
+
+```julia
+DimMover(from, to)
+```
+"""
+struct DimMover <: HelperLayer
+    from::Integer
+    to::Integer
+end
+
+function (dm::DimMover)(x)
+    @assert !iszero(dm.from)
+    @assert !iszero(dm.to)
+
+    from = dm.from > 0 ? dm.from : (length(size(x)) + 1 + dm.from)
+    to = dm.to > 0 ? dm.to : (length(size(x)) + 1 + dm.to)
+
+    cat(eachslice(x; dims=from)...; dims=to)
+end
+
+"""
+We can have Flux's conventional order (data, channel, batch)
+by using it as the last layer of `Flux.Chain` to swap the batch-index and the time-index of the Neural DE's output.
+considering that each time point is a channel.
+
+```julia
+FluxBatchOrder = DimMover(-2, -1)
+```
+"""
+const FluxBatchOrder = DimMover(-2, -1)

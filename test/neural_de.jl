@@ -305,3 +305,8 @@ gradsnc = Zygote.gradient(()->sum(dode(x)),Flux.params(x,dode))
 @test_broken gradsnc = Zygote.gradient(()->sum(dode(xs)),Flux.params(xs,dode)) isa Tuple
 @test_broken ! iszero(gradsnc[xs])
 @test ! iszero(gradsnc[dode.p])
+
+@testset "DimMover" begin
+    r = rand(2, 3, 4, 5)
+    @test r[:, :, 1, :] == FluxBatchOrder(r)[:, :, :, 1]
+end
