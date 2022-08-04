@@ -30,7 +30,7 @@ Or we could directly use the neural ODE layer function, like:
 
 ```julia
 using DiffEqFlux: NeuralODE
-prob_neuralode_gpu = NeuralODE(model, tspan, Tsit5(), saveat = tsteps; p = ps)
+prob_neuralode_gpu = NeuralODE(model, tspan, Tsit5(), saveat = tsteps)
 ```
 
 If one is using `Lux.Chain`, then the computation takes place on the GPU with
