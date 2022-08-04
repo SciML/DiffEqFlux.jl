@@ -5,21 +5,22 @@ condition is a GPU array. Thus, for example, we can define a neural ODE by hand
 that runs on the GPU (if no GPU is available, the calculation defaults back to the CPU):
 
 ```julia
-using DifferentialEquations, Flux, DiffEqFlux, SciMLSensitivity
-
+using DifferentialEquations, Lux, SciMLSensitivity, ComponentArrays
 using Random
 rng = Random.default_rng()
 
-model_gpu = Chain(Dense(2, 50, tanh), Dense(50, 2)) |> gpu
-p, re = Flux.destructure(model_gpu)
-dudt!(u, p, t) = re(p)(u)
+model = Chain(Dense(2, 50, tanh), Dense(50, 2))
+ps, st = Lux.setup(rng,model) 
+ps = ps |> ComponentArray |> gpu
+st = st |> gpu
+dudt(u, p, t) = model(u, p, st)[1]
 
 # Simulation interval and intermediary points
 tspan = (0f0, 10f0)
 tsteps = 0f0:1f-1:10f0
 
 u0 = Float32[2.0; 0.0] |> gpu
-prob_gpu = ODEProblem(dudt!, u0, tspan, p)
+prob_gpu = ODEProblem(dudt, u0, tspan, ps)
 
 # Runs on a GPU
 sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)
@@ -28,7 +29,8 @@ sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)
 Or we could directly use the neural ODE layer function, like:
 
 ```julia
-prob_neuralode_gpu = NeuralODE(gpu(model_gpu), tspan, Tsit5(), saveat = tsteps)
+using DiffEqFlux: NeuralODE
+prob_neuralode_gpu = NeuralODE(model, tspan, Tsit5(), saveat = tsteps; p = ps)
 ```
 
 If one is using `Lux.Chain`, then the computation takes place on the GPU with
@@ -42,7 +44,7 @@ dudt2 = Lux.Chain(x -> x.^3,
             Lux.Dense(50,2))
 
 u0 = Float32[2.; 0.] |> gpu
-p, st = Lux.setup(rng, dudt2) .|> gpu
+p, st = Lux.setup(rng, dudt2) |> gpu
 
 dudt2_(u, p, t) = dudt2(u,p,st)[1]
 
@@ -69,8 +71,10 @@ Here is the full neural ODE example. Note that we use the `gpu` function so that
 same code works on CPUs and GPUs, dependent on `using CUDA`.
 
 ```julia
-using Flux, DiffEqFlux, Optimization, OptimizationFlux, Zygote, 
-      OrdinaryDiffEq, Plots, CUDA, SciMLSensitivity, Random, ComponentArrays
+using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq, 
+      Plots, CUDA, SciMLSensitivity, Random, ComponentArrays
+import DiffEqFlux: NeuralODE 
+
 CUDA.allowscalar(false) # Makes sure no slow operations are occuring
 
 #rng for Lux.setup
@@ -89,12 +93,16 @@ prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = gpu(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
 
-dudt2 = Chain(x -> x.^3, Dense(2, 50, tanh), Dense(50, 2)) |> gpu
+dudt2 = Chain(x -> x.^3, Dense(2, 50, tanh), Dense(50, 2))
 u0 = Float32[2.0; 0.0] |> gpu
+p, st = Lux.setup(rng, dudt2) 
+p = p |> ComponentArray |> gpu
+st = st |> gpu
+
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 
 function predict_neuralode(p)
-  gpu(prob_neuralode(u0,p))
+  gpu(first(prob_neuralode(u0,p,st)))
 end
 function loss_neuralode(p)
     pred = predict_neuralode(p)
@@ -123,6 +131,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p)->loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, prob_neuralode.p)
-result_neuralode = Optimization.solve(optprob,ADAM(0.05),callback = callback,maxiters = 300)
+optprob = Optimization.OptimizationProblem(optf, p)
+result_neuralode = Optimization.solve(optprob,Adam(0.05),callback = callback,maxiters = 300)
+
 ```
