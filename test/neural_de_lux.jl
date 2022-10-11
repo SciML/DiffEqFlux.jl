@@ -237,6 +237,7 @@ grads = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
 
 sode = NeuralDSDE(luxdudt,luxdudt2,(0.0f0,.1f0),SOSRI(),saveat=0.0:0.01:0.1)
 pd, st = Lux.setup(rng, sode)
+pd = Lux.ComponentArray(pd)
 
 grads = Zygote.gradient((x,p,st)->sum(sode(x,p,st)[1]),x,pd,st)
 @test ! iszero(grads[1])
