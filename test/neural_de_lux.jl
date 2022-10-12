@@ -77,7 +77,6 @@ grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),x,pd,st)
 @test ! iszero(grads[2])
 
 node = NeuralODE(luxdudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=TrackerAdjoint())
-pd, st = Lux.setup(rng, node)
 @test_broken grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),x,pd,st)
 # @test ! iszero(grads[1])
 # @test ! iszero(grads[2])
