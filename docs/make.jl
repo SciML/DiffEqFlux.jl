@@ -22,7 +22,7 @@ makedocs(
     ],
     format = Documenter.HTML(analytics = "UA-90474609-3",
                              assets = ["assets/favicon.ico"],
-                             canonical="https://diffeqflux.sciml.ai/stable/"),
+                             canonical="https://docs.sciml.ai/DiffEqFlux/stable/"),
     pages=pages
 )
 
