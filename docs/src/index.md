@@ -11,7 +11,7 @@ and helper functions to make training such deep implicit layer models fast and e
     learning. For details on automatic differentiation of equation solvers
     and adjoint techniques, and using these methods for doing things like
     callibrating models to data, nonlinear optimal control, and PDE-constrained
-    optimization, see [SciMLSensitivity.jl](https://sensitivity.sciml.ai/dev/)
+    optimization, see [SciMLSensitivity.jl](https://docs.sciml.ai/SciMLSensitivity/stable/)
 
 ## Pre-Built Architectures
 
@@ -36,7 +36,7 @@ The following layer functions exist:
 - [Continuous Normalizing Flows (CNF)](https://arxiv.org/abs/1806.07366) and [FFJORD](https://arxiv.org/abs/1810.01367)
 
 Examples of how to build architectures from scratch, with tutorials on things
-like Graph Neural ODEs, can be found in the [SciMLSensitivity.jl documentation](sensitivity.sciml.ai/dev).
+like Graph Neural ODEs, can be found in the [SciMLSensitivity.jl documentation](https://docs.sciml.ai/SciMLSensitivity/stable/).
 
 WIP:
 

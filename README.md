@@ -1,8 +1,7 @@
 # DiffEqFlux.jl
 
 [![Join the chat at https://julialang.zulipchat.com #sciml-bridged](https://img.shields.io/static/v1?label=Zulip&message=chat&color=9558b2&labelColor=389826)](https://julialang.zulipchat.com/#narrow/stream/279055-sciml-bridged)
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](http://diffeqflux.sciml.ai/stable/)
-[![Global Docs](https://img.shields.io/badge/docs-SciML-blue.svg)](https://docs.sciml.ai/dev/modules/DiffEqFlux/)
+[![Global Docs](https://img.shields.io/badge/docs-SciML-blue.svg)](https://docs.sciml.ai/DiffEqFlux/stable/)
 
 [![codecov](https://codecov.io/gh/SciML/DiffEqFlux.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/SciML/DiffEqFlux.jl)
 [![Build Status](https://github.com/SciML/DiffEqFlux.jl/workflows/CI/badge.svg)](https://github.com/SciML/DiffEqFlux.jl/actions?query=workflow%3ACI)
@@ -13,8 +12,8 @@
 
 DiffEqFlux.jl fuses the world of differential equations with machine learning
 by helping users put diffeq solvers into neural networks. This package utilizes
-[DifferentialEquations.jl](http://diffeq.sciml.ai/dev/) and
-[Flux.jl](https://fluxml.ai/) as its building blocks to support research in
+[DifferentialEquations.jl](http://docs.sciml.ai/DiffEqDocs/stable/), 
+[Flux.jl](https://docs.sciml.ai/Flux.jl/stable/) and [Lux.jl](https://docs.sciml.ai/Lux/stable/)  as its building blocks to support research in
 [Scientific Machine Learning](http://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/),
 specifically neural differential equations and universal differential equations,
 to add physical information into traditional machine learning.
@@ -22,8 +21,8 @@ to add physical information into traditional machine learning.
 ## Tutorials and Documentation
 
 For information on using the package,
-[see the stable documentation](https://diffeqflux.sciml.ai/stable/). Use the
-[in-development documentation](https://diffeqflux.sciml.ai/dev/) for the version of
+[see the stable documentation](https://docs.sciml.ai/DiffEqFlux/stable/). Use the
+[in-development documentation](https://docs.sciml.ai/DiffEqFlux/dev/) for the version of
 the documentation, which contains the unreleased features.
 
 ## Problem Domain

@@ -175,7 +175,7 @@ together, we are able to fit the neural ODE in 9 seconds! (Note, the timing
 commented out the plotting). You can easily incorporate the procedure below to
 set up custom optimization problems. For more information on the usage of
 [Optimization.jl](https://github.com/SciML/Optimization.jl), please consult
-[this](http://optimization.sciml.ai/stable/) documentation.
+[this](http://docs.sciml.ai/Optimization/stable/) documentation.
 
 The `x` and `p` variables in the optimization function are different than
 `x` and `p` above. The optimization function runs over the space of parameters of

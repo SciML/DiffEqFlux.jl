@@ -86,7 +86,7 @@ Arguments:
            Hamiltonian of the system.
 - `tspan`: The timespan to be solved on.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-            [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+            [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
             documentation for more details.
 """
 struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
