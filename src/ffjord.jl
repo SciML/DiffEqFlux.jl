@@ -25,7 +25,7 @@ Arguments:
 - `basedist`: Distribution of the base variable. Set to the unit normal by default.
 - `tspan`: The timespan to be solved on.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 
 References:
@@ -109,7 +109,7 @@ Arguments:
 - `basedist`: Distribution of the base variable. Set to the unit normal by default.
 - `tspan`: The timespan to be solved on.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 
 References:

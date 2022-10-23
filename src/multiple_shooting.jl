@@ -28,8 +28,8 @@ Arguments:
   - `continuity_term`: Weight term to ensure continuity of predictions throughout
     different groups.
   - `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
-  [Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/) and
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/) and
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 Note:
 The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
@@ -152,8 +152,8 @@ Arguments:
   different groups.
   - `trajectories`: number of trajectories for `ensemble_prob`.
   - `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
-  [Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/) and
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/) and
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 Note:
 The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
