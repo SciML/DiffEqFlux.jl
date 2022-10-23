@@ -25,10 +25,10 @@ Arguments:
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
   Defaults to an adjoint method, and with `FastChain` it defaults to utilizing
   a tape-compiled ReverseDiff vector-Jacobian product for extra efficiency. Seee
-  the [Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/)
+  the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
   documentation for more details.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 
 References:
@@ -121,7 +121,7 @@ Arguments:
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
   Defaults to using reverse-mode automatic differentiation via Tracker.jl
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 
 """
@@ -234,7 +234,7 @@ Arguments:
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
   Defaults to using reverse-mode automatic differentiation via Tracker.jl
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 
 """
@@ -349,7 +349,7 @@ Arguments:
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
   Defaults to using reverse-mode automatic differentiation via Tracker.jl
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 
 """
@@ -424,7 +424,7 @@ Arguments:
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
   Defaults to using reverse-mode automatic differentiation via Tracker.jl
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 
 """
@@ -508,10 +508,10 @@ Arguments:
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
   Defaults to an adjoint method, and with `FastChain` it defaults to utilizing
   a tape-compiled ReverseDiff vector-Jacobian product for extra efficiency. Seee
-  the [Local Sensitivity Analysis](https://diffeq.sciml.ai/dev/analysis/sensitivity/)
+  the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
   documentation for more details.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://diffeq.sciml.ai/dev/basics/common_solver_opts/)
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
 
 """
