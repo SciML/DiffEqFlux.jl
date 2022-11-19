@@ -6,10 +6,16 @@ const is_CI = haskey(ENV,"CI")
 
 @time begin
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Quality"
-    Aqua.test_all(DiffEqFlux)
+    Aqua.test_ambiguities(DiffEqFlux)
+    Aqua.test_unbound_args(DiffEqFlux)
+    Aqua.test_undefined_exports(DiffEqFlux)
+    Aqua.test_project_extras(DiffEqFlux)
+    Aqua.test_stale_deps(DiffEqFlux)
+    Aqua.test_deps_compat(DiffEqFlux)
+    Aqua.test_project_toml_formatting(DiffEqFlux)
 
-    @test isempty(Test.detect_ambiguities(DiffEqFlux; recursive=true))
-    @test isempty(Test.detect_unbound_args(DiffEqFlux; recursive=true))
+    @test isempty(Test.detect_ambiguities(DiffEqFlux; recursive = true))
+    @test isempty(Test.detect_unbound_args(DiffEqFlux; recursive = true))
 end
 
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "Layers"
