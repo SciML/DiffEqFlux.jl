@@ -1,5 +1,4 @@
 [deps]
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
