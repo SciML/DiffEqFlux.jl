@@ -1,4 +1,4 @@
-# DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning 
+# DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning
 
 DiffEqFlux.jl is an implicit deep learning library built using the SciML ecosystem. It is
 a high level interface that pulls together all of the tools with heuristics
@@ -18,8 +18,8 @@ and helper functions to make training such deep implicit layer models fast and e
 The approach of this package is the easy and efficient training of
 [Universal Differential Equations](https://arxiv.org/abs/2001.04385).
 DiffEqFlux.jl provides architectures which match the interfaces of
-machine learning libraries such as [Flux.jl](https://fluxml.ai/)
-and [Lux.jl](http://lux.csail.mit.edu/dev/)
+machine learning libraries such as [Flux.jl](https://docs.sciml.ai/Flux/stable/)
+and [Lux.jl](https://docs.sciml.ai/Lux/stable/)
 to make it easy to build continuous-time machine learning layers
 into larger machine learning applications.
 
@@ -88,7 +88,7 @@ Pkg.status(;mode = PKGMODE_MANIFEST) # hide
 </details>
 ```
 ```@raw html
-You can also download the 
+You can also download the
 <a href="
 ```
 ```@eval

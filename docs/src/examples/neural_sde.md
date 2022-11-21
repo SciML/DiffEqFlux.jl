@@ -56,7 +56,7 @@ prob_truesde = SDEProblem(trueSDEfunc, true_noise_func, u0, tspan)
 ```
 
 For our dataset we will use DifferentialEquations.jl's [parallel ensemble
-interface](http://docs.juliadiffeq.org/dev/features/ensemble.html) to generate
+interface](https://docs.sciml.ai/DiffEqDocs/stable/features/ensemble/) to generate
 data from the average of 10,000 runs of the SDE:
 
 ```@example nsde
