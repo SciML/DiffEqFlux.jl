@@ -19,7 +19,6 @@ jobs:
       fail-fast: false
       matrix:
         group:
-          - Quality
           - Layers
           - BasicNeuralDE
           - AdvancedNeuralDE
