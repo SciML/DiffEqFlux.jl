@@ -12,9 +12,9 @@
 
 DiffEqFlux.jl fuses the world of differential equations with machine learning
 by helping users put diffeq solvers into neural networks. This package utilizes
-[DifferentialEquations.jl](http://docs.sciml.ai/DiffEqDocs/stable/), 
-[Flux.jl](https://docs.sciml.ai/Flux.jl/stable/) and [Lux.jl](https://docs.sciml.ai/Lux/stable/)  as its building blocks to support research in
-[Scientific Machine Learning](http://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/),
+[DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/stable/),
+[Flux.jl](https://docs.sciml.ai/Flux/stable/) and [Lux.jl](https://docs.sciml.ai/Lux/stable/)  as its building blocks to support research in
+[Scientific Machine Learning](https://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/),
 specifically neural differential equations and universal differential equations,
 to add physical information into traditional machine learning.
 
@@ -52,7 +52,7 @@ methods. For examples, please refer to
 [the release blog post](https://julialang.org/blog/2019/01/fluxdiffeq).
 Additional demonstrations, like neural
 PDEs and neural jump SDEs, can be found
-[in this blog post](http://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
+[in this blog post](https://www.stochasticlifestyle.com/neural-jump-sdes-jump-diffusions-and-neural-pdes/)
 (among many others!).
 
 Do not limit yourself to the current neuralization. With this package, you can
