@@ -8,14 +8,14 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example cnf
-using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux,
       OptimizationOptimJL, Distributions
 
 nn = Flux.Chain(
     Flux.Dense(1, 3, tanh),
     Flux.Dense(3, 1, tanh),
 ) |> f32
-tspan = (0.0f0, 1.0f0)
+tspan = (0.0f0, 10.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
@@ -28,24 +28,31 @@ function loss(θ)
     -mean(logpx)
 end
 
+function cb(p, l)
+    @info "Training" loss = loss(p)
+    false
+end
+
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
-                          maxiters = 100)
+                          maxiters = 100,
+                          callback=cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
-                          allow_f_increases=false)
+                          allow_f_increases=false,
+                          callback=cb)
 
 # Evaluation
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo=false)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 # Data Generation
@@ -58,7 +65,7 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```@example cnf2
-using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux,
       OptimizationOptimJL, Distributions
 
 nn = Flux.Chain(
@@ -82,12 +89,17 @@ data_dist = Normal(6.0f0, 0.7f0)
 train_data = Float32.(rand(data_dist, 1, 100))
 ```
 
-Now we define a loss function that we wish to minimize
+Now we define a loss function that we wish to minimize and a callback function to track loss improvements
 
 ```@example cnf2
 function loss(θ)
     logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
     -mean(logpx)
+end
+
+function cb(p, l)
+    @info "Training" loss = loss(p)
+    false
 end
 ```
 
@@ -104,7 +116,8 @@ optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
-                          maxiters = 100)
+                          maxiters = 100,
+                          callback=cb)
 ```
 
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
@@ -113,7 +126,8 @@ We then complete the training using a different optimizer starting from where `A
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
-                          allow_f_increases=false)
+                          allow_f_increases=false,
+                          callback=cb)
 ```
 
 ### Evaluation
@@ -124,7 +138,7 @@ For evaluating the result, we can use `totalvariation` function from `Distances.
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo=false)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 ```
 
