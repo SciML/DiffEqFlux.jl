@@ -28,18 +28,25 @@ function loss(θ)
     -mean(logpx)
 end
 
+function cb(p, l)
+    @info "Training" loss = loss(p)
+    false
+end
+
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
-                          maxiters = 100)
+                          maxiters = 100,
+                          callback=cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
-                          allow_f_increases=false)
+                          allow_f_increases=false,
+                          callback=cb)
 
 # Evaluation
 using Distances
@@ -82,12 +89,17 @@ data_dist = Normal(6.0f0, 0.7f0)
 train_data = Float32.(rand(data_dist, 1, 100))
 ```
 
-Now we define a loss function that we wish to minimize
+Now we define a loss function that we wish to minimize and a callback function to track loss improvements
 
 ```@example cnf2
 function loss(θ)
     logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
     -mean(logpx)
+end
+
+function cb(p, l)
+    @info "Training" loss = loss(p)
+    false
 end
 ```
 
@@ -104,7 +116,8 @@ optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
                           ADAM(0.1),
-                          maxiters = 100)
+                          maxiters = 100,
+                          callback=cb)
 ```
 
 We then complete the training using a different optimizer starting from where `ADAM` stopped.
@@ -113,7 +126,8 @@ We then complete the training using a different optimizer starting from where `A
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
                           Optim.LBFGS(),
-                          allow_f_increases=false)
+                          allow_f_increases=false,
+                          callback=cb)
 ```
 
 ### Evaluation
