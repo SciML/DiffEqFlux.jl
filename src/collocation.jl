@@ -155,7 +155,7 @@ end
 
 function collocate_data(data::AbstractVector,tpoints::AbstractVector,tpoints_sample::AbstractVector,
                         interp,args...)
-  u, du = collocate_data(reshape(data, 1, :),tpoints,tpoints_sample,interp,args...)
+  du, u = collocate_data(reshape(data, 1, :),tpoints,tpoints_sample,interp,args...)
   return du[1, :], u[1, :]
 end
 
