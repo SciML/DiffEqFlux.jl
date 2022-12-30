@@ -8,14 +8,14 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example cnf
-using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux,
       OptimizationOptimJL, Distributions
 
 nn = Flux.Chain(
     Flux.Dense(1, 3, tanh),
     Flux.Dense(3, 1, tanh),
 ) |> f32
-tspan = (0.0f0, 1.0f0)
+tspan = (0.0f0, 10.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
 
@@ -45,7 +45,7 @@ res2 = Optimization.solve(optprob2,
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo=false)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 # Data Generation
@@ -58,7 +58,7 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```@example cnf2
-using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux, 
+using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationFlux,
       OptimizationOptimJL, Distributions
 
 nn = Flux.Chain(
@@ -124,7 +124,7 @@ For evaluating the result, we can use `totalvariation` function from `Distances.
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo=false)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 ```
 
