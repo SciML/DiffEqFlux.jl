@@ -85,7 +85,6 @@ numerical_neuralode = Optimization.solve(optprob,
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
 scatter(tsteps,data')
 plot!(nn_sol,lw=5)
-savefig("post_trained.png")
 ```
 
 ## Generating the Collocation
@@ -118,16 +117,12 @@ scatter(tsteps,data')
 plot!(tsteps,u',lw=5)
 ```
 
-![](https://user-images.githubusercontent.com/1814174/87254751-d8177600-c452-11ea-9095-3af303d9b975.png)
-
 We can then differentiate the smoothed function to get estimates of the
 derivative at each datapoint:
 
 ```@example collocation
 plot(tsteps,du')
 ```
-
-![](https://user-images.githubusercontent.com/1814174/87254752-d8b00c80-c452-11ea-8011-7fd667b87311.png)
 
 Because we have `(u',u)` pairs, we can write a loss function that
 calculates the squared difference between `f(u,p,t)` and `u'` at each
@@ -166,8 +161,6 @@ scatter(tsteps,data')
 plot!(nn_sol)
 ```
 
-![](https://user-images.githubusercontent.com/1814174/87254749-d8177600-c452-11ea-9643-86c6375fa493.png)
-
 While this doesn't look great, it has the characteristics of the
 full solution all throughout the timeseries, but it does have a drift.
 We can continue to optimize like this, or we can use this as the
@@ -197,8 +190,6 @@ nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
 scatter(tsteps,data')
 plot!(nn_sol,lw=5)
 ```
-
-![](https://user-images.githubusercontent.com/1814174/87254750-d8177600-c452-11ea-8cfa-3f805beaf0aa.png)
 
 This method then has a good global starting position, making it less
 prone to local minima and is thus a great method to mix in with other
