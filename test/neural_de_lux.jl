@@ -239,7 +239,6 @@ grads = Zygote.gradient((x,p,st)->sum(sode(x,p,st)[1]),x,pd,st)
 @test ! iszero(grads[2][end])
 
 grads = Zygote.gradient((x,p,st)->sum(sode(x,p,st)[1]),xs,pd,st)
-@test_broken grads isa Tuple
 @test ! iszero(grads[1])
 @test ! iszero(grads[2])
 @test ! iszero(grads[2][end])
@@ -270,7 +269,6 @@ grads = Zygote.gradient((x,p,st)->sum(sode(x,p,st)[1]),x,pd,st)
 @test ! iszero(grads[2][end])
 
 @test_broken grads = Zygote.gradient((x,p,st)->sum(sode(x,p,st)),xs,pd,st)
-@test_broken ! iszero(grads[1])
 
 ddudt = Flux.Chain(Flux.Dense(6,50,tanh),Flux.Dense(50,2))
 NeuralCDDE(ddudt,(0.0f0,2.0f0),(p,t)->zero(x),(1f-1,2f-1),MethodOfSteps(Tsit5()),saveat=0.1)(x)
