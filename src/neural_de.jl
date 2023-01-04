@@ -329,6 +329,18 @@ Arguments:
   documentation for more details.
 
 """
+Unsupported_NeuralCDDE_pairing_message = """
+                                         NeuralCDDE can only be instantiated with a Flux chain
+                                         """
+
+struct Unsupported_pairing <:Exception
+  msg::Any
+end
+
+function Base.showerror(io::IO, e::Unsupported_pairing)
+  println(io, e.msg)
+end
+
 struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
     p::P
     model::M
@@ -355,12 +367,15 @@ struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
             typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
             re,hist,lags,tspan,args,kwargs)
     end
+
     function NeuralCDDE(model::Lux.AbstractExplicitLayer,tspan,hist,lags,args...;p = nothing,kwargs...)
-      re = nothing
-      new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
-          typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
-          re,hist,lags,tspan,args,kwargs)
-  end
+      throw(Unsupported_pairing(Unsupported_NeuralCDDE_pairing_message))
+      # re = nothing
+      # new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
+      #     typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
+      #     re,hist,lags,tspan,args,kwargs)
+    end
+
 end
 
 function (n::NeuralCDDE)(x,p=n.p)
@@ -381,17 +396,6 @@ function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
     ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
-end
-
-function (n::NeuralCDDE{P,M})(x,p,st) where {P,M<:Lux.AbstractExplicitLayer}
-  function dudt_(u,h,p,t;st=st)
-      _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
-      u_, st = n.model(_u,p,st)
-      return u_
-  end
-  ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
-  prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
-  return solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...), st
 end
 
 """
