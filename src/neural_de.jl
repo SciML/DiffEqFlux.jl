@@ -528,7 +528,7 @@ Arguments:
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl. This method requires an
   implicit ODE solver compatible with singular mass matrices. Consult the
-  [DAE solvers](https://diffeq.sciml.ai/latest/solvers/dae_solve/) documentation for more details.
+  [DAE solvers](https://docs.sciml.ai/DiffEqDocs/stable/solvers/dae_solve/) documentation for more details.
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
   Defaults to an adjoint method, and with `FastChain` it defaults to utilizing
   a tape-compiled ReverseDiff vector-Jacobian product for extra efficiency. Seee

@@ -15,7 +15,7 @@ particles. It then returns the time derivatives for position and momentum.
 
 To obtain the gradients to train this network, ReverseDiff.gradient is supposed to
 be used. This prevents the usage of `DiffEqFlux.sciml_train` or `Flux.train`. Follow
-this [tutorial](https://diffeqflux.sciml.ai/dev/examples/hamiltonian_nn/) to see how
+this [tutorial](https://docs.sciml.ai/DiffEqFlux/stable/examples/hamiltonian_nn/) to see how
 to define a training loop to circumvent this issue.
 
 ```julia

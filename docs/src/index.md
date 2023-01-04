@@ -1,4 +1,4 @@
-# DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning 
+# DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning
 
 DiffEqFlux.jl is an implicit deep learning library built using the SciML ecosystem. It is
 a high level interface that pulls together all of the tools with heuristics
@@ -18,8 +18,8 @@ and helper functions to make training such deep implicit layer models fast and e
 The approach of this package is the easy and efficient training of
 [Universal Differential Equations](https://arxiv.org/abs/2001.04385).
 DiffEqFlux.jl provides architectures which match the interfaces of
-machine learning libraries such as [Flux.jl](https://fluxml.ai/)
-and [Lux.jl](http://lux.csail.mit.edu/dev/)
+machine learning libraries such as [Flux.jl](https://docs.sciml.ai/Flux/stable/)
+and [Lux.jl](https://docs.sciml.ai/Lux/stable/)
 to make it easy to build continuous-time machine learning layers
 into larger machine learning applications.
 
@@ -54,4 +54,59 @@ If you use DiffEqFlux.jl or are influenced by its ideas, please cite:
   journal={arXiv preprint arXiv:2001.04385},
   year={2020}
 }
+```
+
+## Reproducibility
+```@raw html
+<details><summary>The documentation of this SciML package was built using these direct dependencies,</summary>
+```
+```@example
+using Pkg # hide
+Pkg.status() # hide
+```
+```@raw html
+</details>
+```
+```@raw html
+<details><summary>and using this machine and Julia version.</summary>
+```
+```@example
+using InteractiveUtils # hide
+versioninfo() # hide
+```
+```@raw html
+</details>
+```
+```@raw html
+<details><summary>A more complete overview of all dependencies and their versions is also provided.</summary>
+```
+```@example
+using Pkg # hide
+Pkg.status(;mode = PKGMODE_MANIFEST) # hide
+```
+```@raw html
+</details>
+```
+```@raw html
+You can also download the
+<a href="
+```
+```@eval
+using TOML
+version = TOML.parse(read("../../Project.toml",String))["version"]
+name = TOML.parse(read("../../Project.toml",String))["name"]
+link = "https://github.com/SciML/"*name*".jl/tree/gh-pages/v"*version*"/assets/Manifest.toml"
+```
+```@raw html
+">manifest</a> file and the
+<a href="
+```
+```@eval
+using TOML
+version = TOML.parse(read("../../Project.toml",String))["version"]
+name = TOML.parse(read("../../Project.toml",String))["name"]
+link = "https://github.com/SciML/"*name*".jl/tree/gh-pages/v"*version*"/assets/Project.toml"
+```
+```@raw html
+">project</a> file.
 ```
