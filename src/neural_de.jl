@@ -639,7 +639,7 @@ References:
 [1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural ODEs." In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.
 
 """
-struct AugmentedNDELayer{DE<:NeuralDELayer} <: NeuralDELayer
+struct AugmentedNDELayer{DE<:Union{NeuralDELayer,NeuralSDELayer}} <: Function
     nde::DE
     adim::Int
 end
