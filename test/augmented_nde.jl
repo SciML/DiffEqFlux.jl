@@ -61,7 +61,7 @@ dudt22 = Lux.Chain(Lux.Dense(4, 50, tanh), Lux.Dense(50, 16), (x) -> reshape(x, 
 anode = AugmentedNDELayer(
     NeuralODE(dudt, tspan, Tsit5(), save_everystep=false, save_start=false), 2
 )
-pd, st = Lux.setup(rng, anode.nde)
+pd, st = Lux.setup(rng, anode)
 pd = Lux.ComponentArray(pd)
 anode(x,pd,st)
 
@@ -73,7 +73,7 @@ grads = Zygote.gradient((x,p,st) -> sum(anode(x,p,st)[1]), x, pd, st)
 andsde = AugmentedNDELayer(
     NeuralDSDE(dudt, dudt2, (0.0f0, 0.1f0), EulerHeun(), saveat=0.0:0.01:0.1, dt=0.01), 2
 )
-pd, st = Lux.setup(rng, andsde.nde)
+pd, st = Lux.setup(rng, andsde)
 pd = Lux.ComponentArray(pd)
 andsde(x,pd,st)
 
@@ -85,7 +85,7 @@ grads = Zygote.gradient((x,p,st) -> sum(andsde(x,p,st)[1]), x, pd, st)
 asode = AugmentedNDELayer(
     NeuralSDE(dudt, dudt22,(0.0f0, 0.1f0), 4, EulerHeun(), saveat=0.0:0.01:0.1, dt=0.01), 2
 )
-pd, st = Lux.setup(rng, asode.nde)
+pd, st = Lux.setup(rng, asode)
 pd = Lux.ComponentArray(pd)
 asode(x,pd,st)
 
