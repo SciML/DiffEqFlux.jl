@@ -1,4 +1,3 @@
-using Revise
 using DiffEqFlux, Lux, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
 
 x = Float32[2.; 0.]
