@@ -18,6 +18,7 @@ using Requires
 using Cassette
 @reexport using Flux
 @reexport using OptimizationOptimJL
+using Functors
 
 import ChainRulesCore
 

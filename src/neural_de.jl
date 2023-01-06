@@ -1,8 +1,6 @@
 abstract type NeuralDELayer <: Lux.AbstractExplicitContainerLayer{(:model,)} end
 abstract type NeuralSDELayer <: Lux.AbstractExplicitContainerLayer{(:model1,:model2,)} end
 basic_tgrad(u,p,t) = zero(u)
-Flux.trainable(m::NeuralDELayer) = (m.p,)
-Flux.trainable(m::NeuralSDELayer) = (m.p,)
 
 """
 Constructs a continuous-time recurrant neural network, also known as a neural
@@ -70,6 +68,8 @@ struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
           model,p,re,tspan,args,kwargs)
     end
 end
+
+@functor NeuralODE (p,)
 
 function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
@@ -165,6 +165,8 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralSDELayer
             Int(1),model1,re1,model2,re2,tspan,args,kwargs)
     end
 end
+
+@functor NeuralDSDE (p,)
 
 function (n::NeuralDSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
@@ -266,6 +268,8 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralSDELayer
               p,Int(1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
     end
 end
+
+@functor NeuralSDE (p,)
 
 function (n::NeuralSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
@@ -378,6 +382,8 @@ struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
 
 end
 
+@functor NeuralCDDE (p,)
+
 function (n::NeuralCDDE)(x,p=n.p)
     function dudt_(u,h,p,t)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
@@ -460,6 +466,8 @@ struct NeuralDAE{P,M,M2,D,RE,T,DV,A,K} <: NeuralDELayer
             args,kwargs)
   end
 end
+
+@functor NeuralDAE (p,)
 
 function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     function f(du,u,p,t)
@@ -582,6 +590,8 @@ struct NeuralODEMM{M,M2,P,RE,T,MM,A,K} <: NeuralDELayer
     end
 
 end
+
+@functor NeuralODEMM (p,)
 
 function (n::NeuralODEMM)(x,p=n.p)
     function f(u,p,t)
