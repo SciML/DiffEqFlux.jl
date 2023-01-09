@@ -82,7 +82,7 @@ where we also pass as an input the desired timespan for which the differential e
 ### Training
 
 First, let's get an array from a normal distribution as the training data. Note that we want the data in Float32
-values to match how we have setup the neural network weights and the state space of the ODE.
+values to match how we have set up the neural network weights and the state space of the ODE.
 
 ```@example cnf2
 data_dist = Normal(6.0f0, 0.7f0)
@@ -120,7 +120,7 @@ res1 = Optimization.solve(optprob,
                           callback=cb)
 ```
 
-We then complete the training using a different optimizer starting from where `ADAM` stopped.
+We then complete the training using a different optimizer, starting from where `ADAM` stopped.
 
 ```@example cnf2
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
@@ -132,7 +132,8 @@ res2 = Optimization.solve(optprob2,
 
 ### Evaluation
 
-For evaluating the result, we can use `totalvariation` function from `Distances.jl`. First, we compute densities using actual distribution and FFJORD model. then we use a distance function.
+For evaluating the result, we can use `totalvariation` function from `Distances.jl`. First, we compute densities using actual distribution and FFJORD model.
+Then we use a distance function between these distributions.
 
 ```@example cnf2
 using Distances

@@ -1,7 +1,7 @@
 # Neural ODEs on GPUs
 
 Note that the differential equation solvers will run on the GPU if the initial
-condition is a GPU array. Thus, for example, we can define a neural ODE by hand
+condition is a GPU array. Thus, for example, we can define a neural ODE manually
 that runs on the GPU (if no GPU is available, the calculation defaults back to the CPU):
 
 ```julia

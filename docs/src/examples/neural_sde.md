@@ -6,11 +6,11 @@ layers API documentation, or [this full example using the layer
 function](https://github.com/MikeInnes/zygote-paper/blob/master/neural_sde/neural_sde.jl)).
 
 However, since there are far too many possible combinations for the API to
-support, in many cases you will want to performantly define neural differential
-equations for non-ODE systems from scratch. For these systems, it is generally
-best to use `TrackerAdjoint` with non-mutating (out-of-place) forms. For
-example, the following defines a neural SDE with neural networks for both the
-drift and diffusion terms:
+support, often you will want to define neural differential equations for
+non-ODE systems from scratch. To get good performance for these systems,
+it is generally best to use `TrackerAdjoint` with non-mutating (out-of-place)
+forms. For example, the following defines a neural SDE with neural networks
+for both the drift and diffusion terms:
 
 ```julia
 dudt(u, p, t) = model(u)
@@ -20,7 +20,7 @@ prob = SDEProblem(dudt, g, x, tspan, nothing)
 
 where `model` and `model2` are different neural networks. The same can apply to
 a neural delay differential equation. Its out-of-place formulation is
-`f(u,h,p,t)`. Thus for example, if we want to define a neural delay differential
+`f(u,h,p,t)`. Thus, for example, if we want to define a neural delay differential
 equation which uses the history value at `p.tau` in the past, we can define:
 
 ```julia
@@ -29,7 +29,7 @@ prob = DDEProblem(dudt_, u0, h, tspan, nothing)
 ```
 
 
-First let's build training data from the same example as the neural ODE:
+First, let's build training data from the same example as the neural ODE:
 
 ```@example nsde
 using Plots, Statistics
@@ -55,7 +55,7 @@ end
 prob_truesde = SDEProblem(trueSDEfunc, true_noise_func, u0, tspan)
 ```
 
-For our dataset we will use DifferentialEquations.jl's [parallel ensemble
+For our dataset, we will use DifferentialEquations.jl's [parallel ensemble
 interface](https://docs.sciml.ai/DiffEqDocs/stable/features/ensemble/) to generate
 data from the average of 10,000 runs of the SDE:
 
@@ -68,7 +68,7 @@ ensemble_sum = EnsembleSummary(ensemble_sol)
 sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))
 ```
 
-Now we build a neural SDE. For simplicity we will use the `NeuralDSDE`
+Now we build a neural SDE. For simplicity, we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
 ```@example nsde
