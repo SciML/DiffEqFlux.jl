@@ -1,7 +1,7 @@
 # DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning
 
 DiffEqFlux.jl is an implicit deep learning library built using the SciML ecosystem. It is
-a high level interface that pulls together all of the tools with heuristics
+a high-level interface that pulls together all the tools with heuristics
 and helper functions to make training such deep implicit layer models fast and easy.
 
 !!! note
@@ -10,7 +10,7 @@ and helper functions to make training such deep implicit layer models fast and e
     for deep implicit learning, mixing differential equations with machine
     learning. For details on automatic differentiation of equation solvers
     and adjoint techniques, and using these methods for doing things like
-    callibrating models to data, nonlinear optimal control, and PDE-constrained
+    calibrating models to data, nonlinear optimal control, and PDE-constrained
     optimization, see [SciMLSensitivity.jl](https://docs.sciml.ai/SciMLSensitivity/stable/)
 
 ## Pre-Built Architectures

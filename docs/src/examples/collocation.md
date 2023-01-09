@@ -89,8 +89,8 @@ plot!(nn_sol,lw=5)
 
 ## Generating the Collocation
 
-The smoothed collocation is a spline fit of the datapoints which allows
-us to get a an estimate of the approximate noiseless dynamics:
+The smoothed collocation is a spline fit of the data points which allows
+us to get an estimate of the approximate noiseless dynamics:
 
 ```@example collocation
 using Lux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
@@ -118,7 +118,7 @@ plot!(tsteps,u',lw=5)
 ```
 
 We can then differentiate the smoothed function to get estimates of the
-derivative at each datapoint:
+derivative at each data point:
 
 ```@example collocation
 plot(tsteps,du')
@@ -192,5 +192,5 @@ plot!(nn_sol,lw=5)
 ```
 
 This method then has a good global starting position, making it less
-prone to local minima and is thus a great method to mix in with other
+prone to local minima, and this method is thus a great method to mix in with other
 fitting methods for neural ODEs.

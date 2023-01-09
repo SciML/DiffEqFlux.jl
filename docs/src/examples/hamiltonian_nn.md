@@ -6,7 +6,7 @@ Hamiltonian Neural Networks introduced in [1] allow models to "learn and respect
 m\ddot x + kx = 0
 ```
 
-Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. Analytically solving this equation, we get ``x = sin(t)``. Hence, ``q = sin(t)``, and ``p = cos(t)``. Using these solutions we generate our dataset and fit the `NeuralHamiltonianDE` to learn the dynamics of this system.
+Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. Analytically solving this equation, we get ``x = sin(t)``. Hence, ``q = sin(t)``, and ``p = cos(t)``. Using these solutions, we generate our dataset and fit the `NeuralHamiltonianDE` to learn the dynamics of this system.
 
 ```@example hamiltonian_cp
 using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff
@@ -63,7 +63,7 @@ ylabel!("Momentum (p)")
 
 ### Data Generation
 
-The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally to supervise the training we also generate the gradients. Next we use use Flux DataLoader for automatically batching our dataset.
+The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally, to supervise the training, we also generate the gradients. Next, we use Flux DataLoader for automatically batching our dataset.
 
 ```@example hamiltonian
 using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff
@@ -112,7 +112,7 @@ callback()
 
 ### Solving the ODE using trained HNN
 
-In order to visualize the learned trajectories, we need to solve the ODE. We will use the `NeuralHamiltonianDE` layer which is essentially a wrapper over `HamiltonianNN` layer and solves the ODE.
+In order to visualize the learned trajectories, we need to solve the ODE. We will use the `NeuralHamiltonianDE` layer, which is essentially a wrapper over `HamiltonianNN` layer, and solves the ODE.
 
 ```@example hamiltonian
 model = NeuralHamiltonianDE(

@@ -1,7 +1,7 @@
 # [GPU-based MNIST Neural ODE Classifier](@id mnist)
 
 Training a classifier for **MNIST** using a neural ordinary differential equation **NN-ODE**
-on **GPUs** with **Minibatching**.
+on **GPUs** with **minibatching**.
 
 (Step-by-step description below)
 
@@ -133,7 +133,7 @@ CUDA.allowscalar(false)
 ensures that only optimized kernels are called when using the GPU.
 Additionally, the `gpu` function is shown as a way to translate models and data over to the GPU.
 Note that this function is CPU-safe, so if the GPU is disabled or unavailable, this
-code will fallback to the CPU.
+code will fall back to the CPU.
 
 ### Load MNIST Dataset into Minibatches
 
@@ -178,7 +178,7 @@ x_train, y_train = loadmnist(bs)
 ### Layers
 
 The Neural Network requires passing inputs sequentially through multiple layers. We use
-`Chain` which allows inputs to functions to come from previous layer and sends the outputs
+`Chain` which allows inputs to functions to come from the previous layer and sends the outputs
 to the next. Four different sets of layers are used here:
 
 
@@ -224,13 +224,13 @@ function DiffEqArray_to_Array(x)
 end
 ```
 
-For CPU: If this function does not automatically fallback to CPU when no GPU is present, we can
+For CPU: If this function does not automatically fall back to CPU when no GPU is present, we can
 change `gpu(x)` to `Array(x)`.
 
 
 ### Build Topology
 
-Next we connect all layers together in a single chain:
+Next, we connect all layers together in a single chain:
 
 ```julia
 # Build our overall model topology
@@ -303,7 +303,7 @@ This function requires **Loss**, **Optimizer** and **Callback** functions.
 
 #### Loss
 
-**Cross Entropy** is the loss function computed here which applies a **Softmax** operation on the
+**Cross Entropy** is the loss function computed here, which applies a **Softmax** operation on the
 final output of our model. `logitcrossentropy` takes in the prediction from our
 model `model(x)` and compares it to actual output `y`:
 
