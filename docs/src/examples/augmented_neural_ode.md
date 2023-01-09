@@ -183,7 +183,7 @@ end
 
 ## Plotting the Results
 
-Here, we define an utility to plot our model regression results as a heatmap.
+Here, we define a utility to plot our model regression results as a heatmap.
 
 ```@example augneuralode
 function plot_contour(model, npoints = 300)
@@ -223,7 +223,7 @@ dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size
 
 ### Callback Function
 
-Additionally we define a callback function which displays the total loss at specific intervals.
+Additionally, we define a callback function which displays the total loss at specific intervals.
 
 ```@example augneuralode
 iter = 0
@@ -245,7 +245,7 @@ opt = ADAM(0.005)
 
 ## Training the Neural ODE
 
-To train our neural ode model, we need to pass the appropriate learnable parameters, `parameters` which is
+To train our neural ode model, we need to pass the appropriate learnable parameters, `parameters` which are
 returned by the `construct_models` function. It is simply the `node.p` vector. We then train our model
 for `20` epochs.
 
@@ -264,9 +264,9 @@ the thin artifact which connects the circles.
 
 ## Training the Augmented Neural ODE
 
-Our training configuration will be same as that of Neural ODE. Only in this case we have augmented the
-input with a single zero. This makes the problem 3 dimensional and as such it is possible to find
-a function which can be expressed by the neural ode. For more details and proofs please refer to [1].
+Our training configuration will be the same as that of Neural ODE. Only in this case, we have augmented the
+input with a single zero. This makes the problem 3-dimensional, and as such it is possible to find
+a function which can be expressed by the neural ode. For more details and proofs, please refer to [1].
 
 ```@example augneuralode
 model, parameters = construct_model(1, 2, 64, 1)

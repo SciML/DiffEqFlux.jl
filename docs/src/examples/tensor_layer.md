@@ -36,7 +36,7 @@ A = [LegendreBasis(10), LegendreBasis(10)]
 nn = TensorLayer(A, 1)
 ```
 
-and we also instantiate the model we are trying to learn, "informing" the neural
+and we also instantiate the model we are trying to learn, “informing” the neural
 about the `∝x` and `∝v` dependencies in the equation of motion:
 
 ```@example tensor
@@ -52,7 +52,7 @@ end
 prob_pred = ODEProblem{true}(dxdt_pred,u0,tspan)
 ```
 
-Note that we introduced a "cap" in the neural network term to avoid instabilities
+Note that we introduced a “cap” in the neural network term to avoid instabilities
 in the solution of the ODE. We also initialized the vector of parameters to zero
 in order to obtain a faster convergence for this particular example.
 
@@ -94,7 +94,7 @@ res2 = Optimization.solve(optprob2, ADAM(0.001), callback = callback,maxiters = 
 opt = res2.u
 ```
 
-We plot the results and we obtain a fairly accurate learned model:
+We plot the results, and we obtain a fairly accurate learned model:
 
 ```@example tensor
 using Plots

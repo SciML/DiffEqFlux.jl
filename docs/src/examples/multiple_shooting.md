@@ -3,7 +3,7 @@
 In Multiple Shooting, the training data is split into overlapping intervals.
 The solver is then trained on individual intervals. If the end conditions of any
 interval coincide with the initial conditions of the next immediate interval,
-then the joined/combined solution is same as solving on the whole dataset
+then the joined/combined solution is the same as solving on the whole dataset
 (without splitting).
 
 To ensure that the overlapping part of two consecutive intervals coincide,
@@ -107,10 +107,10 @@ animation code is uncommented:
 The connected lines show the predictions of each group (Notice that there
 are overlapping points as well. These are the points we are trying to coincide.)
 
-Here is an output with `group_size = 30` (which is same as solving on the whole
+Here is an output with `group_size = 30` (which is the same as solving on the whole
 interval without splitting also called single shooting)
 
 ![pic_single_shoot3](https://user-images.githubusercontent.com/58384989/111843307-f0fff180-8926-11eb-9a06-2731113173bc.PNG)
 
 It is clear from the above picture, a single shoot doesn't perform very well
-with the ODE Problem we have and gets stuck in a local minima.
+with the ODE Problem we have and gets stuck in a local minimum.

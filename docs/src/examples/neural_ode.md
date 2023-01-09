@@ -1,7 +1,7 @@
 # Neural Ordinary Differential Equations
 
 A neural ODE is an ODE where a neural
-network defines its derivative function. Thus for example, with the multilayer
+network defines its derivative function. For example, with the multilayer
 perceptron neural network `Lux.Chain(Lux.Dense(2, 50, tanh), Lux.Dense(50, 2))`,
 we can define a differential equation which is `u' = NN(u)`. This is done simply
 by the `NeuralODE` struct. Let's take a look at an example.
@@ -85,7 +85,7 @@ callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=tru
 
 ## Explanation
 
-Let's get a time series array from a sprial ODE to train against.
+Let's get a time series array from a spiral ODE to train against.
 
 ```@example neuralode
 using Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, Random, Plots
@@ -105,7 +105,7 @@ prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 ```
 
-Now let's define a neural network with a `NeuralODE` layer. First we define
+Now let's define a neural network with a `NeuralODE` layer. First, we define
 the layer. Here we're going to use `Lux.Chain`, which is a suitable neural network
 structure for NeuralODEs with separate handling of state variables:
 
@@ -125,13 +125,13 @@ dudt2 = Chain(x -> x.^3,
               Dense(50, 2))
 ```
 
-In our model we used the `x -> x.^3` assumption in the model. By incorporating
+In our model, we used the `x -> x.^3` assumption in the model. By incorporating
 structure into our equations, we can reduce the required size and training time
 for the neural network, but a good guess needs to be known!
 
 From here we build a loss function around it. The `NeuralODE` has an optional
-second argument for new parameters which we will use to iteratively change the
-neural network in our training loop. We will use the L2 loss of the network's
+second argument for new parameters, which we will use to change the
+neural network iteratively in our training loop. We will use the L2 loss of the network's
 output against the time series data:
 
 ```@example neuralode
@@ -146,9 +146,9 @@ function loss_neuralode(p)
 end
 ```
 
-We define a callback function. In this example we set `doplot = false` because otherwise
+We define a callback function. In this example, we set `doplot = false` because otherwise
 it would show every step and overflow the documentation, but for your use case
-**set doplot=true to see a live animation of the training process!**.
+**set doplot=true to see a live animation of the training process!**
 
 ```@example neuralode
 # Callback function to observe training
@@ -171,13 +171,13 @@ We then train the neural network to learn the ODE.
 
 Here we showcase starting the optimization with `ADAM` to more quickly find a
 minimum, and then honing in on the minimum by using `LBFGS`. By using the two
-together, we are able to fit the neural ODE in 9 seconds! (Note, the timing
+together, we can fit the neural ODE in 9 seconds! (Note, the timing
 commented out the plotting). You can easily incorporate the procedure below to
 set up custom optimization problems. For more information on the usage of
 [Optimization.jl](https://github.com/SciML/Optimization.jl), please consult
 [this](https://docs.sciml.ai/Optimization/stable/) documentation.
 
-The `x` and `p` variables in the optimization function are different than
+The `x` and `p` variables in the optimization function are different from
 `x` and `p` above. The optimization function runs over the space of parameters of
 the original problem, so `x_optimization` == `p_original`.
 
@@ -194,7 +194,7 @@ result_neuralode = Optimization.solve(optprob,
                                        maxiters = 300)
 ```
 
-We then complete the training using a different optimizer starting from where
+We then complete the training using a different optimizer, starting from where
 `ADAM` stopped. We do `allow_f_increases=false` to make the optimization automatically
 halt when near the minimum.
 
