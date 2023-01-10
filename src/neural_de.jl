@@ -43,30 +43,30 @@ struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
     tspan::T
     args::A
     kwargs::K
+end
 
-    function NeuralODE(model,tspan,args...;p = nothing,kwargs...)
-        _p,re = Flux.destructure(model)
-        if p === nothing
-            p = _p
-        end
-        new{typeof(model),typeof(p),typeof(re),
+function NeuralODE(model,tspan,args...;p = nothing,kwargs...)
+  _p,re = Flux.destructure(model)
+  if p === nothing
+      p = _p
+  end
+  NeuralODE{typeof(model),typeof(p),typeof(re),
             typeof(tspan),typeof(args),typeof(kwargs)}(
-            model,p,re,tspan,args,kwargs)
-    end
+              model,p,re,tspan,args,kwargs)
+end
 
-    function NeuralODE(model::FastChain,tspan,args...;p=initial_params(model),kwargs...)
-        re = nothing
-        new{typeof(model),typeof(p),typeof(re),
-            typeof(tspan),typeof(args),typeof(kwargs)}(
-            model,p,re,tspan,args,kwargs)
-    end
+function NeuralODE(model::FastChain,tspan,args...;p=initial_params(model),kwargs...)
+  re = nothing
+  NeuralODE{typeof(model),typeof(p),typeof(re),
+      typeof(tspan),typeof(args),typeof(kwargs)}(
+      model,p,re,tspan,args,kwargs)
+end
 
-    function NeuralODE(model::Lux.AbstractExplicitLayer,tspan,args...;p=nothing,kwargs...)
-      re = nothing
-      new{typeof(model),typeof(p),typeof(re),
-          typeof(tspan),typeof(args),typeof(kwargs)}(
-          model,p,re,tspan,args,kwargs)
-    end
+function NeuralODE(model::Lux.AbstractExplicitLayer,tspan,args...;p=nothing,kwargs...)
+re = nothing
+NeuralODE{typeof(model),typeof(p),typeof(re),
+    typeof(tspan),typeof(args),typeof(kwargs)}(
+    model,p,re,tspan,args,kwargs)
 end
 
 @functor NeuralODE (p,)
