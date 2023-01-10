@@ -12,7 +12,7 @@ end
 
 if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
     @safetestset "Neural DE Tests with Lux" begin include("neural_de_lux.jl") end
-    #@safetestset "Neural DE Tests" begin include("neural_de.jl") end
+    @safetestset "Neural DE Tests" begin include("neural_de.jl") end
     @safetestset "Augmented Neural DE Tests" begin include("augmented_nde.jl") end
     #@safetestset "Neural Graph DE" begin include("neural_gde.jl") end
     
