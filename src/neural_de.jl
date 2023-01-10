@@ -63,10 +63,10 @@ function NeuralODE(model::FastChain,tspan,args...;p=initial_params(model),kwargs
 end
 
 function NeuralODE(model::Lux.AbstractExplicitLayer,tspan,args...;p=nothing,kwargs...)
-re = nothing
-NeuralODE{typeof(model),typeof(p),typeof(re),
-    typeof(tspan),typeof(args),typeof(kwargs)}(
-    model,p,re,tspan,args,kwargs)
+  re = nothing
+  NeuralODE{typeof(model),typeof(p),typeof(re),
+      typeof(tspan),typeof(args),typeof(kwargs)}(
+      model,p,re,tspan,args,kwargs)
 end
 
 @functor NeuralODE (p,)
