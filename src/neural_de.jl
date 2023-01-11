@@ -1,5 +1,5 @@
 abstract type NeuralDELayer <: Lux.AbstractExplicitContainerLayer{(:model,)} end
-abstract type NeuralSDELayer <: Lux.AbstractExplicitContainerLayer{(:model1,:model2,)} end
+abstract type NeuralSDELayer <: Lux.AbstractExplicitContainerLayer{(:drift,:diffusion,)} end
 basic_tgrad(u,p,t) = zero(u)
 
 """
@@ -103,16 +103,16 @@ end
 Constructs a neural stochastic differential equation (neural SDE) with diagonal noise.
 
 ```julia
-NeuralDSDE(model1,model2,tspan,alg=nothing,args...;
+NeuralDSDE(drift,diffusion,tspan,alg=nothing,args...;
            sensealg=TrackerAdjoint(),kwargs...)
-NeuralDSDE(model1::FastChain,model2::FastChain,tspan,alg=nothing,args...;
+NeuralDSDE(drift::FastChain,diffusion::FastChain,tspan,alg=nothing,args...;
            sensealg=TrackerAdjoint(),kwargs...)
 ```
 
 Arguments:
 
-- `model1`: A Chain or FastChain neural network that defines the drift function.
-- `model2`: A Chain or FastChain neural network that defines the diffusion function.
+- `drift`: A Chain or FastChain neural network that defines the drift function.
+- `diffusion`: A Chain or FastChain neural network that defines the diffusion function.
   Should output a vector of the same size as the input.
 - `tspan`: The timespan to be solved on.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
@@ -127,44 +127,44 @@ Arguments:
 struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralSDELayer
     p::P
     len::Int
-    model1::M
+    drift::M
     re1::RE
-    model2::M2
+    diffusion::M2
     re2::RE2
     tspan::T
     args::A
     kwargs::K
 end
 
-function NeuralDSDE(model1,model2,tspan,args...;p = nothing, kwargs...)
-  p1,re1 = Flux.destructure(model1)
-  p2,re2 = Flux.destructure(model2)
+function NeuralDSDE(drift,diffusion,tspan,args...;p = nothing, kwargs...)
+  p1,re1 = Flux.destructure(drift)
+  p2,re2 = Flux.destructure(diffusion)
   if p === nothing
       p = [p1;p2]
   end
-  NeuralDSDE{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
+  NeuralDSDE{typeof(drift),typeof(p),typeof(re1),typeof(diffusion),typeof(re2),
       typeof(tspan),typeof(args),typeof(kwargs)}(p,
-      length(p1),model1,re1,model2,re2,tspan,args,kwargs)
+      length(p1),drift,re1,diffusion,re2,tspan,args,kwargs)
 end
 
-function NeuralDSDE(model1::FastChain,model2::FastChain,tspan,args...;
-                    p1 = initial_params(model1),
-                    p = [p1;initial_params(model2)], kwargs...)
+function NeuralDSDE(drift::FastChain,diffusion::FastChain,tspan,args...;
+                    p1 = initial_params(drift),
+                    p = [p1;initial_params(diffusion)], kwargs...)
   re1 = nothing
   re2 = nothing
-  NeuralDSDE{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
+  NeuralDSDE{typeof(drift),typeof(p),typeof(re1),typeof(diffusion),typeof(re2),
       typeof(tspan),typeof(args),typeof(kwargs)}(p,
-      length(p1),model1,re1,model2,re2,tspan,args,kwargs)
+      length(p1),drift,re1,diffusion,re2,tspan,args,kwargs)
 end
 
-function NeuralDSDE(model1::Lux.Chain,model2::Lux.Chain,tspan,args...;
+function NeuralDSDE(drift::Lux.Chain,diffusion::Lux.Chain,tspan,args...;
                     p1 =nothing,
                     p = nothing, kwargs...)
   re1 = nothing
   re2 = nothing
-  NeuralDSDE{typeof(model1),typeof(p),typeof(re1),typeof(model2),typeof(re2),
+  NeuralDSDE{typeof(drift),typeof(p),typeof(re1),typeof(diffusion),typeof(re2),
       typeof(tspan),typeof(args),typeof(kwargs)}(p,
-      Int(1),model1,re1,model2,re2,tspan,args,kwargs)
+      Int(1),drift,re1,diffusion,re2,tspan,args,kwargs)
 end
 
 @functor NeuralDSDE (p,)
@@ -178,44 +178,44 @@ function (n::NeuralDSDE)(x,p=n.p)
 end
 
 function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
-    dudt_(u,p,t) = n.model1(u,p[1:n.len])
-    g(u,p,t) = n.model2(u,p[(n.len+1):end])
+    dudt_(u,p,t) = n.drift(u,p[1:n.len])
+    g(u,p,t) = n.diffusion(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralDSDE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
-    st1 = st.model1
-    st2 = st.model2
+    st1 = st.drift
+    st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
-      u_, st = n.model1(u,p.model1,st)
+      u_, st = n.drift(u,p.drift,st)
       return u_
     end
     function g(u,p,t;st=st2)
-      u_, st = n.model2(u,p.model2,st)
+      u_, st = n.diffusion(u,p.diffusion,st)
       return u_
     end
 
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    return solve(prob,n.args...;sensealg=BacksolveAdjoint(),n.kwargs...), (model1 = st1, model2 = st2)
+    return solve(prob,n.args...;sensealg=BacksolveAdjoint(),n.kwargs...), (drift = st1, diffusion = st2)
 end
 
 """
 Constructs a neural stochastic differential equation (neural SDE).
 
 ```julia
-NeuralSDE(model1,model2,tspan,nbrown,alg=nothing,args...;
+NeuralSDE(drift,diffusion,tspan,nbrown,alg=nothing,args...;
           sensealg=TrackerAdjoint(),kwargs...)
-NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,alg=nothing,args...;
+NeuralSDE(drift::FastChain,diffusion::FastChain,tspan,nbrown,alg=nothing,args...;
           sensealg=TrackerAdjoint(),kwargs...)
 ```
 
 Arguments:
 
-- `model1`: A Chain or FastChain neural network that defines the drift function.
-- `model2`: A Chain or FastChain neural network that defines the diffusion function.
+- `drift`: A Chain or FastChain neural network that defines the drift function.
+- `diffusion`: A Chain or FastChain neural network that defines the diffusion function.
   Should output a matrix that is nbrown x size(x,1).
 - `tspan`: The timespan to be solved on.
 - `nbrown`: The number of Brownian processes
@@ -231,9 +231,9 @@ Arguments:
 struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralSDELayer
     p::P
     len::Int
-    model1::M
+    drift::M
     re1::RE
-    model2::M2
+    diffusion::M2
     re2::RE2
     tspan::T
     nbrown::Int
@@ -241,34 +241,34 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralSDELayer
     kwargs::K
 end
 
-function NeuralSDE(model1,model2,tspan,nbrown,args...;p=nothing,kwargs...)
-  p1,re1 = Flux.destructure(model1)
-  p2,re2 = Flux.destructure(model2)
+function NeuralSDE(drift,diffusion,tspan,nbrown,args...;p=nothing,kwargs...)
+  p1,re1 = Flux.destructure(drift)
+  p2,re2 = Flux.destructure(diffusion)
   if p === nothing
       p = [p1;p2]
   end
-  NeuralSDE{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
+  NeuralSDE{typeof(p),typeof(drift),typeof(re1),typeof(diffusion),typeof(re2),
       typeof(tspan),typeof(args),typeof(kwargs)}(
-      p,length(p1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
+      p,length(p1),drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
 end
 
-function NeuralSDE(model1::FastChain,model2::FastChain,tspan,nbrown,args...;
-                   p1 = initial_params(model1),
-                   p = [p1;initial_params(model2)], kwargs...)
+function NeuralSDE(drift::FastChain,diffusion::FastChain,tspan,nbrown,args...;
+                   p1 = initial_params(drift),
+                   p = [p1;initial_params(diffusion)], kwargs...)
   re1 = nothing
   re2 = nothing
-  NeuralSDE{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
+  NeuralSDE{typeof(p),typeof(drift),typeof(re1),typeof(diffusion),typeof(re2),
       typeof(tspan),typeof(args),typeof(kwargs)}(
-      p,length(p1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
+      p,length(p1),drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
 end
 
-function NeuralSDE(model1::Lux.AbstractExplicitLayer, model2::Lux.AbstractExplicitLayer,tspan,nbrown,args...;
+function NeuralSDE(drift::Lux.AbstractExplicitLayer, diffusion::Lux.AbstractExplicitLayer,tspan,nbrown,args...;
                    p1 = nothing, p = nothing, kwargs...)
   re1 = nothing
   re2 = nothing
-  NeuralSDE{typeof(p),typeof(model1),typeof(re1),typeof(model2),typeof(re2),
+  NeuralSDE{typeof(p),typeof(drift),typeof(re1),typeof(diffusion),typeof(re2),
       typeof(tspan),typeof(args),typeof(kwargs)}(
-      p,Int(1),model1,re1,model2,re2,tspan,nbrown,args,kwargs)
+      p,Int(1),drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
 end
 
 @functor NeuralSDE (p,)
@@ -282,28 +282,28 @@ function (n::NeuralSDE)(x,p=n.p)
 end
 
 function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
-    dudt_(u,p,t) = n.model1(u,p[1:n.len])
-    g(u,p,t) = n.model2(u,p[(n.len+1):end])
+    dudt_(u,p,t) = n.drift(u,p[1:n.len])
+    g(u,p,t) = n.diffusion(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
 function (n::NeuralSDE{P,M})(x,p,st) where {P,M<:Lux.AbstractExplicitLayer}
-    st1 = st.model1
-    st2 = st.model2
+    st1 = st.drift
+    st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
-        u_, st = n.model1(u,p.model1,st)
+        u_, st = n.drift(u,p.drift,st)
         return u_
     end
     function g(u,p,t;st=st2)
-        u_, st = n.model2(u,p.model2,st)
+        u_, st = n.diffusion(u,p.diffusion,st)
         return u_
     end
 
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    return solve(prob,n.args...;sensealg=BacksolveAdjoint(),n.kwargs...), (model1 = st1, model2 = st2)
+    return solve(prob,n.args...;sensealg=BacksolveAdjoint(),n.kwargs...), (drift = st1, diffusion = st2)
 end
 
 """
