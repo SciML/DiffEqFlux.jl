@@ -444,7 +444,7 @@ version = "2.24.3"
 deps = ["Adapt", "Cassette", "ChainRulesCore", "ConsoleProgressMonitor", "DataInterpolations", "DiffEqBase", "DiffResults", "Distributions", "DistributionsAD", "Flux", "ForwardDiff", "Functors", "LinearAlgebra", "Logging", "LoggingExtras", "Lux", "NNlib", "Optim", "Optimization", "OptimizationFlux", "OptimizationOptimJL", "OptimizationPolyalgorithms", "Printf", "ProgressLogging", "Random", "RecursiveArrayTools", "Reexport", "Requires", "SciMLBase", "SciMLSensitivity", "StaticArrays", "TerminalLoggers", "Zygote", "ZygoteRules"]
 path = "/home/runner/work/DiffEqFlux.jl/DiffEqFlux.jl"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
-version = "1.53.0"
+version = "1.54.0"
 
 [[deps.DiffEqNoiseProcess]]
 deps = ["DiffEqBase", "Distributions", "GPUArraysCore", "LinearAlgebra", "Markdown", "Optim", "PoissonRandom", "QuadGK", "Random", "Random123", "RandomNumbers", "RecipesBase", "RecursiveArrayTools", "ResettableStacks", "SciMLBase", "StaticArrays", "Statistics"]
