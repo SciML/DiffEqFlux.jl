@@ -3,7 +3,7 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'UA-90474609-3', {'page_path': location.pathname + location.search + location.hash});
-</script><script data-outdated-warner src="assets/warner.js"></script><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>DiffEqFlux.jl</a></span></div><form class="docs-search" action="search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><ul class="internal"><li><a class="tocitem" href="#Pre-Built-Architectures"><span>Pre-Built Architectures</span></a></li><li><a class="tocitem" href="#Citation"><span>Citation</span></a></li><li><a class="tocitem" href="#Reproducibility"><span>Reproducibility</span></a></li></ul></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="examples/neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="examples/GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="examples/mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="examples/mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="examples/augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="examples/neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="examples/collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="examples/normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="examples/hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="examples/tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="examples/multiple_shooting/">Multiple Shooting</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/index.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning"><a class="docs-heading-anchor" href="#DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning">DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning</a><a id="DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning-1"></a><a class="docs-heading-anchor-permalink" href="#DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning" title="Permalink"></a></h1><p>DiffEqFlux.jl is an implicit deep learning library built using the SciML ecosystem. It is a high level interface that pulls together all of the tools with heuristics and helper functions to make training such deep implicit layer models fast and easy.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>DiffEqFlux.jl is only for pre-built architectures and utility functions for deep implicit learning, mixing differential equations with machine learning. For details on automatic differentiation of equation solvers and adjoint techniques, and using these methods for doing things like callibrating models to data, nonlinear optimal control, and PDE-constrained optimization, see <a href="https://docs.sciml.ai/SciMLSensitivity/stable/">SciMLSensitivity.jl</a></p></div></div><h2 id="Pre-Built-Architectures"><a class="docs-heading-anchor" href="#Pre-Built-Architectures">Pre-Built Architectures</a><a id="Pre-Built-Architectures-1"></a><a class="docs-heading-anchor-permalink" href="#Pre-Built-Architectures" title="Permalink"></a></h2><p>The approach of this package is the easy and efficient training of <a href="https://arxiv.org/abs/2001.04385">Universal Differential Equations</a>. DiffEqFlux.jl provides architectures which match the interfaces of machine learning libraries such as <a href="https://docs.sciml.ai/Flux/stable/">Flux.jl</a> and <a href="https://docs.sciml.ai/Lux/stable/">Lux.jl</a> to make it easy to build continuous-time machine learning layers into larger machine learning applications.</p><p>The following layer functions exist:</p><ul><li><a href="https://arxiv.org/abs/1806.07366">Neural Ordinary Differential Equations (Neural ODEs)</a></li><li><a href="https://www.degruyter.com/document/doi/10.1515/sagmb-2020-0025/html">Collocation-Based Neural ODEs (Neural ODEs without a solver, by far the fastest way!)</a></li><li><a href="https://arxiv.org/abs/2109.06786">Multiple Shooting Neural Ordinary Differential Equations</a></li><li><a href="https://arxiv.org/abs/1907.07587">Neural Stochastic Differential Equations (Neural SDEs)</a></li><li><a href="https://arxiv.org/abs/2001.04385">Neural Differential-Algebriac Equations (Neural DAEs)</a></li><li><a href="https://arxiv.org/abs/2001.04385">Neural Delay Differential Equations (Neural DDEs)</a></li><li><a href="https://arxiv.org/abs/1904.01681">Augmented Neural ODEs</a></li><li><a href="https://arxiv.org/abs/1906.01563">Hamiltonian Neural Networks (with specialized second order and symplectic integrators)</a></li><li><a href="https://arxiv.org/abs/1806.07366">Continuous Normalizing Flows (CNF)</a> and <a href="https://arxiv.org/abs/1810.01367">FFJORD</a></li></ul><p>Examples of how to build architectures from scratch, with tutorials on things like Graph Neural ODEs, can be found in the <a href="https://docs.sciml.ai/SciMLSensitivity/stable/">SciMLSensitivity.jl documentation</a>.</p><p>WIP:</p><ul><li>Lagrangian Neural Networks</li><li>Galerkin Neural ODEs</li></ul><h2 id="Citation"><a class="docs-heading-anchor" href="#Citation">Citation</a><a id="Citation-1"></a><a class="docs-heading-anchor-permalink" href="#Citation" title="Permalink"></a></h2><p>If you use DiffEqFlux.jl or are influenced by its ideas, please cite:</p><pre><code class="nohighlight hljs">@article{rackauckas2020universal,
+</script><script data-outdated-warner src="assets/warner.js"></script><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>DiffEqFlux.jl</a></span></div><form class="docs-search" action="search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><ul class="internal"><li><a class="tocitem" href="#Pre-Built-Architectures"><span>Pre-Built Architectures</span></a></li><li><a class="tocitem" href="#Citation"><span>Citation</span></a></li><li><a class="tocitem" href="#Reproducibility"><span>Reproducibility</span></a></li></ul></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="examples/neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="examples/GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="examples/mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="examples/mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="examples/augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="examples/neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="examples/collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="examples/normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="examples/hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="examples/tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="examples/multiple_shooting/">Multiple Shooting</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/index.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning"><a class="docs-heading-anchor" href="#DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning">DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning</a><a id="DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning-1"></a><a class="docs-heading-anchor-permalink" href="#DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning" title="Permalink"></a></h1><p>DiffEqFlux.jl is an implicit deep learning library built using the SciML ecosystem. It is a high-level interface that pulls together all the tools with heuristics and helper functions to make training such deep implicit layer models fast and easy.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>DiffEqFlux.jl is only for pre-built architectures and utility functions for deep implicit learning, mixing differential equations with machine learning. For details on automatic differentiation of equation solvers and adjoint techniques, and using these methods for doing things like calibrating models to data, nonlinear optimal control, and PDE-constrained optimization, see <a href="https://docs.sciml.ai/SciMLSensitivity/stable/">SciMLSensitivity.jl</a></p></div></div><h2 id="Pre-Built-Architectures"><a class="docs-heading-anchor" href="#Pre-Built-Architectures">Pre-Built Architectures</a><a id="Pre-Built-Architectures-1"></a><a class="docs-heading-anchor-permalink" href="#Pre-Built-Architectures" title="Permalink"></a></h2><p>The approach of this package is the easy and efficient training of <a href="https://arxiv.org/abs/2001.04385">Universal Differential Equations</a>. DiffEqFlux.jl provides architectures which match the interfaces of machine learning libraries such as <a href="https://docs.sciml.ai/Flux/stable/">Flux.jl</a> and <a href="https://docs.sciml.ai/Lux/stable/">Lux.jl</a> to make it easy to build continuous-time machine learning layers into larger machine learning applications.</p><p>The following layer functions exist:</p><ul><li><a href="https://arxiv.org/abs/1806.07366">Neural Ordinary Differential Equations (Neural ODEs)</a></li><li><a href="https://www.degruyter.com/document/doi/10.1515/sagmb-2020-0025/html">Collocation-Based Neural ODEs (Neural ODEs without a solver, by far the fastest way!)</a></li><li><a href="https://arxiv.org/abs/2109.06786">Multiple Shooting Neural Ordinary Differential Equations</a></li><li><a href="https://arxiv.org/abs/1907.07587">Neural Stochastic Differential Equations (Neural SDEs)</a></li><li><a href="https://arxiv.org/abs/2001.04385">Neural Differential-Algebriac Equations (Neural DAEs)</a></li><li><a href="https://arxiv.org/abs/2001.04385">Neural Delay Differential Equations (Neural DDEs)</a></li><li><a href="https://arxiv.org/abs/1904.01681">Augmented Neural ODEs</a></li><li><a href="https://arxiv.org/abs/1906.01563">Hamiltonian Neural Networks (with specialized second order and symplectic integrators)</a></li><li><a href="https://arxiv.org/abs/1806.07366">Continuous Normalizing Flows (CNF)</a> and <a href="https://arxiv.org/abs/1810.01367">FFJORD</a></li></ul><p>Examples of how to build architectures from scratch, with tutorials on things like Graph Neural ODEs, can be found in the <a href="https://docs.sciml.ai/SciMLSensitivity/stable/">SciMLSensitivity.jl documentation</a>.</p><p>WIP:</p><ul><li>Lagrangian Neural Networks</li><li>Galerkin Neural ODEs</li></ul><h2 id="Citation"><a class="docs-heading-anchor" href="#Citation">Citation</a><a id="Citation-1"></a><a class="docs-heading-anchor-permalink" href="#Citation" title="Permalink"></a></h2><p>If you use DiffEqFlux.jl or are influenced by its ideas, please cite:</p><pre><code class="nohighlight hljs">@article{rackauckas2020universal,
   title={Universal differential equations for scientific machine learning},
   author={Rackauckas, Christopher and Ma, Yingbo and Martensen, Julius and Warner, Collin and Zubov, Kirill and Supekar, Rohit and Skinner, Dominic and Ramadhan, Ali},
   journal={arXiv preprint arXiv:2001.04385},
@@ -14,32 +14,32 @@
   [b4f34e82] Distances v0.10.7
   [31c24e10] Distributions v0.25.79
   [e30172f5] Documenter v0.27.23
-  [587475ba] Flux v0.13.10
+  [587475ba] Flux v0.13.11
   [b2108857] Lux v0.4.36
   [cc2ba9b6] MLDataUtils v0.5.4
-  [eb30cadb] MLDatasets v0.7.8
-  [7f7a1694] Optimization v3.10.0
+  [eb30cadb] MLDatasets v0.7.9
+  [7f7a1694] Optimization v3.11.0
   [253f991c] OptimizationFlux v0.1.2
   [36348300] OptimizationOptimJL v0.1.5
   [500b13db] OptimizationPolyalgorithms v0.1.1
-  [1dea7af3] OrdinaryDiffEq v6.36.2
-  [91a5bcdd] Plots v1.38.0
+  [1dea7af3] OrdinaryDiffEq v6.37.0
+  [91a5bcdd] Plots v1.38.1
   [37e2e3b7] ReverseDiff v1.14.4
   [0bca4576] SciMLBase v1.81.0
-  [1ed8b502] SciMLSensitivity v7.11.1
+  [1ed8b502] SciMLSensitivity v7.14.0
   [789caeaf] StochasticDiffEq v6.57.4
   [37e2e46d] LinearAlgebra
-  [10745b16] Statistics</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.8.4
-Commit 00177ebc4fc (2022-12-23 21:32 UTC)
+  [10745b16] Statistics</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.8.5
+Commit 17cfb8e65ea (2023-01-08 06:45 UTC)
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 2 × Intel(R) Xeon(R) CPU E5-2673 v3 @ 2.40GHz
+  CPU: 2 × Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
   WORD_SIZE: 64
   LIBM: libopenlibm
-  LLVM: libLLVM-13.0.1 (ORCJIT, haswell)
+  LLVM: libLLVM-13.0.1 (ORCJIT, icelake-server)
   Threads: 1 on 2 virtual cores</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/DiffEqFlux.jl/DiffEqFlux.jl/docs/Manifest.toml`
   [a4c015fc] ANSIColoredPrinters v0.0.1
-  [c3fe647b] AbstractAlgebra v0.27.7
+  [c3fe647b] AbstractAlgebra v0.27.8
   [621f4979] AbstractFFTs v1.2.1
   [1520ce14] AbstractTrees v0.4.3
   [7d9f7c33] Accessors v0.1.23
@@ -67,13 +67,13 @@ Platform Info:
   [764a87c0] BoundaryValueDiffEq v2.11.0
   [e1450e63] BufferedStreams v1.1.0
   [fa961155] CEnum v0.4.2
-  [2a0fbf3d] CPUSummary v0.1.30
-  [336ed68f] CSV v0.10.8
-  [052768ef] CUDA v3.12.0
+  [2a0fbf3d] CPUSummary v0.2.1
+  [336ed68f] CSV v0.10.9
+  [052768ef] CUDA v3.12.1
   [72cfdca4] CUDAKernels v0.4.3
   [49dc2e85] Calculus v0.5.1
   [7057c7e9] Cassette v0.3.11
-  [082447d4] ChainRules v1.46.0
+  [082447d4] ChainRules v1.46.1
   [d360d2e6] ChainRulesCore v1.15.6
   [9e997f8a] ChangesOfVariables v0.1.4
   [46823bd8] Chemfiles v0.10.3
@@ -81,13 +81,13 @@ Platform Info:
   [944b1d66] CodecZlib v0.7.0
   [35d6a980] ColorSchemes v3.20.0
   [3da002f7] ColorTypes v0.11.4
-  [c3611d14] ColorVectorSpace v0.9.9
+  [c3611d14] ColorVectorSpace v0.9.10
   [5ae59095] Colors v0.12.10
   [861a8166] Combinatorics v1.0.2
   [38540f10] CommonSolve v0.2.3
   [bbf7d656] CommonSubexpressions v0.3.0
   [34da2185] Compat v4.5.0
-  [b0b7db55] ComponentArrays v0.13.4
+  [b0b7db55] ComponentArrays v0.13.6
   [b152e2b5] CompositeTypes v0.1.3
   [a33af91c] CompositionsBase v0.1.1
   [88cd18e8] ConsoleProgressMonitor v0.1.2
@@ -99,16 +99,16 @@ Platform Info:
   [9a962f9c] DataAPI v1.14.0
   [124859b0] DataDeps v0.7.10
   [a93c6f00] DataFrames v1.4.4
-  [82cc6244] DataInterpolations v3.10.1
+  [82cc6244] DataInterpolations v3.11.0
   [864edb3b] DataStructures v0.18.13
   [e2d170a0] DataValueInterfaces v1.0.0
   [244e2a9f] DefineSingletons v0.1.2
   [bcd4f6db] DelayDiffEq v5.40.5
   [b429d917] DensityInterface v0.4.0
-  [2b5f629d] DiffEqBase v6.112.0
+  [2b5f629d] DiffEqBase v6.113.1
   [459566f4] DiffEqCallbacks v2.24.3
   [aae7a2af] DiffEqFlux v1.53.0 `~/work/DiffEqFlux.jl/DiffEqFlux.jl`
-  [77a26b50] DiffEqNoiseProcess v5.15.0
+  [77a26b50] DiffEqNoiseProcess v5.15.2
   [163ba53b] DiffResults v1.1.0
   [b552c78f] DiffRules v1.12.2
   [0c46a032] DifferentialEquations v7.6.0
@@ -122,14 +122,14 @@ Platform Info:
   [7c1d4256] DynamicPolynomials v0.4.5
   [da5c29d0] EllipsisNotation v1.6.0
   [4e289a0a] EnumX v1.0.4
-  [7da242da] Enzyme v0.10.13
+  [7da242da] Enzyme v0.10.15
   [f151be2c] EnzymeCore v0.1.0
   [d4d017d3] ExponentialUtilities v1.22.0
   [e2ba6199] ExprTools v0.1.8
   [c87230d0] FFMPEG v0.4.1
   [cc61a311] FLoops v0.2.1
   [b9860ae5] FLoopsBase v0.1.1
-  [7034ab61] FastBroadcast v0.2.3
+  [7034ab61] FastBroadcast v0.2.4
   [9aa1b823] FastClosures v0.3.2
   [29a986be] FastLapackInterface v1.2.8
   [5789e2e9] FileIO v1.16.0
@@ -137,7 +137,7 @@ Platform Info:
   [1a297f60] FillArrays v0.13.6
   [6a86dc24] FiniteDiff v2.17.0
   [53c48c17] FixedPointNumbers v0.8.4
-  [587475ba] Flux v0.13.10
+  [587475ba] Flux v0.13.11
   [9c68100b] FoldsThreads v0.1.1
   [59287772] Formatting v0.4.2
   [f6369f11] ForwardDiff v0.10.34
@@ -146,8 +146,8 @@ Platform Info:
   [d9f16b24] Functors v0.4.1
   [0c68f7d7] GPUArrays v8.5.0
   [46192b85] GPUArraysCore v0.1.2
-⌅ [61eb1bfa] GPUCompiler v0.16.7
-  [28b8d3ca] GR v0.71.2
+  [61eb1bfa] GPUCompiler v0.17.1
+  [28b8d3ca] GR v0.71.3
   [92fee26a] GZip v0.5.1
   [c145ed77] GenericSchur v0.5.3
   [c27321d9] Glob v1.3.0
@@ -157,7 +157,7 @@ Platform Info:
   [0b43b601] Groebner v0.2.11
   [d5909c97] GroupsCore v0.4.0
   [f67ccb44] HDF5 v0.16.13
-  [cd3eb016] HTTP v1.6.2
+  [cd3eb016] HTTP v1.6.3
   [3e5b6fbb] HostCPUFeatures v0.1.13
   [34004b35] HypergeometricFunctions v0.3.11
   [b5f81e59] IOCapture v0.2.2
@@ -184,7 +184,7 @@ Platform Info:
   [682c06a0] JSON v0.21.3
   [0f8b85d8] JSON3 v1.12.0
   [b14d175d] JuliaVariables v0.2.4
-  [ccbc3e58] JumpProcesses v9.2.3
+  [ccbc3e58] JumpProcesses v9.3.1
   [ef3ab10e] KLU v0.4.0
   [63c18a36] KernelAbstractions v0.8.6
   [ba0b0d4f] Krylov v0.9.0
@@ -193,29 +193,29 @@ Platform Info:
   [b964fa9f] LaTeXStrings v1.3.0
   [2ee39098] LabelledArrays v1.12.5
   [984bce1d] LambertW v0.4.5
-  [23fbe1c1] Latexify v0.15.17
+  [23fbe1c1] Latexify v0.15.18
   [10f19ff3] LayoutPointers v0.1.12
   [50d2b5c4] Lazy v0.15.1
   [8cdb02fc] LazyModules v0.3.1
 ⌅ [7f8f8fb0] LearnBase v0.3.0
-  [0fc2ff8b] LeastSquaresOptim v0.8.3
+  [0fc2ff8b] LeastSquaresOptim v0.8.4
   [1d6d02ad] LeftChildRightSiblingTrees v0.2.0
   [2d8b4e74] LevyArea v1.0.0
   [d3d80556] LineSearches v7.2.0
-  [7ed4a6bd] LinearSolve v1.32.1
+  [7ed4a6bd] LinearSolve v1.33.0
   [2ab3a3ac] LogExpFunctions v0.3.19
   [e6f89c97] LoggingExtras v1.0.0
-  [bdcacae8] LoopVectorization v0.12.143
+  [bdcacae8] LoopVectorization v0.12.146
   [b2108857] Lux v0.4.36
-  [bb33d45b] LuxCore v0.1.1
+  [bb33d45b] LuxCore v0.1.2
   [82251201] LuxLib v0.1.7
   [23992714] MAT v0.10.3
 ⌃ [9920b226] MLDataPattern v0.5.4
   [cc2ba9b6] MLDataUtils v0.5.4
-  [eb30cadb] MLDatasets v0.7.8
+  [eb30cadb] MLDatasets v0.7.9
   [66a33bbf] MLLabelUtils v0.5.7
   [d8e11817] MLStyle v0.4.16
-⌅ [f1d291b0] MLUtils v0.3.1
+  [f1d291b0] MLUtils v0.4.0
   [1914dd2f] MacroTools v0.5.10
   [d125e4d3] ManualMemory v0.1.8
   [dbb5928d] MappedArrays v0.4.1
@@ -231,25 +231,25 @@ Platform Info:
   [d8a4904e] MutableArithmetics v1.1.0
   [d41bc354] NLSolversBase v7.8.3
   [2774e3e8] NLsolve v4.5.1
-  [872c559c] NNlib v0.8.12
-  [a00861dc] NNlibCUDA v0.2.4
+  [872c559c] NNlib v0.8.15
+  [a00861dc] NNlibCUDA v0.2.6
   [15e1cf62] NPZ v0.4.3
   [77ba4419] NaNMath v1.0.1
   [71a1bf82] NameResolution v0.1.5
   [8913a72c] NonlinearSolve v1.1.1
   [d8793406] ObjectFile v0.3.7
   [6fe1bfb0] OffsetArrays v1.12.8
-  [0b1bfda6] OneHotArrays v0.2.2
+  [0b1bfda6] OneHotArrays v0.2.3
   [4d8831e6] OpenSSL v1.3.2
   [429524aa] Optim v1.7.4
   [3bd65402] Optimisers v0.2.14
-  [7f7a1694] Optimization v3.10.0
+  [7f7a1694] Optimization v3.11.0
   [253f991c] OptimizationFlux v0.1.2
   [36348300] OptimizationOptimJL v0.1.5
   [42dfb2eb] OptimizationOptimisers v0.1.1
   [500b13db] OptimizationPolyalgorithms v0.1.1
   [bac558e1] OrderedCollections v1.4.1
-  [1dea7af3] OrdinaryDiffEq v6.36.2
+  [1dea7af3] OrdinaryDiffEq v6.37.0
   [90014a1f] PDMats v0.11.16
   [5432bcbf] PaddedViews v0.5.11
   [d96e819e] Parameters v0.12.3
@@ -258,10 +258,10 @@ Platform Info:
   [b98c9c47] Pipe v1.3.0
   [ccf2f8ad] PlotThemes v3.1.0
   [995b91a9] PlotUtils v1.3.2
-  [91a5bcdd] Plots v1.38.0
+  [91a5bcdd] Plots v1.38.1
   [e409e4f3] PoissonRandom v0.4.3
-  [f517fe37] Polyester v0.6.19
-  [1d0040c9] PolyesterWeave v0.1.11
+  [f517fe37] Polyester v0.7.1
+  [1d0040c9] PolyesterWeave v0.2.0
   [2dfb63ee] PooledArrays v1.4.2
   [85a6dd25] PositiveFactorizations v0.2.4
   [d236fae5] PreallocationTools v0.4.8
@@ -276,10 +276,10 @@ Platform Info:
   [fb686558] RandomExtensions v0.4.3
   [e6cf234a] RandomNumbers v1.5.3
   [c1ae055f] RealDot v0.1.0
-  [3cdcf5f2] RecipesBase v1.3.2
+  [3cdcf5f2] RecipesBase v1.3.3
   [01d81517] RecipesPipeline v0.6.11
-  [731186ca] RecursiveArrayTools v2.34.1
-  [f2c3362d] RecursiveFactorization v0.2.13
+  [731186ca] RecursiveArrayTools v2.35.0
+  [f2c3362d] RecursiveFactorization v0.2.14
   [189a3867] Reexport v1.2.2
   [42d2dcc6] Referenceables v0.1.2
   [29dad682] RegularizationTools v0.6.0
@@ -294,7 +294,7 @@ Platform Info:
   [476501e8] SLEEFPirates v0.6.37
   [0bca4576] SciMLBase v1.81.0
   [e9a6253c] SciMLNLSolve v0.1.1
-  [1ed8b502] SciMLSensitivity v7.11.1
+  [1ed8b502] SciMLSensitivity v7.14.0
   [6c6a2e73] Scratch v1.1.1
   [91c51154] SentinelArrays v1.3.16
   [efcf1570] Setfield v1.1.1
@@ -303,10 +303,10 @@ Platform Info:
   [777ac1f9] SimpleBufferStream v1.1.0
   [727e6d20] SimpleNonlinearSolve v0.1.4
   [699a6c99] SimpleTraits v0.9.4
-  [66db9d55] SnoopPrecompile v1.0.1
+  [66db9d55] SnoopPrecompile v1.0.3
   [a2af1166] SortingAlgorithms v1.1.0
   [47a9eef4] SparseDiffTools v1.30.0
-  [e56a9233] Sparspak v0.3.2
+  [e56a9233] Sparspak v0.3.4
   [276daf66] SpecialFunctions v2.1.7
   [171d559e] SplittablesBase v0.1.15
   [cae243ae] StackViews v0.1.1
@@ -318,7 +318,7 @@ Platform Info:
   [4c63d2b9] StatsFuns v1.1.1
   [9672c7b4] SteadyStateDiffEq v1.11.0
   [789caeaf] StochasticDiffEq v6.57.4
-  [7792a7ef] StrideArraysCore v0.4.4
+  [7792a7ef] StrideArraysCore v0.4.5
   [5e0ebb24] Strided v1.2.3
   [69024149] StringEncodings v0.3.5
   [892a3eda] StringManipulation v0.3.0
@@ -338,10 +338,10 @@ Platform Info:
   [ac1d9e8a] ThreadsX v0.1.11
   [a759f4b9] TimerOutputs v0.5.22
 ⌃ [9f7883ad] Tracker v0.2.20
-  [3bb67fe8] TranscodingStreams v0.9.10
+  [3bb67fe8] TranscodingStreams v0.9.11
   [28d57a85] Transducers v0.4.75
   [a2a6695c] TreeViews v0.3.0
-  [d5829a12] TriangularSolve v0.1.16
+  [d5829a12] TriangularSolve v0.1.17
   [410a4b4d] Tricks v0.1.6
   [9d95972d] TupleTools v1.3.0
   [5c2747f8] URIs v1.4.1
@@ -351,12 +351,12 @@ Platform Info:
   [013be700] UnsafeAtomics v0.2.1
   [d80eeb9a] UnsafeAtomicsLLVM v0.1.0
   [41fe7b60] Unzip v0.2.0
-  [3d5dd08c] VectorizationBase v0.21.56
+  [3d5dd08c] VectorizationBase v0.21.57
   [19fa3120] VertexSafeGraphs v0.2.0
   [ea10d353] WeakRefStrings v1.4.2
   [76eceee3] WorkerUtilities v1.6.1
   [a5390f91] ZipFile v0.10.1
-  [e88e6eb3] Zygote v0.6.51
+  [e88e6eb3] Zygote v0.6.54
   [700de1a5] ZygoteRules v0.2.2
   [6e34b625] Bzip2_jll v1.0.8+0
   [83423d85] Cairo_jll v1.16.1+1
@@ -368,7 +368,7 @@ Platform Info:
   [d7e528f0] FreeType2_jll v2.10.4+0
   [559328eb] FriBidi_jll v1.0.10+0
   [0656b61e] GLFW_jll v3.3.8+0
-  [d2c73de3] GR_jll v0.71.2+0
+  [d2c73de3] GR_jll v0.71.3+0
   [78b55507] Gettext_jll v0.21.0+0
   [7746bdde] Glib_jll v2.74.0+2
   [3b182d85] Graphite2_jll v1.3.14+0
@@ -480,4 +480,4 @@ Platform Info:
   [3f19e933] p7zip_jll v17.4.0+0
 Info Packages marked with ⌃ and ⌅ have new versions available, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details>You can also download the
 <a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v1.53.0/assets/Manifest.toml">manifest</a> file and the
-<a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v1.53.0/assets/Project.toml">project</a> file.</article><nav class="docs-footer"><a class="docs-footer-nextpage" href="examples/neural_ode/">Neural Ordinary Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 30 December 2022 18:29">Friday 30 December 2022</span>. Using Julia version 1.8.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v1.53.0/assets/Project.toml">project</a> file.</article><nav class="docs-footer"><a class="docs-footer-nextpage" href="examples/neural_ode/">Neural Ordinary Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Wednesday 11 January 2023 18:34">Wednesday 11 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
