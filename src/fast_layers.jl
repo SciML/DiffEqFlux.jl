@@ -405,6 +405,32 @@ end
 paramlength(f::StaticDense{out,in,bias}) where {out,in,bias} = out*(in + bias)
 initial_params(f::StaticDense) = f.initial_params()
 
+
+"""
+Multi Scale Fourier Feature Network implemented as per the paper - https://arxiv.org/abs/2012.10047
+At a high level, it performs the following: 
+
+1. Encodes Fourier Features for each Domain based on the scale parameters 
+2. Propogates through the Hidden Layers
+3. Concatenates the individual fourier features 
+
+``julia
+MSFFNetwork(in, out, nHidden, nHidden, W, σ = tanh , widthHiddenInt(((2/3)*in + out)))
+```
+
+The activation function defaults to identity and the width of the hidden layer is set to 2/3 of the input size + output size as per general practice.
+W - The randomized weights for the fourier encoding scaled by the scaling parameters used for each feature. 
+"""
+
+function MSFFNetwork(in::Int, out::Int, nHidden::Int, W::Vector{Float32}, σ = identity, widthHidden=Int((((2/3)*in + out))))
+return [FourierFeatureNetwork((in,out), hidden, σ, widthHidden, i) for i in W]
+end
+
+function FourierFeatureNetwork(in::Int ,out::Int, nHidden::Int, widthHidden::Int, σ = identity, W=randn(Float32, [1, in//2]))
+return  FastChain(x-> [sin(x*W) cos(x*W)], Maxout(() -> FastDense(in, widthHidden , σ), nHidden))
+end
+
+
 # Override FastDense to exclude the branch from the check
 function Cassette.overdub(ctx::SciMLSensitivity.HasBranchingCtx, f::FastDense, x, p)
     y = reshape(p[1:(f.out*f.in)],f.out,f.in)*x
