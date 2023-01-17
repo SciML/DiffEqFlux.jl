@@ -1,4 +1,4 @@
-using DiffEqFlux, Lux, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
+using DiffEqFlux, Zygote, Lux, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
 
 rng = Random.default_rng()
 
