@@ -1,5 +1,4 @@
-using DiffEqFlux, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
-
+using DiffEqFlux, Flux, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
 
 Random.seed!(100)
 
@@ -23,14 +22,13 @@ nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1f-4, saveat=[tspan[end]])
 
 loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
 l1 = loss_function(nODE.p)
+optf = Optimization.OptimizationFunction((x,p)->loss_function(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optf, nODE.p)
 
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, NewtonTrustRegion(), Optimization.AutoZygote(), maxiters=100, cb=cb) #ensure backwards compatibility of `cb`
+res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters=100, callback=cb)
 @test loss_function(res.minimizer) < l1
-res = DiffEqFlux.sciml_train(loss_function, nODE.p, Optim.KrylovTrustRegion(), Optimization.AutoZygote(), maxiters = 100, callback=cb)
+res = Optimization.solve(optprob, KrylovTrustRegion(), maxiters=100, callback=cb)
 @test loss_function(res.minimizer) < l1
-
-NN = FastChain(FastDense(n, 5n, tanh),
-               FastDense(5n, n))
 
 @info "ROCK2"
 nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1f-4, saveat=[tspan[end]])
@@ -38,9 +36,9 @@ nODE = NeuralODE(NN, tspan, ROCK2(), reltol=1f-4, saveat=[tspan[end]])
 loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
 l1 = loss_function(nODE.p)
 optfunc = Optimization.OptimizationFunction((x, p) -> loss_function(x), Optimization.AutoZygote())
-optprob = Optimization.OptimizationProblem(optfunc, nODE.p,)
+optprob = Optimization.OptimizationProblem(optfunc, nODE.p)
 
-res = Optimization.solve(optprob, Optim.NewtonTrustRegion(), maxiters = 100, callback=cb)
+res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters = 100, callback=cb)
 @test loss_function(res.minimizer) < l1
-res = Optimization.solve(optprob, Optim.KrylovTrustRegion(), maxiters = 100, callback=cb)
+res = Optimization.solve(optprob, KrylovTrustRegion(), maxiters = 100, callback=cb)
 @test loss_function(res.minimizer) < l1

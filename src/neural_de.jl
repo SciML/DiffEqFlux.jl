@@ -11,20 +11,16 @@ derivatives of the loss backwards in time.
 
 ```julia
 NeuralODE(model,tspan,alg=nothing,args...;kwargs...)
-NeuralODE(model::FastChain,tspan,alg=nothing,args...;
-          sensealg=InterpolatingAdjoint(autojacvec=SciMLSensitivity.ReverseDiffVJP(true)),
-          kwargs...)
 ```
 
 Arguments:
 
-- `model`: A Chain or FastChain neural network that defines the ̇x.
+- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the ̇x.
 - `tspan`: The timespan to be solved on.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl.
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
-  Defaults to an adjoint method, and with `FastChain` it defaults to utilizing
-  a tape-compiled ReverseDiff vector-Jacobian product for extra efficiency. Seee
+  Defaults to an adjoint method. See
   the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
   documentation for more details.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
@@ -55,13 +51,6 @@ function NeuralODE(model,tspan,args...;p = nothing,kwargs...)
               model,p,re,tspan,args,kwargs)
 end
 
-function NeuralODE(model::FastChain,tspan,args...;p=initial_params(model),kwargs...)
-  re = nothing
-  NeuralODE{typeof(model),typeof(p),typeof(re),
-      typeof(tspan),typeof(args),typeof(kwargs)}(
-      model,p,re,tspan,args,kwargs)
-end
-
 function NeuralODE(model::Lux.AbstractExplicitLayer,tspan,args...;p=nothing,kwargs...)
   re = nothing
   NeuralODE{typeof(model),typeof(p),typeof(re),
@@ -75,14 +64,6 @@ function (n::NeuralODE)(x,p=n.p)
     dudt_(u,p,t) = n.re(p)(u)
     ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
     prob = ODEProblem{false}(ff,x,getfield(n,:tspan),p)
-    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sensealg=sense,n.kwargs...)
-end
-
-function (n::NeuralODE{M})(x,p=n.p) where {M<:FastChain}
-    dudt_(u,p,t) = n.model(u,p)
-    ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
-    prob = ODEProblem{false}(ff,x,n.tspan,p)
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
     solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
@@ -105,14 +86,12 @@ Constructs a neural stochastic differential equation (neural SDE) with diagonal 
 ```julia
 NeuralDSDE(drift,diffusion,tspan,alg=nothing,args...;
            sensealg=TrackerAdjoint(),kwargs...)
-NeuralDSDE(drift::FastChain,diffusion::FastChain,tspan,alg=nothing,args...;
-           sensealg=TrackerAdjoint(),kwargs...)
 ```
 
 Arguments:
 
-- `drift`: A Chain or FastChain neural network that defines the drift function.
-- `diffusion`: A Chain or FastChain neural network that defines the diffusion function.
+- `drift`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the drift function.
+- `diffusion`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the diffusion function.
   Should output a vector of the same size as the input.
 - `tspan`: The timespan to be solved on.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
@@ -147,16 +126,6 @@ function NeuralDSDE(drift,diffusion,tspan,args...;p = nothing, kwargs...)
       length(p1),drift,re1,diffusion,re2,tspan,args,kwargs)
 end
 
-function NeuralDSDE(drift::FastChain,diffusion::FastChain,tspan,args...;
-                    p1 = initial_params(drift),
-                    p = [p1;initial_params(diffusion)], kwargs...)
-  re1 = nothing
-  re2 = nothing
-  NeuralDSDE{typeof(drift),typeof(p),typeof(re1),typeof(diffusion),typeof(re2),
-      typeof(tspan),typeof(args),typeof(kwargs)}(p,
-      length(p1),drift,re1,diffusion,re2,tspan,args,kwargs)
-end
-
 function NeuralDSDE(drift::Lux.Chain,diffusion::Lux.Chain,tspan,args...;
                     p1 =nothing,
                     p = nothing, kwargs...)
@@ -172,14 +141,6 @@ end
 function (n::NeuralDSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
-    prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
-end
-
-function (n::NeuralDSDE{M})(x,p=n.p) where {M<:FastChain}
-    dudt_(u,p,t) = n.drift(u,p[1:n.len])
-    g(u,p,t) = n.diffusion(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
@@ -208,14 +169,12 @@ Constructs a neural stochastic differential equation (neural SDE).
 ```julia
 NeuralSDE(drift,diffusion,tspan,nbrown,alg=nothing,args...;
           sensealg=TrackerAdjoint(),kwargs...)
-NeuralSDE(drift::FastChain,diffusion::FastChain,tspan,nbrown,alg=nothing,args...;
-          sensealg=TrackerAdjoint(),kwargs...)
 ```
 
 Arguments:
 
-- `drift`: A Chain or FastChain neural network that defines the drift function.
-- `diffusion`: A Chain or FastChain neural network that defines the diffusion function.
+- `drift`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the drift function.
+- `diffusion`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the diffusion function.
   Should output a matrix that is nbrown x size(x,1).
 - `tspan`: The timespan to be solved on.
 - `nbrown`: The number of Brownian processes
@@ -252,16 +211,6 @@ function NeuralSDE(drift,diffusion,tspan,nbrown,args...;p=nothing,kwargs...)
       p,length(p1),drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
 end
 
-function NeuralSDE(drift::FastChain,diffusion::FastChain,tspan,nbrown,args...;
-                   p1 = initial_params(drift),
-                   p = [p1;initial_params(diffusion)], kwargs...)
-  re1 = nothing
-  re2 = nothing
-  NeuralSDE{typeof(p),typeof(drift),typeof(re1),typeof(diffusion),typeof(re2),
-      typeof(tspan),typeof(args),typeof(kwargs)}(
-      p,length(p1),drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
-end
-
 function NeuralSDE(drift::Lux.AbstractExplicitLayer, diffusion::Lux.AbstractExplicitLayer,tspan,nbrown,args...;
                    p1 = nothing, p = nothing, kwargs...)
   re1 = nothing
@@ -276,14 +225,6 @@ end
 function (n::NeuralSDE)(x,p=n.p)
     dudt_(u,p,t) = n.re1(p[1:n.len])(u)
     g(u,p,t) = n.re2(p[(n.len+1):end])(u)
-    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
-    prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
-end
-
-function (n::NeuralSDE{P,M})(x,p=n.p) where {P,M<:FastChain}
-    dudt_(u,p,t) = n.drift(u,p[1:n.len])
-    g(u,p,t) = n.diffusion(u,p[(n.len+1):end])
     ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
     prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
@@ -313,13 +254,11 @@ delays.
 ```julia
 NeuralCDDE(model,tspan,hist,lags,alg=nothing,args...;
           sensealg=TrackerAdjoint(),kwargs...)
-NeuralCDDE(model::FastChain,tspan,hist,lags,alg=nothing,args...;
-          sensealg=TrackerAdjoint(),kwargs...)
 ```
 
 Arguments:
 
-- `model`: A Chain or FastChain neural network that defines the derivative function.
+- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the derivative function.
   Should take an input of size `[x;x(t-lag_1);...;x(t-lag_n)]` and produce and
   output shaped like `x`.
 - `tspan`: The timespan to be solved on.
@@ -368,13 +307,6 @@ function NeuralCDDE(model,tspan,hist,lags,args...;p=nothing,kwargs...)
       re,hist,lags,tspan,args,kwargs)
 end
 
-function NeuralCDDE(model::FastChain,tspan,hist,lags,args...;p = initial_params(model),kwargs...)
-  re = nothing
-  NeuralCDDE{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
-      typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
-      re,hist,lags,tspan,args,kwargs)
-end
-
 function NeuralCDDE(model::Lux.AbstractExplicitLayer,tspan,hist,lags,args...;p = nothing,kwargs...)
   throw(Unsupported_pairing(Unsupported_NeuralCDDE_pairing_message))
 #  re = nothing
@@ -395,29 +327,17 @@ function (n::NeuralCDDE)(x,p=n.p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralCDDE{P,M})(x,p=n.p) where {P,M<:FastChain}
-    function dudt_(u,h,p,t)
-        _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
-        n.model(_u,p)
-    end
-    ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
-    prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
-end
-
 """
 Constructs a neural differential-algebraic equation (neural DAE).
 
 ```julia
 NeuralDAE(model,constraints_model,tspan,alg=nothing,args...;
           sensealg=TrackerAdjoint(),kwargs...)
-NeuralDAE(model::FastChain,constraints_model,tspan,alg=nothing,args...;
-          sensealg=TrackerAdjoint(),kwargs...)
 ```
 
 Arguments:
 
-- `model`: A Chain or FastChain neural network that defines the derivative function.
+- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the derivative function.
   Should take an input of size `x` and produce the residual of `f(dx,x,t)`
   for only the differential variables.
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
@@ -526,14 +446,11 @@ the constraint equations.
 
 ```julia
 NeuralODEMM(model,constraints_model,tspan,mass_matrix,alg=nothing,args...;kwargs...)
-NeuralODEMM(model::FastChain,tspan,mass_matrix,alg=nothing,args...;
-          sensealg=InterpolatingAdjoint(autojacvec=SciMLSensitivity.ReverseDiffVJP(true)),
-          kwargs...)
 ```
 
 Arguments:
 
-- `model`: A Chain or FastChain neural network that defines the ̇`f(u,p,t)`
+- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the ̇`f(u,p,t)`
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
   constaints to impose on the algebraic equations.
 - `tspan`: The timespan to be solved on.
@@ -543,8 +460,7 @@ Arguments:
   implicit ODE solver compatible with singular mass matrices. Consult the
   [DAE solvers](https://docs.sciml.ai/DiffEqDocs/stable/solvers/dae_solve/) documentation for more details.
 - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
-  Defaults to an adjoint method, and with `FastChain` it defaults to utilizing
-  a tape-compiled ReverseDiff vector-Jacobian product for extra efficiency. Seee
+  Defaults to an adjoint method. See
   the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
   documentation for more details.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
@@ -575,14 +491,6 @@ function NeuralODEMM(model,constraints_model,tspan,mass_matrix,args...;
       model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
 end
 
-function NeuralODEMM(model::FastChain,constraints_model,tspan,mass_matrix,args...;
-                      p = initial_params(model), kwargs...)
-  re = nothing
-  NeuralODEMM{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
-      typeof(tspan),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
-      model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
-end
-
 function NeuralODEMM(model::Lux.AbstractExplicitLayer,constraints_model,tspan,mass_matrix,args...;
                       p=nothing,kwargs...)
   re = nothing
@@ -600,19 +508,6 @@ function (n::NeuralODEMM)(x,p=n.p)
         vcat(nn_out,alg_out)
     end
     dudt_= ODEFunction{false}(f,mass_matrix=n.mass_matrix,tgrad=basic_tgrad)
-    prob = ODEProblem{false}(dudt_,x,n.tspan,p)
-
-    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sensealg=sense,n.kwargs...)
-end
-
-function (n::NeuralODEMM{M})(x,p=n.p) where {M<:FastChain}
-    function f(u,p,t)
-        nn_out = n.model(u,p)
-        alg_out = n.constraints_model(u,p,t)
-        vcat(nn_out,alg_out)
-    end
-    dudt_= ODEFunction{false}(f;mass_matrix=n.mass_matrix,tgrad=basic_tgrad)
     prob = ODEProblem{false}(dudt_,x,n.tspan,p)
 
     sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())

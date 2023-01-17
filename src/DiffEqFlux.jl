@@ -1,23 +1,14 @@
 module DiffEqFlux
 
 using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
-    DiffEqBase, SciMLSensitivity, DiffResults, Distributions, DistributionsAD,
-    ForwardDiff, Optimization, OptimizationPolyalgorithms, LinearAlgebra,
+    DiffEqBase, SciMLSensitivity, Distributions, DistributionsAD,
+    ForwardDiff, LinearAlgebra,
     Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
-    Reexport, SciMLBase, StaticArrays, TerminalLoggers, Zygote, ZygoteRules
+    Reexport, SciMLBase, TerminalLoggers, Zygote, ZygoteRules
 
 @reexport using SciMLSensitivity
 @reexport using Zygote
-
-# deprecate
-
-import OptimizationFlux
-import NNlib
-import Lux
-using Requires
-using Cassette
 @reexport using Flux
-@reexport using OptimizationOptimJL
 using Functors
 
 import ChainRulesCore
@@ -43,10 +34,7 @@ ZygoteRules.@adjoint ZygoteRules.literal_getproperty(A::Tridiagonal, ::Val{:du})
 ZygoteRules.@adjoint Tridiagonal(dl, d, du) = Tridiagonal(dl, d, du), p̄ -> (diag(p̄[2:end, 1:end-1]), diag(p̄), diag(p̄[1:end-1, 2:end]))
 
 include("ffjord.jl")
-include("train.jl")
-include("fast_layers.jl")
 include("neural_de.jl")
-include("require.jl")
 include("spline_layer.jl")
 include("tensor_product_basis.jl")
 include("tensor_product_layer.jl")
@@ -54,14 +42,11 @@ include("collocation.jl")
 include("hnn.jl")
 include("multiple_shooting.jl")
 
-Flux.device(::FastLayer) = @warn "device(f::FastLayer) is a no-op: to move FastChain computations to a GPU, apply gpu(x) to the weight vector"
-Flux.gpu(::FastLayer) = @warn "device(f::FastLayer) is a no-op: to move FastChain computations to a GPU, apply gpu(x) to the weight vector"
-Flux.cpu(::FastLayer) = @warn "device(f::FastLayer) is a no-op: to move FastChain computations to a CPU, apply cpu(x) to the weight vector"
-
-export DeterministicCNF, FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
+export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, 
+       NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
 export HamiltonianNN
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
-export FastDense, StaticDense, FastChain, initial_params
+export FastDense, StaticDense, initial_params
 export FFJORDDistribution
 export DimMover, FluxBatchOrder
 

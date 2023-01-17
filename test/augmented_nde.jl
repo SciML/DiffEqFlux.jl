@@ -1,16 +1,16 @@
-using DiffEqFlux, Lux, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
+using DiffEqFlux, Flux, Lux, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
 
 x = Float32[2.; 0.]
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))
 tspan = (0.0f0, 1.0f0)
-fastdudt = FastChain(FastDense(4, 50, tanh), FastDense(50, 4))
-fastdudt2 = FastChain(FastDense(4, 50, tanh), FastDense(50, 4))
-fastdudt22 = FastChain(FastDense(4, 50, tanh), FastDense(50, 16), (x, p) -> reshape(x, 4, 4))
-fastddudt = FastChain(FastDense(12, 50, tanh), FastDense(50, 4))
+fluxdudt = Chain(Dense(4, 50, tanh), Dense(50, 4))
+fluxdudt2 = Chain(Dense(4, 50, tanh), Dense(50, 4))
+fluxdudt22 = Chain(Dense(4, 50, tanh), Dense(50, 16), (x, p) -> reshape(x, 4, 4))
+fluxddudt = Chain(Dense(12, 50, tanh), Dense(50, 4))
 
 # Augmented Neural ODE
 anode = AugmentedNDELayer(
-    NeuralODE(fastdudt, tspan, Tsit5(), save_everystep=false, save_start=false), 2
+    NeuralODE(fluxdudt, tspan, Tsit5(), save_everystep=false, save_start=false), 2
 )
 anode(x)
 
@@ -20,7 +20,7 @@ grads = Zygote.gradient(() -> sum(anode(x)), Flux.params(x, anode.nde))
 
 # Augmented Neural DSDE
 andsde = AugmentedNDELayer(
-    NeuralDSDE(fastdudt, fastdudt2, (0.0f0, 0.1f0), SOSRI(), saveat=0.0:0.01:0.1), 2
+    NeuralDSDE(fluxdudt, fluxdudt2, (0.0f0, 0.1f0), SOSRI(), saveat=0.0:0.01:0.1), 2
 )
 andsde(x)
 
@@ -30,7 +30,7 @@ grads = Zygote.gradient(() -> sum(andsde(x)), Flux.params(x, andsde.nde))
 
 # Augmented Neural SDE
 asode = AugmentedNDELayer(
-    NeuralSDE(fastdudt, fastdudt22,(0.0f0, 0.1f0), 4, LambaEM(), saveat=0.0:0.01:0.1), 2
+    NeuralSDE(fluxdudt, fluxdudt22,(0.0f0, 0.1f0), 4, LambaEM(), saveat=0.0:0.01:0.1), 2
 )
 asode(x)
 
@@ -40,7 +40,7 @@ grads = Zygote.gradient(() -> sum(asode(x)), Flux.params(x, asode.nde))
 
 # Augmented Neural CDDE
 adode = AugmentedNDELayer(
-    NeuralCDDE(fastddudt, (0.0f0, 2.0f0), (p, t) -> zeros(Float32, 4), (1f-1, 2f-1),
+    NeuralCDDE(fluxddudt, (0.0f0, 2.0f0), (p, t) -> zeros(Float32, 4), (1f-1, 2f-1),
                MethodOfSteps(Tsit5()), saveat=0.0:0.1:2.0), 2
 )
 adode(x)
