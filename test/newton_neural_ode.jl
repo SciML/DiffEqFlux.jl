@@ -27,7 +27,7 @@ optprob = Optimization.OptimizationProblem(optf, nODE.p)
 
 res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters=100, callback=cb)
 @test loss_function(res.minimizer) < l1
-res = Optimization.solve(optprob, KrylovTrustRegion(), maxiters=100, callback=cb)
+res = Optimization.solve(optprob, OptimizationOptimJL.KrylovTrustRegion(), maxiters=100, callback=cb)
 @test loss_function(res.minimizer) < l1
 
 @info "ROCK2"
@@ -40,5 +40,5 @@ optprob = Optimization.OptimizationProblem(optfunc, nODE.p)
 
 res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters = 100, callback=cb)
 @test loss_function(res.minimizer) < l1
-res = Optimization.solve(optprob, KrylovTrustRegion(), maxiters = 100, callback=cb)
+res = Optimization.solve(optprob, OptimizationOptimJL.KrylovTrustRegion(), maxiters = 100, callback=cb)
 @test loss_function(res.minimizer) < l1
