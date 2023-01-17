@@ -44,7 +44,7 @@ res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.0001))
 
 # Same stuff with Lux
 rng = Random.default_rng()
-dudt2 = Lux.Chain(ActivationFunction(x -> x.^3),Lux.Dense(6,50,tanh),Lux.Dense(50,2))
+dudt2 = Lux.Chain(x -> x.^3,Lux.Dense(6,50,tanh),Lux.Dense(50,2))
 p, st = Lux.setup(rng, dudt2)
 p = Lux.ComponentArray(p)
 ndae = NeuralDAE(dudt2, (u,p,t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler(),
