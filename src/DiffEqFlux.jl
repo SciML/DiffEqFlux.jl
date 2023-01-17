@@ -7,7 +7,7 @@ using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
     Reexport, SciMLBase, TerminalLoggers, Zygote, ZygoteRules
 
 @reexport using SciMLSensitivity
-using Flux
+@reexport using Flux
 using Functors
 
 import ChainRulesCore
