@@ -6,7 +6,7 @@ xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))
 tspan = (0.0f0, 1.0f0)
 fluxdudt = Flux.Chain(Flux.Dense(4, 50, tanh), Flux.Dense(50, 4))
 fluxdudt2 = Flux.Chain(Flux.Dense(4, 50, tanh), Flux.Dense(50, 4))
-fluxdudt22 = Flux.Chain(Flux.Dense(4, 50, tanh), Flux.Dense(50, 16), (x, p) -> reshape(x, 4, 4))
+fluxdudt22 = Flux.Chain(Flux.Dense(4, 50, tanh), Flux.Dense(50, 16), x -> reshape(x, 4, 4))
 fluxddudt = Flux.Chain(Flux.Dense(12, 50, tanh), Flux.Dense(50, 4))
 
 # Augmented Neural ODE
