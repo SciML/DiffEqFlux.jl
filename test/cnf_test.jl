@@ -244,7 +244,7 @@ end
     end
 
     adtype = Optimization.AutoZygote()
-    optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+    optf = Optimization.OptimizationFunction((θ,_) -> loss(θ), adtype)
     optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
     res = Optimization.solve(optprob, ADAM(0.1); callback= callback, maxiters=10)
 
