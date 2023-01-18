@@ -1,4 +1,4 @@
-using DiffEqFlux, Zygote, Lux, Optimization, OrdinaryDiffEq, Test, Random
+using DiffEqFlux, Zygote, Lux, Optimization, OptimizationFlux, OrdinaryDiffEq, Test, Random
 using DiffEqFlux: group_ranges
 rng = Random.default_rng()
 
@@ -52,8 +52,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_single_shooting(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_single_shooting = Optimization.solve(loss_single_shooting, p_init,
-                                          ADAM(0.05),
+res_single_shooting = Optimization.solve(optprob, ADAM(0.05),
 										  maxiters = 300)
 
 loss_ss, _ = loss_single_shooting(res_single_shooting.minimizer)
@@ -72,8 +71,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_multiple_shooting(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms = Optimization.solve(optprob,
-                            ADAM(0.05), maxiters = 300)
+res_ms = Optimization.solve(optprob, ADAM(0.05), maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
 loss_ms, _ = loss_single_shooting(res_ms.minimizer)
@@ -97,8 +95,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_multiple_shooting_abs2(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms_abs2 = Optimization.solve(optprob,
-                                     ADAM(0.05), maxiters = 300)
+res_ms_abs2 = Optimization.solve(optprob, ADAM(0.05), maxiters = 300)
 
 loss_ms_abs2, _ = loss_single_shooting(res_ms_abs2.minimizer)
 println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
@@ -115,8 +112,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_multiple_shooting_fd(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms_fd = Optimization.solve(optprob,
-                                ADAM(0.05), maxiters = 300)
+res_ms_fd = Optimization.solve(optprob, ADAM(0.05), maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
 loss_ms_fd, _ = loss_single_shooting(res_ms_fd.minimizer)
