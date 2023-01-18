@@ -31,7 +31,7 @@ p_init, st = Lux.setup(rng, nn)
 p_init = Lux.ComponentArray(p_init)
 
 neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
-pprob_node = ODEProblem((u,p,t)->nn(u,p,st)[1], u0, tspan, p_init)
+prob_node = ODEProblem((u,p,t)->nn(u,p,st)[1], u0, tspan, p_init)
 
 function predict_single_shooting(p)
     return Array(neuralode(u0, p, st)[1])
