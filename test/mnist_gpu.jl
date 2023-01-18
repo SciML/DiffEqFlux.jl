@@ -13,10 +13,10 @@ function loadmnist(batchsize = bs)
     mnist = MNIST(split = :train)
     imgs, labels_raw = mnist.features, mnist.targets
 	# Process images into (H,W,C,BS) batches
-	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |> gpu
+	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |> Flux.gpu
 	x_train = batchview(x_train,batchsize)
 	# Onehot and batch the labels
-	y_train = onehot(labels_raw) |> gpu
+	y_train = onehot(labels_raw) |> Flux.gpu
 	y_train = batchview(y_train,batchsize)
 	return x_train, y_train
 end
@@ -33,7 +33,7 @@ nn = Flux.Chain(
             Flux.Dense(20,10,tanh),
             Flux.Dense(10,10,tanh),
             Flux.Dense(10,20,tanh)
-          ) |> gpu
+          ) |> Flux.gpu
 fc = Flux.Chain(Flux.Dense(20,10)) |> Flux.gpu
 
 nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
