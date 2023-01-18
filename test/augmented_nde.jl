@@ -1,4 +1,5 @@
-using DiffEqFlux, Flux, Lux, Zygote, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
+using DiffEqFlux, Flux, Zygote, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
+import Lux
 
 x = Float32[2.; 0.]
 xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.]))
