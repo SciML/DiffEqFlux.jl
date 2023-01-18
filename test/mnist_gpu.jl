@@ -27,19 +27,19 @@ x_train, y_train = loadmnist(bs)
 
 down = Flux.Chain(x->reshape(x,(28*28,:)),
             Flux.Dense(784,20,tanh)
-            ) |> gpu
+            ) |> Flux.gpu
 nfe = 0
 nn = Flux.Chain(
             Flux.Dense(20,10,tanh),
             Flux.Dense(10,10,tanh),
             Flux.Dense(10,20,tanh)
           ) |> gpu
-fc = Flux.Chain(Flux.Dense(20,10)) |> gpu
+fc = Flux.Chain(Flux.Dense(20,10)) |> Flux.gpu
 
 nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                         save_everystep = false,
                         reltol = 1e-3, abstol = 1e-3,
-                        save_start = false) |> gpu
+                        save_start = false) |> Flux.gpu
 
 """
     DiffEqArray_to_Array(x)
@@ -57,7 +57,7 @@ m = Flux.Chain(down,
     DiffEqArray_to_Array,
     fc) |> gpu
 #We can also build the model topology without a NN-ODE
-m_no_ode = Flux.Chain(down, nn, fc) |> gpu
+m_no_ode = Flux.Chain(down, nn, fc) |> Flux.gpu
 
 #To understand the intermediate NN-ODE layer, we can examine it's dimensionality
 x_d = down(x_train[1])
