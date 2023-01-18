@@ -1,4 +1,4 @@
-using DiffEqFlux, OrdinaryDiffEq, ReverseDiff, Test
+using DiffEqFlux, Zygote, OrdinaryDiffEq, ReverseDiff, Test
 
 # Checks for Shapes and Non-Zero Gradients
 u0 = rand(Float32, 6, 1)

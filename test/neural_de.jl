@@ -1,4 +1,4 @@
-using DiffEqFlux, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
+using DiffEqFlux, Zygote, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
 
 mp = Float32[0.1,0.1]
 x = Float32[2.; 0.]

@@ -1,4 +1,4 @@
-using DiffEqFlux, Optimization, OrdinaryDiffEq
+using DiffEqFlux, Zygote, Optimization, OrdinaryDiffEq
 
 #A desired MWE for now, not a test yet.
 

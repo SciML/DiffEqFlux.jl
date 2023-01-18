@@ -1,4 +1,4 @@
-using DiffEqFlux, CUDA, OrdinaryDiffEq, StochasticDiffEq, Test
+using DiffEqFlux, CUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test
 
 CUDA.allowscalar(false)
 

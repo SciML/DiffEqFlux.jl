@@ -1,4 +1,4 @@
-using DiffEqFlux, CUDA, MLDatasets, OrdinaryDiffEq, Printf, Test
+using DiffEqFlux, CUDA, Zygote, MLDatasets, OrdinaryDiffEq, Printf, Test
 using Flux.Losses: logitcrossentropy
 using Flux.Data: DataLoader
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs

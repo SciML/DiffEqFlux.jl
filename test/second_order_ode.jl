@@ -1,4 +1,4 @@
-using DiffEqFlux, Lux, Random, Optimization, OrdinaryDiffEq, RecursiveArrayTools
+using DiffEqFlux, Lux, Zygote, Random, Optimization, OrdinaryDiffEq, RecursiveArrayTools
 rng = Random.default_rng()
 
 u0 = Float32[0.; 2.]

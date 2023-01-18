@@ -1,4 +1,4 @@
-using DiffEqFlux, Lux, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Test
+using DiffEqFlux, Lux, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Test
 rng = Random.default_rng()
 
 #A desired MWE for now, not a test yet.

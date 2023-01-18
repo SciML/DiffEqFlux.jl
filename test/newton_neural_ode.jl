@@ -1,4 +1,4 @@
-using DiffEqFlux, Flux, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
+using DiffEqFlux, Flux, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
 
 Random.seed!(100)
 

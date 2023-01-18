@@ -1,4 +1,4 @@
-using DiffEqFlux, CUDA, MLDataUtils, NNlib, OrdinaryDiffEq, Test
+using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test
 using Flux.Losses: logitcrossentropy
 using MLDatasets: MNIST
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
