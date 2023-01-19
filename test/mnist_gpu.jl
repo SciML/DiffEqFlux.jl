@@ -74,8 +74,8 @@ function accuracy(model,data; n_batches=100)
     total_correct = 0
     total = 0
     for (x,y) in collect(data)[1:n_batches]
-        target_class = classify(cpu(y))
-        predicted_class = classify(cpu(model(x)))
+        target_class = classify(Flux.cpu(y))
+        predicted_class = classify(Flux.cpu(model(x)))
         total_correct += sum(target_class .== predicted_class)
         total += length(target_class)
     end
