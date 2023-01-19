@@ -20,10 +20,10 @@ function loadmnist(batchsize = bs, train_split = 0.9)
                                                          p = train_split)
     return (
         # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(gpu.(collect.((x_train, y_train))); batchsize = batchsize,
+        DataLoader(Flux.gpu.(collect.((x_train, y_train))); batchsize = batchsize,
                    shuffle = true),
         # Don't shuffle the test data
-        DataLoader(gpu.(collect.((x_test, y_test))); batchsize = batchsize,
+        DataLoader(Flux.gpu.(collect.((x_test, y_test))); batchsize = batchsize,
                    shuffle = false)
     )
 end
@@ -33,23 +33,23 @@ const bs = 128
 const train_split = 0.9
 train_dataloader, test_dataloader = loadmnist(bs, train_split)
 
-down = Flux.Chain(Conv((3, 3), 1=>64, relu, stride = 1), GroupNorm(64, 64),
-             Conv((4, 4), 64=>64, relu, stride = 2, pad=1), GroupNorm(64, 64),
-             Conv((4, 4), 64=>64, stride = 2, pad = 1)) |>gpu
+down = Flux.Chain(Flux.Conv((3, 3), 1=>64, relu, stride = 1), GroupNorm(64, 64),
+             Flux.Conv((4, 4), 64=>64, relu, stride = 2, pad=1), GroupNorm(64, 64),
+             Flux.Conv((4, 4), 64=>64, stride = 2, pad = 1)) |>Flux.gpu
 
-dudt = Flux.Chain(Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
-             Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |>gpu
+dudt = Flux.Chain(Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
+             Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |>Flux.gpu
 
 fc = Flux.Chain(GroupNorm(64, 64), x -> relu.(x), MeanPool((6, 6)),
-           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> gpu
+           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> Flux.gpu
 
 nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |> gpu
+                   save_start = false) |> Flux.gpu
 
 function DiffEqArray_to_Array(x)
-    xarr = gpu(x)
+    xarr = Flux.gpu(x)
     return xarr[:,:,:,:,1]
 end
 
@@ -76,8 +76,8 @@ function accuracy(model, data; n_batches = 10)
     for (i, (x, y)) in enumerate(data)
         # Only evaluate accuracy for n_batches
         i > n_batches && break
-        target_class = classify(cpu(y))
-        predicted_class = classify(cpu(model(x)))
+        target_class = classify(Flux.cpu(y))
+        predicted_class = classify(Flux.cpu(model(x)))
         total_correct += sum(target_class .== predicted_class)
         total += length(target_class)
     end
