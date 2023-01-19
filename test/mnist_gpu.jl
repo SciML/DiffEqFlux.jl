@@ -55,7 +55,8 @@ end
 m = Flux.Chain(down,
     nn_ode,
     DiffEqArray_to_Array,
-    fc) |> gpu
+    fc) |> Flux.gpu
+
 #We can also build the model topology without a NN-ODE
 m_no_ode = Flux.Chain(down, nn, fc) |> Flux.gpu
 
