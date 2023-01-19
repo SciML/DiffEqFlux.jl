@@ -47,7 +47,7 @@ nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
 Cheap conversion of a `DiffEqArray` instance to a Matrix.
 """
 function DiffEqArray_to_Array(x)
-    xarr = gpu(x)
+    xarr = Flux.gpu(x)
     return reshape(xarr, size(xarr)[1:2])
 end
 
