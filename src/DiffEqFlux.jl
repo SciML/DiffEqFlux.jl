@@ -4,7 +4,7 @@ using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
     DiffEqBase, Distributions, DistributionsAD,
     ForwardDiff, LinearAlgebra, Lux,
     Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
-    Reexport, SciMLBase, TerminalLoggers
+    Reexport, SciMLBase, TerminalLoggers, Zygote
 
 @reexport using SciMLSensitivity
 @reexport using Flux
