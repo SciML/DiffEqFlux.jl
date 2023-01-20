@@ -57,7 +57,7 @@ function plot_contour(model, npoints = 300)
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
-    sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> cpu
+    sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> Flux.cpu
 
     return contour(x, y, sol, fill = true, linewidth=0.0)
 end
@@ -195,7 +195,7 @@ function plot_contour(model, npoints = 300)
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
-    sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> cpu
+    sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> Flux.cpu
 
     return contour(x, y, sol, fill = true, linewidth=0.0)
 end
