@@ -33,14 +33,14 @@ const bs = 128
 const train_split = 0.9
 train_dataloader, test_dataloader = loadmnist(bs, train_split)
 
-down = Flux.Chain(Flux.Conv((3, 3), 1=>64, relu, stride = 1), GroupNorm(64, 64),
-             Flux.Conv((4, 4), 64=>64, relu, stride = 2, pad=1), GroupNorm(64, 64),
+down = Flux.Chain(Flux.Conv((3, 3), 1=>64, relu, stride = 1), Flux.GroupNorm(64, 64),
+             Flux.Conv((4, 4), 64=>64, relu, stride = 2, pad=1), Flux.GroupNorm(64, 64),
              Flux.Conv((4, 4), 64=>64, stride = 2, pad = 1)) |>Flux.gpu
 
 dudt = Flux.Chain(Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
              Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |>Flux.gpu
 
-fc = Flux.Chain(GroupNorm(64, 64), x -> relu.(x), MeanPool((6, 6)),
+fc = Flux.Chain(Flux.GroupNorm(64, 64), x -> relu.(x), Flux.MeanPool((6, 6)),
            x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> Flux.gpu
 
 nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
