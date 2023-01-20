@@ -28,10 +28,10 @@ function loadmnist(batchsize = bs, train_split = 0.9)
                                                          p = train_split)
     return (
         # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(gpu.(collect.((x_train, y_train))); batchsize = batchsize,
+        DataLoader(Flux.gpu.(collect.((x_train, y_train))); batchsize = batchsize,
                    shuffle = true),
         # Don't shuffle the test data
-        DataLoader(gpu.(collect.((x_test, y_test))); batchsize = batchsize,
+        DataLoader(Flux.gpu.(collect.((x_test, y_test))); batchsize = batchsize,
                    shuffle = false)
     )
 end
@@ -43,21 +43,21 @@ train_dataloader, test_dataloader = loadmnist(bs, train_split)
 
 down = Flux.Chain(Flux.Conv((3, 3), 1=>64, relu, stride = 1), Flux.GroupNorm(64, 64),
              Flux.Conv((4, 4), 64=>64, relu, stride = 2, pad=1), Flux.GroupNorm(64, 64),
-             Flux.Conv((4, 4), 64=>64, stride = 2, pad = 1)) |>gpu
+             Flux.Conv((4, 4), 64=>64, stride = 2, pad = 1)) |> Flux.gpu
 
 dudt = Flux.Chain(Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
-             Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |>gpu
+             Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |> Flux.gpu
 
 fc = Flux.Chain(Flux.GroupNorm(64, 64), x -> relu.(x), Flux.MeanPool((6, 6)),
-           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> gpu
+           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> Flux.gpu
           
 nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |> gpu
+                   save_start = false) |> Flux.gpu
 
 function DiffEqArray_to_Array(x)
-    xarr = gpu(x)
+    xarr = Flux.gpu(x)
     return xarr[:,:,:,:,1]
 end
 
@@ -84,8 +84,8 @@ function accuracy(model, data; n_batches = 100)
     for (i, (x, y)) in enumerate(data)
         # Only evaluate accuracy for n_batches
         i > n_batches && break
-        target_class = classify(cpu(y))
-        predicted_class = classify(cpu(model(x)))
+        target_class = classify(Flux.cpu(y))
+        predicted_class = classify(Flux.cpu(model(x)))
         total_correct += sum(target_class .== predicted_class)
         total += length(target_class)
     end
@@ -174,10 +174,10 @@ function loadmnist(batchsize = bs, train_split = 0.9)
                                                          p = train_split)
     return (
         # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(gpu.(collect.((x_train, y_train))); batchsize = batchsize,
+        DataLoader(Flux.gpu.(collect.((x_train, y_train))); batchsize = batchsize,
                    shuffle = true),
         # Don't shuffle the test data
-        DataLoader(gpu.(collect.((x_test, y_test))); batchsize = batchsize,
+        DataLoader(Flux.gpu.(collect.((x_test, y_test))); batchsize = batchsize,
                    shuffle = false)
     )
 end
@@ -202,18 +202,18 @@ to the next. Four different sets of layers are used here:
 ```julia
 down = Flux.Chain(Flux.Conv((3, 3), 1=>64, relu, stride = 1), Flux.GroupNorm(64, 64),
              Flux.Conv((4, 4), 64=>64, relu, stride = 2, pad=1), Flux.GroupNorm(64, 64),
-             Flux.Conv((4, 4), 64=>64, stride = 2, pad = 1)) |>gpu
+             Flux.Conv((4, 4), 64=>64, stride = 2, pad = 1)) |> Flux.gpu
 
 dudt = Flux.Chain(Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
-             Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |>gpu
+             Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |> Flux.gpu
 
 fc = Flux.Chain(Flux.GroupNorm(64, 64), x -> relu.(x), Flux.MeanPool((6, 6)),
-           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> gpu
+           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> Flux.gpu
           
 nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |> gpu
+                   save_start = false) |> Flux.gpu
 ```
 
 `down`: This layer downsamples our images into `6 x 6 x 64` dimensional features.
@@ -237,7 +237,7 @@ from the ODE solver into a Matrix that can be used in the following layer:
 
 ```julia
 function DiffEqArray_to_Array(x)
-    xarr = gpu(x)
+    xarr = Flux.gpu(x)
     return xarr[:,:,:,:,1]
 end
 ```
@@ -275,7 +275,7 @@ This can also be built without the NN-ODE by replacing `nn-ode` with a simple `n
 
 ```julia
 # We can also build the model topology without a NN-ODE
-m_no_ode = Flux.Chain(down, nn, fc) |> gpu
+m_no_ode = Flux.Chain(down, nn, fc) |> Flux.gpu
 
 x_m = m_no_ode(img)
 ```
@@ -300,8 +300,8 @@ function accuracy(model, data; n_batches = 100)
     for (i, (x, y)) in enumerate(data)
         # Only evaluate accuracy for n_batches
         i > n_batches && break
-        target_class = classify(cpu(y))
-        predicted_class = classify(cpu(model(x)))
+        target_class = classify(Flux.cpu(y))
+        predicted_class = classify(Flux.cpu(model(x)))
         total_correct += sum(target_class .== predicted_class)
         total += length(target_class)
     end
