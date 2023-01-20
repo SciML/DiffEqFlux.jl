@@ -36,16 +36,16 @@ diffeqarray_to_array(x) = reshape(Flux.gpu(x), size(x)[1:2])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
-    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
-                           Dense(hidden_dim, hidden_dim, relu),
-                           Dense(hidden_dim, input_dim)) |> Flux.gpu,
+    node = NeuralODE(Flux.Chain(Flux.Dense(input_dim, hidden_dim, relu),
+                           Flux.Dense(hidden_dim, hidden_dim, relu),
+                           Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
                      (0.f0, 1.f0), Tsit5(), save_everystep = false,
                      reltol = 1e-3, abstol = 1e-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
-    return Chain((x, p=node.p) -> node(x, p),
+    return Flux.Chain((x, p=node.p) -> node(x, p),
                  Array,
                  diffeqarray_to_array,
-                 Dense(input_dim, out_dim) |> Flux.gpu), node.p |> Flux.gpu
+                 Flux.Dense(input_dim, out_dim) |> Flux.gpu), node.p |> Flux.gpu
 end
 
 function plot_contour(model, npoints = 300)
@@ -168,16 +168,16 @@ diffeqarray_to_array(x) = reshape(Flux.gpu(x), size(x)[1:2])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
-    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
-                           Dense(hidden_dim, hidden_dim, relu),
-                           Dense(hidden_dim, input_dim)) |> Flux.gpu,
+    node = NeuralODE(Flux.Chain(Flux.Dense(input_dim, hidden_dim, relu),
+                           Flux.Dense(hidden_dim, hidden_dim, relu),
+                           Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
                      (0.f0, 1.f0), Tsit5(), save_everystep = false,
                      reltol = 1e-3, abstol = 1e-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : (AugmentedNDELayer(node, augment_dim) |> Flux.gpu)
-    return Chain((x, p=node.p) -> node(x, p),
+    return Flux.Chain((x, p=node.p) -> node(x, p),
                  Array,
                  diffeqarray_to_array,
-                 Dense(input_dim, out_dim) |> Flux.gpu), node.p |> Flux.gpu
+                 Flux.Dense(input_dim, out_dim) |> Flux.gpu), node.p |> Flux.gpu
 end
 ```
 
