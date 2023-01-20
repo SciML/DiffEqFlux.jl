@@ -1,5 +1,5 @@
-using DiffEqFlux, Distances, Distributions, DistributionsAD, Optimization,
-    LinearAlgebra, OrdinaryDiffEq, Random, Test
+using DiffEqFlux, Zygote, Distances, Distributions, DistributionsAD, Optimization,
+    LinearAlgebra, OrdinaryDiffEq, Random, Test, OptimizationFlux
 
 Random.seed!(1999)
 
@@ -31,25 +31,33 @@ end
             regularize = false
             monte_carlo = false
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test_broken !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
     end
     @testset "AutoReverseDiff as adtype" begin
@@ -58,23 +66,30 @@ end
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
             monte_carlo = false
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
-
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test_broken !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
     end
     @testset "AutoTracker as adtype" begin
@@ -83,23 +98,30 @@ end
         @testset "regularize=false & monte_carlo=false" begin
             regularize = false
             monte_carlo = false
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
-
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test_broken !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
     end
     @testset "AutoZygote as adtype" begin
@@ -109,25 +131,33 @@ end
             regularize = false
             monte_carlo = false
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
 
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test_broken !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
     end
     @testset "AutoFiniteDiff as adtype" begin
@@ -137,25 +167,31 @@ end
             regularize = false
             monte_carlo = false
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=false & monte_carlo=true" begin
             regularize = false
             monte_carlo = true
 
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=false" begin
             regularize = true
             monte_carlo = false
-
-            @test_broken !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test_broken !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
         @testset "regularize=true & monte_carlo=true" begin
             regularize = true
             monte_carlo = true
-
-            @test !isnothing(DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=10))
+            optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+            optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+            @test !isnothing(Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=10))
         end
     end
 end
@@ -179,7 +215,10 @@ end
     regularize = false
     monte_carlo = false
 
-    res = DiffEqFlux.sciml_train(θ -> loss(θ; regularize, monte_carlo), ffjord_mdl.p, ADAM(1f-1), adtype; callback= callback, maxiters=10)
+    optf = Optimization.OptimizationFunction((θ,_) -> loss(θ; regularize, monte_carlo), adtype)
+    optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+    res = Optimization.solve(optprob, ADAM(0.1); callback= callback, maxiters=10)
+
     ffjord_d = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res.u); regularize, monte_carlo)
 
     @test !isnothing(pdf(ffjord_d, train_data))
@@ -205,7 +244,9 @@ end
     end
 
     adtype = Optimization.AutoZygote()
-    res = DiffEqFlux.sciml_train(loss, ffjord_mdl.p, ADAM(1f-1), adtype; callback= callback, maxiters=100)
+    optf = Optimization.OptimizationFunction((θ,_) -> loss(θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+    res = Optimization.solve(optprob, ADAM(0.1); callback= callback, maxiters=10)
 
     actual_pdf = pdf.(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
@@ -233,7 +274,9 @@ end
     end
 
     adtype = Optimization.AutoZygote()
-    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=100)
+    optf = Optimization.OptimizationFunction((θ,_) -> loss(θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, 0.01f0 * ffjord_mdl.p)
+    res = Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=300)
 
     actual_pdf = pdf.(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
@@ -262,7 +305,9 @@ end
     end
 
     adtype = Optimization.AutoZygote()
-    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=300)
+    optf = Optimization.OptimizationFunction((θ,_) -> loss(θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, 0.01f0 * ffjord_mdl.p)
+    res = Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=300)
 
     actual_pdf = pdf(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
@@ -291,7 +336,9 @@ end
     end
 
     adtype = Optimization.AutoZygote()
-    res = DiffEqFlux.sciml_train(loss, 0.01f0 * ffjord_mdl.p, ADAM(1f-1), adtype; callback = callback, maxiters=300)
+    optf = Optimization.OptimizationFunction((θ,_) -> loss(θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, 0.01f0 * ffjord_mdl.p)
+    res = Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=300)
 
     actual_pdf = pdf(data_dist, test_data)
     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])

@@ -28,24 +28,24 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
     end
     data = cat(data..., dims=2)
     labels = cat(labels..., dims=2)
-    DataLoader((data |> gpu, labels |> gpu); batchsize=batch_size, shuffle=true,
+    DataLoader((data |> Flux.gpu, labels |> Flux.gpu); batchsize=batch_size, shuffle=true,
                       partial=false)
 end
 
-diffeqarray_to_array(x) = reshape(gpu(x), size(x)[1:2])
+diffeqarray_to_array(x) = reshape(Flux.gpu(x), size(x)[1:2])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
-    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
-                           Dense(hidden_dim, hidden_dim, relu),
-                           Dense(hidden_dim, input_dim)) |> gpu,
+    node = NeuralODE(Flux.Chain(Flux.Dense(input_dim, hidden_dim, relu),
+                           Flux.Dense(hidden_dim, hidden_dim, relu),
+                           Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
                      (0.f0, 1.f0), Tsit5(), save_everystep = false,
-                     reltol = 1e-3, abstol = 1e-3, save_start = false) |> gpu
+                     reltol = 1e-3, abstol = 1e-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
-    return Chain((x, p=node.p) -> node(x, p),
+    return Flux.Chain((x, p=node.p) -> node(x, p),
                  Array,
                  diffeqarray_to_array,
-                 Dense(input_dim, out_dim) |> gpu), node.p |> gpu
+                 Flux.Dense(input_dim, out_dim) |> Flux.gpu), node.p |> Flux.gpu
 end
 
 function plot_contour(model, npoints = 300)
@@ -57,7 +57,7 @@ function plot_contour(model, npoints = 300)
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
-    sol = reshape(model(grid_points |> gpu), npoints, npoints) |> cpu
+    sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> Flux.cpu
 
     return contour(x, y, sol, fill = true, linewidth=0.0)
 end
@@ -146,7 +146,7 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
     end
     data = cat(data..., dims=2)
     labels = cat(labels..., dims=2)
-    return DataLoader((data |> gpu, labels |> gpu); batchsize=batch_size, shuffle=true,
+    return DataLoader((data |> Flux.gpu, labels |> Flux.gpu); batchsize=batch_size, shuffle=true,
                       partial=false)
 end
 ```
@@ -160,24 +160,24 @@ DE Layer by appending zeros. So in order to use any arbitrary DE Layer in combin
 simply assume that the input to the DE Layer is of size `size(x, 1) + augment_dim` instead of `size(x, 1)`
 and construct that layer accordingly.
 
-In order to run the models on GPU, we need to manually transfer the models to GPU. First one is the network
+In order to run the models on Flux.gpu, we need to manually transfer the models to Flux.gpu. First one is the network
 predicting the derivatives inside the Neural ODE and the other one is the last layer in the Chain.
 
 ```@example augneuralode
-diffeqarray_to_array(x) = reshape(gpu(x), size(x)[1:2])
+diffeqarray_to_array(x) = reshape(Flux.gpu(x), size(x)[1:2])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
-    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
-                           Dense(hidden_dim, hidden_dim, relu),
-                           Dense(hidden_dim, input_dim)) |> gpu,
+    node = NeuralODE(Flux.Chain(Flux.Dense(input_dim, hidden_dim, relu),
+                           Flux.Dense(hidden_dim, hidden_dim, relu),
+                           Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
                      (0.f0, 1.f0), Tsit5(), save_everystep = false,
-                     reltol = 1e-3, abstol = 1e-3, save_start = false) |> gpu
-    node = augment_dim == 0 ? node : (AugmentedNDELayer(node, augment_dim) |> gpu)
-    return Chain((x, p=node.p) -> node(x, p),
+                     reltol = 1e-3, abstol = 1e-3, save_start = false) |> Flux.gpu
+    node = augment_dim == 0 ? node : (AugmentedNDELayer(node, augment_dim) |> Flux.gpu)
+    return Flux.Chain((x, p=node.p) -> node(x, p),
                  Array,
                  diffeqarray_to_array,
-                 Dense(input_dim, out_dim) |> gpu), node.p |> gpu
+                 Flux.Dense(input_dim, out_dim) |> Flux.gpu), node.p |> Flux.gpu
 end
 ```
 
@@ -195,7 +195,7 @@ function plot_contour(model, npoints = 300)
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
-    sol = reshape(model(grid_points |> gpu), npoints, npoints) |> cpu
+    sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> Flux.cpu
 
     return contour(x, y, sol, fill = true, linewidth=0.0)
 end

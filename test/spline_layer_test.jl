@@ -1,4 +1,4 @@
-using DiffEqFlux, DataInterpolations, Distributions, Optimization, LinearAlgebra, Test
+using DiffEqFlux, Zygote, DataInterpolations, Distributions, Optimization, LinearAlgebra, Test
 
 function run_test(f, layer, atol)
 

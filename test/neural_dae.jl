@@ -1,4 +1,4 @@
-using DiffEqFlux, Optimization, OrdinaryDiffEq
+using DiffEqFlux, Zygote, Optimization, OrdinaryDiffEq
 
 #A desired MWE for now, not a test yet.
 
@@ -37,6 +37,32 @@ function loss(p)
 end
 
 p = p .+ rand(3) .* p
+
+optfunc = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoZygote())
+optprob = Optimization.OptimizationProblem(optfunc, p)
+res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.0001))
+
+# Same stuff with Lux
+rng = Random.default_rng()
+dudt2 = Lux.Chain(x -> x.^3,Lux.Dense(6,50,tanh),Lux.Dense(50,2))
+p, st = Lux.setup(rng, dudt2)
+p = Lux.ComponentArray(p)
+ndae = NeuralDAE(dudt2, (u,p,t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler(),
+                        differential_vars = [true,true,false])
+truedu0 = similar(u₀)
+f(truedu0,u₀,p,0.0)
+
+ndae(u₀,p,st,truedu0)
+
+function predict_n_dae(p)
+    ndae(u₀,p,st)[1]
+end
+
+function loss(p)
+    pred = predict_n_dae(p)
+    loss = sum(abs2,sol .- pred)
+    loss,pred
+end
 
 optfunc = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoZygote())
 optprob = Optimization.OptimizationProblem(optfunc, p)
