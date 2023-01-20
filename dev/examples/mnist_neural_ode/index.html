@@ -17,10 +17,10 @@ function loadmnist(batchsize = bs)
     mnist = MNIST(split = :train)
     imgs, labels_raw = mnist.features, mnist.targets
 	# Process images into (H,W,C,BS) batches
-	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |&gt; gpu
+	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |&gt; Flux.gpu
 	x_train = batchview(x_train,batchsize)
 	# Onehot and batch the labels
-	y_train = onehot(labels_raw) |&gt; gpu
+	y_train = onehot(labels_raw) |&gt; Flux.gpu
 	y_train = batchview(y_train,batchsize)
 	return x_train, y_train
 end
@@ -29,22 +29,22 @@ end
 const bs = 128
 x_train, y_train = loadmnist(bs)
 
-down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |&gt; gpu
+down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |&gt; Flux.gpu
 
 nn = Flux.Chain(Flux.Dense(20, 10, tanh),
            Flux.Dense(10, 10, tanh),
-           Flux.Dense(10, 20, tanh)) |&gt; gpu
+           Flux.Dense(10, 20, tanh)) |&gt; Flux.gpu
 
 
 nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |&gt; gpu
+                   save_start = false) |&gt; Flux.gpu
 
-fc  = Flux.Chain(Flux.Dense(20, 10)) |&gt; gpu
+fc  = Flux.Chain(Flux.Dense(20, 10)) |&gt; Flux.gpu
 
 function DiffEqArray_to_Array(x)
-    xarr = gpu(x)
+    xarr = Flux.gpu(x)
     return reshape(xarr, size(xarr)[1:2])
 end
 
@@ -52,7 +52,7 @@ end
 model = Flux.Chain(down,
               nn_ode,
               DiffEqArray_to_Array,
-              fc) |&gt; gpu;
+              fc) |&gt; Flux.gpu;
 
 # To understand the intermediate NN-ODE layer, we can examine it&#39;s dimensionality
 img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
@@ -71,8 +71,8 @@ function accuracy(model, data; n_batches = 100)
     for (i, (x, y)) in enumerate(collect(data))
         # Only evaluate accuracy for n_batches
         i &gt; n_batches &amp;&amp; break
-        target_class = classify(cpu(y))
-        predicted_class = classify(cpu(model(x)))
+        target_class = classify(Flux.cpu(y))
+        predicted_class = classify(Flux.cpu(model(x)))
         total_correct += sum(target_class .== predicted_class)
         total += length(target_class)
     end
@@ -115,34 +115,34 @@ CUDA.allowscalar(false)</code></pre><p>ensures that only optimized kernels are c
     mnist = MNIST(split = :train)
     imgs, labels_raw = mnist.features, mnist.targets
 	# Process images into (H,W,C,BS) batches
-	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |&gt; gpu
+	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |&gt; Flux.gpu
 	x_train = batchview(x_train,batchsize)
 	# Onehot and batch the labels
-	y_train = onehot(labels_raw) |&gt; gpu
+	y_train = onehot(labels_raw) |&gt; Flux.gpu
 	y_train = batchview(y_train,batchsize)
 	return x_train, y_train
 end</code></pre><p>and then loaded from main:</p><pre><code class="language-julia hljs"># Main
 const bs = 128
-x_train, y_train = loadmnist(bs)</code></pre><h3 id="Layers"><a class="docs-heading-anchor" href="#Layers">Layers</a><a id="Layers-1"></a><a class="docs-heading-anchor-permalink" href="#Layers" title="Permalink"></a></h3><p>The Neural Network requires passing inputs sequentially through multiple layers. We use <code>Chain</code> which allows inputs to functions to come from the previous layer and sends the outputs to the next. Four different sets of layers are used here:</p><pre><code class="language-julia hljs">down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |&gt; gpu
+x_train, y_train = loadmnist(bs)</code></pre><h3 id="Layers"><a class="docs-heading-anchor" href="#Layers">Layers</a><a id="Layers-1"></a><a class="docs-heading-anchor-permalink" href="#Layers" title="Permalink"></a></h3><p>The Neural Network requires passing inputs sequentially through multiple layers. We use <code>Chain</code> which allows inputs to functions to come from the previous layer and sends the outputs to the next. Four different sets of layers are used here:</p><pre><code class="language-julia hljs">down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |&gt; Flux.gpu
 
 nn = Flux.Chain(Flux.Dense(20, 10, tanh),
            Flux.Dense(10, 10, tanh),
-           Flux.Dense(10, 20, tanh)) |&gt; gpu
+           Flux.Dense(10, 20, tanh)) |&gt; Flux.gpu
 
 
 nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |&gt; gpu
+                   save_start = false) |&gt; Flux.gpu
 
-fc  = Flux.Chain(Flux.Dense(20, 10)) |&gt; gpu</code></pre><p><code>down</code>: This layer downsamples our images into a 20 dimensional feature vector.         It takes a 28 x 28 image, flattens it, and then passes it through a fully connected         layer with <code>tanh</code> activation</p><p><code>nn</code>: A 3 layers Deep Neural Network Chain with <code>tanh</code> activation which is used to model       our differential equation</p><p><code>nn_ode</code>: ODE solver layer</p><p><code>fc</code>: The final fully connected layer which maps our learned feature vector to the probability of       the feature vector of belonging to a particular class</p><p><code>|&gt; gpu</code>: An utility function which transfers our model to GPU, if it is available</p><h3 id="Array-Conversion"><a class="docs-heading-anchor" href="#Array-Conversion">Array Conversion</a><a id="Array-Conversion-1"></a><a class="docs-heading-anchor-permalink" href="#Array-Conversion" title="Permalink"></a></h3><p>When using <code>NeuralODE</code>, this function converts the ODESolution&#39;s <code>DiffEqArray</code> to a Matrix (CuArray), and reduces the matrix from 3 to 2 dimensions for use in the next layer.</p><pre><code class="language-julia hljs">function DiffEqArray_to_Array(x)
-    xarr = gpu(x)
+fc  = Flux.Chain(Flux.Dense(20, 10)) |&gt; Flux.gpu</code></pre><p><code>down</code>: This layer downsamples our images into a 20 dimensional feature vector.         It takes a 28 x 28 image, flattens it, and then passes it through a fully connected         layer with <code>tanh</code> activation</p><p><code>nn</code>: A 3 layers Deep Neural Network Chain with <code>tanh</code> activation which is used to model       our differential equation</p><p><code>nn_ode</code>: ODE solver layer</p><p><code>fc</code>: The final fully connected layer which maps our learned feature vector to the probability of       the feature vector of belonging to a particular class</p><p><code>|&gt; gpu</code>: An utility function which transfers our model to GPU, if it is available</p><h3 id="Array-Conversion"><a class="docs-heading-anchor" href="#Array-Conversion">Array Conversion</a><a id="Array-Conversion-1"></a><a class="docs-heading-anchor-permalink" href="#Array-Conversion" title="Permalink"></a></h3><p>When using <code>NeuralODE</code>, this function converts the ODESolution&#39;s <code>DiffEqArray</code> to a Matrix (CuArray), and reduces the matrix from 3 to 2 dimensions for use in the next layer.</p><pre><code class="language-julia hljs">function DiffEqArray_to_Array(x)
+    xarr = Flux.gpu(x)
     return reshape(xarr, size(xarr)[1:2])
 end</code></pre><p>For CPU: If this function does not automatically fall back to CPU when no GPU is present, we can change <code>gpu(x)</code> to <code>Array(x)</code>.</p><h3 id="Build-Topology"><a class="docs-heading-anchor" href="#Build-Topology">Build Topology</a><a id="Build-Topology-1"></a><a class="docs-heading-anchor-permalink" href="#Build-Topology" title="Permalink"></a></h3><p>Next, we connect all layers together in a single chain:</p><pre><code class="language-julia hljs"># Build our overall model topology
 model = Flux.Chain(down,
               nn_ode,
               DiffEqArray_to_Array,
-              fc) |&gt; gpu;</code></pre><p>There are a few things we can do to examine the inner workings of our neural network:</p><pre><code class="language-julia hljs">img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
+              fc) |&gt; Flux.gpu;</code></pre><p>There are a few things we can do to examine the inner workings of our neural network:</p><pre><code class="language-julia hljs">img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
 
 # To understand the intermediate NN-ODE layer, we can examine it&#39;s dimensionality
 x_d = down(img)
@@ -152,7 +152,7 @@ x_d = down(img)
 x_m = model(img)</code></pre><p>This can also be built without the NN-ODE by replacing <code>nn-ode</code> with a simple <code>nn</code>:</p><pre><code class="language-julia hljs"># We can also build the model topology without a NN-ODE
 m_no_ode = Flux.Chain(down,
                  nn,
-                 fc) |&gt; gpu
+                 fc) |&gt; Flux.gpu
 
 x_m = m_no_ode(img)</code></pre><h3 id="Prediction"><a class="docs-heading-anchor" href="#Prediction">Prediction</a><a id="Prediction-1"></a><a class="docs-heading-anchor-permalink" href="#Prediction" title="Permalink"></a></h3><p>To convert the classification back into readable numbers, we use <code>classify</code> which returns the prediction by taking the arg max of the output for each column of the minibatch:</p><pre><code class="language-julia hljs">classify(x) = argmax.(eachcol(x))</code></pre><h3 id="Accuracy"><a class="docs-heading-anchor" href="#Accuracy">Accuracy</a><a id="Accuracy-1"></a><a class="docs-heading-anchor-permalink" href="#Accuracy" title="Permalink"></a></h3><p>We then evaluate the accuracy on <code>n_batches</code> at a time through the entire network:</p><pre><code class="language-julia hljs">function accuracy(model, data; n_batches = 100)
     total_correct = 0
@@ -160,8 +160,8 @@ x_m = m_no_ode(img)</code></pre><h3 id="Prediction"><a class="docs-heading-ancho
     for (i, (x, y)) in enumerate(collect(data))
         # Only evaluate accuracy for n_batches
         i &gt; n_batches &amp;&amp; break
-        target_class = classify(cpu(y))
-        predicted_class = classify(cpu(model(x)))
+        target_class = classify(Flux.cpu(y))
+        predicted_class = classify(Flux.cpu(model(x)))
         total_correct += sum(target_class .== predicted_class)
         total += length(target_class)
     end
@@ -226,4 +226,4 @@ Iter: 381 || Train Accuracy: 89.055 || Test Accuracy: 89.017
 Iter: 391 || Train Accuracy: 89.445 || Test Accuracy: 89.467
 Iter: 401 || Train Accuracy: 89.156 || Test Accuracy: 88.250
 Iter: 411 || Train Accuracy: 88.977 || Test Accuracy: 89.083
-Iter: 421 || Train Accuracy: 90.109 || Test Accuracy: 89.417</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../GPUs/">« Neural ODEs on GPUs</a><a class="docs-footer-nextpage" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Saturday 14 January 2023 17:03">Saturday 14 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Iter: 421 || Train Accuracy: 90.109 || Test Accuracy: 89.417</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../GPUs/">« Neural ODEs on GPUs</a><a class="docs-footer-nextpage" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 20 January 2023 21:24">Friday 20 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
