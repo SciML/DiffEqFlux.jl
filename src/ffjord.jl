@@ -43,7 +43,7 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{Abstrac
     args::A
     kwargs::K
 
-    function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,st=nothing,basedist=nothing,kwargs...)
+    function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,basedist=nothing,kwargs...)
         re = nothing
         p = nothing
         if isnothing(basedist)
@@ -51,12 +51,12 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{Abstrac
             type_input = eltype(tspan)
             basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
         end
-        new{typeof(model),typeof(p),typeof(st),typeof(re),
+        new{typeof(model),typeof(p),typeof(re),
           typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-          model,p,st,re,basedist,tspan,args,kwargs)
+          model,p,re,basedist,tspan,args,kwargs)
     end
 
-    function FFJORD(model, tspan, args...;p=nothing, st=nothing, basedist=nothing, kwargs...)
+    function FFJORD(model, tspan, args...;p=nothing, basedist=nothing, kwargs...)
         #
         _p, re = Flux.destructure(model)
         if isnothing(p)
@@ -67,10 +67,9 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{Abstrac
             type_input = eltype(model[1].weight)
             basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
         end
-        new{typeof(model),typeof(p),typeof(st),typeof(re),
+        new{typeof(model),typeof(p),typeof(re),
             typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-                model,p,st,re,basedist,tspan,args,kwargs)
-        # FFJORD(model, p, st, re, basedist, tspan, args, kwargs)
+                model,p,re,basedist,tspan,args,kwargs)
     end
 end
 
