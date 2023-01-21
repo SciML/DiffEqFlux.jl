@@ -1,16 +1,13 @@
 module DiffEqFlux
 
-using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
-    DiffEqBase, Distributions, DistributionsAD,
-    ForwardDiff, LinearAlgebra, Lux,
-    Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
-    Reexport, SciMLBase, TerminalLoggers, Zygote, ZygoteRules
+using Adapt, Base.Iterators, ChainRulesCore, ConsoleProgressMonitor,
+    DataInterpolations, DiffEqBase, Distributions, DistributionsAD,
+    ForwardDiff, Functors, LinearAlgebra, Logging, LoggingExtras, Lux,
+    Printf, ProgressLogging, Random, RecursiveArrayTools, Reexport,
+    SciMLBase, TerminalLoggers, Zygote, ZygoteRules
 
-@reexport using SciMLSensitivity
 @reexport using Flux
-using Functors
-
-import ChainRulesCore
+@reexport using SciMLSensitivity
 
 gpu_or_cpu(x) = Array
 
