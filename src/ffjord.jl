@@ -34,7 +34,7 @@ References:
 [3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
 
 """
-struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Union{Function, Nothing}, D <: Distribution, T, A, K}
+struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Union{Function, Nothing}, D <: Distribution, T, A, K}
     model::M
     p::P
     re::RE
