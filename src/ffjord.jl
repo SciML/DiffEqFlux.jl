@@ -1,6 +1,8 @@
 abstract type CNFLayer <: LuxCore.AbstractExplicitContainerLayer{(:model,)} end
 Flux.trainable(m::CNFLayer) = (m.p,)
 
+rng = Random.default_rng()
+
 """
 Constructs a continuous-time recurrent neural network, also known as a neural
 ordinary differential equation (neural ODE), with fast gradient calculation
@@ -201,11 +203,11 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
 end
 
 function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].weight), n_samples);
-                         regularize=false, monte_carlo=true, rng=nothing)
+                         regularize=false, monte_carlo=true, rng=nothing, st=nothing)
     px = n.basedist
     x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
     sensealg = InterpolatingAdjoint()
-    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, n.st; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, st; regularize, monte_carlo)
     if regularize
         _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
