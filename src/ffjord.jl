@@ -1,5 +1,6 @@
-abstract type CNFLayer <: Function end
+abstract type CNFLayer <: LuxCore.AbstractExplicitContainerLayer{(:model,)} end
 Flux.trainable(m::CNFLayer) = (m.p,)
+
 rng = Random.default_rng()
 
 """
@@ -35,33 +36,29 @@ References:
 [3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
 
 """
-struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, ST, RE <: Union{Function, Lux.AbstractExplicitLayer}, D <: Distribution, T, A, K}
+struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Union{Function, Nothing}, D <: Distribution, T, A, K}
     model::M
     p::P
-    st::ST
     re::RE
     basedist::D
     tspan::T
     args::A
     kwargs::K
 
-    function FFJORD(model::Lux.Chain,tspan,args...;p=nothing,st=nothing,basedist=nothing,kwargs...)
-        re = model
-        _p, st = Lux.setup(rng, model)
-        if isnothing(p)
-            p = _p
-        end
+    function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,basedist=nothing,kwargs...)
+        re = nothing
+        p = nothing
         if isnothing(basedist)
-            size_input = size(p.layer_1.weight, 2)
-            type_input = eltype(p.layer_1.weight)
+            size_input = model.layers.layer_1.in_dims
+            type_input = eltype(tspan)
             basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
         end
-        new{typeof(model),typeof(p),typeof(st),typeof(re),
+        new{typeof(model),typeof(p),typeof(re),
           typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-          model,p,st,re,basedist,tspan,args,kwargs)
+          model,p,re,basedist,tspan,args,kwargs)
     end
 
-    function FFJORD(model, tspan, args...;p=nothing, st=nothing, basedist=nothing, kwargs...)
+    function FFJORD(model, tspan, args...;p=nothing, basedist=nothing, kwargs...)
         #
         _p, re = Flux.destructure(model)
         if isnothing(p)
@@ -72,10 +69,9 @@ struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVecto
             type_input = eltype(model[1].weight)
             basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
         end
-        new{typeof(model),typeof(p),typeof(st),typeof(re),
+        new{typeof(model),typeof(p),typeof(re),
             typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-                model,p,st,re,basedist,tspan,args,kwargs)
-        # FFJORD(model, p, st, re, basedist, tspan, args, kwargs)
+                model,p,re,basedist,tspan,args,kwargs)
     end
 end
 
@@ -100,7 +96,7 @@ function jacobian_fn(f, x::AbstractMatrix, args...)
     copy(vec)
 end
 
-function jacobian_fn(f::Lux.Chain, x::AbstractMatrix, args...)
+function jacobian_fn(f::LuxCore.AbstractExplicitLayer, x::AbstractMatrix, args...)
     p,st = args
     y, back = Zygote.pullback((z,ps,s)->f(z,ps,s)[1], x, p, st)
     z = ChainRulesCore.@ignore_derivatives similar(y)
@@ -145,7 +141,7 @@ function ffjord(u, p, t, re, e, st;
     end
 end
 
-function ffjord(u, p, t, re::Lux.Chain, e, st;
+function ffjord(u, p, t, re::LuxCore.AbstractExplicitLayer, e, st;
     regularize=false, monte_carlo=true)
     if regularize
         z = u[1:end - 3, :]
@@ -172,14 +168,14 @@ function ffjord(u, p, t, re::Lux.Chain, e, st;
     end
 end
 
-# When running on GPU e needs to be passed separately
+# When running on GPU e needs to be passed separately, when using Lux pass st as a kwarg
 (n::FFJORD)(args...; kwargs...) = forward_ffjord(n, args...; kwargs...)
 
 function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
-                        regularize=false, monte_carlo=true)
+                        regularize=false, monte_carlo=true, st=nothing)
     pz = n.basedist
     sensealg = InterpolatingAdjoint()
-    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, n.st; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, st; regularize, monte_carlo)
     # ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
     if regularize
         _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
@@ -207,11 +203,11 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
 end
 
 function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].weight), n_samples);
-                         regularize=false, monte_carlo=true, rng=nothing)
+                         regularize=false, monte_carlo=true, rng=nothing, st=nothing)
     px = n.basedist
     x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
     sensealg = InterpolatingAdjoint()
-    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, n.st; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, st; regularize, monte_carlo)
     if regularize
         _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
