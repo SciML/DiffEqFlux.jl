@@ -41,11 +41,10 @@ include("collocation.jl")
 include("hnn.jl")
 include("multiple_shooting.jl")
 
-export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, 
+export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE,
        NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
 export HamiltonianNN
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
-export FastDense, StaticDense, initial_params
 export FFJORDDistribution
 export DimMover, FluxBatchOrder
 
