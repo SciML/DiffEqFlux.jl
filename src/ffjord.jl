@@ -1,6 +1,5 @@
-abstract type CNFLayer <: Function end
+abstract type CNFLayer <: LuxCore.AbstractExplicitContainerLayer{(:model,)} end
 Flux.trainable(m::CNFLayer) = (m.p,)
-rng = Random.default_rng()
 
 """
 Constructs a continuous-time recurrent neural network, also known as a neural
@@ -35,25 +34,21 @@ References:
 [3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
 
 """
-struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: AbstractVector{<: AbstractFloat}, ST, RE <: Union{Function, Lux.AbstractExplicitLayer}, D <: Distribution, T, A, K}
+struct FFJORD{M, P, ST, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Union{Function, Nothing}, D <: Distribution, T, A, K}
     model::M
     p::P
-    st::ST
     re::RE
     basedist::D
     tspan::T
     args::A
     kwargs::K
 
-    function FFJORD(model::Lux.Chain,tspan,args...;p=nothing,st=nothing,basedist=nothing,kwargs...)
-        re = model
-        _p, st = Lux.setup(rng, model)
-        if isnothing(p)
-            p = _p
-        end
+    function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,st=nothing,basedist=nothing,kwargs...)
+        re = nothing
+        p = nothing
         if isnothing(basedist)
-            size_input = size(p.layer_1.weight, 2)
-            type_input = eltype(p.layer_1.weight)
+            size_input = model.layers.layer_1.in_dims
+            type_input = eltype(tspan)
             basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
         end
         new{typeof(model),typeof(p),typeof(st),typeof(re),
@@ -100,7 +95,7 @@ function jacobian_fn(f, x::AbstractMatrix, args...)
     copy(vec)
 end
 
-function jacobian_fn(f::Lux.Chain, x::AbstractMatrix, args...)
+function jacobian_fn(f::LuxCore.AbstractExplicitLayer, x::AbstractMatrix, args...)
     p,st = args
     y, back = Zygote.pullback((z,ps,s)->f(z,ps,s)[1], x, p, st)
     z = ChainRulesCore.@ignore_derivatives similar(y)
@@ -145,7 +140,7 @@ function ffjord(u, p, t, re, e, st;
     end
 end
 
-function ffjord(u, p, t, re::Lux.Chain, e, st;
+function ffjord(u, p, t, re::LuxCore.AbstractExplicitLayer, e, st;
     regularize=false, monte_carlo=true)
     if regularize
         z = u[1:end - 3, :]
