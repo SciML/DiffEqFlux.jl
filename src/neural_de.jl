@@ -1,5 +1,5 @@
-abstract type NeuralDELayer <: Lux.AbstractExplicitContainerLayer{(:model,)} end
-abstract type NeuralSDELayer <: Lux.AbstractExplicitContainerLayer{(:drift,:diffusion,)} end
+abstract type NeuralDELayer <: LuxCore.AbstractExplicitContainerLayer{(:model,)} end
+abstract type NeuralSDELayer <: LuxCore.AbstractExplicitContainerLayer{(:drift,:diffusion,)} end
 basic_tgrad(u,p,t) = zero(u)
 
 """
@@ -51,7 +51,7 @@ function NeuralODE(model,tspan,args...;p = nothing,kwargs...)
               model,p,re,tspan,args,kwargs)
 end
 
-function NeuralODE(model::Lux.AbstractExplicitLayer,tspan,args...;p=nothing,kwargs...)
+function NeuralODE(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,kwargs...)
   re = nothing
   NeuralODE{typeof(model),typeof(p),typeof(re),
       typeof(tspan),typeof(args),typeof(kwargs)}(
@@ -68,7 +68,7 @@ function (n::NeuralODE)(x,p=n.p)
     solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
-function (n::NeuralODE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
+function (n::NeuralODE{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
   function dudt(u,p,t;st=st)
     u_, st = n.model(u,p,st)
     return u_
@@ -126,7 +126,7 @@ function NeuralDSDE(drift,diffusion,tspan,args...;p = nothing, kwargs...)
       length(p1),drift,re1,diffusion,re2,tspan,args,kwargs)
 end
 
-function NeuralDSDE(drift::Lux.Chain,diffusion::Lux.Chain,tspan,args...;
+function NeuralDSDE(drift::LuxCore.AbstractExplicitLayer,diffusion::LuxCore.AbstractExplicitLayer,tspan,args...;
                     p1 =nothing,
                     p = nothing, kwargs...)
   re1 = nothing
@@ -146,7 +146,7 @@ function (n::NeuralDSDE)(x,p=n.p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralDSDE{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
+function (n::NeuralDSDE{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
     st1 = st.drift
     st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
@@ -211,7 +211,7 @@ function NeuralSDE(drift,diffusion,tspan,nbrown,args...;p=nothing,kwargs...)
       p,length(p1),drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
 end
 
-function NeuralSDE(drift::Lux.AbstractExplicitLayer, diffusion::Lux.AbstractExplicitLayer,tspan,nbrown,args...;
+function NeuralSDE(drift::LuxCore.AbstractExplicitLayer, diffusion::LuxCore.AbstractExplicitLayer,tspan,nbrown,args...;
                    p1 = nothing, p = nothing, kwargs...)
   re1 = nothing
   re2 = nothing
@@ -230,7 +230,7 @@ function (n::NeuralSDE)(x,p=n.p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralSDE{P,M})(x,p,st) where {P,M<:Lux.AbstractExplicitLayer}
+function (n::NeuralSDE{P,M})(x,p,st) where {P,M<:LuxCore.AbstractExplicitLayer}
     st1 = st.drift
     st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
@@ -307,7 +307,7 @@ function NeuralCDDE(model,tspan,hist,lags,args...;p=nothing,kwargs...)
       re,hist,lags,tspan,args,kwargs)
 end
 
-function NeuralCDDE(model::Lux.AbstractExplicitLayer,tspan,hist,lags,args...;p = nothing,kwargs...)
+function NeuralCDDE(model::LuxCore.AbstractExplicitLayer,tspan,hist,lags,args...;p = nothing,kwargs...)
   throw(Unsupported_pairing(Unsupported_NeuralCDDE_pairing_message))
 #  re = nothing
 #  new{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
@@ -378,7 +378,7 @@ function NeuralDAE(model,constraints_model,tspan,du0=nothing,args...;p=nothing,d
       args,kwargs)
 end
 
-function NeuralDAE(model::Lux.AbstractExplicitLayer,constraints_model,tspan,du0=nothing,args...;p=nothing,differential_vars=nothing,kwargs...)
+function NeuralDAE(model::LuxCore.AbstractExplicitLayer,constraints_model,tspan,du0=nothing,args...;p=nothing,differential_vars=nothing,kwargs...)
   re = nothing
 
   NeuralDAE{typeof(p),typeof(model),typeof(constraints_model),
@@ -410,7 +410,7 @@ function (n::NeuralDAE)(x,du0=n.du0,p=n.p)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
 
-function (n::NeuralDAE{P,M})(x,p,st) where {P,M<:Lux.AbstractExplicitLayer}
+function (n::NeuralDAE{P,M})(x,p,st) where {P,M<:LuxCore.AbstractExplicitLayer}
   du0 = n.du0
   function f(du,u,p,t;st=st)
       nn_out, st = n.model(vcat(u,du),p,st)
@@ -491,7 +491,7 @@ function NeuralODEMM(model,constraints_model,tspan,mass_matrix,args...;
       model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
 end
 
-function NeuralODEMM(model::Lux.AbstractExplicitLayer,constraints_model,tspan,mass_matrix,args...;
+function NeuralODEMM(model::LuxCore.AbstractExplicitLayer,constraints_model,tspan,mass_matrix,args...;
                       p=nothing,kwargs...)
   re = nothing
   NeuralODEMM{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
@@ -514,7 +514,7 @@ function (n::NeuralODEMM)(x,p=n.p)
     solve(prob,n.args...;sensealg=sense,n.kwargs...)
 end
 
-function (n::NeuralODEMM{M})(x,p,st) where {M<:Lux.AbstractExplicitLayer}
+function (n::NeuralODEMM{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
   function f(u,p,t;st=st)
       nn_out,st = n.model(u,p,st)
       alg_out = n.constraints_model(u,p,t)
@@ -544,7 +544,7 @@ References:
 [1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural ODEs." In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.
 
 """
-abstract type AugmentedNDEType <: Lux.AbstractExplicitContainerLayer{(:nde,)} end 
+abstract type AugmentedNDEType <: LuxCore.AbstractExplicitContainerLayer{(:nde,)} end 
 struct AugmentedNDELayer{DE<:Union{NeuralDELayer,NeuralSDELayer}} <: AugmentedNDEType
     nde::DE
     adim::Int

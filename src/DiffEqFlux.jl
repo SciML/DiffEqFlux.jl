@@ -2,7 +2,7 @@ module DiffEqFlux
 
 using Adapt, Base.Iterators, ChainRulesCore, ConsoleProgressMonitor,
     DataInterpolations, DiffEqBase, Distributions, DistributionsAD,
-    ForwardDiff, Functors, LinearAlgebra, Logging, LoggingExtras, Lux,
+    ForwardDiff, Functors, LinearAlgebra, Logging, LoggingExtras, LuxCore,
     Printf, ProgressLogging, Random, RecursiveArrayTools, Reexport,
     SciMLBase, TerminalLoggers, Zygote, ZygoteRules
 
