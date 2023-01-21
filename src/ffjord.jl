@@ -166,14 +166,14 @@ function ffjord(u, p, t, re::LuxCore.AbstractExplicitLayer, e, st;
     end
 end
 
-# When running on GPU e needs to be passed separately
+# When running on GPU e needs to be passed separately, when using Lux pass st as a kwarg
 (n::FFJORD)(args...; kwargs...) = forward_ffjord(n, args...; kwargs...)
 
 function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
-                        regularize=false, monte_carlo=true)
+                        regularize=false, monte_carlo=true, st=nothing)
     pz = n.basedist
     sensealg = InterpolatingAdjoint()
-    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, n.st; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, st; regularize, monte_carlo)
     # ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
     if regularize
         _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
