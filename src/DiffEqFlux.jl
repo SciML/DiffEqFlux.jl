@@ -1,16 +1,13 @@
 module DiffEqFlux
 
-using Adapt, Base.Iterators, ConsoleProgressMonitor, DataInterpolations,
-    DiffEqBase, Distributions, DistributionsAD,
-    ForwardDiff, LinearAlgebra, LuxCore,
-    Logging, LoggingExtras, Printf, ProgressLogging, Random, RecursiveArrayTools,
-    Reexport, SciMLBase, TerminalLoggers, Zygote, ZygoteRules
+using Adapt, Base.Iterators, ChainRulesCore, ConsoleProgressMonitor,
+    DataInterpolations, DiffEqBase, Distributions, DistributionsAD,
+    ForwardDiff, Functors, LinearAlgebra, Logging, LoggingExtras, LuxCore,
+    Printf, ProgressLogging, Random, RecursiveArrayTools, Reexport,
+    SciMLBase, TerminalLoggers, Zygote, ZygoteRules
 
-@reexport using SciMLSensitivity
 @reexport using Flux
-using Functors
-
-import ChainRulesCore
+@reexport using SciMLSensitivity
 
 gpu_or_cpu(x) = Array
 
@@ -41,11 +38,10 @@ include("collocation.jl")
 include("hnn.jl")
 include("multiple_shooting.jl")
 
-export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, 
+export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE,
        NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
 export HamiltonianNN
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
-export FastDense, StaticDense, initial_params
 export FFJORDDistribution
 export DimMover, FluxBatchOrder
 
