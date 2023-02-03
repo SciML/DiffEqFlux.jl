@@ -1,6 +1,7 @@
 abstract type NeuralDELayer <: LuxCore.AbstractExplicitContainerLayer{(:model,)} end
 abstract type NeuralSDELayer <: LuxCore.AbstractExplicitContainerLayer{(:drift,:diffusion,)} end
 basic_tgrad(u,p,t) = zero(u)
+basic_dde_tgrad(u,h,p,t) = zero(u)
 
 """
 Constructs a continuous-time recurrant neural network, also known as a neural
@@ -322,7 +323,7 @@ function (n::NeuralCDDE)(x,p=n.p)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.re(p)(_u)
     end
-    ff = DDEFunction{false}(dudt_,tgrad=basic_tgrad)
+    ff = DDEFunction{false}(dudt_,tgrad=basic_dde_tgrad)
     prob = DDEProblem{false}(ff,x,n.hist,n.tspan,p,constant_lags = n.lags)
     solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
 end
