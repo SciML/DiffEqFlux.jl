@@ -26,6 +26,8 @@ StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 
 [compat]
 CSV = "0.10"
+DataFrames = "1"
+DataDeps = "0.7"
 DiffEqFlux = "2"
 DifferentialEquations = "7.6.0"
 Distances = "0.10.7"
