@@ -1,4 +1,4 @@
-using DiffEqFlux, Lux, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Test
+using ComponentArrays, DiffEqFlux, Lux, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Test
 rng = Random.default_rng()
 
 #A desired MWE for now, not a test yet.
@@ -22,7 +22,7 @@ sol = solve(prob,Rodas5(),saveat=0.1)
 
 dudt2 = Lux.Chain(Lux.Dense(3,64,tanh),Lux.Dense(64,2))
 p,st = Lux.setup(rng, dudt2)
-p = Lux.ComponentArrays.ComponentArray(p)
+p = ComponentArray(p)
 ndae = NeuralODEMM(dudt2, (u,p,t) -> [u[1] + u[2] + u[3] - 1], tspan, M, Rodas5(autodiff=false),saveat=0.1)
 ndae(u₀,p,st)
 

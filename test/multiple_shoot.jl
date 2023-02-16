@@ -1,4 +1,4 @@
-using DiffEqFlux, Zygote, Lux, Optimization, OptimizationFlux, OrdinaryDiffEq, Test, Random
+using ComponentArrays, DiffEqFlux, Zygote, Lux, Optimization, OptimizationFlux, OrdinaryDiffEq, Test, Random
 using DiffEqFlux: group_ranges
 rng = Random.default_rng()
 
@@ -28,7 +28,7 @@ nn = Lux.Chain(x -> x.^3,
                 Lux.Dense(2, 16, tanh),
                 Lux.Dense(16, 2))
 p_init, st = Lux.setup(rng, nn)
-p_init = Lux.ComponentArray(p_init)
+p_init = ComponentArray(p_init)
 
 neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
 prob_node = ODEProblem((u,p,t)->nn(u,p,st)[1], u0, tspan, p_init)

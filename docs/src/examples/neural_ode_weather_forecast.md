@@ -12,6 +12,7 @@ The data is a four-dimensional dataset of daily temperature, humidity, wind spee
 using Random
 using Dates
 using Optimization
+using ComponentArrays
 using Lux
 using DiffEqFlux: NeuralODE, ADAMW, swish
 using DifferentialEquations
@@ -163,7 +164,7 @@ function neural_ode(t, data_dim)
     rng = Random.default_rng()
     p, state = Lux.setup(rng, f)
 
-    return node, Lux.ComponentArray(p), state
+    return node, ComponentArray(p), state
 end
 
 function train_one_round(node, p, state, y, opt, maxiters, rng, y0=y[:, 1]; kwargs...)
@@ -185,7 +186,7 @@ function train(t, y, obs_grid, maxiters, lr, rng, p=nothing, state=nothing; kwar
         false
     end
 
-    ps, losses = Lux.ComponentArray[], Float32[]
+    ps, losses = ComponentArray[], Float32[]
     for k in obs_grid
         node, p_new, state_new = neural_ode(t, size(y, 1))
         if p === nothing p = p_new end
