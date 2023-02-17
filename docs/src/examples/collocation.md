@@ -5,7 +5,7 @@ pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
 ```@example collocation_cp
-using Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization, OptimizationFlux, Plots
+using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization, OptimizationFlux, Plots
 
 using Random
 rng = Random.default_rng()
@@ -53,7 +53,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
 result_neuralode = Optimization.solve(optprob, ADAM(0.05), callback = callback, maxiters = 10000)
 
@@ -75,7 +75,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
 numerical_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),
@@ -93,7 +93,7 @@ The smoothed collocation is a spline fit of the data points which allows
 us to get an estimate of the approximate noiseless dynamics:
 
 ```@example collocation
-using Lux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
+using ComponentArrays, Lux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
 
 using Random
 rng = Random.default_rng()
@@ -151,7 +151,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
 result_neuralode = Optimization.solve(optprob, ADAM(0.05), callback = callback, maxiters = 10000)
 
@@ -179,7 +179,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(pinit))
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
 numerical_neuralode = Optimization.solve(optprob,
                                        ADAM(0.05),

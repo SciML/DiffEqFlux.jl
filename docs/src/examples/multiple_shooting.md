@@ -18,7 +18,7 @@ high penalties in case the solver predicts discontinuous values.
 The following is a working demo, using Multiple Shooting
 
 ```julia
-using Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, DifferentialEquations, Plots
+using ComponentArrays, Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, DifferentialEquations, Plots
 using DiffEqFlux: group_ranges
 
 using Random
@@ -47,7 +47,7 @@ nn = Lux.Chain(x -> x.^3,
 p_init, st = Lux.setup(rng, nn)
 
 neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
-prob_node = ODEProblem((u,p,t)->nn(u,p,st)[1], u0, tspan, Lux.ComponentArray(p_init))
+prob_node = ODEProblem((u,p,t)->nn(u,p,st)[1], u0, tspan, ComponentArray(p_init))
 
 
 function plot_multiple_shoot(plt, preds, group_size)
@@ -94,9 +94,8 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss_multiple_shooting(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, Lux.ComponentArray(p_init))
-res_ms = Optimization.solve(optprob, PolyOpt(),
-                                callback = callback)
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(p_init))
+res_ms = Optimization.solve(optprob, PolyOpt(), callback = callback)
 #gif(anim, "multiple_shooting.gif", fps=15)
 ```
 

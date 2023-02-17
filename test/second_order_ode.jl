@@ -1,4 +1,4 @@
-using DiffEqFlux, Lux, Zygote, Random, Optimization, OrdinaryDiffEq, RecursiveArrayTools
+using ComponentArrays, DiffEqFlux, Lux, Zygote, Random, Optimization, OrdinaryDiffEq, RecursiveArrayTools
 rng = Random.default_rng()
 
 u0 = Float32[0.; 2.]
@@ -8,7 +8,7 @@ t = range(tspan[1], tspan[2], length=20)
 
 model = Lux.Chain(Lux.Dense(2, 50, tanh), Lux.Dense(50, 2))
 p, st = Lux.setup(rng, model)
-p = Lux.ComponentArray(p)
+p = ComponentArray(p)
 ff(du,u,p,t) = model(u,p,st)[1]
 prob = SecondOrderODEProblem{false}(ff, du0, u0, tspan, p)
 
