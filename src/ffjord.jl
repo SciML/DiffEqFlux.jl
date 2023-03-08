@@ -45,7 +45,7 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVec
     function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,basedist=nothing,kwargs...)
         re = nothing
         if isnothing(basedist)
-            size_input = model.layers.layer_1.in_dims
+            size_input = (model isa Lux.Chain) ? model.layers.layer_1.in_dims : model.in_dims
             type_input = eltype(tspan)
             basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
         end
