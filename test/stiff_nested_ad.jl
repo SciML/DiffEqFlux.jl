@@ -18,7 +18,7 @@ model = Flux.Chain(x -> x.^3,
 neuralde = NeuralODE(model,tspan,Rodas5(),saveat=t,reltol=1e-7,abstol=1e-9)
 
 function predict_n_ode()
-  neuralde(u0)
+  neuralde(u0)[1]
 end
 loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
 

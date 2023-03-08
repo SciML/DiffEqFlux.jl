@@ -3,7 +3,7 @@ for de_model in (:FFJORD, :HamiltonianNN, :NeuralODE, :NeuralCDDE, :NeuralDAE, :
         @deprecate $de_model(model, args...; kwargs...) begin
             new_model = Lux.transform(model)
             ps, st = LuxCore.setup(Random.default_rng(), new_model)
-            $de_model(new_model, args...; p=ps, st=st, kwargs...)
+            $de_model(new_model, args...; p=ComponentArray(ps), st=st, kwargs...)
         end
         @functor $de_model (p,)
     end
@@ -16,7 +16,7 @@ for de_model2 in (:NeuralDSDE, :NeuralSDE)
             ps, st = LuxCore.setup(Random.default_rng(), new_model)
             new_model2 = Lux.transform(model2)
             ps2, st2 = LuxCore.setup(Random.default_rng(), new_model2)
-            $de_model2(new_model, new_model2, args...; p=[ps; ps2], st=(drift=st, diffusion=st2), kwargs...)
+            $de_model2(new_model, new_model2, args...; p=ComponentArray((drift=ps, diffusion=ps2)), st=(drift=st, diffusion=st2), kwargs...)
         end
         @functor $de_model2 (p,)
     end
