@@ -1,7 +1,4 @@
 abstract type CNFLayer <: LuxCore.AbstractExplicitContainerLayer{(:model,)} end
-Flux.trainable(m::CNFLayer) = (m.p,)
-
-rng = Random.default_rng()
 
 """
 Constructs a continuous-time recurrent neural network, also known as a neural
@@ -47,7 +44,6 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVec
 
     function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,basedist=nothing,kwargs...)
         re = nothing
-        p = nothing
         if isnothing(basedist)
             size_input = model.layers.layer_1.in_dims
             type_input = eltype(tspan)
@@ -56,22 +52,6 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVec
         new{typeof(model),typeof(p),typeof(re),
           typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
           model,p,re,basedist,tspan,args,kwargs)
-    end
-
-    function FFJORD(model, tspan, args...;p=nothing, basedist=nothing, kwargs...)
-        #
-        _p, re = Flux.destructure(model)
-        if isnothing(p)
-            p = _p
-        end
-        if isnothing(basedist)
-            size_input = size(model[1].weight, 2)
-            type_input = eltype(model[1].weight)
-            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
-        end
-        new{typeof(model),typeof(p),typeof(re),
-            typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-                model,p,re,basedist,tspan,args,kwargs)
     end
 end
 
@@ -83,19 +63,6 @@ function jacobian_fn(f, x::AbstractVector, args...)
     vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
 end
 
-function jacobian_fn(f, x::AbstractMatrix, args...)
-    y, back = Zygote.pullback(f, x)
-    z = ChainRulesCore.@ignore_derivatives similar(y)
-    ChainRulesCore.@ignore_derivatives fill!(z, zero(eltype(x)))
-    vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
-    for i in 1:size(y, 1)
-        ChainRulesCore.@ignore_derivatives z[i, :] .= one(eltype(x))
-        vec[i, :, :] = back(z)[1]
-        ChainRulesCore.@ignore_derivatives z[i, :] .= zero(eltype(x))
-    end
-    copy(vec)
-end
-
 function jacobian_fn(f::LuxCore.AbstractExplicitLayer, x::AbstractMatrix, args...)
     p,st = args
     y, back = Zygote.pullback((z,ps,s)->f(z,ps,s)[1], x, p, st)
@@ -104,7 +71,7 @@ function jacobian_fn(f::LuxCore.AbstractExplicitLayer, x::AbstractMatrix, args..
     vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
     for i in 1:size(y, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(eltype(x))
-        vec[i, :, :] = back(z)[1]
+        vec[i, :, :] .= back(z)[1]
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(eltype(x))
     end
     copy(vec)
@@ -112,34 +79,6 @@ end
 
 _trace_batched(x::AbstractArray{T, 3}) where T =
     reshape([tr(x[:, :, i]) for i in 1:size(x, 3)], 1, size(x, 3))
-
-function ffjord(u, p, t, re, e, st;
-                regularize=false, monte_carlo=true)
-    m = re(p)
-    if regularize
-        z = u[1:end - 3, :]
-        if monte_carlo
-            mz, back = Zygote.pullback(m, z)
-            eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims=1)
-        else
-            mz = m(z)
-            trace_jac = _trace_batched(jacobian_fn(m, z))
-        end
-        vcat(mz, -trace_jac, sum(abs2, mz, dims=1), _norm_batched(eJ))
-    else
-        z = u[1:end - 1, :]
-        if monte_carlo
-            mz, back = Zygote.pullback(m, z)
-            eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims=1)
-        else
-            mz = m(z)
-            trace_jac = _trace_batched(jacobian_fn(m, z))
-        end
-        vcat(mz, -trace_jac)
-    end
-end
 
 function ffjord(u, p, t, re::LuxCore.AbstractExplicitLayer, e, st;
     regularize=false, monte_carlo=true)
@@ -150,7 +89,7 @@ function ffjord(u, p, t, re::LuxCore.AbstractExplicitLayer, e, st;
             eJ = back(e)[1]
             trace_jac = sum(eJ .* e, dims=1)
         else
-            mz = re(z, ps, st)[1]
+            mz = re(z, p, st)[1]
             trace_jac = _trace_batched(jacobian_fn(re, z, p, st))
         end
         vcat(mz, -trace_jac, sum(abs2, mz, dims=1), _norm_batched(eJ))

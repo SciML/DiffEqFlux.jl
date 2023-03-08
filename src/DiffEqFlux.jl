@@ -2,8 +2,8 @@ module DiffEqFlux
 
 using Adapt, Base.Iterators, ChainRulesCore, ConsoleProgressMonitor,
     DataInterpolations, DiffEqBase, Distributions, DistributionsAD,
-    ForwardDiff, Functors, LinearAlgebra, Logging, LoggingExtras, LuxCore,
-    Printf, ProgressLogging, Random, RecursiveArrayTools, Reexport,
+    ForwardDiff, Functors, LinearAlgebra, Logging, LoggingExtras, Lux,
+    LuxCore, Printf, ProgressLogging, Random, RecursiveArrayTools, Reexport,
     SciMLBase, TerminalLoggers, Zygote, ZygoteRules
 
 @reexport using Flux
@@ -37,6 +37,7 @@ include("tensor_product_layer.jl")
 include("collocation.jl")
 include("hnn.jl")
 include("multiple_shooting.jl")
+include("flux_compat.jl")
 
 export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE,
        NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE

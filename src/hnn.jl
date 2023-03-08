@@ -37,19 +37,14 @@ struct HamiltonianNN{M, R, P}
     re::R
     p::P
 
-    function HamiltonianNN(model; p = nothing)
-        _p, re = Flux.destructure(model)
-        if p === nothing
-            p = _p
-        end
+    function HamiltonianNN(model::LuxCore.AbstractExplicitLayer; p = nothing)
+        re = nothing
         return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
     end
 end
 
-Flux.trainable(hnn::HamiltonianNN) = (hnn.p,)
-
 function _hamiltonian_forward(re, p, x)
-    H = Flux.gradient(x -> sum(re(p)(x)), x)[1]
+    H = Zygote.gradient(x -> sum(re(p)(x)), x)[1]
     n = size(x, 1) ÷ 2
     return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
 end

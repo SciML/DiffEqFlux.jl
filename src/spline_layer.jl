@@ -1,5 +1,4 @@
 abstract type AbstractSplineLayer <: Function end
-Flux.trainable(m::AbstractSplineLayer) = (m.p,)
 
 """
 Constructs a Spline Layer. At a high-level, it performs the following:
@@ -31,6 +30,8 @@ struct SplineLayer{T<:Tuple{Real, Real},R<:Real,S1<:AbstractVector,S2<:UnionAll}
         new{typeof(time_span),typeof(time_step),typeof(saved_points),typeof(spline_basis)}(time_span,time_step,saved_points,spline_basis)
     end
 end
+
+@functor SplineLayer (saved_points,)
 
 function (layer::SplineLayer)(t::Real,p=layer.saved_points)
     return layer.spline_basis(p,layer.time_span[1]:layer.time_step:layer.time_span[2])(t)
