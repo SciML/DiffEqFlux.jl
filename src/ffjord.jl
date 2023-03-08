@@ -80,28 +80,28 @@ end
 _trace_batched(x::AbstractArray{T, 3}) where T =
     reshape([tr(x[:, :, i]) for i in 1:size(x, 3)], 1, size(x, 3))
 
-function ffjord(u, p, t, re::LuxCore.AbstractExplicitLayer, e, st;
+function ffjord(u, p, t, model::LuxCore.AbstractExplicitLayer, e, st;
     regularize=false, monte_carlo=true)
     if regularize
         z = u[1:end - 3, :]
         if monte_carlo
-            mz, back = Zygote.pullback((x,ps,s)->re(x,ps,s)[1], z, p, st)
+            mz, back = Zygote.pullback((x,ps,s)->model(x,ps,s)[1], z, p, st)
             eJ = back(e)[1]
             trace_jac = sum(eJ .* e, dims=1)
         else
-            mz = re(z, p, st)[1]
-            trace_jac = _trace_batched(jacobian_fn(re, z, p, st))
+            mz = model(z, p, st)[1]
+            trace_jac = _trace_batched(jacobian_fn(model, z, p, st))
         end
         vcat(mz, -trace_jac, sum(abs2, mz, dims=1), _norm_batched(eJ))
     else
         z = u[1:end - 1, :]
         if monte_carlo
-            mz, back = Zygote.pullback((x,ps,s)->re(x,ps,s)[1], z, p, st)
+            mz, back = Zygote.pullback((x,ps,s)->model(x,ps,s)[1], z, p, st)
             eJ = back(e)[1]
             trace_jac = sum(eJ .* e, dims=1)
         else
-            mz = re(z, p, st)[1]
-            trace_jac = _trace_batched(jacobian_fn(re, z, p, st))
+            mz = model(z, p, st)[1]
+            trace_jac = _trace_batched(jacobian_fn(model, z, p, st))
         end
         vcat(mz, -trace_jac)
     end
@@ -114,8 +114,8 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
                         regularize=false, monte_carlo=true, st=nothing)
     pz = n.basedist
     sensealg = InterpolatingAdjoint()
-    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, st; regularize, monte_carlo)
-    # ffjord_(u, p, t) = ffjord(u, p, t, n.re, e; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.model, e, st; regularize, monte_carlo)
+    # ffjord_(u, p, t) = ffjord(u, p, t, n.model, e; regularize, monte_carlo)
     if regularize
         _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
@@ -146,7 +146,7 @@ function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].
     px = n.basedist
     x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
     sensealg = InterpolatingAdjoint()
-    ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, st; regularize, monte_carlo)
+    ffjord_(u, p, t) = ffjord(u, p, t, n.model, e, st; regularize, monte_carlo)
     if regularize
         _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))

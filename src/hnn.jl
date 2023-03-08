@@ -48,7 +48,7 @@ function _hamiltonian_forward(re, p, x)
     n = size(x, 1) ÷ 2
     return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
 end
-(hnn::HamiltonianNN)(x, p = hnn.p) = _hamiltonian_forward(hnn.re, p, x)
+(hnn::HamiltonianNN)(x, p = hnn.p) = _hamiltonian_forward(hnn.model, p, x)
 
 """
 Contructs a Neural Hamiltonian DE Layer for solving Hamiltonian Problems
