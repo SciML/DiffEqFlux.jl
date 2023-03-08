@@ -25,14 +25,15 @@ struct SplineLayer{T<:Tuple{Real, Real},R<:Real,S1<:AbstractVector,S2<:UnionAll}
     time_step::R
     saved_points::S1
     spline_basis::S2
-    function SplineLayer(time_span,time_step,spline_basis,saved_points=nothing)
+    st::NamedTuple
+    function SplineLayer(time_span,time_step,spline_basis,saved_points=nothing,st=NamedTuple())
         saved_points = randn(length(time_span[1]:time_step:time_span[2]))
-        new{typeof(time_span),typeof(time_step),typeof(saved_points),typeof(spline_basis)}(time_span,time_step,saved_points,spline_basis)
+        new{typeof(time_span),typeof(time_step),typeof(saved_points),typeof(spline_basis)}(time_span,time_step,saved_points,spline_basis,st)
     end
 end
 
 @functor SplineLayer (saved_points,)
 
-function (layer::SplineLayer)(t::Real,p=layer.saved_points,st=nothing)
+function (layer::SplineLayer)(t::Real,p=layer.saved_points,st=layer.st)
     return layer.spline_basis(p,layer.time_span[1]:layer.time_step:layer.time_span[2])(t), st
 end

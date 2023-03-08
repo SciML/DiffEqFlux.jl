@@ -36,10 +36,11 @@ struct HamiltonianNN{M, R, P}
     model::M
     re::R
     p::P
+    st::NamedTuple
 
-    function HamiltonianNN(model::LuxCore.AbstractExplicitLayer; p = nothing)
+    function HamiltonianNN(model::LuxCore.AbstractExplicitLayer; p = nothing, st = NamedTuple())
         re = nothing
-        return new{typeof(model), typeof(re), typeof(p)}(model, re, p)
+        return new{typeof(model), typeof(re), typeof(p)}(model, re, p, st)
     end
 end
 
@@ -70,25 +71,26 @@ Arguments:
 struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     model::HamiltonianNN{M,RE,P}
     p::P
+    st::NamedTuple
     tspan::T
     args::A
     kwargs::K
 
-    function NeuralHamiltonianDE(model, tspan, args...; p = nothing, kwargs...)
-        hnn = HamiltonianNN(model, p=p)
+    function NeuralHamiltonianDE(model, tspan, args...; p = nothing, st = NamedTuple(), kwargs...)
+        hnn = HamiltonianNN(model, p=p, st=st)
         new{typeof(hnn.model), typeof(hnn.p), typeof(hnn.re),
             typeof(tspan), typeof(args), typeof(kwargs)}(
-            hnn, hnn.p, tspan, args, kwargs)
+            hnn, hnn.p, hnn.st, tspan, args, kwargs)
     end
 
     function NeuralHamiltonianDE(hnn::HamiltonianNN{M,RE,P}, tspan, args...;
-                                 p = hnn.p, kwargs...) where {M,RE,P}
+                                 p = hnn.p, st=hnn.st, kwargs...) where {M,RE,P}
         new{M, P, RE, typeof(tspan), typeof(args),
-            typeof(kwargs)}(hnn, hnn.p, tspan, args, kwargs)
+            typeof(kwargs)}(hnn, p, st, tspan, args, kwargs)
     end
 end
 
-function (nhde::NeuralHamiltonianDE)(x, p = nhde.p, st=nothing)
+function (nhde::NeuralHamiltonianDE)(x, p = nhde.p, st=n.st)
     function neural_hamiltonian!(du, u, p, t)
         du .= reshape(nhde.model(u, p, st), size(du))
     end

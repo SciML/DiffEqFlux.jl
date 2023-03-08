@@ -36,26 +36,27 @@ References:
 struct NeuralODE{M,P,RE,T,A,K} <: NeuralDELayer
     model::M
     p::P
+    st::NamedTuple
     re::RE
     tspan::T
     args::A
     kwargs::K
 end
 
-function NeuralODE(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,kwargs...)
+function NeuralODE(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,st=NamedTuple(),kwargs...)
   re = nothing
   NeuralODE{typeof(model),typeof(p),typeof(re),
       typeof(tspan),typeof(args),typeof(kwargs)}(
-      model,p,re,tspan,args,kwargs)
+      model,p,st,re,tspan,args,kwargs)
 end
 
-function (n::NeuralODE{M})(x,p=n.p,st=nothing) where {M<:LuxCore.AbstractExplicitLayer}
-  function dudt(u,p,t;st=st)
+function (n::NeuralODE{M})(x,p=n.p,st=n.st) where {M<:LuxCore.AbstractExplicitLayer}
+  function dudt_(u,p,t;st=st)
     u_, st = n.model(u,p,st)
     return u_
   end
 
-  ff = ODEFunction{false}(dudt,tgrad=basic_tgrad)
+  ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
   prob = ODEProblem{false}(ff,x,n.tspan,p)
   sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
   return solve(prob,n.args...;sensealg=sense,n.kwargs...), st
@@ -86,6 +87,7 @@ Arguments:
 """
 struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralSDELayer
     p::P
+    st::NamedTuple
     len::Int
     drift::M
     re1::RE
@@ -97,15 +99,15 @@ struct NeuralDSDE{M,P,RE,M2,RE2,T,A,K} <: NeuralSDELayer
 end
 
 function NeuralDSDE(drift::LuxCore.AbstractExplicitLayer,diffusion::LuxCore.AbstractExplicitLayer,tspan,args...;
-                    p1=nothing,p2=nothing,p=nothing, kwargs...)
+                    p=nothing,st=NamedTuple(drift=NamedTuple(),diffusion=NamedTuple()),kwargs...)
   re1 = nothing
   re2 = nothing
   NeuralDSDE{typeof(drift),typeof(p),typeof(re1),typeof(diffusion),typeof(re2),
-      typeof(tspan),typeof(args),typeof(kwargs)}(p,
-      1,drift,re1,diffusion,re2,tspan,args,kwargs)
+      typeof(tspan),typeof(args),typeof(kwargs)}(
+      p,st,1,drift,re1,diffusion,re2,tspan,args,kwargs)
 end
 
-function (n::NeuralDSDE{M})(x,p=n.p,st=nothing) where {M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralDSDE{M})(x,p=n.p,st=n.st) where {M<:LuxCore.AbstractExplicitLayer}
     st1 = st.drift
     st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
@@ -148,6 +150,7 @@ Arguments:
 """
 struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralSDELayer
     p::P
+    st::NamedTuple
     len::Int
     drift::M
     re1::RE
@@ -160,15 +163,15 @@ struct NeuralSDE{P,M,RE,M2,RE2,T,A,K} <: NeuralSDELayer
 end
 
 function NeuralSDE(drift::LuxCore.AbstractExplicitLayer, diffusion::LuxCore.AbstractExplicitLayer,tspan,nbrown,args...;
-                   p1=nothing,p2=nothing,p=nothing, kwargs...)
+                   p=nothing,st=NamedTuple(drift=NamedTuple(),diffusion=NamedTuple()),kwargs...)
   re1 = nothing
   re2 = nothing
   NeuralSDE{typeof(p),typeof(drift),typeof(re1),typeof(diffusion),typeof(re2),
       typeof(tspan),typeof(args),typeof(kwargs)}(
-      p,1,drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
+      p,st,1,drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
 end
 
-function (n::NeuralSDE{P,M})(x,p=n.p,st=nothing) where {P,M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralSDE{P,M})(x,p=n.p,st=n.st) where {P,M<:LuxCore.AbstractExplicitLayer}
     st1 = st.drift
     st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
@@ -226,6 +229,7 @@ end
 
 struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
     p::P
+    st::NamedTuple
     model::M
     re::RE
     hist::H
@@ -235,16 +239,16 @@ struct NeuralCDDE{P,M,RE,H,L,T,A,K} <: NeuralDELayer
     kwargs::K
 end
 
-function NeuralCDDE(model::LuxCore.AbstractExplicitLayer,tspan,hist,lags,args...;p = nothing,kwargs...)
+function NeuralCDDE(model::LuxCore.AbstractExplicitLayer,tspan,hist,lags,args...;p = nothing,st=NamedTuple(),kwargs...)
   # throw(Unsupported_pairing(Unsupported_NeuralCDDE_pairing_message))
   re = nothing
   NeuralCDDE{typeof(p),typeof(model),typeof(re),typeof(hist),typeof(lags),
-      typeof(tspan),typeof(args),typeof(kwargs)}(p,model,
-      re,hist,lags,tspan,args,kwargs)
+      typeof(tspan),typeof(args),typeof(kwargs)}(
+      p,st,model,re,hist,lags,tspan,args,kwargs)
 end
 
-function (n::NeuralCDDE)(x,p=n.p,st=nothing)
-    function dudt_(u,h,p,t)
+function (n::NeuralCDDE)(x,p=n.p,st=n.st)
+    function dudt_(u,h,p,t;st=st)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.model(_u, p, st)
     end
@@ -282,6 +286,7 @@ struct NeuralDAE{P,M,M2,D,RE,T,DV,A,K} <: NeuralDELayer
     model::M
     constraints_model::M2
     p::P
+    st::NamedTuple
     du0::D
     re::RE
     tspan::T
@@ -290,17 +295,17 @@ struct NeuralDAE{P,M,M2,D,RE,T,DV,A,K} <: NeuralDELayer
     kwargs::K
 end
 
-function NeuralDAE(model::LuxCore.AbstractExplicitLayer,constraints_model,tspan,du0=nothing,args...;p=nothing,differential_vars=nothing,kwargs...)
+function NeuralDAE(model::LuxCore.AbstractExplicitLayer,constraints_model,tspan,du0=nothing,args...;p=nothing,st=NamedTuple(),differential_vars=nothing,kwargs...)
   re = nothing
 
   NeuralDAE{typeof(p),typeof(model),typeof(constraints_model),
       typeof(du0),typeof(re),typeof(tspan),
       typeof(differential_vars),typeof(args),typeof(kwargs)}(
-      model,constraints_model,p,du0,re,tspan,differential_vars,
+      model,constraints_model,p,st,du0,re,tspan,differential_vars,
       args,kwargs)
 end
 
-function (n::NeuralDAE{P,M})(x,p=n.p,st=nothing) where {P,M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralDAE{P,M})(x,p=n.p,st=n.st) where {P,M<:LuxCore.AbstractExplicitLayer}
   du0 = n.du0
   function f(du,u,p,t;st=st)
       nn_out, st = n.model(vcat(u,du),p,st)
@@ -362,6 +367,7 @@ struct NeuralODEMM{M,M2,P,RE,T,MM,A,K} <: NeuralDELayer
     model::M
     constraints_model::M2
     p::P
+    st::NamedTuple
     re::RE
     tspan::T
     mass_matrix::MM
@@ -370,14 +376,14 @@ struct NeuralODEMM{M,M2,P,RE,T,MM,A,K} <: NeuralDELayer
 end
 
 function NeuralODEMM(model::LuxCore.AbstractExplicitLayer,constraints_model,tspan,mass_matrix,args...;
-                      p=nothing,kwargs...)
+                      p=nothing,st=NamedTuple(),kwargs...)
   re = nothing
   NeuralODEMM{typeof(model),typeof(constraints_model),typeof(p),typeof(re),
       typeof(tspan),typeof(mass_matrix),typeof(args),typeof(kwargs)}(
-      model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
+      model,constraints_model,p,st,re,tspan,mass_matrix,args,kwargs)
 end
 
-function (n::NeuralODEMM{M})(x,p=n.p,st=nothing) where {M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralODEMM{M})(x,p=n.p,st=n.st) where {M<:LuxCore.AbstractExplicitLayer}
   function f(u,p,t;st=st)
       nn_out,st = n.model(u,p,st)
       alg_out = n.constraints_model(u,p,t)

@@ -36,13 +36,14 @@ References:
 struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Union{Function, Nothing}, D <: Distribution, T, A, K}
     model::M
     p::P
+    st::NamedTuple
     re::RE
     basedist::D
     tspan::T
     args::A
     kwargs::K
 
-    function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,basedist=nothing,kwargs...)
+    function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,st=NamedTuple(),basedist=nothing,kwargs...)
         re = nothing
         if isnothing(basedist)
             size_input = (model isa Lux.Chain) ? model.layers.layer_1.in_dims : model.in_dims
@@ -51,7 +52,7 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVec
         end
         new{typeof(model),typeof(p),typeof(re),
           typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-          model,p,re,basedist,tspan,args,kwargs)
+          model,p,st,re,basedist,tspan,args,kwargs)
     end
 end
 
@@ -111,7 +112,7 @@ end
 (n::FFJORD)(args...; kwargs...) = forward_ffjord(n, args...; kwargs...)
 
 function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
-                        regularize=false, monte_carlo=true, st=nothing)
+                        regularize=false, monte_carlo=true, st=n.st)
     pz = n.basedist
     sensealg = InterpolatingAdjoint()
     ffjord_(u, p, t) = ffjord(u, p, t, n.model, e, st; regularize, monte_carlo)
@@ -142,7 +143,7 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
 end
 
 function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].weight), n_samples);
-                         regularize=false, monte_carlo=true, rng=nothing, st=nothing)
+                         regularize=false, monte_carlo=true, rng=nothing, st=n.st)
     px = n.basedist
     x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
     sensealg = InterpolatingAdjoint()
