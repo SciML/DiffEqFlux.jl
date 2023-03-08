@@ -49,15 +49,7 @@ function NeuralODE(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,
       model,p,re,tspan,args,kwargs)
 end
 
-function (n::NeuralODE)(x,p=n.p,st=nothing)
-    dudt_(u,p,t) = n.model(u, p, st)
-    ff = ODEFunction{false}(dudt_,tgrad=basic_tgrad)
-    prob = ODEProblem{false}(ff,x,getfield(n,:tspan),p)
-    sense = InterpolatingAdjoint(autojacvec=ZygoteVJP())
-    solve(prob,n.args...;sensealg=sense,n.kwargs...)
-end
-
-function (n::NeuralODE{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralODE{M})(x,p=n.p,st=nothing) where {M<:LuxCore.AbstractExplicitLayer}
   function dudt(u,p,t;st=st)
     u_, st = n.model(u,p,st)
     return u_
@@ -113,15 +105,7 @@ function NeuralDSDE(drift::LuxCore.AbstractExplicitLayer,diffusion::LuxCore.Abst
       1,drift,re1,diffusion,re2,tspan,args,kwargs)
 end
 
-function (n::NeuralDSDE)(x,p=n.p,st=nothing)
-    dudt_(u,p,t) = n.drift(u, p[1:n.len], st)
-    g(u,p,t) = n.diffusion(u, p[(n.len+1):end], st)
-    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
-    prob = SDEProblem{false}(ff,g,x,n.tspan,p)
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
-end
-
-function (n::NeuralDSDE{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralDSDE{M})(x,p=n.p,st=nothing) where {M<:LuxCore.AbstractExplicitLayer}
     st1 = st.drift
     st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
@@ -184,15 +168,7 @@ function NeuralSDE(drift::LuxCore.AbstractExplicitLayer, diffusion::LuxCore.Abst
       p,1,drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
 end
 
-function (n::NeuralSDE)(x,p=n.p,st=nothing)
-    dudt_(u,p,t) = n.drift(u, p[1:n.len], st)
-    g(u,p,t) = n.diffusion(u, p[(n.len+1):end], st)
-    ff = SDEFunction{false}(dudt_,g,tgrad=basic_tgrad)
-    prob = SDEProblem{false}(ff,g,x,n.tspan,p,noise_rate_prototype=zeros(Float32,length(x),n.nbrown))
-    solve(prob,n.args...;sensealg=TrackerAdjoint(),n.kwargs...)
-end
-
-function (n::NeuralSDE{P,M})(x,p,st) where {P,M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralSDE{P,M})(x,p=n.p,st=nothing) where {P,M<:LuxCore.AbstractExplicitLayer}
     st1 = st.drift
     st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
@@ -324,7 +300,7 @@ function NeuralDAE(model::LuxCore.AbstractExplicitLayer,constraints_model,tspan,
       args,kwargs)
 end
 
-function (n::NeuralDAE{P,M})(x,p,st) where {P,M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralDAE{P,M})(x,p=n.p,st=nothing) where {P,M<:LuxCore.AbstractExplicitLayer}
   du0 = n.du0
   function f(du,u,p,t;st=st)
       nn_out, st = n.model(vcat(u,du),p,st)
@@ -401,7 +377,7 @@ function NeuralODEMM(model::LuxCore.AbstractExplicitLayer,constraints_model,tspa
       model,constraints_model,p,re,tspan,mass_matrix,args,kwargs)
 end
 
-function (n::NeuralODEMM{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralODEMM{M})(x,p=n.p,st=nothing) where {M<:LuxCore.AbstractExplicitLayer}
   function f(u,p,t;st=st)
       nn_out,st = n.model(u,p,st)
       alg_out = n.constraints_model(u,p,t)

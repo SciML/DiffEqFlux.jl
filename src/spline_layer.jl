@@ -33,6 +33,6 @@ end
 
 @functor SplineLayer (saved_points,)
 
-function (layer::SplineLayer)(t::Real,p=layer.saved_points)
-    return layer.spline_basis(p,layer.time_span[1]:layer.time_step:layer.time_span[2])(t)
+function (layer::SplineLayer)(t::Real,p=layer.saved_points,st=nothing)
+    return layer.spline_basis(p,layer.time_span[1]:layer.time_step:layer.time_span[2])(t), st
 end
