@@ -20,7 +20,7 @@ end
     train_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ; regularize, monte_carlo)
-        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ, ffjord_mdl.st; regularize, monte_carlo)
         -mean(logpx)
     end
 
@@ -206,7 +206,7 @@ end
     train_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ; regularize, monte_carlo)
-        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ, ffjord_mdl.st; regularize, monte_carlo)
         -mean(logpx)
     end
 
@@ -239,7 +239,7 @@ end
     test_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ)
-        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ, ffjord_mdl.st; regularize, monte_carlo)
         -mean(logpx)
     end
 
@@ -249,7 +249,7 @@ end
     res = Optimization.solve(optprob, ADAM(0.1); callback= callback, maxiters=10)
 
     actual_pdf = pdf.(data_dist, test_data)
-    learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
+    learned_pdf = exp.(ffjord_mdl(test_data, res.u, ffjord_mdl.st; regularize, monte_carlo)[1])
 
     @test ffjord_mdl.p != res.u
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.9
@@ -269,7 +269,7 @@ end
     test_data = Float32.(rand(data_dist, 1, 100))
 
     function loss(θ)
-        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ, ffjord_mdl.st; regularize, monte_carlo)
         -mean(logpx)
     end
 
@@ -279,7 +279,7 @@ end
     res = Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=300)
 
     actual_pdf = pdf.(data_dist, test_data)
-    learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
+    learned_pdf = exp.(ffjord_mdl(test_data, res.u, ffjord_mdl.st; regularize, monte_carlo)[1])
 
     @test 0.01f0 * ffjord_mdl.p != res.u
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
@@ -300,7 +300,7 @@ end
     test_data = Float32.(rand(data_dist, 100))
 
     function loss(θ)
-        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ, ffjord_mdl.st; regularize, monte_carlo)
         -mean(logpx)
     end
 
@@ -310,7 +310,7 @@ end
     res = Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=300)
 
     actual_pdf = pdf(data_dist, test_data)
-    learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
+    learned_pdf = exp.(ffjord_mdl(test_data, res.u, ffjord_mdl.st; regularize, monte_carlo)[1])
 
     @test 0.01f0 * ffjord_mdl.p != res.u
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
@@ -331,7 +331,7 @@ end
     test_data = Float32.(rand(data_dist, 100))
 
     function loss(θ)
-        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
+        logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ, ffjord_mdl.st; regularize, monte_carlo)
         mean(-logpx .+ 1f-1 * λ₁ .+ 1f-1 * λ₂)
     end
 
@@ -341,7 +341,7 @@ end
     res = Optimization.solve(optprob, ADAM(0.1); callback = callback, maxiters=300)
 
     actual_pdf = pdf(data_dist, test_data)
-    learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
+    learned_pdf = exp.(ffjord_mdl(test_data, res.u, ffjord_mdl.st; regularize, monte_carlo)[1])
 
     @test 0.01f0 * ffjord_mdl.p != res.u
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.40

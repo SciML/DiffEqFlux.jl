@@ -36,18 +36,18 @@ ps = Flux.params(neuralde)
 loss1 = loss_n_ode()
 Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
 loss2 = loss_n_ode()
-# @test loss2 < loss1
+@test loss2 < loss1
 
 neuralde = NeuralODE(model,tspan,KenCarp4(),saveat=t,reltol=1e-7,abstol=1e-9)
 ps = Flux.params(neuralde)
 loss1 = loss_n_ode()
 Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
 loss2 = loss_n_ode()
-# @test loss2 < loss1
+@test loss2 < loss1
 
 neuralde = NeuralODE(model,tspan,RadauIIA5(),saveat=t,reltol=1e-7,abstol=1e-9)
 ps = Flux.params(neuralde)
 loss1 = loss_n_ode()
 Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
 loss2 = loss_n_ode()
-# @test loss2 < loss1
+@test loss2 < loss1
