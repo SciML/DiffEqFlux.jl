@@ -20,7 +20,7 @@ NN = Flux.Chain(Flux.Dense(n, 5n, tanh),
 @info "ROCK4"
 nODE = NeuralODE(NN, tspan, ROCK4(), reltol=1f-4, saveat=[tspan[end]])
 
-loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ, nODE.st)[end])
+loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ, nODE.st)[1][end])
 l1 = loss_function(nODE.p)
 optf = Optimization.OptimizationFunction((x,p)->loss_function(x), Optimization.AutoZygote())
 optprob = Optimization.OptimizationProblem(optf, nODE.p)
