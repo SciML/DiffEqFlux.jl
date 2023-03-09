@@ -109,7 +109,7 @@ function ffjord(u, p, t, model::LuxCore.AbstractExplicitLayer, e, st;
 end
 
 # When running on GPU e needs to be passed separately, when using Lux pass st as a kwarg
-(n::FFJORD)(args...; kwargs...) = forward_ffjord(n, args...; kwargs...)
+(n::FFJORD)(x, p, st, args...; kwargs...) = forward_ffjord(n, x, p, args...; st, kwargs...)
 
 function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
                         regularize=false, monte_carlo=true, st=n.st)

@@ -90,7 +90,7 @@ struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     end
 end
 
-function (nhde::NeuralHamiltonianDE)(x, p = nhde.p, st=n.st)
+function (nhde::NeuralHamiltonianDE)(x,p,st)
     function neural_hamiltonian!(du, u, p, t)
         du .= reshape(nhde.model(u, p, st), size(du))
     end

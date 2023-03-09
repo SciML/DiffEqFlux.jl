@@ -50,7 +50,7 @@ function NeuralODE(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,
       model,p,st,re,tspan,args,kwargs)
 end
 
-function (n::NeuralODE{M})(x,p=n.p,st=n.st) where {M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralODE{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
   function dudt_(u,p,t;st=st)
     u_, st = n.model(u,p,st)
     return u_
@@ -107,7 +107,7 @@ function NeuralDSDE(drift::LuxCore.AbstractExplicitLayer,diffusion::LuxCore.Abst
       p,st,1,drift,re1,diffusion,re2,tspan,args,kwargs)
 end
 
-function (n::NeuralDSDE{M})(x,p=n.p,st=n.st) where {M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralDSDE{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
     st1 = st.drift
     st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
@@ -171,7 +171,7 @@ function NeuralSDE(drift::LuxCore.AbstractExplicitLayer, diffusion::LuxCore.Abst
       p,st,1,drift,re1,diffusion,re2,tspan,nbrown,args,kwargs)
 end
 
-function (n::NeuralSDE{P,M})(x,p=n.p,st=n.st) where {P,M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralSDE{P,M})(x,p,st) where {P,M<:LuxCore.AbstractExplicitLayer}
     st1 = st.drift
     st2 = st.diffusion
     function dudt_(u,p,t;st=st1)
@@ -247,7 +247,7 @@ function NeuralCDDE(model::LuxCore.AbstractExplicitLayer,tspan,hist,lags,args...
       p,st,model,re,hist,lags,tspan,args,kwargs)
 end
 
-function (n::NeuralCDDE)(x,p=n.p,st=n.st)
+function (n::NeuralCDDE)(x,p,st)
     function dudt_(u,h,p,t;st=st)
         _u = vcat(u,(h(p,t-lag) for lag in n.lags)...)
         n.model(_u, p, st)
@@ -305,7 +305,7 @@ function NeuralDAE(model::LuxCore.AbstractExplicitLayer,constraints_model,tspan,
       args,kwargs)
 end
 
-function (n::NeuralDAE{P,M})(x,p=n.p,st=n.st) where {P,M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralDAE{P,M})(x,p,st) where {P,M<:LuxCore.AbstractExplicitLayer}
   du0 = n.du0
   function f(du,u,p,t;st=st)
       nn_out, st = n.model(vcat(u,du),p,st)
@@ -383,7 +383,7 @@ function NeuralODEMM(model::LuxCore.AbstractExplicitLayer,constraints_model,tspa
       model,constraints_model,p,st,re,tspan,mass_matrix,args,kwargs)
 end
 
-function (n::NeuralODEMM{M})(x,p=n.p,st=n.st) where {M<:LuxCore.AbstractExplicitLayer}
+function (n::NeuralODEMM{M})(x,p,st) where {M<:LuxCore.AbstractExplicitLayer}
   function f(u,p,t;st=st)
       nn_out,st = n.model(u,p,st)
       alg_out = n.constraints_model(u,p,t)
