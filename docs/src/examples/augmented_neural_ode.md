@@ -8,8 +8,8 @@ using Statistics, LinearAlgebra, Plots
 using Flux.Data: DataLoader
 
 function random_point_in_sphere(dim, min_radius, max_radius)
-    distance = (max_radius - min_radius) .* (rand(1) .^ (1.0 / dim)) .+ min_radius
-    direction = randn(dim)
+    distance = (max_radius - min_radius) .* (rand(Float32,1) .^ (1f0 / dim)) .+ min_radius
+    direction = randn(Float32,dim)
     unit_direction = direction ./ norm(direction)
     return distance .* unit_direction
 end
@@ -40,7 +40,7 @@ function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
                            Flux.Dense(hidden_dim, hidden_dim, relu),
                            Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
                      (0.f0, 1.f0), Tsit5(), save_everystep = false,
-                     reltol = 1e-3, abstol = 1e-3, save_start = false) |> Flux.gpu
+                     reltol = 1f-3, abstol = 1f-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
     return Flux.Chain((x, p=node.p) -> node(x, p),
                  Array,
@@ -49,10 +49,10 @@ function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
 end
 
 function plot_contour(model, npoints = 300)
-    grid_points = zeros(2, npoints ^ 2)
+    grid_points = zeros(Float32, 2, npoints ^ 2)
     idx = 1
-    x = range(-4.0, 4.0, length = npoints)
-    y = range(-4.0, 4.0, length = npoints)
+    x = range(-4f0, 4f0, length = npoints)
+    y = range(-4f0, 4f0, length = npoints)
     for x1 in x, x2 in y
         grid_points[:, idx] .= [x1, x2]
         idx += 1
@@ -66,7 +66,7 @@ loss_node(x, y) = mean((model(x) .- y) .^ 2)
 
 println("Generating Dataset")
 
-dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size = 256)
+dataloader = concentric_sphere(2, (0f0, 2f0), (3f0, 4f0), 2000, 2000; batch_size = 256)
 
 iter = 0
 cb = function()
@@ -89,7 +89,7 @@ end
 plt_node = plot_contour(model)
 
 model, parameters = construct_model(1, 2, 64, 1)
-opt = ADAM(0.005)
+opt = ADAM(5f-3)
 
 println()
 println("Training Augmented Neural ODE")
@@ -121,8 +121,8 @@ circle, and `-1` to any point which lies between the inner and outer circle. Our
 
 ```@example augneuralode
 function random_point_in_sphere(dim, min_radius, max_radius)
-    distance = (max_radius - min_radius) .* (rand(1) .^ (1.0 / dim)) .+ min_radius
-    direction = randn(dim)
+    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1f0 / dim)) .+ min_radius
+    direction = randn(Float32, dim)
     unit_direction = direction ./ norm(direction)
     return distance .* unit_direction
 end
@@ -172,7 +172,7 @@ function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
                            Flux.Dense(hidden_dim, hidden_dim, relu),
                            Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
                      (0.f0, 1.f0), Tsit5(), save_everystep = false,
-                     reltol = 1e-3, abstol = 1e-3, save_start = false) |> Flux.gpu
+                     reltol = 1f-3, abstol = 1f-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : (AugmentedNDELayer(node, augment_dim) |> Flux.gpu)
     return Flux.Chain((x, p=node.p) -> node(x, p),
                  Array,
@@ -189,8 +189,8 @@ Here, we define a utility to plot our model regression results as a heatmap.
 function plot_contour(model, npoints = 300)
     grid_points = zeros(2, npoints ^ 2)
     idx = 1
-    x = range(-4.0, 4.0, length = npoints)
-    y = range(-4.0, 4.0, length = npoints)
+    x = range(-4f0, 4f0, length = npoints)
+    y = range(-4f0, 4f0, length = npoints)
     for x1 in x, x2 in y
         grid_points[:, idx] .= [x1, x2]
         idx += 1
@@ -218,7 +218,7 @@ Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is ea
 We sample a total of `4000` data points.
 
 ```@example augneuralode
-dataloader = concentric_sphere(2, (0.0, 2.0), (3.0, 4.0), 2000, 2000; batch_size = 256)
+dataloader = concentric_sphere(2, (0f0, 2f0), (3f0, 4f0), 2000, 2000; batch_size = 256)
 ```
 
 ### Callback Function
@@ -240,7 +240,7 @@ end
 We use ADAM as the optimizer with a learning rate of 0.005
 
 ```@example augneuralode
-opt = ADAM(0.005)
+opt = ADAM(5f-3)
 ```
 
 ## Training the Neural ODE
