@@ -72,7 +72,7 @@ function jacobian_fn(f::LuxCore.AbstractExplicitLayer, x::AbstractMatrix, args..
     vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
     for i in 1:size(y, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(eltype(x))
-        vec[i, :, :] .= back(z)[1]
+        vec[i, :, :] = back(z)[1]
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(eltype(x))
     end
     copy(vec)
