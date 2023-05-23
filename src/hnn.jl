@@ -91,19 +91,20 @@ struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     tspan::T
     args::A
     kwargs::K
+end
 
-    function NeuralHamiltonianDE(model, tspan, args...; p=nothing, kwargs...)
-        hnn = HamiltonianNN(model, p=p)
-        new{typeof(hnn.model),typeof(hnn.p),typeof(hnn.re),
-            typeof(tspan),typeof(args),typeof(kwargs)}(
-            hnn, hnn.p, tspan, args, kwargs)
-    end
+# TODO: Make sensealg an argument
+function NeuralHamiltonianDE(model, tspan, args...; p=nothing, kwargs...)
+    hnn = HamiltonianNN(model, p=p)
+    return NeuralHamiltonianDE{typeof(hnn.model),typeof(hnn.p),typeof(hnn.re),
+        typeof(tspan),typeof(args),typeof(kwargs)}(
+        hnn, hnn.p, tspan, args, kwargs)
+end
 
-    function NeuralHamiltonianDE(hnn::HamiltonianNN{M,RE,P}, tspan, args...;
-        p=hnn.p, kwargs...) where {M,RE,P}
-        new{M,P,RE,typeof(tspan),typeof(args),
-            typeof(kwargs)}(hnn, hnn.p, tspan, args, kwargs)
-    end
+function NeuralHamiltonianDE(hnn::HamiltonianNN{M,RE,P}, tspan, args...;
+    p=hnn.p, kwargs...) where {M,RE,P}
+    return NeuralHamiltonianDE{M,P,RE,typeof(tspan),typeof(args),
+        typeof(kwargs)}(hnn, hnn.p, tspan, args, kwargs)
 end
 
 function (nhde::NeuralHamiltonianDE)(x, p=nhde.p)
@@ -113,18 +114,18 @@ function (nhde::NeuralHamiltonianDE)(x, p=nhde.p)
     prob = ODEProblem(ODEFunction{true}(neural_hamiltonian!), x, nhde.tspan, p)
     # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP. Instead we use
     #       ForwardDiff.jl internally.
-    sense = InterpolatingAdjoint(autojacvec=true)
-    return solve(prob, nhde.args...; sensealg=sense, nhde.kwargs...)
+    sensealg = InterpolatingAdjoint(; autojacvec=true)
+    return solve(prob, nhde.args...; sensealg, nhde.kwargs...)
 end
 
 function (nhde::NeuralHamiltonianDE{<:LuxCore.AbstractExplicitLayer})(x, ps, st)
     function neural_hamiltonian!(du, u, p, t)
-        y, st = nhde.model(u, ps, st)
+        y, st = nhde.model(u, p, st)
         du .= reshape(y, size(du))
     end
     prob = ODEProblem(ODEFunction{true}(neural_hamiltonian!), x, nhde.tspan, ps)
     # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP. Instead we use
     #       ForwardDiff.jl internally.
-    sense = InterpolatingAdjoint(autojacvec=true)
-    return solve(prob, nhde.args...; sensealg=sense, nhde.kwargs...)
+    sensealg = InterpolatingAdjoint(; autojacvec=true)
+    return solve(prob, nhde.args...; sensealg, nhde.kwargs...), st
 end

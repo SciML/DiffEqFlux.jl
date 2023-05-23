@@ -48,7 +48,7 @@ model = NeuralHamiltonianDE(
     save_start = true, saveat = t
 )
 
-pred = Array(model(data[:, 1], ps_c, st))
+pred = Array(first(model(data[:, 1], ps_c, st)))
 plot(data[1, :], data[2, :], lw=4, label="Original")
 plot!(pred[1, :], pred[2, :], lw=4, label="Predicted")
 xlabel!("Position (q)")
@@ -112,7 +112,7 @@ model = NeuralHamiltonianDE(
     save_start = true, saveat = t
 )
 
-pred = Array(model(data[:, 1], ps_c, st))
+pred = Array(first(model(data[:, 1], ps_c, st)))
 plot(data[1, :], data[2, :], lw=4, label="Original")
 plot!(pred[1, :], pred[2, :], lw=4, label="Predicted")
 xlabel!("Position (q)")
