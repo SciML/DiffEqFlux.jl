@@ -1,4 +1,4 @@
-using DiffEqFlux, Zygote, OrdinaryDiffEq, ForwardDiff, Test, Optimisers, Random, Lux, ComponentArrays
+using DiffEqFlux, Zygote, OrdinaryDiffEq, ForwardDiff, Test, Optimisers, Random, Lux, ComponentArrays, Statistics
 
 # Checks for Shapes and Non-Zero Gradients
 u0 = rand(Float32, 6, 1)
@@ -41,6 +41,7 @@ loss(data, target, ps) = mean(abs2, first(hnn(data, ps, st)) .- target)
 initial_loss = loss(data, target, ps)
 
 for epoch in 1:100
+    global ps, st_opt
     # Forward Mode over Reverse Mode for Training
     gs = ForwardDiff.gradient(ps -> loss(data, target, ps), ps)
     st_opt, ps = Optimisers.update!(st_opt, ps, gs)
