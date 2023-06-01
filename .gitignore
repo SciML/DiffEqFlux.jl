@@ -5,4 +5,5 @@ deps/deps.jl
 Manifest.toml
 docs/build
 *.DS_Store
-wip
+.vscode
+wip/
