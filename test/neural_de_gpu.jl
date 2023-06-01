@@ -1,86 +1,104 @@
-using DiffEqFlux, Flux, CUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test
+using DiffEqFlux, Lux, CUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test, Random,
+    ComponentArrays
 
 CUDA.allowscalar(false)
 
-mp = Flux.Chain(Flux.Dense(2,2)) |> Flux.gpu
-x = Float32[2.; 0.] |> Flux.gpu
-xs = Float32.(hcat([0.; 0.], [1.; 0.], [2.; 0.])) |> Flux.gpu
-tspan = (0.0f0,25.0f0)
-dudt = Flux.Chain(Flux.Dense(2,50,tanh),Flux.Dense(50,2)) |> Flux.gpu
-dudt_tracker = Flux.Chain(Flux.Dense(2,50,CUDA.tanh),Flux.Dense(50,2)) |> Flux.gpu
+x = Float32[2.0; 0.0] |> Lux.gpu
+xs = hcat([0.0; 0.0], [1.0; 0.0], [2.0; 0.0]) |> Lux.gpu
+tspan = (0.0f0, 25.0f0)
 
-NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)(x)
-NeuralODE(dudt,tspan,Tsit5(),saveat=0.1)(x)
-NeuralODE(dudt,tspan,Tsit5(),saveat=0.1,sensealg=TrackerAdjoint())(x)
+mp = Lux.Chain(Lux.Dense(2, 2))
 
-NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)(xs)
-NeuralODE(dudt,tspan,Tsit5(),saveat=0.1)(xs)
-NeuralODE(dudt,tspan,Tsit5(),saveat=0.1,sensealg=TrackerAdjoint())(xs)
+dudt = Lux.Chain(Lux.Dense(2, 50, tanh), Lux.Dense(50, 2))
+ps_dudt, st_dudt = Lux.setup(Random.default_rng(), dudt)
+ps_dudt = ComponentArray(ps_dudt) |> Lux.gpu
+st_dudt = st_dudt |> Lux.gpu
 
-node = NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)
-grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-@test ! iszero(grads[x])
-@test ! iszero(grads[node.p])
+NeuralODE(dudt, tspan, Tsit5(), save_everystep=false, save_start=false)(x, ps_dudt, st_dudt)
+NeuralODE(dudt, tspan, Tsit5(), saveat=0.1)(x, ps_dudt, st_dudt)
+NeuralODE(dudt, tspan, Tsit5(), saveat=0.1, sensealg=TrackerAdjoint())(x, ps_dudt, st_dudt)
 
-grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-@test ! iszero(grads[xs])
-@test ! iszero(grads[node.p])
+NeuralODE(dudt, tspan, Tsit5(), save_everystep=false, save_start=false)(xs, ps_dudt, st_dudt)
+NeuralODE(dudt, tspan, Tsit5(), saveat=0.1)(xs, ps_dudt, st_dudt)
+NeuralODE(dudt, tspan, Tsit5(), saveat=0.1, sensealg=TrackerAdjoint())(xs, ps_dudt, st_dudt)
 
-node = NeuralODE(dudt_tracker,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=TrackerAdjoint())
-grads = Zygote.gradient(()->sum(Array(node(x))),Flux.params(x,node))
-@test ! iszero(grads[x])
-@test ! iszero(grads[node.p])
+node = NeuralODE(dudt, tspan, Tsit5(), save_everystep=false, save_start=false)
+ps_node, st_node = Lux.setup(Random.default_rng(), node)
+ps_node = ComponentArray(ps_node) |> Lux.gpu
+st_node = st_node |> Lux.gpu
+grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
+@test !iszero(grads[1])
+@test !iszero(grads[2])
 
-grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-@test ! iszero(grads[xs])
-@test ! iszero(grads[node.p])
+grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
+@test !iszero(grads[1])
+@test !iszero(grads[2])
 
-node = NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false,sensealg=BacksolveAdjoint())
-grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-@test ! iszero(grads[x])
-@test ! iszero(grads[node.p])
+node = NeuralODE(dudt, tspan, Tsit5(), save_everystep=false, save_start=false,
+    sensealg=TrackerAdjoint())
+grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
+@test !iszero(grads[1])
+@test !iszero(grads[2])
 
-grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-@test ! iszero(grads[xs])
-@test ! iszero(grads[node.p])
+grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
+@test !iszero(grads[1])
+@test !iszero(grads[2])
+
+node = NeuralODE(dudt, tspan, Tsit5(), save_everystep=false, save_start=false,
+    sensealg=BacksolveAdjoint())
+grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
+@test !iszero(grads[1])
+@test !iszero(grads[2])
+
+grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
+@test !iszero(grads[1])
+@test !iszero(grads[2])
 
 # Adjoint
 @testset "adjoint mode" begin
-    node = NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)
-    grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-    @test ! iszero(grads[x])
-    @test ! iszero(grads[node.p])
+    node = NeuralODE(dudt, tspan, Tsit5(), save_everystep=false, save_start=false)
+    grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
+    @test !iszero(grads[1])
+    @test !iszero(grads[2])
 
-    grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-    @test ! iszero(grads[xs])
-    @test ! iszero(grads[node.p])
+    grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
+    @test !iszero(grads[1])
+    @test !iszero(grads[2])
 
-    node = NeuralODE(dudt,tspan,Tsit5(),saveat=0.0:0.1:10.0)
-    grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-    @test ! iszero(grads[x])
-    @test ! iszero(grads[node.p])
+    node = NeuralODE(dudt, tspan, Tsit5(), saveat=0.0:0.1:10.0)
+    grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
+    @test !iszero(grads[1])
+    @test !iszero(grads[2])
 
-    grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-    @test ! iszero(grads[xs])
-    @test ! iszero(grads[node.p])
+    grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
+    @test !iszero(grads[1])
+    @test !iszero(grads[2])
 
-    node = NeuralODE(dudt,tspan,Tsit5(),saveat=1f-1)
-    grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-    @test ! iszero(grads[x])
-    @test ! iszero(grads[node.p])
+    node = NeuralODE(dudt, tspan, Tsit5(), saveat=1.0f-1)
+    grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
+    @test !iszero(grads[1])
+    @test !iszero(grads[2])
 
-    grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-    @test ! iszero(grads[xs])
-    @test ! iszero(grads[node.p])
+    grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
+    @test !iszero(grads[1])
+    @test !iszero(grads[2])
 end
 
-NeuralDSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=0.0:0.1:2.0)(x)
-sode = NeuralDSDE(dudt,mp,(0.0f0,2.0f0),SOSRI(),saveat=Float32.(0.0:0.1:2.0),dt=1f-1)
-grads = Zygote.gradient(()->sum(sode(x)),Flux.params(x,sode))
+ndsde = NeuralDSDE(dudt, mp, (0.0f0, 2.0f0), SOSRI(), saveat=0.0:0.1:2.0)
+ps_ndsde, st_ndsde = Lux.setup(Random.default_rng(), ndsde)
+ps_ndsde = ComponentArray(ps_ndsde) |> Lux.gpu
+st_ndsde = st_ndsde |> Lux.gpu
+ndsde(x, ps_ndsde, st_ndsde)
 
-@test ! iszero(grads[x])
-@test ! iszero(grads[sode.p])
+sode = NeuralDSDE(dudt, mp, (0.0f0, 2.0f0), SOSRI(), saveat=Float32.(0.0:0.1:2.0),
+                  dt=1.0f-1, sensealg=TrackerAdjoint())
+ps_sode, st_sode = Lux.setup(Random.default_rng(), sode)
+ps_sode = ComponentArray(ps_sode) |> Lux.gpu
+st_sode = st_sode |> Lux.gpu
+grads = Zygote.gradient((x, ps) -> sum(first(sode(x, ps, st_sode))), x, ps_sode)
+@test !iszero(grads[1])
+@test !iszero(grads[2])
 
-grads = Zygote.gradient(()->sum(sode(xs)),Flux.params(xs,sode))
-@test ! iszero(grads[xs])
-@test ! iszero(grads[sode.p])
+grads = Zygote.gradient((xs, ps) -> sum(first(sode(xs, ps, st_sode))), xs, ps_sode)
+@test !iszero(grads[1])
+@test !iszero(grads[2])
