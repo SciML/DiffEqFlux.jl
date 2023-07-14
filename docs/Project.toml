@@ -32,7 +32,7 @@ StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 
 [compat]
 CSV = "0.10"
-ComponentArrays = "0.13"
+ComponentArrays = "0.13, 0.14"
 DataDeps = "0.7"
 DataFrames = "1"
 DiffEqFlux = "2"
