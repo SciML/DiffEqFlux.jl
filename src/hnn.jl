@@ -37,9 +37,9 @@ struct HamiltonianNN{M,R,P} <: LuxCore.AbstractExplicitContainerLayer{(:model,)}
     p::P
     st::NamedTuple
 
-    function HamiltonianNN(model::LuxCore.AbstractExplicitLayer; p = nothing, st = NamedTuple())
+    function HamiltonianNN(model::LuxCore.AbstractExplicitLayer; p=nothing, st=NamedTuple())
         re = nothing
-        return new{typeof(model), typeof(re), typeof(p)}(model, re, p, st)
+        return new{typeof(model),typeof(re),typeof(p)}(model, re, p, st)
     end
 end
 
@@ -79,32 +79,19 @@ struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     kwargs::K
 end
 
-# TODO: Make sensealg an argument
-function NeuralHamiltonianDE(model, tspan, args...; p = nothing, st = NamedTuple(), kwargs...)
-    hnn = HamiltonianNN(model, p=p, st=st)
-    NeuralHamiltonianDE{typeof(hnn.model), typeof(hnn.p), typeof(hnn.re),
-        typeof(tspan), typeof(args), typeof(kwargs)}(
-        hnn, hnn.p, hnn.st, tspan, args, kwargs)
-end
-
 function NeuralHamiltonianDE(hnn::HamiltonianNN{M,RE,P}, tspan, args...;
-                             p = hnn.p, st=hnn.st, kwargs...) where {M,RE,P}
-    NeuralHamiltonianDE{M, P, RE, typeof(tspan), typeof(args),
+    p=hnn.p, st=hnn.st, kwargs...) where {M,RE,P}
+    NeuralHamiltonianDE{M,P,RE,typeof(tspan),typeof(args),
         typeof(kwargs)}(hnn, p, st, tspan, args, kwargs)
 end
 
-function (nhde::NeuralHamiltonianDE)(x,p=nhde.p,st=nhde.st)
-    function neural_hamiltonian!(du, u, p, t)
-        du .= reshape(nhde.model(u, p, st), size(du))
-    end
-    prob = ODEProblem(ODEFunction{true}(neural_hamiltonian!), x, nhde.tspan, p)
-    # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP. Instead we use
-    #       ForwardDiff.jl internally.
-    sensealg = InterpolatingAdjoint(; autojacvec=true)
-    return solve(prob, nhde.args...; sensealg, nhde.kwargs...)
+# TODO: Make sensealg an argument
+function NeuralHamiltonianDE(model, tspan, args...; p=nothing, st=NamedTuple(), kwargs...)
+    hnn = HamiltonianNN(model, p=p, st=st)
+    NeuralHamiltonianDE(hnn, tspan, args...; p, st, kwargs...)
 end
 
-function (nhde::NeuralHamiltonianDE{<:LuxCore.AbstractExplicitLayer})(x, ps, st)
+function (nhde::NeuralHamiltonianDE{<:LuxCore.AbstractExplicitLayer})(x, ps=nhde.p, st=nhde.st)
     function neural_hamiltonian!(du, u, p, t)
         y, st = nhde.model(u, p, st)
         du .= reshape(y, size(du))
