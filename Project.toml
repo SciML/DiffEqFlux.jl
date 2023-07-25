@@ -1,7 +1,7 @@
 name = "DiffEqFlux"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "2.0.0"
+version = "2.1.0"
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -35,11 +35,11 @@ ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
 Adapt = "3"
 ChainRulesCore = "1"
 ConsoleProgressMonitor = "0.1"
-DataInterpolations = "3.3"
+DataInterpolations = "3.3, 4"
 DiffEqBase = "6.41"
 Distributions = "0.23, 0.24, 0.25"
 DistributionsAD = "0.6"
-Flux = "0.12, 0.13"
+Flux = "0.12, 0.13, 0.14"
 ForwardDiff = "0.10"
 Functors = "0.4"
 LoggingExtras = "0.4, 1"

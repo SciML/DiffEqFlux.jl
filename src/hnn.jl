@@ -10,12 +10,11 @@ particles. It then returns the time derivatives for position and momentum.
     for such applications.
 
 !!! note
-    This layer currently doesn't support GPU. The support will be added in future
-    with some AD fixes.
+    To compute the gradients for this layer, it is recommended to use ForwardDiff.jl
 
-To obtain the gradients to train this network, ReverseDiff.gradient is supposed to
-be used. This prevents the usage of `DiffEqFlux.sciml_train` or `Flux.train`. Follow
-this [tutorial](https://docs.sciml.ai/DiffEqFlux/stable/examples/hamiltonian_nn/) to see how
+To obtain the gradients to train this network, ForwardDiff.gradient is supposed to
+be used. Follow this
+[tutorial](https://docs.sciml.ai/DiffEqFlux/stable/examples/hamiltonian_nn/) to see how
 to define a training loop to circumvent this issue.
 
 ```julia
@@ -32,7 +31,7 @@ References:
 [1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. "Hamiltonian Neural Networks." Advances in Neural Information Processing Systems 32 (2019): 15379-15389.
 
 """
-struct HamiltonianNN{M, R, P}
+struct HamiltonianNN{M,R,P} <: LuxCore.AbstractExplicitContainerLayer{(:model,)}
     model::M
     re::R
     p::P
@@ -44,12 +43,15 @@ struct HamiltonianNN{M, R, P}
     end
 end
 
-function _hamiltonian_forward(re, p, x)
-    H = Zygote.gradient(x -> sum(re(p)(x)), x)[1]
+function (hnn::HamiltonianNN{<:LuxCore.AbstractExplicitLayer})(x, ps=hnn.p, st=hnn.st)
+    (_, st), pb_f = Zygote.pullback(x) do x
+        y, st_ = hnn.model(x, ps, st)
+        return sum(y), st_
+    end
+    H = only(pb_f((one(eltype(x)), nothing)))
     n = size(x, 1) ÷ 2
-    return cat(H[(n + 1):2n, :], -H[1:n, :], dims=1)
+    return vcat(selectdim(H, 1, (n+1):2n), -selectdim(H, 1, 1:n)), st
 end
-(hnn::HamiltonianNN)(x, p = hnn.p) = _hamiltonian_forward(hnn.model, p, x)
 
 """
 Contructs a Neural Hamiltonian DE Layer for solving Hamiltonian Problems
@@ -75,27 +77,41 @@ struct NeuralHamiltonianDE{M,P,RE,T,A,K} <: NeuralDELayer
     tspan::T
     args::A
     kwargs::K
-
-    function NeuralHamiltonianDE(model, tspan, args...; p = nothing, st = NamedTuple(), kwargs...)
-        hnn = HamiltonianNN(model, p=p, st=st)
-        new{typeof(hnn.model), typeof(hnn.p), typeof(hnn.re),
-            typeof(tspan), typeof(args), typeof(kwargs)}(
-            hnn, hnn.p, hnn.st, tspan, args, kwargs)
-    end
-
-    function NeuralHamiltonianDE(hnn::HamiltonianNN{M,RE,P}, tspan, args...;
-                                 p = hnn.p, st=hnn.st, kwargs...) where {M,RE,P}
-        new{M, P, RE, typeof(tspan), typeof(args),
-            typeof(kwargs)}(hnn, p, st, tspan, args, kwargs)
-    end
 end
 
-function (nhde::NeuralHamiltonianDE)(x,p,st)
+# TODO: Make sensealg an argument
+function NeuralHamiltonianDE(model, tspan, args...; p = nothing, st = NamedTuple(), kwargs...)
+    hnn = HamiltonianNN(model, p=p, st=st)
+    NeuralHamiltonianDE{typeof(hnn.model), typeof(hnn.p), typeof(hnn.re),
+        typeof(tspan), typeof(args), typeof(kwargs)}(
+        hnn, hnn.p, hnn.st, tspan, args, kwargs)
+end
+
+function NeuralHamiltonianDE(hnn::HamiltonianNN{M,RE,P}, tspan, args...;
+                             p = hnn.p, st=hnn.st, kwargs...) where {M,RE,P}
+    NeuralHamiltonianDE{M, P, RE, typeof(tspan), typeof(args),
+        typeof(kwargs)}(hnn, p, st, tspan, args, kwargs)
+end
+
+function (nhde::NeuralHamiltonianDE)(x,p=nhde.p,st=nhde.st)
     function neural_hamiltonian!(du, u, p, t)
         du .= reshape(nhde.model(u, p, st), size(du))
     end
-    prob = ODEProblem(neural_hamiltonian!, x, nhde.tspan, p)
-    # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP
-    sense = InterpolatingAdjoint(autojacvec = false)
-    solve(prob, nhde.args...; sensealg = sense, nhde.kwargs...)
+    prob = ODEProblem(ODEFunction{true}(neural_hamiltonian!), x, nhde.tspan, p)
+    # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP. Instead we use
+    #       ForwardDiff.jl internally.
+    sensealg = InterpolatingAdjoint(; autojacvec=true)
+    return solve(prob, nhde.args...; sensealg, nhde.kwargs...)
+end
+
+function (nhde::NeuralHamiltonianDE{<:LuxCore.AbstractExplicitLayer})(x, ps, st)
+    function neural_hamiltonian!(du, u, p, t)
+        y, st = nhde.model(u, p, st)
+        du .= reshape(y, size(du))
+    end
+    prob = ODEProblem(ODEFunction{true}(neural_hamiltonian!), x, nhde.tspan, ps)
+    # NOTE: Nesting Zygote is an issue. So we can't use ZygoteVJP. Instead we use
+    #       ForwardDiff.jl internally.
+    sensealg = InterpolatingAdjoint(; autojacvec=true)
+    return solve(prob, nhde.args...; sensealg, nhde.kwargs...), st
 end
