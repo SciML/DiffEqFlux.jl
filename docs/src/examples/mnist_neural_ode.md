@@ -90,7 +90,7 @@ loss(x, y) = logitcrossentropy(model(x), y)
 # burn in loss
 loss(img, lab)
 
-opt = ADAM(0.05)
+opt = Adam(0.05)
 iter = 0
 
 callback() = begin
@@ -316,10 +316,10 @@ loss(img, lab)
 
 #### Optimizer
 
-`ADAM` is specified here as our optimizer with a **learning rate of 0.05**:
+`Adam` is specified here as our optimizer with a **learning rate of 0.05**:
 
 ```julia
-opt = ADAM(0.05)
+opt = Adam(0.05)
 ```
 
 #### CallBack

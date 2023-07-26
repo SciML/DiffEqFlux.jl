@@ -31,7 +31,7 @@ hnn = HamiltonianNN(Lux.Chain(Lux.Dense(2, 64, relu), Lux.Dense(64, 1)))
 ps, st = Lux.setup(Random.default_rng(), hnn)
 ps_c = ps |> ComponentArray
 
-opt = ADAM(0.01f0)
+opt = Adam(0.01f0)
 
 function loss_function(ps, data, target)
     pred, st_ = hnn(data, ps, st)
@@ -90,7 +90,7 @@ hnn = HamiltonianNN(Lux.Chain(Lux.Dense(2, 64, relu), Lux.Dense(64, 1)))
 ps, st = Lux.setup(Random.default_rng(), hnn)
 ps_c = ps |> ComponentArray
 
-opt = ADAM(0.01f0)
+opt = Adam(0.01f0)
 
 function loss_function(ps, data, target)
     pred, st_ = hnn(data, ps, st)

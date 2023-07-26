@@ -81,16 +81,16 @@ function callback(θ,l)
 end
 ```
 
-and we train the network using two rounds of `ADAM`:
+and we train the network using two rounds of `Adam`:
 
 ```@example tensor
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x,p) -> loss_adjoint(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, α)
-res1 = Optimization.solve(optprob, ADAM(0.05), callback = callback, maxiters = 150)
+res1 = Optimization.solve(optprob, Adam(0.05), callback = callback, maxiters = 150)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
-res2 = Optimization.solve(optprob2, ADAM(0.001), callback = callback,maxiters = 150)
+res2 = Optimization.solve(optprob2, Adam(0.001), callback = callback,maxiters = 150)
 opt = res2.u
 ```
 

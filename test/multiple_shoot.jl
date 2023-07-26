@@ -52,7 +52,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_single_shooting(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_single_shooting = Optimization.solve(optprob, ADAM(0.05),
+res_single_shooting = Optimization.solve(optprob, Adam(0.05),
 										  maxiters = 300)
 
 loss_ss, _ = loss_single_shooting(res_single_shooting.minimizer)
@@ -71,7 +71,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_multiple_shooting(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms = Optimization.solve(optprob, ADAM(0.05), maxiters = 300)
+res_ms = Optimization.solve(optprob, Adam(0.05), maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
 loss_ms, _ = loss_single_shooting(res_ms.minimizer)
@@ -95,7 +95,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_multiple_shooting_abs2(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms_abs2 = Optimization.solve(optprob, ADAM(0.05), maxiters = 300)
+res_ms_abs2 = Optimization.solve(optprob, Adam(0.05), maxiters = 300)
 
 loss_ms_abs2, _ = loss_single_shooting(res_ms_abs2.minimizer)
 println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
@@ -112,7 +112,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_multiple_shooting_fd(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms_fd = Optimization.solve(optprob, ADAM(0.05), maxiters = 300)
+res_ms_fd = Optimization.solve(optprob, Adam(0.05), maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
 loss_ms_fd, _ = loss_single_shooting(res_ms_fd.minimizer)
@@ -156,7 +156,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p,_)->loss_multiple_shooting_ens(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
 res_ms_ensembles = Optimization.solve(optprob,
-                                ADAM(0.05), maxiters = 300)
+                                Adam(0.05), maxiters = 300)
 
 loss_ms_ensembles, _ = loss_single_shooting(res_ms_ensembles.minimizer)
 

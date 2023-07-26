@@ -38,7 +38,7 @@ optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
-                          ADAM(0.1),
+                          Adam(0.1),
                           maxiters = 100,
                           callback=cb)
 
@@ -107,7 +107,7 @@ In this example, we wish to choose the parameters of the network such that the l
 
 We then train the neural network to learn the distribution of `x`.
 
-Here we showcase starting the optimization with `ADAM` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
+Here we showcase starting the optimization with `Adam` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
 ```@example cnf2
 adtype = Optimization.AutoZygote()
@@ -115,12 +115,12 @@ optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
-                          ADAM(0.1),
+                          Adam(0.1),
                           maxiters = 100,
                           callback=cb)
 ```
 
-We then complete the training using a different optimizer, starting from where `ADAM` stopped.
+We then complete the training using a different optimizer, starting from where `Adam` stopped.
 
 ```@example cnf2
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)

@@ -92,7 +92,7 @@ loss(x, y) = logitcrossentropy(model(x), y)
 # burn in loss
 loss(img, lab)
 
-opt = ADAM(0.05)
+opt = Adam(0.05)
 iter = 0
 
 cb() = begin

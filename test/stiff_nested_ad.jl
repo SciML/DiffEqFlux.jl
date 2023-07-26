@@ -23,7 +23,7 @@ end
 loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
 
 data = Iterators.repeated((), 10)
-opt = ADAM(0.1)
+opt = Adam(0.1)
 cb = function () #callback function to observe training
   display(loss_n_ode())
 end

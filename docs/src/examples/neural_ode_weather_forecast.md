@@ -14,7 +14,7 @@ using Dates
 using Optimization
 using ComponentArrays
 using Lux
-using DiffEqFlux: NeuralODE, ADAMW, swish
+using DiffEqFlux: NeuralODE, AdamW, swish
 using DifferentialEquations
 using CSV
 using DataFrames
@@ -193,7 +193,7 @@ function train(t, y, obs_grid, maxiters, lr, rng, p=nothing, state=nothing; kwar
         if state === nothing state = state_new end
 
         p, state = train_one_round(
-            node, p, state, y, ADAMW(lr), maxiters, rng;
+            node, p, state, y, AdamW(lr), maxiters, rng;
             callback=log_results(ps, losses),
             kwargs...
         )

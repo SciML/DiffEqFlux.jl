@@ -161,7 +161,7 @@ smaller `n` and then decrease it after it has had some time to adjust towards
 the right mean behavior:
 
 ```@example nsde
-opt = ADAM(0.025)
+opt = Adam(0.025)
 
 # First round of training with n = 10
 adtype = Optimization.AutoZygote()
