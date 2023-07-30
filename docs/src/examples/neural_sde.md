@@ -82,6 +82,7 @@ p2, re2 = Flux.destructure(diffusion_dudt)
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
                        saveat = tsteps, reltol = 1e-1, abstol = 1e-1);
+nothing
 ```
 
 Let's see what that looks like:
