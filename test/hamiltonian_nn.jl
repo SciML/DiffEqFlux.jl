@@ -34,7 +34,7 @@ hnn = HamiltonianNN(Lux.Chain(Lux.Dense(2, 16, relu), Lux.Dense(16, 1)))
 ps, st = Lux.setup(Random.default_rng(), hnn)
 ps = ps |> ComponentArray
 
-opt = Adam(0.01)
+opt = Optimisers.Adam(0.01)
 st_opt = Optimisers.setup(opt, ps)
 loss(data, target, ps) = mean(abs2, first(hnn(data, ps, st)) .- target)
 
