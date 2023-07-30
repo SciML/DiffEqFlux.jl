@@ -81,7 +81,7 @@ diffusion_dudt = Flux.Chain(Flux.Dense(2, 2))
 p2, re2 = Flux.destructure(diffusion_dudt)
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
-                       saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
+                       saveat = tsteps, reltol = 1e-1, abstol = 1e-1);
 ```
 
 Let's see what that looks like:
