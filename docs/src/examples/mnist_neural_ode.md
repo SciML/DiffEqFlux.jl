@@ -8,29 +8,25 @@ on **GPUs** with **minibatching**.
 ```julia
 using DiffEqFlux, DifferentialEquations, NNlib, MLDataUtils, Printf
 using Flux.Losses: logitcrossentropy
-using Flux.Data: DataLoader
 using MLDatasets
 using CUDA
 CUDA.allowscalar(false)
 
-function loadmnist(batchsize = bs)
-	# Use MLDataUtils LabelEnc for natural onehot conversion
-  	onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
-	# Load MNIST
-    mnist = MNIST(split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
-	# Process images into (H,W,C,BS) batches
-	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |> Flux.gpu
-	x_train = batchview(x_train,batchsize)
-	# Onehot and batch the labels
-	y_train = onehot(labels_raw) |> Flux.gpu
-	y_train = batchview(y_train,batchsize)
-	return x_train, y_train
+train_data = MNIST(split = :train)
+test_data = MNIST(split = :test)
+
+function loadmnist(data::MNIST; batchsize::Int = 128, shuffle = true)
+    # Process images into (H,W,C,N) batches by inserting channel dimension
+    x = reshape(data.features, 28, 28, 1, :)
+    # One-hot encode targets
+    y = Flux.onehotbatch(data.targets, 0:9)
+    # Minibatch data using Flux DataLoader
+    return Flux.DataLoader((x, y); batchsize = batchsize, shuffle = shuffle) |> Flux.gpu
 end
 
 # Main
-const bs = 128
-x_train, y_train = loadmnist(bs)
+train_dataloader = loadmnist(train_data)
+test_dataloader = loadmnist(test_data, batchsize = length(test_data), shuffle = false)
 
 down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |> Flux.gpu
 
@@ -43,7 +39,6 @@ nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
                    save_start = false) |> Flux.gpu
-
 fc  = Flux.Chain(Flux.Dense(20, 10)) |> Flux.gpu
 
 function DiffEqArray_to_Array(x)
@@ -58,8 +53,7 @@ model = Flux.Chain(down,
               fc) |> Flux.gpu;
 
 # To understand the intermediate NN-ODE layer, we can examine it's dimensionality
-img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
-
+img, lab = train_dataloader.data[1:1]
 x_d = down(img)
 
 # We can see that we can compute the forward pass through the NN topology
@@ -118,7 +112,6 @@ Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt, cb = c
 ```julia
 using DiffEqFlux, DifferentialEquations, NNlib, MLDataUtils, Printf
 using Flux.Losses: logitcrossentropy
-using Flux.Data: DataLoader
 using MLDatasets
 ```
 
@@ -137,32 +130,28 @@ code will fall back to the CPU.
 
 ### Load MNIST Dataset into Minibatches
 
-The preprocessing is done in `loadmnist` where the raw MNIST data is split into features `x_train`
-and labels `y_train` by specifying batchsize `bs`. The function `convertlabel` will then transform
-the current labels (`labels_raw`) from numbers 0 to 9 (`LabelEnc.NativeLabels(collect(0:9))`) into
-one hot encoding (`LabelEnc.OneOfK`).
+The MNIST dataset is split into `60.000` train and `10.000` test images, ensuring a balanced ratio of labels.
 
-Features are reshaped into format **[Height, Width, Color, BatchSize]** or in this case **[28, 28, 1, 128]**
+The preprocessing is done in `loadmnist` where the raw MNIST data is split into features `x` and labels `y`.
+Features are reshaped into format **[Height, Width, Color, Samples]**, in case of the train set **[28, 28, 1, 60000]**.
+Using Flux's `onehotbatch` function, the labels (numbers 0 to 9) are one-hot encoded, resulting in a a **[10, 60000]** `OneHotMatrix`.
+
+Features and labels are then passed to Flux's DataLoader. 
+This automatically minibatches both the images and labels using the specified `batchsize`,
 meaning that every minibatch will contain 128 images with a single color channel of 28x28 pixels.
-The entire dataset of 60,000 images is split into the train and test dataset, ensuring a balanced ratio
-of labels. These splits are then passed to Flux's DataLoader. This automatically minibatches both the images and
-labels. Additionally, it allows us to shuffle the train dataset in each epoch while keeping the order of the
-test data the same.
+Additionally, it allows us to shuffle the train dataset in each epoch.
 
 ```julia
-function loadmnist(batchsize = bs)
-	# Use MLDataUtils LabelEnc for natural onehot conversion
-  	onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
-	# Load MNIST
-    mnist = MNIST(split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
-	# Process images into (H,W,C,BS) batches
-	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |> Flux.gpu
-	x_train = batchview(x_train,batchsize)
-	# Onehot and batch the labels
-	y_train = onehot(labels_raw) |> Flux.gpu
-	y_train = batchview(y_train,batchsize)
-	return x_train, y_train
+train_data = MNIST(split = :train)
+test_data = MNIST(split = :test)
+
+function loadmnist(data::MNIST; batchsize::Int = 128, shuffle = true)
+    # Process images into (H,W,C,N) batches by inserting channel dimension
+    x = reshape(data.features, 28, 28, 1, :)
+    # One-hot encode targets
+    y = Flux.onehotbatch(data.targets, 0:9)
+    # Minibatch data using Flux DataLoader
+    return Flux.DataLoader((x, y); batchsize = batchsize, shuffle = shuffle) |> Flux.gpu
 end
 ```
 
@@ -170,8 +159,8 @@ and then loaded from main:
 
 ```julia
 # Main
-const bs = 128
-x_train, y_train = loadmnist(bs)
+train_dataloader = loadmnist(train_data)
+test_dataloader = loadmnist(test_data, batchsize = length(test_data), shuffle = false)
 ```
 
 
@@ -243,7 +232,7 @@ model = Flux.Chain(down,
 There are a few things we can do to examine the inner workings of our neural network:
 
 ```julia
-img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
+img, lab = train_dataloader.data[1:1]
 
 # To understand the intermediate NN-ODE layer, we can examine it's dimensionality
 x_d = down(img)
