@@ -11,31 +11,30 @@ steps:
     timeout_in_minutes: 60
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
+    env:
+      GROUP: GPU
+      DATADEPS_ALWAYS_ACCEPT: 'true'
+      JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
+      # SECRET_CODECOV_TOKEN: "..."
 
-env:
-  GROUP: GPU
-  DATADEPS_ALWAYS_ACCEPT: 'true'
-  JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
-  # SECRET_CODECOV_TOKEN: "..."
-
-- label: "Documentation"
-  plugins:
-    - JuliaCI/julia#v1:
-        version: "1"
-  command: |
-    julia --project -e '
-      println("--- :julia: Instantiating project")
-      using Pkg
-      Pkg.instantiate()
-      Pkg.activate("docs")
-      Pkg.instantiate()
-      push!(LOAD_PATH, @__DIR__)
-      println("+++ :julia: Building documentation")
-      include("docs/make.jl")'
-  agents:
-    queue: "juliagpu"
-    cuda: "*"
-  env:
-    DATADEPS_ALWAYS_ACCEPT: true
-  if: build.message !~ /\[skip docs\]/ && !build.pull_request.draft
-  timeout_in_minutes: 1000
+  - label: "Documentation"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+    command: |
+      julia --project -e '
+        println("--- :julia: Instantiating project")
+        using Pkg
+        Pkg.instantiate()
+        Pkg.activate("docs")
+        Pkg.instantiate()
+        push!(LOAD_PATH, @__DIR__)
+        println("+++ :julia: Building documentation")
+        include("docs/make.jl")'
+    agents:
+      queue: "juliagpu"
+      cuda: "*"
+    env:
+      DATADEPS_ALWAYS_ACCEPT: true
+    if: build.message !~ /\[skip docs\]/ && !build.pull_request.draft
+    timeout_in_minutes: 1000
