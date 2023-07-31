@@ -29,6 +29,7 @@ SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 SciMLSensitivity = "1ed8b502-d754-442c-8d5d-10ac956f44a1"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 CSV = "0.10"
@@ -58,3 +59,4 @@ ReverseDiff = "1.14"
 SciMLBase = "1.72"
 SciMLSensitivity = "7.11"
 StochasticDiffEq = "6.56"
+Zygote = "0.6.62"

@@ -63,7 +63,7 @@ ylabel!("Momentum (p)")
 The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally, to supervise the training, we also generate the gradients. Next, we use Flux DataLoader for automatically batching our dataset.
 
 ```@example hamiltonian
-using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff
+using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff, Random, IterTools, Lux, ComponentArrays, Optimization
 
 t = range(0.0f0, 1.0f0, length = 1024)
 π_32 = Float32(π)
