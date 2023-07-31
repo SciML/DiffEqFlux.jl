@@ -90,7 +90,7 @@ end
 #burn in loss
 loss_function(ps, x_train[1], y_train[1])
 
-opt = Adam(0.05)
+opt = OptimizationOptimisers.Adam(0.05)
 iter = 0
 
 opt_func = OptimizationFunction((ps, _, x, y) -> loss_function(ps, x, y),
