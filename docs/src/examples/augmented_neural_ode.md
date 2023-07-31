@@ -78,7 +78,7 @@ cb = function()
 end
 
 model, parameters = construct_model(1, 2, 64, 0)
-opt = ADAM(0.005)
+opt = Adam(0.005)
 
 println("Training Neural ODE")
 
@@ -89,7 +89,7 @@ end
 plt_node = plot_contour(model)
 
 model, parameters = construct_model(1, 2, 64, 1)
-opt = ADAM(5f-3)
+opt = Adam(5f-3)
 
 println()
 println("Training Augmented Neural ODE")
@@ -237,10 +237,10 @@ end
 
 ### Optimizer
 
-We use ADAM as the optimizer with a learning rate of 0.005
+We use Adam as the optimizer with a learning rate of 0.005
 
 ```@example augneuralode
-opt = ADAM(5f-3)
+opt = Adam(5f-3)
 ```
 
 ## Training the Neural ODE

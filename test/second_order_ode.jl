@@ -24,7 +24,7 @@ function loss_n_ode(p)
 end
 
 data = Iterators.repeated((), 1000)
-opt = ADAM(0.01)
+opt = Adam(0.01)
 
 l1 = loss_n_ode(p)
 
@@ -51,7 +51,7 @@ function loss_n_ode(p)
 end
 
 data = Iterators.repeated((), 1000)
-opt = ADAM(0.01)
+opt = Adam(0.01)
 
 loss_n_ode(p)
 
@@ -77,7 +77,7 @@ function loss_n_ode(p)
 end
 
 data = Iterators.repeated((), 1000)
-opt = ADAM(0.01)
+opt = Adam(0.01)
 
 loss_n_ode(p)
 

@@ -22,7 +22,7 @@ model = Flux.Chain(
 )
 
 ps = Flux.params(model)
-opt = ADAM(0.1)
+opt = Adam(0.1)
 
 initial_loss = Flux.Losses.logitcrossentropy(model(features), target)
 

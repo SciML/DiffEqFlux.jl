@@ -19,9 +19,9 @@ function run_test(f, layer, atol)
 
     optfunc = Optimization.OptimizationFunction((x, p) -> loss_function(x), Optimization.AutoZygote())
     optprob = Optimization.OptimizationProblem(optfunc, layer.p)
-    res = Optimization.solve(optprob, ADAM(0.1), callback=cb, maxiters = 100)
+    res = Optimization.solve(optprob, Adam(0.1), callback=cb, maxiters = 100)
     optprob = Optimization.OptimizationProblem(optfunc, res.minimizer)
-    res = Optimization.solve(optprob, ADAM(0.01), callback=cb, maxiters = 100)
+    res = Optimization.solve(optprob, Adam(0.01), callback=cb, maxiters = 100)
     optprob = Optimization.OptimizationProblem(optfunc, res.minimizer)
     res = Optimization.solve(optprob, BFGS(), callback=cb, maxiters = 200)
     opt = res.minimizer

@@ -67,7 +67,7 @@ optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
-                                       ADAM(0.05),
+                                       Adam(0.05),
                                        callback = callback,
                                        maxiters = 300)
 
@@ -169,7 +169,7 @@ callback(pinit, loss_neuralode(pinit)...)
 
 We then train the neural network to learn the ODE.
 
-Here we showcase starting the optimization with `ADAM` to more quickly find a
+Here we showcase starting the optimization with `Adam` to more quickly find a
 minimum, and then honing in on the minimum by using `LBFGS`. By using the two
 together, we can fit the neural ODE in 9 seconds! (Note, the timing
 commented out the plotting). You can easily incorporate the procedure below to
@@ -182,20 +182,20 @@ The `x` and `p` variables in the optimization function are different from
 the original problem, so `x_optimization` == `p_original`.
 
 ```@example neuralode
-# Train using the ADAM optimizer
+# Train using the Adam optimizer
 adtype = Optimization.AutoZygote()
 
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
-                                       ADAM(0.05),
+                                       Adam(0.05),
                                        callback = callback,
                                        maxiters = 300)
 ```
 
 We then complete the training using a different optimizer, starting from where
-`ADAM` stopped. We do `allow_f_increases=false` to make the optimization automatically
+`Adam` stopped. We do `allow_f_increases=false` to make the optimization automatically
 halt when near the minimum.
 
 ```@example neuralode
