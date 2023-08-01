@@ -36,5 +36,6 @@ steps:
       cuda: "*"
     env:
       DATADEPS_ALWAYS_ACCEPT: true
+      JULIA_DEBUG: "Documenter"
     if: build.message !~ /\[skip docs\]/ && !build.pull_request.draft
     timeout_in_minutes: 1000
