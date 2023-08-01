@@ -61,7 +61,7 @@ data from the average of 10,000 runs of the SDE:
 
 ```@example nsde
 # Take a typical sample from the mean
-ensemble_prob = EnsembleProblem(prob_truesde)
+ensemble_prob = EnsembleProblem(prob_truesde, safetycopy = false)
 ensemble_sol = solve(ensemble_prob, SOSRI(), trajectories = 10000)
 ensemble_sum = EnsembleSummary(ensemble_sol)
 
@@ -96,7 +96,7 @@ diffusion_(u, p, t) = re2(p[neuralsde.len+1:end])(u)
 
 prob_neuralsde = SDEProblem(drift_, diffusion_, u0,(0.0f0, 1.2f0), neuralsde.p)
 
-ensemble_nprob = EnsembleProblem(prob_neuralsde)
+ensemble_nprob = EnsembleProblem(prob_neuralsde, safetycopy = false)
 ensemble_nsol = solve(ensemble_nprob, SOSRI(), trajectories = 100,
                       saveat = tsteps)
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
@@ -179,7 +179,7 @@ orders of magnitude longer than the previous one).
 optf2 = Optimization.OptimizationFunction((x,p) -> loss_neuralsde(x, n=100), adtype)
 optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
 result2 = Optimization.solve(optprob2, opt,
-                                 callback = callback, maxiters = 100)
+                                 callback = callback, maxiters = 20)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
