@@ -5,29 +5,25 @@
   gtag('config', 'UA-90474609-3', {'page_path': location.pathname + location.search + location.hash});
 </script><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/mnist_neural_ode/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li class="is-active"><a class="tocitem" href>GPU-based MNIST Neural ODE Classifier</a><ul class="internal"><li><a class="tocitem" href="#Step-by-Step-Description"><span>Step-by-Step Description</span></a></li></ul></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>GPU-based MNIST Neural ODE Classifier</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>GPU-based MNIST Neural ODE Classifier</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/mnist_neural_ode.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="mnist"><a class="docs-heading-anchor" href="#mnist">GPU-based MNIST Neural ODE Classifier</a><a id="mnist-1"></a><a class="docs-heading-anchor-permalink" href="#mnist" title="Permalink"></a></h1><p>Training a classifier for <strong>MNIST</strong> using a neural ordinary differential equation <strong>NN-ODE</strong> on <strong>GPUs</strong> with <strong>minibatching</strong>.</p><p>(Step-by-step description below)</p><pre><code class="language-julia hljs">using DiffEqFlux, DifferentialEquations, NNlib, MLDataUtils, Printf
 using Flux.Losses: logitcrossentropy
-using Flux.Data: DataLoader
 using MLDatasets
 using CUDA
 CUDA.allowscalar(false)
 
-function loadmnist(batchsize = bs)
-	# Use MLDataUtils LabelEnc for natural onehot conversion
-  	onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
-	# Load MNIST
-    mnist = MNIST(split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
-	# Process images into (H,W,C,BS) batches
-	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |&gt; Flux.gpu
-	x_train = batchview(x_train,batchsize)
-	# Onehot and batch the labels
-	y_train = onehot(labels_raw) |&gt; Flux.gpu
-	y_train = batchview(y_train,batchsize)
-	return x_train, y_train
+train_data = MNIST(split = :train)
+test_data = MNIST(split = :test)
+
+function loadmnist(data::MNIST; batchsize::Int = 128, shuffle = true)
+    # Process images into (H,W,C,N) batches by inserting channel dimension
+    x = reshape(data.features, 28, 28, 1, :)
+    # One-hot encode targets
+    y = Flux.onehotbatch(data.targets, 0:9)
+    # Minibatch data using Flux DataLoader
+    return Flux.DataLoader((x, y); batchsize = batchsize, shuffle = shuffle) |&gt; Flux.gpu
 end
 
 # Main
-const bs = 128
-x_train, y_train = loadmnist(bs)
+train_dataloader = loadmnist(train_data)
+test_dataloader = loadmnist(test_data, batchsize = length(test_data), shuffle = false)
 
 down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |&gt; Flux.gpu
 
@@ -40,7 +36,6 @@ nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
                    save_everystep = false,
                    reltol = 1e-3, abstol = 1e-3,
                    save_start = false) |&gt; Flux.gpu
-
 fc  = Flux.Chain(Flux.Dense(20, 10)) |&gt; Flux.gpu
 
 function DiffEqArray_to_Array(x)
@@ -55,8 +50,7 @@ model = Flux.Chain(down,
               fc) |&gt; Flux.gpu;
 
 # To understand the intermediate NN-ODE layer, we can examine it&#39;s dimensionality
-img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
-
+img, lab = train_dataloader.data[1:1]
 x_d = down(img)
 
 # We can see that we can compute the forward pass through the NN topology
@@ -87,7 +81,7 @@ loss(x, y) = logitcrossentropy(model(x), y)
 # burn in loss
 loss(img, lab)
 
-opt = ADAM(0.05)
+opt = Adam(0.05)
 iter = 0
 
 callback() = begin
@@ -106,24 +100,20 @@ end
 # Train the NN-ODE and monitor the loss and weights.
 Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt, cb = callback)</code></pre><h2 id="Step-by-Step-Description"><a class="docs-heading-anchor" href="#Step-by-Step-Description">Step-by-Step Description</a><a id="Step-by-Step-Description-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Description" title="Permalink"></a></h2><h3 id="Load-Packages"><a class="docs-heading-anchor" href="#Load-Packages">Load Packages</a><a id="Load-Packages-1"></a><a class="docs-heading-anchor-permalink" href="#Load-Packages" title="Permalink"></a></h3><pre><code class="language-julia hljs">using DiffEqFlux, DifferentialEquations, NNlib, MLDataUtils, Printf
 using Flux.Losses: logitcrossentropy
-using Flux.Data: DataLoader
 using MLDatasets</code></pre><h3 id="GPU"><a class="docs-heading-anchor" href="#GPU">GPU</a><a id="GPU-1"></a><a class="docs-heading-anchor-permalink" href="#GPU" title="Permalink"></a></h3><p>A good trick used here:</p><pre><code class="language-julia hljs">using CUDA
-CUDA.allowscalar(false)</code></pre><p>ensures that only optimized kernels are called when using the GPU. Additionally, the <code>gpu</code> function is shown as a way to translate models and data over to the GPU. Note that this function is CPU-safe, so if the GPU is disabled or unavailable, this code will fall back to the CPU.</p><h3 id="Load-MNIST-Dataset-into-Minibatches"><a class="docs-heading-anchor" href="#Load-MNIST-Dataset-into-Minibatches">Load MNIST Dataset into Minibatches</a><a id="Load-MNIST-Dataset-into-Minibatches-1"></a><a class="docs-heading-anchor-permalink" href="#Load-MNIST-Dataset-into-Minibatches" title="Permalink"></a></h3><p>The preprocessing is done in <code>loadmnist</code> where the raw MNIST data is split into features <code>x_train</code> and labels <code>y_train</code> by specifying batchsize <code>bs</code>. The function <code>convertlabel</code> will then transform the current labels (<code>labels_raw</code>) from numbers 0 to 9 (<code>LabelEnc.NativeLabels(collect(0:9))</code>) into one hot encoding (<code>LabelEnc.OneOfK</code>).</p><p>Features are reshaped into format <strong>[Height, Width, Color, BatchSize]</strong> or in this case <strong>[28, 28, 1, 128]</strong> meaning that every minibatch will contain 128 images with a single color channel of 28x28 pixels. The entire dataset of 60,000 images is split into the train and test dataset, ensuring a balanced ratio of labels. These splits are then passed to Flux&#39;s DataLoader. This automatically minibatches both the images and labels. Additionally, it allows us to shuffle the train dataset in each epoch while keeping the order of the test data the same.</p><pre><code class="language-julia hljs">function loadmnist(batchsize = bs)
-	# Use MLDataUtils LabelEnc for natural onehot conversion
-  	onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
-	# Load MNIST
-    mnist = MNIST(split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
-	# Process images into (H,W,C,BS) batches
-	x_train = Float32.(reshape(imgs,size(imgs,1),size(imgs,2),1,size(imgs,3))) |&gt; Flux.gpu
-	x_train = batchview(x_train,batchsize)
-	# Onehot and batch the labels
-	y_train = onehot(labels_raw) |&gt; Flux.gpu
-	y_train = batchview(y_train,batchsize)
-	return x_train, y_train
+CUDA.allowscalar(false)</code></pre><p>ensures that only optimized kernels are called when using the GPU. Additionally, the <code>gpu</code> function is shown as a way to translate models and data over to the GPU. Note that this function is CPU-safe, so if the GPU is disabled or unavailable, this code will fall back to the CPU.</p><h3 id="Load-MNIST-Dataset-into-Minibatches"><a class="docs-heading-anchor" href="#Load-MNIST-Dataset-into-Minibatches">Load MNIST Dataset into Minibatches</a><a id="Load-MNIST-Dataset-into-Minibatches-1"></a><a class="docs-heading-anchor-permalink" href="#Load-MNIST-Dataset-into-Minibatches" title="Permalink"></a></h3><p>The MNIST dataset is split into <code>60.000</code> train and <code>10.000</code> test images, ensuring a balanced ratio of labels.</p><p>The preprocessing is done in <code>loadmnist</code> where the raw MNIST data is split into features <code>x</code> and labels <code>y</code>. Features are reshaped into format <strong>[Height, Width, Color, Samples]</strong>, in case of the train set <strong>[28, 28, 1, 60000]</strong>. Using Flux&#39;s <code>onehotbatch</code> function, the labels (numbers 0 to 9) are one-hot encoded, resulting in a a <strong>[10, 60000]</strong> <code>OneHotMatrix</code>.</p><p>Features and labels are then passed to Flux&#39;s DataLoader.  This automatically minibatches both the images and labels using the specified <code>batchsize</code>, meaning that every minibatch will contain 128 images with a single color channel of 28x28 pixels. Additionally, it allows us to shuffle the train dataset in each epoch.</p><pre><code class="language-julia hljs">train_data = MNIST(split = :train)
+test_data = MNIST(split = :test)
+
+function loadmnist(data::MNIST; batchsize::Int = 128, shuffle = true)
+    # Process images into (H,W,C,N) batches by inserting channel dimension
+    x = reshape(data.features, 28, 28, 1, :)
+    # One-hot encode targets
+    y = Flux.onehotbatch(data.targets, 0:9)
+    # Minibatch data using Flux DataLoader
+    return Flux.DataLoader((x, y); batchsize = batchsize, shuffle = shuffle) |&gt; Flux.gpu
 end</code></pre><p>and then loaded from main:</p><pre><code class="language-julia hljs"># Main
-const bs = 128
-x_train, y_train = loadmnist(bs)</code></pre><h3 id="Layers"><a class="docs-heading-anchor" href="#Layers">Layers</a><a id="Layers-1"></a><a class="docs-heading-anchor-permalink" href="#Layers" title="Permalink"></a></h3><p>The Neural Network requires passing inputs sequentially through multiple layers. We use <code>Chain</code> which allows inputs to functions to come from the previous layer and sends the outputs to the next. Four different sets of layers are used here:</p><pre><code class="language-julia hljs">down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |&gt; Flux.gpu
+train_dataloader = loadmnist(train_data)
+test_dataloader = loadmnist(test_data, batchsize = length(test_data), shuffle = false)</code></pre><h3 id="Layers"><a class="docs-heading-anchor" href="#Layers">Layers</a><a id="Layers-1"></a><a class="docs-heading-anchor-permalink" href="#Layers" title="Permalink"></a></h3><p>The Neural Network requires passing inputs sequentially through multiple layers. We use <code>Chain</code> which allows inputs to functions to come from the previous layer and sends the outputs to the next. Four different sets of layers are used here:</p><pre><code class="language-julia hljs">down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |&gt; Flux.gpu
 
 nn = Flux.Chain(Flux.Dense(20, 10, tanh),
            Flux.Dense(10, 10, tanh),
@@ -142,7 +132,7 @@ end</code></pre><p>For CPU: If this function does not automatically fall back to
 model = Flux.Chain(down,
               nn_ode,
               DiffEqArray_to_Array,
-              fc) |&gt; Flux.gpu;</code></pre><p>There are a few things we can do to examine the inner workings of our neural network:</p><pre><code class="language-julia hljs">img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
+              fc) |&gt; Flux.gpu;</code></pre><p>There are a few things we can do to examine the inner workings of our neural network:</p><pre><code class="language-julia hljs">img, lab = train_dataloader.data[1:1]
 
 # To understand the intermediate NN-ODE layer, we can examine it&#39;s dimensionality
 x_d = down(img)
@@ -172,7 +162,7 @@ end
 accuracy(m, train_dataloader)</code></pre><h3 id="Training-Parameters"><a class="docs-heading-anchor" href="#Training-Parameters">Training Parameters</a><a id="Training-Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Training-Parameters" title="Permalink"></a></h3><p>Once we have our model, we can train our neural network by backpropagation using <code>Flux.train!</code>. This function requires <strong>Loss</strong>, <strong>Optimizer</strong> and <strong>Callback</strong> functions.</p><h4 id="Loss"><a class="docs-heading-anchor" href="#Loss">Loss</a><a id="Loss-1"></a><a class="docs-heading-anchor-permalink" href="#Loss" title="Permalink"></a></h4><p><strong>Cross Entropy</strong> is the loss function computed here, which applies a <strong>Softmax</strong> operation on the final output of our model. <code>logitcrossentropy</code> takes in the prediction from our model <code>model(x)</code> and compares it to actual output <code>y</code>:</p><pre><code class="language-julia hljs">loss(x, y) = logitcrossentropy(model(x), y)
 
 # burn in loss
-loss(img, lab)</code></pre><h4 id="Optimizer"><a class="docs-heading-anchor" href="#Optimizer">Optimizer</a><a id="Optimizer-1"></a><a class="docs-heading-anchor-permalink" href="#Optimizer" title="Permalink"></a></h4><p><code>ADAM</code> is specified here as our optimizer with a <strong>learning rate of 0.05</strong>:</p><pre><code class="language-julia hljs">opt = ADAM(0.05)</code></pre><h4 id="CallBack"><a class="docs-heading-anchor" href="#CallBack">CallBack</a><a id="CallBack-1"></a><a class="docs-heading-anchor-permalink" href="#CallBack" title="Permalink"></a></h4><p>This callback function is used to print both the training and testing accuracy after 10 training iterations:</p><pre><code class="language-julia hljs">callback() = begin
+loss(img, lab)</code></pre><h4 id="Optimizer"><a class="docs-heading-anchor" href="#Optimizer">Optimizer</a><a id="Optimizer-1"></a><a class="docs-heading-anchor-permalink" href="#Optimizer" title="Permalink"></a></h4><p><code>Adam</code> is specified here as our optimizer with a <strong>learning rate of 0.05</strong>:</p><pre><code class="language-julia hljs">opt = Adam(0.05)</code></pre><h4 id="CallBack"><a class="docs-heading-anchor" href="#CallBack">CallBack</a><a id="CallBack-1"></a><a class="docs-heading-anchor-permalink" href="#CallBack" title="Permalink"></a></h4><p>This callback function is used to print both the training and testing accuracy after 10 training iterations:</p><pre><code class="language-julia hljs">callback() = begin
     global iter += 1
     # Monitor that the weights update
     # Every 10 training iterations show accuracy
@@ -226,4 +216,4 @@ Iter: 381 || Train Accuracy: 89.055 || Test Accuracy: 89.017
 Iter: 391 || Train Accuracy: 89.445 || Test Accuracy: 89.467
 Iter: 401 || Train Accuracy: 89.156 || Test Accuracy: 88.250
 Iter: 411 || Train Accuracy: 88.977 || Test Accuracy: 89.083
-Iter: 421 || Train Accuracy: 90.109 || Test Accuracy: 89.417</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../GPUs/">« Neural ODEs on GPUs</a><a class="docs-footer-nextpage" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Friday 17 February 2023 04:39">Friday 17 February 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Iter: 421 || Train Accuracy: 90.109 || Test Accuracy: 89.417</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../GPUs/">« Neural ODEs on GPUs</a><a class="docs-footer-nextpage" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Saturday 12 August 2023 23:25">Saturday 12 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
