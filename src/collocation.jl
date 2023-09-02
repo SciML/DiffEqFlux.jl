@@ -36,7 +36,7 @@ function calckernel(::TriangularKernel,t)
 end
 
 function calckernel(::QuarticKernel,t)
-  if abs(t)>0
+  if abs(t) > 1
     return 0
   else
     return (15*(1-t^2)^2)/16
@@ -44,7 +44,7 @@ function calckernel(::QuarticKernel,t)
 end
 
 function calckernel(::TriweightKernel,t)
-  if abs(t)>0
+  if abs(t) > 1
     return 0
   else
     return (35*(1-t^2)^3)/32
@@ -52,7 +52,7 @@ function calckernel(::TriweightKernel,t)
 end
 
 function calckernel(::TricubeKernel,t)
-  if abs(t)>0
+  if abs(t) > 1
     return 0
   else
     return (70*(1-abs(t)^3)^3)/80
@@ -64,7 +64,7 @@ function calckernel(::GaussianKernel,t)
 end
 
 function calckernel(::CosineKernel,t)
-  if abs(t)>0
+  if abs(t) > 1
     return 0
   else
     return (π*cos(π*t/2))/4
