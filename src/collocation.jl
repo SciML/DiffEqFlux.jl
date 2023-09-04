@@ -55,7 +55,7 @@ function calckernel(::TricubeKernel,t)
   if abs(t) > 1
     return 0
   else
-    return (70*(1-abs(t)^3)^3)/80
+    return (70*(1-abs(t)^3)^3)/81
   end
 end
 
