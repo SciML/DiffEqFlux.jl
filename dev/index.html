@@ -13,7 +13,7 @@ z = re(Float64.(p))</code></pre><p>While one may think this recreates the neural
   author={Rackauckas, Christopher and Ma, Yingbo and Martensen, Julius and Warner, Collin and Zubov, Kirill and Supekar, Rohit and Skinner, Dominic and Ramadhan, Ali},
   journal={arXiv preprint arXiv:2001.04385},
   year={2020}
-}</code></pre><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `/var/lib/buildkite-agent/builds/gpuci-5/julialang/diffeqflux-dot-jl/docs/Project.toml`
+}</code></pre><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `/var/lib/buildkite-agent/builds/gpuci-14/julialang/diffeqflux-dot-jl/docs/Project.toml`
   [336ed68f] CSV v0.10.11
 ⌅ [b0b7db55] ComponentArrays v0.14.1
   [124859b0] DataDeps v0.7.11
@@ -22,15 +22,15 @@ z = re(Float64.(p))</code></pre><p>While one may think this recreates the neural
   [0c46a032] DifferentialEquations v7.9.1
   [b4f34e82] Distances v0.10.9
   [31c24e10] Distributions v0.25.100
-  [e30172f5] Documenter v0.27.25
+⌅ [e30172f5] Documenter v0.27.25
 ⌅ [587475ba] Flux v0.13.17
   [f6369f11] ForwardDiff v0.10.36
   [c8e1da08] IterTools v1.8.0
   [b2108857] Lux v0.5.5
   [cc2ba9b6] MLDataUtils v0.5.4
-  [eb30cadb] MLDatasets v0.7.12
+  [eb30cadb] MLDatasets v0.7.13
 ⌅ [3bd65402] Optimisers v0.2.20
-  [7f7a1694] Optimization v3.16.1
+  [7f7a1694] Optimization v3.17.0
   [253f991c] OptimizationFlux v0.1.5
   [36348300] OptimizationOptimJL v0.1.9
   [42dfb2eb] OptimizationOptimisers v0.1.5
@@ -38,8 +38,8 @@ z = re(Float64.(p))</code></pre><p>While one may think this recreates the neural
   [1dea7af3] OrdinaryDiffEq v6.55.0
   [91a5bcdd] Plots v1.39.0
   [37e2e3b7] ReverseDiff v1.15.1
-  [0bca4576] SciMLBase v1.97.0
-  [1ed8b502] SciMLSensitivity v7.38.0
+  [0bca4576] SciMLBase v1.98.0
+  [1ed8b502] SciMLSensitivity v7.39.0
   [789caeaf] StochasticDiffEq v6.62.0
   [e88e6eb3] Zygote v0.6.64
   [37e2e46d] LinearAlgebra
@@ -61,10 +61,9 @@ Environment:
   JULIA_DEBUG = Documenter
   JULIA_DEPOT_PATH = /root/.cache/julia-buildkite-plugin/depots/64dbdc29-d6e3-4071-807c-a2eda6e09bd8
   LD_LIBRARY_PATH = /usr/local/nvidia/lib:/usr/local/nvidia/lib64
-  JULIA_IMAGE_THREADS = 1</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `/var/lib/buildkite-agent/builds/gpuci-5/julialang/diffeqflux-dot-jl/docs/Manifest.toml`
-  [47edcb42] ADTypes v0.2.2
+  JULIA_IMAGE_THREADS = 1</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `/var/lib/buildkite-agent/builds/gpuci-14/julialang/diffeqflux-dot-jl/docs/Manifest.toml`
+  [47edcb42] ADTypes v0.2.4
   [a4c015fc] ANSIColoredPrinters v0.0.1
-  [c3fe647b] AbstractAlgebra v0.31.1
   [621f4979] AbstractFFTs v1.5.0
   [1520ce14] AbstractTrees v0.4.4
   [79e6a3ab] Adapt v3.6.2
@@ -72,22 +71,21 @@ Environment:
   [ec485272] ArnoldiMethod v0.2.0
   [4fba245c] ArrayInterface v7.4.11
   [30b0a656] ArrayInterfaceCore v0.1.29
-  [4c555306] ArrayLayouts v1.3.1
+  [4c555306] ArrayLayouts v1.4.1
   [a9b6321e] Atomix v0.1.0
-  [a963bdd2] AtomsBase v0.3.4
+  [a963bdd2] AtomsBase v0.3.5
   [ab4f0b2a] BFloat16s v0.4.2
   [aae01518] BandedMatrices v0.17.38
   [198e06fe] BangBang v0.3.39
   [9718e550] Baselet v0.1.1
-  [e2ed5e7c] Bijections v0.1.5
   [d1d4a3ce] BitFlags v0.1.7
   [62783981] BitTwiddlingConvenienceFunctions v0.1.5
   [764a87c0] BoundaryValueDiffEq v4.0.1
   [e1450e63] BufferedStreams v1.2.1
   [fa961155] CEnum v0.4.2
-  [2a0fbf3d] CPUSummary v0.2.3
+  [2a0fbf3d] CPUSummary v0.2.4
   [336ed68f] CSV v0.10.11
-  [052768ef] CUDA v4.4.1
+⌅ [052768ef] CUDA v4.4.1
   [1af6417a] CUDA_Runtime_Discovery v0.2.2
   [49dc2e85] Calculus v0.5.1
   [7057c7e9] Cassette v0.3.12
@@ -100,12 +98,10 @@ Environment:
   [3da002f7] ColorTypes v0.11.4
   [c3611d14] ColorVectorSpace v0.10.0
   [5ae59095] Colors v0.12.10
-  [861a8166] Combinatorics v1.0.2
   [38540f10] CommonSolve v0.2.4
   [bbf7d656] CommonSubexpressions v0.3.0
   [34da2185] Compat v4.9.0
 ⌅ [b0b7db55] ComponentArrays v0.14.1
-  [b152e2b5] CompositeTypes v0.1.3
   [a33af91c] CompositionsBase v0.1.2
   [2569d6c7] ConcreteStructs v0.2.3
   [f0e56b4a] ConcurrentUtilities v2.2.1
@@ -124,8 +120,8 @@ Environment:
   [244e2a9f] DefineSingletons v0.1.2
   [bcd4f6db] DelayDiffEq v5.42.0
   [8bb1440f] DelimitedFiles v1.9.1
-  [2b5f629d] DiffEqBase v6.128.2
-  [459566f4] DiffEqCallbacks v2.29.1
+  [2b5f629d] DiffEqBase v6.129.0
+  [459566f4] DiffEqCallbacks v2.30.0
   [aae7a2af] DiffEqFlux v2.2.0
   [77a26b50] DiffEqNoiseProcess v5.18.0
   [163ba53b] DiffResults v1.1.0
@@ -135,10 +131,8 @@ Environment:
   [31c24e10] Distributions v0.25.100
   [ced4e74d] DistributionsAD v0.6.52
   [ffbed154] DocStringExtensions v0.9.3
-  [e30172f5] Documenter v0.27.25
-  [5b8099bc] DomainSets v0.6.7
+⌅ [e30172f5] Documenter v0.27.25
   [fa6b7ba4] DualNumbers v0.6.8
-  [7c1d4256] DynamicPolynomials v0.5.3
   [da5c29d0] EllipsisNotation v1.7.0
   [4e289a0a] EnumX v1.0.4
   [7da242da] Enzyme v0.11.7
@@ -172,10 +166,8 @@ Environment:
   [c27321d9] Glob v1.3.1
   [86223c79] Graphs v1.8.0
   [42e2da0e] Grisu v1.0.2
-  [0b43b601] Groebner v0.4.2
-  [d5909c97] GroupsCore v0.4.0
 ⌅ [f67ccb44] HDF5 v0.16.16
-  [cd3eb016] HTTP v1.9.15
+  [cd3eb016] HTTP v1.10.0
   [3e5b6fbb] HostCPUFeatures v0.1.16
   [34004b35] HypergeometricFunctions v0.3.23
   [b5f81e59] IOCapture v0.2.3
@@ -187,9 +179,7 @@ Environment:
   [d25df0c9] Inflate v0.1.3
   [22cec73e] InitialValues v0.3.1
   [842dd82b] InlineStrings v1.4.0
-  [18e54dd8] IntegerMathUtils v0.1.2
   [7d512f48] InternedStrings v0.7.0
-  [8197267c] IntervalSets v0.7.7
   [41ab1584] InvertedIndices v1.3.0
   [92d709cd] IrrationalConstants v0.2.2
   [c8e1da08] IterTools v1.8.0
@@ -201,13 +191,11 @@ Environment:
   [0f8b85d8] JSON3 v1.13.2
   [b14d175d] JuliaVariables v0.2.4
   [ccbc3e58] JumpProcesses v9.7.3
-  [ef3ab10e] KLU v0.4.0
+  [ef3ab10e] KLU v0.4.1
   [63c18a36] KernelAbstractions v0.9.8
   [ba0b0d4f] Krylov v0.9.4
   [929cbde3] LLVM v6.2.1
   [b964fa9f] LaTeXStrings v1.3.0
-  [2ee39098] LabelledArrays v1.14.0
-  [984bce1d] LambertW v0.4.6
   [23fbe1c1] Latexify v0.16.1
   [10f19ff3] LayoutPointers v0.1.14
   [50d2b5c4] Lazy v0.15.1
@@ -223,11 +211,11 @@ Environment:
   [b2108857] Lux v0.5.5
   [bb33d45b] LuxCore v0.1.6
   [34f89e08] LuxDeviceUtils v0.1.8
-  [82251201] LuxLib v0.3.3
+  [82251201] LuxLib v0.3.4
   [23992714] MAT v0.10.5
 ⌃ [9920b226] MLDataPattern v0.5.4
   [cc2ba9b6] MLDataUtils v0.5.4
-  [eb30cadb] MLDatasets v0.7.12
+  [eb30cadb] MLDatasets v0.7.13
   [66a33bbf] MLLabelUtils v0.5.7
   [d8e11817] MLStyle v0.4.17
   [f1d291b0] MLUtils v0.4.3
@@ -240,8 +228,6 @@ Environment:
   [e1d29d7a] Missings v1.1.0
   [e94cdb99] MosaicViews v0.3.4
   [46d2c3a1] MuladdMacro v0.2.4
-  [102ac46a] MultivariatePolynomials v0.5.2
-  [d8a4904e] MutableArithmetics v1.3.2
   [d41bc354] NLSolversBase v7.8.3
   [2774e3e8] NLsolve v4.5.1
 ⌅ [872c559c] NNlib v0.8.21
@@ -256,7 +242,7 @@ Environment:
   [4d8831e6] OpenSSL v1.4.1
   [429524aa] Optim v1.7.7
 ⌅ [3bd65402] Optimisers v0.2.20
-  [7f7a1694] Optimization v3.16.1
+  [7f7a1694] Optimization v3.17.0
   [253f991c] OptimizationFlux v0.1.5
   [36348300] OptimizationOptimJL v0.1.9
   [42dfb2eb] OptimizationOptimisers v0.1.5
@@ -276,26 +262,24 @@ Environment:
   [995b91a9] PlotUtils v1.3.5
   [91a5bcdd] Plots v1.39.0
   [e409e4f3] PoissonRandom v0.4.4
-  [f517fe37] Polyester v0.7.5
+  [f517fe37] Polyester v0.7.6
   [1d0040c9] PolyesterWeave v0.2.1
-  [2dfb63ee] PooledArrays v1.4.2
+  [2dfb63ee] PooledArrays v1.4.3
   [85a6dd25] PositiveFactorizations v0.2.4
   [d236fae5] PreallocationTools v0.4.12
   [aea7be01] PrecompileTools v1.2.0
   [21216c6a] Preferences v1.4.0
   [8162dcfd] PrettyPrint v0.2.0
   [08abe8d2] PrettyTables v2.2.7
-  [27ebfcd6] Primes v0.5.4
   [33c8b6b6] ProgressLogging v0.1.4
-  [92933f4c] ProgressMeter v1.8.0
+  [92933f4c] ProgressMeter v1.9.0
   [1fd47b50] QuadGK v2.8.2
   [74087812] Random123 v1.6.1
-  [fb686558] RandomExtensions v0.4.3
   [e6cf234a] RandomNumbers v1.5.3
   [c1ae055f] RealDot v0.1.0
   [3cdcf5f2] RecipesBase v1.3.4
   [01d81517] RecipesPipeline v0.6.12
-  [731186ca] RecursiveArrayTools v2.38.8
+  [731186ca] RecursiveArrayTools v2.38.10
   [f2c3362d] RecursiveFactorization v0.2.20
   [189a3867] Reexport v1.2.2
   [05181044] RelocatableFolders v1.0.0
@@ -304,13 +288,12 @@ Environment:
   [37e2e3b7] ReverseDiff v1.15.1
   [79098fc4] Rmath v0.7.1
   [7e49a35a] RuntimeGeneratedFunctions v0.5.12
-  [fdea26ae] SIMD v3.4.5
   [94e857df] SIMDTypes v0.1.0
   [476501e8] SLEEFPirates v0.6.39
-  [0bca4576] SciMLBase v1.97.0
+  [0bca4576] SciMLBase v1.98.0
   [e9a6253c] SciMLNLSolve v0.1.8
   [c0aeaf25] SciMLOperators v0.3.6
-  [1ed8b502] SciMLSensitivity v7.38.0
+  [1ed8b502] SciMLSensitivity v7.39.0
   [6c6a2e73] Scratch v1.2.0
   [91c51154] SentinelArrays v1.4.0
   [efcf1570] Setfield v1.1.1
@@ -344,10 +327,8 @@ Environment:
   [09ab397b] StructArrays v0.6.16
   [53d494c1] StructIO v0.3.0
   [856f2bd8] StructTypes v1.10.0
-  [c3572dad] Sundials v4.19.3
+  [c3572dad] Sundials v4.19.5
   [2efcf032] SymbolicIndexingInterface v0.2.2
-  [d1185830] SymbolicUtils v1.3.0
-  [0c5d862f] Symbolics v5.5.3
   [3783bdb8] TableTraits v1.0.1
   [bd369af6] Tables v1.10.1
   [62fd8b95] TensorCore v0.1.1
@@ -361,14 +342,13 @@ Environment:
   [d5829a12] TriangularSolve v0.1.19
   [410a4b4d] Tricks v0.1.7
   [781d530d] TruncatedStacktraces v1.4.0
-  [9d95972d] TupleTools v1.3.0
+  [9d95972d] TupleTools v1.4.3
   [5c2747f8] URIs v1.5.0
   [3a884ed6] UnPack v1.0.2
   [1cfade01] UnicodeFun v0.4.1
   [1986cc42] Unitful v1.17.0
   [a7773ee8] UnitfulAtomic v1.0.0
   [45397f5d] UnitfulLatexify v1.6.3
-  [a7c27f48] Unityper v0.1.5
   [013be700] UnsafeAtomics v0.2.1
   [d80eeb9a] UnsafeAtomicsLLVM v0.1.3
   [41fe7b60] Unzip v0.2.0
@@ -415,11 +395,11 @@ Environment:
   [89763e89] Libtiff_jll v4.5.1+1
   [38a345b3] Libuuid_jll v2.36.0+0
   [e7412a2a] Ogg_jll v1.3.5+1
-⌅ [458c3c95] OpenSSL_jll v1.1.22+0
+⌅ [458c3c95] OpenSSL_jll v1.1.23+0
   [efe28fd5] OpenSpecFun_jll v0.5.5+0
   [91d4177d] Opus_jll v1.3.2+0
   [30392449] Pixman_jll v0.42.2+0
-  [c0090381] Qt6Base_jll v6.4.2+3
+⌅ [c0090381] Qt6Base_jll v6.4.2+3
   [f50d1b31] Rmath_jll v0.4.0+0
 ⌅ [fb77eaff] Sundials_jll v5.2.1+0
   [a2964d1f] Wayland_jll v1.21.0+0
@@ -506,5 +486,5 @@ Environment:
   [8e850ede] nghttp2_jll v1.48.0+0
   [3f19e933] p7zip_jll v17.4.0+0
 Info Packages marked with ⌃ and ⌅ have new versions available, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details>You can also download the
-<a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v2.2.0/assets/Manifest.toml">manifest</a> file and the
-<a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v2.2.0/assets/Project.toml">project</a> file.</article><nav class="docs-footer"><a class="docs-footer-nextpage" href="examples/neural_ode/">Neural Ordinary Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 11 September 2023 12:10">Monday 11 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v2.3.0/assets/Manifest.toml">manifest</a> file and the
+<a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v2.3.0/assets/Project.toml">project</a> file.</article><nav class="docs-footer"><a class="docs-footer-nextpage" href="examples/neural_ode/">Neural Ordinary Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 19 September 2023 10:57">Tuesday 19 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
