@@ -37,10 +37,12 @@ include("tensor_product_layer.jl")
 include("collocation.jl")
 include("hnn.jl")
 include("multiple_shooting.jl")
+include("ltc.jl")
 
 export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE,
        NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
 export HamiltonianNN
+export LTC 
 export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
 export FFJORDDistribution
 export DimMover, FluxBatchOrder
@@ -48,6 +50,7 @@ export DimMover, FluxBatchOrder
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel
 export TriweightKernel, TricubeKernel, GaussianKernel, CosineKernel
 export LogisticKernel, SigmoidKernel, SilvermanKernel
+
 export collocate_data
 
 export multiple_shoot
