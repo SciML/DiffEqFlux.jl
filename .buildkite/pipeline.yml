@@ -21,9 +21,6 @@ steps:
     plugins:
       - JuliaCI/julia#v1:
           version: "1"
-      - JuliaCI/julia-test#v1:
-          coverage: false
-          julia_args: "--threads=auto"
     command: |
       julia --project -e '
         println("--- :julia: Instantiating project")
