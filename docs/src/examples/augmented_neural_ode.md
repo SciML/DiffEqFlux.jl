@@ -154,7 +154,7 @@ end
 ## Models
 
 We consider 2 models in this tutorial. The first is a simple Neural ODE which is described in detail in
-[this tutorial](https://docs.sciml.ai/SciMLSensitivity/stable/neural_ode/neural_ode_flux/). The other one is an
+[this tutorial](https://docs.sciml.ai/SciMLSensitivity/stable/examples/neural_ode/neural_ode_flux/). The other one is an
 Augmented Neural ODE \[1]. The idea behind this layer is very simple. It augments the input to the Neural
 DE Layer by appending zeros. So in order to use any arbitrary DE Layer in combination with this layer,
 simply assume that the input to the DE Layer is of size `size(x, 1) + augment_dim` instead of `size(x, 1)`

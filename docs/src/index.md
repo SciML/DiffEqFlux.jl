@@ -19,7 +19,7 @@ The approach of this package is the easy and efficient training of
 [Universal Differential Equations](https://arxiv.org/abs/2001.04385).
 DiffEqFlux.jl provides architectures which match the interfaces of
 machine learning libraries such as [Flux.jl](https://docs.sciml.ai/Flux/stable/)
-and [Lux.jl](https://docs.sciml.ai/Lux/stable/)
+and [Lux.jl](https://lux.csail.mit.edu/v0.5.5/api/)
 to make it easy to build continuous-time machine learning layers
 into larger machine learning applications.
 
@@ -110,26 +110,19 @@ Pkg.status(;mode = PKGMODE_MANIFEST) # hide
 ```@raw html
 </details>
 ```
-```@raw html
-You can also download the
-<a href="
-```
 ```@eval
 using TOML
-version = TOML.parse(read("../../Project.toml",String))["version"]
-name = TOML.parse(read("../../Project.toml",String))["name"]
-link = "https://github.com/SciML/"*name*".jl/tree/gh-pages/v"*version*"/assets/Manifest.toml"
-```
-```@raw html
-">manifest</a> file and the
-<a href="
-```
-```@eval
-using TOML
-version = TOML.parse(read("../../Project.toml",String))["version"]
-name = TOML.parse(read("../../Project.toml",String))["name"]
-link = "https://github.com/SciML/"*name*".jl/tree/gh-pages/v"*version*"/assets/Project.toml"
-```
-```@raw html
-">project</a> file.
+using Markdown
+version = TOML.parse(read("../../Project.toml", String))["version"]
+name = TOML.parse(read("../../Project.toml", String))["name"]
+link_manifest = "https://github.com/SciML/" * name * ".jl/tree/gh-pages/v" * version *
+                "/assets/Manifest.toml"
+link_project = "https://github.com/SciML/" * name * ".jl/tree/gh-pages/v" * version *
+               "/assets/Project.toml"
+Markdown.parse("""You can also download the
+[manifest]($link_manifest)
+file and the
+[project]($link_project)
+file.
+""")
 ```

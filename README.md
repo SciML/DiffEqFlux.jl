@@ -13,7 +13,7 @@
 DiffEqFlux.jl fuses the world of differential equations with machine learning
 by helping users put diffeq solvers into neural networks. This package utilizes
 [DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/stable/),
-[Flux.jl](https://docs.sciml.ai/Flux/stable/) and [Lux.jl](https://docs.sciml.ai/Lux/stable/)  as its building blocks to support research in
+[Flux.jl](https://docs.sciml.ai/Flux/stable/) and [Lux.jl](https://lux.csail.mit.edu/v0.5.5/api/)  as its building blocks to support research in
 [Scientific Machine Learning](https://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/),
 specifically neural differential equations and universal differential equations,
 to add physical information into traditional machine learning.
