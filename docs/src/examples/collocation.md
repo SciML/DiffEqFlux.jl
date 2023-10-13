@@ -1,5 +1,11 @@
 # Smoothed Collocation for Fast Two-Stage Training
 
+!!!! note
+
+    This is one of many methods for calculating the collocation coefficients
+    for the training process. For a more comprehensive set of collocation
+    methods, see the [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/manual/collocation/).
+
 One can avoid a lot of the computational cost of the ODE solver by
 pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
