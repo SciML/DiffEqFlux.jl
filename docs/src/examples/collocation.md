@@ -1,6 +1,6 @@
 # Smoothed Collocation for Fast Two-Stage Training
 
-!!!! note
+!!! note
 
     This is one of many methods for calculating the collocation coefficients
     for the training process. For a more comprehensive set of collocation
