@@ -1,6 +1,6 @@
 # Multiple Shooting
 
-!!!! note
+!!! note
 
 	The form of multiple shooting found here is a specialized form known
  	as data shooting which assumes full observability of the underlying
