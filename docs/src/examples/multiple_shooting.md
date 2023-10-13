@@ -1,5 +1,12 @@
 # Multiple Shooting
 
+!!!! note
+
+	The form of multiple shooting found here is a specialized form known
+ 	as data shooting which assumes full observability of the underlying
+  	dynamics and lack of noise. For a more general implementation of
+   	multiple shooting, see the [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/)
+
 In Multiple Shooting, the training data is split into overlapping intervals.
 The solver is then trained on individual intervals. If the end conditions of any
 interval coincide with the initial conditions of the next immediate interval,
