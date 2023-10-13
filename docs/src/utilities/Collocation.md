@@ -9,6 +9,12 @@ loss to determine the correct parameters `p`. This method can be
 extremely fast and robust to noise, though, because it does not
 accumulate through time, is not as exact as other methods.
 
+!!! note
+
+    This is one of many methods for calculating the collocation coefficients
+    for the training process. For a more comprehensive set of collocation
+    methods, see the [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/manual/collocation/).
+
 ```@docs
 collocate_data
 ```
