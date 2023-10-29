@@ -2,7 +2,7 @@
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "18715cd9a003930f3f8b6ab4483a738f66ef8b00"
+project_hash = "bde18a4e0b10e13ca5675fbba9c17b23ae0d3551"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "5d2e21d7b0d8c22f67483ef95ebdc39c0e6b6003"
@@ -339,11 +339,11 @@ uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "1.0.5+0"
 
 [[deps.ComponentArrays]]
-deps = ["ArrayInterface", "ChainRulesCore", "ForwardDiff", "Functors", "LinearAlgebra", "PackageExtensionCompat", "StaticArrayInterface"]
-git-tree-sha1 = "fb28e65c339c7fe2d6b4d1776c8c92dd5a828dce"
+deps = ["ArrayInterface", "ChainRulesCore", "ForwardDiff", "Functors", "LinearAlgebra", "PackageExtensionCompat", "StaticArrayInterface", "StaticArraysCore"]
+git-tree-sha1 = "f1ac18d8d4e8a6303d6d2d1c870528c3c52f0895"
 uuid = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
-version = "0.14.1"
-weakdeps = ["Adapt", "ConstructionBase", "GPUArrays", "RecursiveArrayTools", "ReverseDiff", "SciMLBase", "StaticArrays"]
+version = "0.15.4"
+weakdeps = ["Adapt", "ConstructionBase", "GPUArrays", "RecursiveArrayTools", "ReverseDiff", "SciMLBase", "Tracker", "Zygote"]
 
     [deps.ComponentArrays.extensions]
     ComponentArraysAdaptExt = "Adapt"
@@ -352,7 +352,8 @@ weakdeps = ["Adapt", "ConstructionBase", "GPUArrays", "RecursiveArrayTools", "Re
     ComponentArraysRecursiveArrayToolsExt = "RecursiveArrayTools"
     ComponentArraysReverseDiffExt = "ReverseDiff"
     ComponentArraysSciMLBaseExt = "SciMLBase"
-    ComponentArraysStaticArraysExt = "StaticArrays"
+    ComponentArraysTrackerExt = "Tracker"
+    ComponentArraysZygoteExt = "Zygote"
 
 [[deps.CompositionsBase]]
 git-tree-sha1 = "802bb88cd69dfd1509f6670416bd4434015693ad"
@@ -1380,15 +1381,14 @@ weakdeps = ["ChainRulesCore", "ForwardDiff", "SpecialFunctions"]
 
 [[deps.Lux]]
 deps = ["ADTypes", "Adapt", "ChainRulesCore", "ConcreteStructs", "Functors", "LinearAlgebra", "LuxCore", "LuxDeviceUtils", "LuxLib", "MacroTools", "Markdown", "Optimisers", "PackageExtensionCompat", "Random", "Reexport", "Setfield", "SparseArrays", "Statistics", "TruncatedStacktraces", "WeightInitializers"]
-git-tree-sha1 = "63d6d1114317b26d579baed45262273781400f3e"
+git-tree-sha1 = "df839386a7abdc82ae0799be793ea9e038eb6da0"
 uuid = "b2108857-7c20-44ae-9111-449ecde12c47"
-version = "0.5.5"
+version = "0.5.9"
 
     [deps.Lux.extensions]
+    LuxChainRulesExt = "ChainRules"
     LuxComponentArraysExt = "ComponentArrays"
     LuxComponentArraysReverseDiffExt = ["ComponentArrays", "ReverseDiff"]
-    LuxComponentArraysTrackerExt = ["ComponentArrays", "Tracker"]
-    LuxComponentArraysZygoteExt = ["ComponentArrays", "Zygote"]
     LuxFluxTransformExt = "Flux"
     LuxLuxAMDGPUExt = "LuxAMDGPU"
     LuxLuxCUDAExt = "LuxCUDA"
@@ -1396,6 +1396,7 @@ version = "0.5.5"
     LuxZygoteExt = "Zygote"
 
     [deps.Lux.weakdeps]
+    ChainRules = "082447d4-558c-5d27-93f4-14fc19e9eca2"
     ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
     FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
     Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
@@ -2198,9 +2199,9 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.SparseDiffTools]]
 deps = ["ADTypes", "Adapt", "ArrayInterface", "Compat", "DataStructures", "FiniteDiff", "ForwardDiff", "Graphs", "LinearAlgebra", "PackageExtensionCompat", "Random", "Reexport", "SciMLOperators", "Setfield", "SparseArrays", "StaticArrayInterface", "StaticArrays", "Tricks", "UnPack", "VertexSafeGraphs"]
-git-tree-sha1 = "eac5b754896a56df0b9e049a3d93cc27912a78f2"
+git-tree-sha1 = "590acc2c3baf98aaff7d2f1990a6f1de6138361e"
 uuid = "47a9eef4-7e08-11e9-0b38-333d64bd3804"
-version = "2.9.0"
+version = "2.9.1"
 
     [deps.SparseDiffTools.extensions]
     SparseDiffToolsEnzymeExt = "Enzyme"
