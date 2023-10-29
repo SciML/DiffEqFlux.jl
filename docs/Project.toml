@@ -33,7 +33,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 CSV = "0.10"
-ComponentArrays = "0.13, 0.14"
+ComponentArrays = "0.13, 0.14, 0.15"
 DataDeps = "0.7"
 DataFrames = "1"
 DiffEqFlux = "2"
