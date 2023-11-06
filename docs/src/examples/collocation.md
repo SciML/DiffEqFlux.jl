@@ -11,7 +11,7 @@ pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
 
 ```@example collocation_cp
-using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization, OptimizationFlux, Plots
+using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization, OptimizationOptimisers, Plots
 
 using Random
 rng = Random.default_rng()
@@ -99,7 +99,7 @@ The smoothed collocation is a spline fit of the data points which allows
 us to get an estimate of the approximate noiseless dynamics:
 
 ```@example collocation
-using ComponentArrays, Lux, DiffEqFlux, Optimization, OptimizationFlux, DifferentialEquations, Plots
+using ComponentArrays, Lux, DiffEqFlux, Optimization, OptimizationOptimisers, DifferentialEquations, Plots
 
 using Random
 rng = Random.default_rng()
