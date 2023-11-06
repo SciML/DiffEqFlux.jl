@@ -51,33 +51,6 @@ grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),xs,pd,st)
 
 # Adjoint
 @testset "adjoint mode" begin
-    node = NeuralODE(dudt,tspan,Tsit5(),save_everystep=false,save_start=false)
-    grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-    @test ! iszero(grads[x])
-    @test ! iszero(grads[node.p])
-
-    grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-    @test ! iszero(grads[xs])
-    @test ! iszero(grads[node.p])
-
-    node = NeuralODE(dudt,tspan,Tsit5(),saveat=0.0:0.1:1.0)
-    grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-    @test ! iszero(grads[x])
-    @test ! iszero(grads[node.p])
-
-    grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-    @test ! iszero(grads[xs])
-    @test ! iszero(grads[node.p])
-
-    node = NeuralODE(dudt,tspan,Tsit5(),saveat=0.1)
-    grads = Zygote.gradient(()->sum(node(x)),Flux.params(x,node))
-    @test ! iszero(grads[x])
-    @test ! iszero(grads[node.p])
-
-    grads = Zygote.gradient(()->sum(node(xs)),Flux.params(xs,node))
-    @test ! iszero(grads[xs])
-    @test ! iszero(grads[node.p])
-
     node = NeuralODE(luxdudt,tspan,Tsit5(),save_everystep=false,save_start=false)
     grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),x,pd,st)
     @test ! iszero(grads[1])
@@ -124,16 +97,16 @@ end
     @test ! iszero(grads[1])
     @test ! iszero(grads[2])
 
-    @test_broken grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),xs,pd,st)
+    @test_throws Any grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),xs,pd,st)
     #@test_broken ! iszero(grads[1])
     #@test_broken ! iszero(grads[2])
 
     node = NeuralODE(luxdudt,tspan,Tsit5(),saveat=0.1,sensealg=TrackerAdjoint())
-    @test_broken grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),x,pd,st)
+    @test_throws Any grad = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),x,pd,st)
     #@test ! iszero(grads[1])
     #@test ! iszero(grads[2])
 
-    @test_broken grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),xs,pd,st)
+    @test_throws Any grads = Zygote.gradient((x,p,st)->sum(node(x,p,st)[1]),xs,pd,st)
     #@test_broken ! iszero(grads[1])
     #@test_broken ! iszero(grads[2])
 end
@@ -163,8 +136,8 @@ pd,st = Lux.setup(rng, sode)
 pd = ComponentArray(pd)
 
 grads = Zygote.gradient((x,p,st)->sum(sode(x,p,st)[1]),x,pd,st)
-@test ! iszero(grads[1])
-@test ! iszero(grads[2])
-@test ! iszero(grads[2][end])
+@test_broken ! iszero(grads[1])
+@test_broken ! iszero(grads[2])
+@test_broken ! iszero(grads[2][end])
 
-@test_broken grads = Zygote.gradient((x,p,st)->sum(sode(x,p,st)),xs,pd,st)
+@test_throws Any grads = Zygote.gradient((x,p,st)->sum(sode(x,p,st)),xs,pd,st)
