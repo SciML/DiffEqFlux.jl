@@ -1,5 +1,5 @@
 using DiffEqFlux, Zygote, Distances, Distributions, DistributionsAD, Optimization,
-    LinearAlgebra, OrdinaryDiffEq, Random, Test, OptimizationFlux
+    LinearAlgebra, OrdinaryDiffEq, Random, Test, OptimizationOptimisers
 
 Random.seed!(1999)
 

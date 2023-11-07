@@ -1,6 +1,6 @@
 using DiffEqFlux, Flux, Zygote, OrdinaryDiffEq, Test
 
-u0 = Float32[2.; 0.]
+u0 = [2.; 0.]
 datasize = 30
 tspan = (0.0f0,1.5f0)
 
@@ -14,7 +14,7 @@ ode_data = Array(solve(prob,Tsit5(),saveat=t))
 
 model = Flux.Chain(x -> x.^3,
             Flux.Dense(2,50,tanh),
-            Flux.Dense(50,2))
+            Flux.Dense(50,2)) |> f64
 neuralde = NeuralODE(model,tspan,Rodas5(),saveat=t,reltol=1e-7,abstol=1e-9)
 
 function predict_n_ode()

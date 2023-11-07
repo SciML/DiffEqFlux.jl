@@ -1,5 +1,5 @@
 using DiffEqFlux, Distributions, Zygote, Optimization, OptimizationOptimJL,
-      OptimizationFlux, LinearAlgebra, Test
+      OptimizationOptimisers, LinearAlgebra, Test
 
 function run_test(f, layer, atol)
 
