@@ -1,5 +1,5 @@
 using ComponentArrays,
-    DiffEqFlux, Zygote, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
+    DiffEqFlux, Lux, Zygote, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
 import Flux
 
 rng = Random.default_rng()
@@ -14,6 +14,12 @@ rng = Random.default_rng()
         Flux.Chain(Flux.Dense(2 => 50, tanh), Flux.Dense(50 => 2))
     else
         Chain(Dense(2 => 50, tanh), Dense(50 => 2))
+    end
+
+    aug_dudt = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(4 => 50, tanh), Flux.Dense(50 => 4))
+    else
+        Chain(Dense(4 => 50, tanh), Dense(50 => 4))
     end
 
     @testset "Neural ODE" begin
@@ -35,6 +41,13 @@ rng = Random.default_rng()
                 grads = Zygote.gradient(sum ∘ first ∘ node, u0, pd, st)
                 @test !iszero(grads[1])
                 @test !iszero(grads[2])
+
+                anode = AugmentedNDELayer(NeuralODE(aug_dudt, tspan, Tsit5(); kwargs...), 2)
+                pd, st = Lux.setup(rng, anode)
+                pd = ComponentArray(pd)
+                grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
+                @test !iszero(grads[1])
+                @test !iszero(grads[2])
             end
         end
     end
@@ -43,6 +56,12 @@ rng = Random.default_rng()
         Flux.Chain(Flux.Dense(2 => 50, tanh), Flux.Dense(50 => 2))
     else
         Chain(Dense(2 => 50, tanh), Dense(50 => 2))
+    end
+
+    aug_diffusion = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(4 => 50, tanh), Flux.Dense(50 => 4))
+    else
+        Chain(Dense(4 => 50, tanh), Dense(50 => 4))
     end
 
     tspan = (0.0f0, 0.1f0)
@@ -58,12 +77,29 @@ rng = Random.default_rng()
         @test !iszero(grads[1])
         @test !iszero(grads[2])
         @test !iszero(grads[2][end])
+
+        sode = NeuralDSDE(aug_dudt, aug_diffusion, tspan, solver;
+            saveat = 0.0f0:0.01f0:0.1f0, dt = 0.01f0)
+        anode = AugmentedNDELayer(sode, 2)
+        pd, st = Lux.setup(rng, anode)
+        pd = ComponentArray(pd)
+
+        grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+        @test !iszero(grads[2][end])
     end
 
     diffusion_sde = if nnlib == "Flux"
         Flux.Chain(Flux.Dense(2 => 50, tanh), Flux.Dense(50 => 4), x -> reshape(x, 2, 2))
     else
         Chain(Dense(2 => 50, tanh), Dense(50 => 4), x -> reshape(x, 2, 2))
+    end
+
+    aug_diffusion_sde = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(4 => 50, tanh), Flux.Dense(50 => 16), x -> reshape(x, 4, 4))
+    else
+        Chain(Dense(4 => 50, tanh), Dense(50 => 16), x -> reshape(x, 4, 4))
     end
 
     @testset "NeuralSDE u0: $(typeof(u0)), solver: $(solver)" for u0 in (x,),
@@ -78,33 +114,57 @@ rng = Random.default_rng()
         @test !iszero(grads[1])
         @test !iszero(grads[2])
         @test !iszero(grads[2][end])
+
+        sode = NeuralSDE(aug_dudt, aug_diffusion_sde, tspan, 4, solver;
+            saveat = 0.0f0:0.01f0:0.1f0, dt = 0.01f0)
+        anode = AugmentedNDELayer(sode, 2)
+        pd, st = Lux.setup(rng, anode)
+        pd = ComponentArray(pd)
+
+        grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+        @test !iszero(grads[2][end])
+    end
+
+    dudt = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(6 => 50, tanh), Flux.Dense(50 => 2))
+    else
+        Chain(Dense(6 => 50, tanh), Dense(50 => 2))
+    end
+
+    aug_dudt = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(12 => 50, tanh), Flux.Dense(50 => 4))
+    else
+        Chain(Dense(12 => 50, tanh), Dense(50 => 4))
+    end
+
+    @testset "NeuralCDDE u0: $(typeof(u0))" for u0 in (x, xs)
+        dode = NeuralCDDE(dudt, (0.0f0, 2.0f0), (u, p, t) -> zero(u), (0.1f0, 0.2f0),
+            MethodOfSteps(Tsit5()); saveat = 0.0f0:0.1f0:2.0f0)
+        pd, st = Lux.setup(rng, dode)
+        pd = ComponentArray(pd)
+
+        grads = Zygote.gradient(sum ∘ first ∘ dode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+
+        dode = NeuralCDDE(aug_dudt, (0.0f0, 2.0f0), (u, p, t) -> zero(u), (0.1f0, 0.2f0),
+            MethodOfSteps(Tsit5()); saveat = 0.0f0:0.1f0:2.0f0)
+        anode = AugmentedNDELayer(dode, 2)
+        pd, st = Lux.setup(rng, anode)
+        pd = ComponentArray(pd)
+
+        grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
     end
 end
 
+@testset "DimMover" begin
+    r = rand(2, 3, 4, 5)
+    layer = DimMover()
+    ps, st = Lux.setup(rng, layer)
 
-
-# ddudt = Flux.Chain(Flux.Dense(6, 50, tanh), Flux.Dense(50, 2))
-dudt = if nnlib == "Flux"
-    Flux.Chain(Flux.Dense(6 => 50, tanh), Flux.Dense(50 => 2))
-else
-    Chain(Dense(6 => 50, tanh), Dense(50 => 2))
+    @test first(layer(r, ps, st))[:, :, :, 1] == r[:, :, 1, :]
 end
-dode = NeuralCDDE(dudt, (0.0f0, 2.0f0), (p, t) -> zero(x), (0.1f0, 0.2f0),
-    MethodOfSteps(Tsit5()); saveat = 0.0:0.1:2.0)
-pd, st = Lux.setup(rng, dode)
-pd = ComponentArray(pd)
-
-dode(xs, pd, st)
-
-# grads = Zygote.gradient(() -> sum(dode(x)), Flux.params(x, dode))
-# @test !iszero(grads[x])
-# @test !iszero(grads[dode.p])
-
-# @test_broken grads = Zygote.gradient(() -> sum(dode(xs)), Flux.params(xs, dode)) isa Tuple
-# @test_broken !iszero(grads[xs])
-# @test !iszero(grads[dode.p])
-
-# @testset "DimMover" begin
-#     r = rand(2, 3, 4, 5)
-#     @test r[:, :, 1, :] == FluxBatchOrder(r)[:, :, :, 1]
-# end

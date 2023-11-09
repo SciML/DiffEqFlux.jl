@@ -166,8 +166,9 @@ Arguments:
   derivative function. Should take an input of size `[x; x(t - lag_1); ...; x(t - lag_n)]`
   and produce and output shaped like `x`.
 - `tspan`: The timespan to be solved on.
-- `hist`: Defines the history function `h(t)` for values before the start of the
-  integration.
+- `hist`: Defines the history function `h(u, p, t)` for values before the start of the
+  integration. Note that `u` is supposed to be used to return a value that matches the size
+  of `u`.
 - `lags`: Defines the lagged values that should be utilized in the neural network.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl.
@@ -196,16 +197,12 @@ function (n::NeuralCDDE)(x, ps, st)
 
     function dudt(u, h, p, t)
         xs = mapfoldl(lag -> h(p, t - lag), vcat, n.lags)
-        u_ = if ndims(xs) == ndims(u)
-            vcat(u, xs)
-        else
-            vcat(u, repeat(xs, ntuple(_ -> 1, ndims(xs))..., size(u, ndims(u))))
-        end
-        return model(u_, p)
+        return model(vcat(u, xs), p)
     end
 
-    ff = DDEFunction{false}(dudt, tgrad = basic_dde_tgrad)
-    prob = DDEProblem{false}(ff, x, n.hist, n.tspan, ps, constant_lags = n.lags)
+    ff = DDEFunction{false}(dudt; tgrad = basic_dde_tgrad)
+    prob = DDEProblem{false}(ff, x, (p, t) -> n.hist(x, p, t), n.tspan, ps;
+        constant_lags = n.lags)
 
     return (solve(prob, n.args...; sensealg = TrackerAdjoint(), n.kwargs...), model.st)
 end
@@ -273,183 +270,122 @@ function (n::NeuralDAE)(u_du::Tuple, p, st)
     return solve(prob, n.args...; sensealg = TrackerAdjoint(), n.kwargs...), st
 end
 
-# """
-# Constructs a physically-constrained continuous-time recurrant neural network,
-# also known as a neural differential-algebraic equation (neural DAE), with a
-# mass matrix and a fast gradient calculation via adjoints [1]. The mass matrix
-# formulation is:
+"""
+    NeuralODEMM(model, constraints_model, tspan, mass_matrix, alg = nothing, args...;
+        sensealg = InterpolatingAdjoint(autojacvec = ZygoteVJP()), kwargs...)
 
-# ```math
-# Mu' = f(u,p,t)
-# ```
+Constructs a physically-constrained continuous-time recurrant neural network, also known as
+a neural differential-algebraic equation (neural DAE), with a mass matrix and a fast
+gradient calculation via adjoints [1]. The mass matrix formulation is:
 
-# where `M` is semi-explicit, i.e. singular with zeros for rows corresponding to
-# the constraint equations.
+```math
+Mu' = f(u,p,t)
+```
 
-# ```julia
-# NeuralODEMM(model,constraints_model,tspan,mass_matrix,alg=nothing,args...;kwargs...)
-# ```
+where `M` is semi-explicit, i.e. singular with zeros for rows corresponding to the
+constraint equations.
 
-# Arguments:
+Arguments:
 
-# - `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the ̇`f(u,p,t)`
-# - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
-#   constaints to impose on the algebraic equations.
-# - `tspan`: The timespan to be solved on.
-# - `mass_matrix`: The mass matrix associated with the DAE
-# - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
-#   default algorithm from DifferentialEquations.jl. This method requires an
-#   implicit ODE solver compatible with singular mass matrices. Consult the
-#   [DAE solvers](https://docs.sciml.ai/DiffEqDocs/stable/solvers/dae_solve/) documentation for more details.
-# - `sensealg`: The choice of differentiation algorthm used in the backpropogation.
-#   Defaults to an adjoint method. See
-#   the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
-#   documentation for more details.
-# - `kwargs`: Additional arguments splatted to the ODE solver. See the
-#   [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-#   documentation for more details.
+- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the ̇`f(u,p,t)`
+- `constraints_model`: A function `constraints_model(u,p,t)` for the fixed constaints to
+  impose on the algebraic equations.
+- `tspan`: The timespan to be solved on.
+- `mass_matrix`: The mass matrix associated with the DAE
+- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the default
+  algorithm from DifferentialEquations.jl. This method requires an implicit ODE solver
+  compatible with singular mass matrices. Consult the
+  [DAE solvers](https://docs.sciml.ai/DiffEqDocs/stable/solvers/dae_solve/) documentation
+  for more details.
+- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+  Defaults to an adjoint method. See
+  the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
+  documentation for more details.
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+  documentation for more details.
+"""
+@concrete struct NeuralODEMM{M <: AbstractExplicitLayer} <: NeuralDELayer
+    model::M
+    constraints_model
+    tspan
+    mass_matrix
+    args
+    kwargs
+end
 
-# """
-# struct NeuralODEMM{M, M2, P, RE, T, MM, A, K} <: NeuralDELayer
-#     model::M
-#     constraints_model::M2
-#     p::P
-#     re::RE
-#     tspan::T
-#     mass_matrix::MM
-#     args::A
-#     kwargs::K
-# end
+function NeuralODEMM(model, constraints_model, tspan, mass_matrix, args...; kwargs...)
+    !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
+    return NeuralODEMM(model, constraints_model, tspan, mass_matrix, args, kwargs)
+end
 
-# function NeuralODEMM(model, constraints_model, tspan, mass_matrix, args...;
-#         p = nothing, kwargs...)
-#     _p, re = Flux.destructure(model)
+function (n::NeuralODEMM)(x, ps, st)
+    model = StatefulLuxLayer(n.model, nothing, st)
 
-#     if p === nothing
-#         p = _p
-#     end
-#     NeuralODEMM{typeof(model), typeof(constraints_model), typeof(p), typeof(re),
-#         typeof(tspan), typeof(mass_matrix), typeof(args), typeof(kwargs)}(model,
-#         constraints_model,
-#         p,
-#         re,
-#         tspan,
-#         mass_matrix,
-#         args,
-#         kwargs)
-# end
+    function f(u, p, t)
+        nn_out = model(u, p)
+        alg_out = n.constraints_model(u, p, t)
+        return vcat(nn_out, alg_out)
+    end
 
-# function NeuralODEMM(model::LuxCore.AbstractExplicitLayer, constraints_model, tspan,
-#         mass_matrix, args...;
-#         p = nothing, kwargs...)
-#     re = nothing
-#     NeuralODEMM{typeof(model), typeof(constraints_model), typeof(p), typeof(re),
-#         typeof(tspan), typeof(mass_matrix), typeof(args), typeof(kwargs)}(model,
-#         constraints_model,
-#         p,
-#         re,
-#         tspan,
-#         mass_matrix,
-#         args,
-#         kwargs)
-# end
+    dudt = ODEFunction{false}(f; mass_matrix = n.mass_matrix, tgrad = basic_tgrad)
+    prob = ODEProblem{false}(dudt, x, n.tspan, ps)
 
-# @functor NeuralODEMM (p,)
+    return (solve(prob, n.args...;
+            sensealg = InterpolatingAdjoint(autojacvec = ZygoteVJP()), n.kwargs...), model.st)
+end
 
-# function (n::NeuralODEMM)(x, p = n.p)
-#     function f(u, p, t)
-#         nn_out = n.re(p)(u)
-#         alg_out = n.constraints_model(u, p, t)
-#         vcat(nn_out, alg_out)
-#     end
-#     dudt_ = ODEFunction{false}(f, mass_matrix = n.mass_matrix, tgrad = basic_tgrad)
-#     prob = ODEProblem{false}(dudt_, x, n.tspan, p)
+"""
+    AugmentedNDELayer(nde, adim::Int)
 
-#     sense = InterpolatingAdjoint(autojacvec = ZygoteVJP())
-#     solve(prob, n.args...; sensealg = sense, n.kwargs...)
-# end
+Constructs an Augmented Neural Differential Equation Layer.
 
-# function (n::NeuralODEMM{M})(x, p, st) where {M <: LuxCore.AbstractExplicitLayer}
-#     function f(u, p, t; st = st)
-#         nn_out, st = n.model(u, p, st)
-#         alg_out = n.constraints_model(u, p, t)
-#         return vcat(nn_out, alg_out)
-#     end
-#     dudt_ = ODEFunction{false}(f; mass_matrix = n.mass_matrix, tgrad = basic_tgrad)
-#     prob = ODEProblem{false}(dudt_, x, n.tspan, p)
+Arguments:
 
-#     sense = InterpolatingAdjoint(autojacvec = ZygoteVJP())
-#     return solve(prob, n.args...; sensealg = sense, n.kwargs...), st
-# end
+- `nde`: Any Neural Differential Equation Layer
+- `adim`: The number of dimensions the initial conditions should be lifted
 
-# """
-# Constructs an Augmented Neural Differential Equation Layer.
+References:
 
-# ```julia
-# AugmentedNDELayer(nde, adim::Int)
-# ```
+[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural ODEs." In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.
+"""
+function AugmentedNDELayer(model::Union{NeuralDELayer, NeuralSDELayer}, adim::Int)
+    return Chain(Base.Fix2(__augment, adim), model)
+end
 
-# Arguments:
+function __augment(x::AbstractVector, augment_dim::Int)
+    y = CRC.@ignore_derivatives fill!(similar(x, augment_dim), 0)
+    return vcat(x, y)
+end
 
-# - `nde`: Any Neural Differential Equation Layer
-# - `adim`: The number of dimensions the initial conditions should be lifted
+function __augment(x::AbstractArray, augment_dim::Int)
+    y = CRC.@ignore_derivatives fill!(similar(x, size(x)[1:(ndims(x) - 2)]...,
+            augment_dim, size(x, ndims(x))), 0)
+    return cat(x, y; dims = Val(ndims(x) - 1))
+end
 
-# References:
+"""
+    DimMover(from, to)
 
-# [1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural ODEs." In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.
+Constructs a Dimension Mover Layer.
 
-# """
-# abstract type AugmentedNDEType <: LuxCore.AbstractExplicitContainerLayer{(:nde,)} end
-# struct AugmentedNDELayer{DE <: Union{NeuralDELayer, NeuralSDELayer}} <: AugmentedNDEType
-#     nde::DE
-#     adim::Int
-# end
+We can have Flux's conventional order `(data, channel, batch)` by using it as the last layer
+of `Flux.Chain` to swap the batch-index and the time-index of the Neural DE's output
+considering that each time point is a channel.
+"""
+@concrete struct DimMover <: AbstractExplicitLayer
+    from
+    to
+end
 
-# (ande::AugmentedNDELayer)(x, args...) = ande.nde(augment(x, ande.adim), args...)
+function DimMover(; from = -2, to = -1)
+    @assert from !== 0 && to !== 0
+    return DimMover(from, to)
+end
 
-# function augment(x::AbstractVector{S}, augment_dim::Int) where {S}
-#     cat(x, zeros(S, (augment_dim,)), dims = 1)
-# end
+function (dm::DimMover)(x, ps, st)
+    from = dm.from > 0 ? dm.from : (ndims(x) + 1 + dm.from)
+    to = dm.to > 0 ? dm.to : (ndims(x) + 1 + dm.to)
 
-# function augment(x::AbstractArray{S, T}, augment_dim::Int) where {S, T}
-#     cat(x, zeros(S, (size(x)[1:(T - 2)]..., augment_dim, size(x, T))), dims = T - 1)
-# end
-
-# function Base.getproperty(ande::AugmentedNDELayer, sym::Symbol)
-#     hasproperty(ande, sym) ? getfield(ande, sym) : getfield(ande.nde, sym)
-# end
-
-# abstract type HelperLayer <: Function end
-
-# """
-# Constructs a Dimension Mover Layer.
-
-# ```julia
-# DimMover(from, to)
-# ```
-# """
-# struct DimMover <: HelperLayer
-#     from::Integer
-#     to::Integer
-# end
-
-# function (dm::DimMover)(x)
-#     @assert !iszero(dm.from)
-#     @assert !iszero(dm.to)
-
-#     from = dm.from > 0 ? dm.from : (length(size(x)) + 1 + dm.from)
-#     to = dm.to > 0 ? dm.to : (length(size(x)) + 1 + dm.to)
-
-#     cat(eachslice(x; dims = from)...; dims = to)
-# end
-
-# """
-# We can have Flux's conventional order (data, channel, batch)
-# by using it as the last layer of `Flux.Chain` to swap the batch-index and the time-index of the Neural DE's output.
-# considering that each time point is a channel.
-
-# ```julia
-# FluxBatchOrder = DimMover(-2, -1)
-# ```
-# """
-# const FluxBatchOrder = DimMover(-2, -1)
+    return cat(eachslice(x; dims = from)...; dims = to), st
+end

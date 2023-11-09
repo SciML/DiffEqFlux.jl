@@ -10,9 +10,9 @@ Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. An
 
 ```@example hamiltonian_cp
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
-      ComponentArrays, Optimization, OptimizationOptimisers, IterTools
+    ComponentArrays, Optimization, OptimizationOptimisers, IterTools
 
-t = range(0.0f0, 1.0f0, length=1024)
+t = range(0.0f0, 1.0f0, length = 1024)
 π_32 = Float32(π)
 q_t = reshape(sin.(2π_32 * t), 1, :)
 p_t = reshape(cos.(2π_32 * t), 1, :)
@@ -24,7 +24,7 @@ target = vcat(dqdt, dpdt)
 B = 256
 NEPOCHS = 500
 dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
-                      selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
+        selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
                      for i in 1:(size(data, 2) ÷ B)), NEPOCHS)
 
 hnn = HamiltonianNN(Lux.Chain(Lux.Dense(2, 64, relu), Lux.Dense(64, 1)))
@@ -39,19 +39,19 @@ function loss_function(ps, data, target)
 end
 
 opt_func = OptimizationFunction((ps, _, data, target) -> loss_function(ps, data, target),
-                                Optimization.AutoForwardDiff())
+    Optimization.AutoForwardDiff())
 opt_prob = OptimizationProblem(opt_func, ps_c)
 
 res = Optimization.solve(opt_prob, opt, dataloader)
 
 ps_trained = res.u
 
-model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(), save_everystep=false,
-                            save_start=true, saveat=t)
+model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+    save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
-plot(data[1, :], data[2, :], lw=4, label="Original")
-plot!(pred[1, :], pred[2, :], lw=4, label="Predicted")
+plot(data[1, :], data[2, :], lw = 4, label = "Original")
+plot!(pred[1, :], pred[2, :], lw = 4, label = "Predicted")
 xlabel!("Position (q)")
 ylabel!("Momentum (p)")
 ```
@@ -64,7 +64,7 @@ The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we 
 
 ```@example hamiltonian
 using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff, Random,
-      IterTools, Lux, ComponentArrays, Optimization, OptimizationOptimisers
+    IterTools, Lux, ComponentArrays, Optimization, OptimizationOptimisers
 
 t = range(0.0f0, 1.0f0, length = 1024)
 π_32 = Float32(π)
@@ -78,7 +78,7 @@ target = cat(dqdt, dpdt, dims = 1)
 B = 256
 NEPOCHS = 500
 dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
-                      selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
+        selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
                      for i in 1:(size(data, 2) ÷ B)), NEPOCHS)
 ```
 
@@ -104,7 +104,7 @@ function callback(ps, loss, pred)
 end
 
 opt_func = OptimizationFunction((ps, _, data, target) -> loss_function(ps, data, target),
-                                Optimization.AutoForwardDiff())
+    Optimization.AutoForwardDiff())
 opt_prob = OptimizationProblem(opt_func, ps_c)
 
 res = solve(opt_prob, opt, dataloader; callback)
@@ -117,12 +117,12 @@ ps_trained = res.u
 In order to visualize the learned trajectories, we need to solve the ODE. We will use the `NeuralHamiltonianDE` layer, which is essentially a wrapper over `HamiltonianNN` layer, and solves the ODE.
 
 ```@example hamiltonian
-model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(), save_everystep=false,
-                            save_start=true, saveat=t)
+model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+    save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
-plot(data[1, :], data[2, :], lw=4, label="Original")
-plot!(pred[1, :], pred[2, :], lw=4, label="Predicted")
+plot(data[1, :], data[2, :], lw = 4, label = "Original")
+plot!(pred[1, :], pred[2, :], lw = 4, label = "Predicted")
 xlabel!("Position (q)")
 ylabel!("Momentum (p)")
 ```
@@ -132,15 +132,15 @@ ylabel!("Momentum (p)")
 ## Expected Output
 
 ```julia
-Loss: 19.865715
-Loss: 18.196068
-Loss: 19.179213
-Loss: 19.58956
+Loss:19.865715
+Loss:18.196068
+Loss:19.179213
+Loss:19.58956
 ⋮
-Loss: 0.02267044
-Loss: 0.019175647
-Loss: 0.02218909
-Loss: 0.018870523
+Loss:0.02267044
+Loss:0.019175647
+Loss:0.02218909
+Loss:0.018870523
 ```
 
 ## References

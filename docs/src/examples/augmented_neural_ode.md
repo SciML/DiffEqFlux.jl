@@ -8,14 +8,15 @@ using Statistics, LinearAlgebra, Plots
 using Flux.Data: DataLoader
 
 function random_point_in_sphere(dim, min_radius, max_radius)
-    distance = (max_radius - min_radius) .* (rand(Float32,1) .^ (1f0 / dim)) .+ min_radius
-    direction = randn(Float32,dim)
+    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+
+               min_radius
+    direction = randn(Float32, dim)
     unit_direction = direction ./ norm(direction)
     return distance .* unit_direction
 end
 
 function concentric_sphere(dim, inner_radius_range, outer_radius_range,
-                           num_samples_inner, num_samples_outer; batch_size = 64)
+        num_samples_inner, num_samples_outer; batch_size = 64)
     data = []
     labels = []
     for _ in 1:num_samples_inner
@@ -26,10 +27,11 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         push!(data, reshape(random_point_in_sphere(dim, outer_radius_range...), :, 1))
         push!(labels, -ones(1, 1))
     end
-    data = cat(data..., dims=2)
-    labels = cat(labels..., dims=2)
-    DataLoader((data |> Flux.gpu, labels |> Flux.gpu); batchsize=batch_size, shuffle=true,
-                      partial=false)
+    data = cat(data..., dims = 2)
+    labels = cat(labels..., dims = 2)
+    DataLoader((data |> Flux.gpu, labels |> Flux.gpu); batchsize = batch_size,
+        shuffle = true,
+        partial = false)
 end
 
 diffeqarray_to_array(x) = reshape(Flux.gpu(x), size(x)[1:2])
@@ -37,40 +39,46 @@ diffeqarray_to_array(x) = reshape(Flux.gpu(x), size(x)[1:2])
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
     node = NeuralODE(Flux.Chain(Flux.Dense(input_dim, hidden_dim, relu),
-                           Flux.Dense(hidden_dim, hidden_dim, relu),
-                           Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
-                     (0.f0, 1.f0), Tsit5(), save_everystep = false,
-                     reltol = 1f-3, abstol = 1f-3, save_start = false) |> Flux.gpu
+            Flux.Dense(hidden_dim, hidden_dim, relu),
+            Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
+        (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+        reltol = 1.0f-3, abstol = 1.0f-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
-    return Flux.Chain((x, p=node.p) -> node(x, p),
-                 Array,
-                 diffeqarray_to_array,
-                 Flux.Dense(input_dim, out_dim) |> Flux.gpu), node.p |> Flux.gpu
+    return Flux.Chain((x, p = node.p) -> node(x, p),
+        Array,
+        diffeqarray_to_array,
+        Flux.Dense(input_dim, out_dim) |> Flux.gpu),
+    node.p |> Flux.gpu
 end
 
 function plot_contour(model, npoints = 300)
-    grid_points = zeros(Float32, 2, npoints ^ 2)
+    grid_points = zeros(Float32, 2, npoints^2)
     idx = 1
-    x = range(-4f0, 4f0, length = npoints)
-    y = range(-4f0, 4f0, length = npoints)
+    x = range(-4.0f0, 4.0f0, length = npoints)
+    y = range(-4.0f0, 4.0f0, length = npoints)
     for x1 in x, x2 in y
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
     sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> Flux.cpu
 
-    return contour(x, y, sol, fill = true, linewidth=0.0)
+    return contour(x, y, sol, fill = true, linewidth = 0.0)
 end
 
 loss_node(x, y) = mean((model(x) .- y) .^ 2)
 
 println("Generating Dataset")
 
-dataloader = concentric_sphere(2, (0f0, 2f0), (3f0, 4f0), 2000, 2000; batch_size = 256)
+dataloader = concentric_sphere(2,
+    (0.0f0, 2.0f0),
+    (3.0f0, 4.0f0),
+    2000,
+    2000;
+    batch_size = 256)
 
 iter = 0
-cb = function()
-    global iter 
+cb = function ()
+    global iter
     iter += 1
     if iter % 10 == 0
         println("Iteration $iter || Loss = $(loss_node(dataloader.data[1], dataloader.data[2]))")
@@ -89,7 +97,7 @@ end
 plt_node = plot_contour(model)
 
 model, parameters = construct_model(1, 2, 64, 1)
-opt = Adam(5f-3)
+opt = Adam(5.0f-3)
 
 println()
 println("Training Augmented Neural ODE")
@@ -121,7 +129,8 @@ circle, and `-1` to any point which lies between the inner and outer circle. Our
 
 ```@example augneuralode
 function random_point_in_sphere(dim, min_radius, max_radius)
-    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1f0 / dim)) .+ min_radius
+    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+
+               min_radius
     direction = randn(Float32, dim)
     unit_direction = direction ./ norm(direction)
     return distance .* unit_direction
@@ -133,7 +142,7 @@ and shuffle the data.
 
 ```@example augneuralode
 function concentric_sphere(dim, inner_radius_range, outer_radius_range,
-                           num_samples_inner, num_samples_outer; batch_size = 64)
+        num_samples_inner, num_samples_outer; batch_size = 64)
     data = []
     labels = []
     for _ in 1:num_samples_inner
@@ -144,10 +153,11 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         push!(data, reshape(random_point_in_sphere(dim, outer_radius_range...), :, 1))
         push!(labels, -ones(1, 1))
     end
-    data = cat(data..., dims=2)
-    labels = cat(labels..., dims=2)
-    return DataLoader((data |> Flux.gpu, labels |> Flux.gpu); batchsize=batch_size, shuffle=true,
-                      partial=false)
+    data = cat(data..., dims = 2)
+    labels = cat(labels..., dims = 2)
+    return DataLoader((data |> Flux.gpu, labels |> Flux.gpu); batchsize = batch_size,
+        shuffle = true,
+        partial = false)
 end
 ```
 
@@ -169,15 +179,16 @@ diffeqarray_to_array(x) = reshape(Flux.gpu(x), size(x)[1:2])
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
     node = NeuralODE(Flux.Chain(Flux.Dense(input_dim, hidden_dim, relu),
-                           Flux.Dense(hidden_dim, hidden_dim, relu),
-                           Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
-                     (0.f0, 1.f0), Tsit5(), save_everystep = false,
-                     reltol = 1f-3, abstol = 1f-3, save_start = false) |> Flux.gpu
+            Flux.Dense(hidden_dim, hidden_dim, relu),
+            Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
+        (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+        reltol = 1.0f-3, abstol = 1.0f-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : (AugmentedNDELayer(node, augment_dim) |> Flux.gpu)
-    return Flux.Chain((x, p=node.p) -> node(x, p),
-                 Array,
-                 diffeqarray_to_array,
-                 Flux.Dense(input_dim, out_dim) |> Flux.gpu), node.p |> Flux.gpu
+    return Flux.Chain((x, p = node.p) -> node(x, p),
+        Array,
+        diffeqarray_to_array,
+        Flux.Dense(input_dim, out_dim) |> Flux.gpu),
+    node.p |> Flux.gpu
 end
 ```
 
@@ -187,17 +198,17 @@ Here, we define a utility to plot our model regression results as a heatmap.
 
 ```@example augneuralode
 function plot_contour(model, npoints = 300)
-    grid_points = zeros(2, npoints ^ 2)
+    grid_points = zeros(2, npoints^2)
     idx = 1
-    x = range(-4f0, 4f0, length = npoints)
-    y = range(-4f0, 4f0, length = npoints)
+    x = range(-4.0f0, 4.0f0, length = npoints)
+    y = range(-4.0f0, 4.0f0, length = npoints)
     for x1 in x, x2 in y
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
     sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> Flux.cpu
 
-    return contour(x, y, sol, fill = true, linewidth=0.0)
+    return contour(x, y, sol, fill = true, linewidth = 0.0)
 end
 ```
 
@@ -218,7 +229,12 @@ Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is ea
 We sample a total of `4000` data points.
 
 ```@example augneuralode
-dataloader = concentric_sphere(2, (0f0, 2f0), (3f0, 4f0), 2000, 2000; batch_size = 256)
+dataloader = concentric_sphere(2,
+    (0.0f0, 2.0f0),
+    (3.0f0, 4.0f0),
+    2000,
+    2000;
+    batch_size = 256)
 ```
 
 ### Callback Function
@@ -227,7 +243,7 @@ Additionally, we define a callback function which displays the total loss at spe
 
 ```@example augneuralode
 iter = 0
-cb = function()
+cb = function ()
     global iter += 1
     if iter % 10 == 1
         println("Iteration $iter || Loss = $(loss_node(dataloader.data[1], dataloader.data[2]))")
@@ -240,7 +256,7 @@ end
 We use Adam as the optimizer with a learning rate of 0.005
 
 ```@example augneuralode
-opt = Adam(5f-3)
+opt = Adam(5.0f-3)
 ```
 
 ## Training the Neural ODE
@@ -322,4 +338,3 @@ Iteration 150 || Loss = 0.036247417
 # References
 
 [1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural ODEs." In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.
-

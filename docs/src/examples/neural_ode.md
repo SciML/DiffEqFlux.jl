@@ -12,7 +12,8 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example neuralode_cp
-using ComponentArrays, Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, OptimizationOptimisers, Random, Plots
+using ComponentArrays, Lux, DiffEqFlux, DifferentialEquations, Optimization,
+    OptimizationOptimJL, OptimizationOptimisers, Random, Plots
 
 rng = Random.default_rng()
 u0 = Float32[2.0; 0.0]
@@ -22,20 +23,20 @@ tsteps = range(tspan[1], tspan[2], length = datasize)
 
 function trueODEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
-    du .= ((u.^3)'true_A)'
+    du .= ((u .^ 3)'true_A)'
 end
 
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
 
-dudt2 = Lux.Chain(x -> x.^3,
-                  Lux.Dense(2, 50, tanh),
-                  Lux.Dense(50, 2))
+dudt2 = Lux.Chain(x -> x .^ 3,
+    Lux.Dense(2, 50, tanh),
+    Lux.Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 
 function predict_neuralode(p)
-  Array(prob_neuralode(u0, p, st)[1])
+    Array(prob_neuralode(u0, p, st)[1])
 end
 
 function loss_neuralode(p)
@@ -47,18 +48,18 @@ end
 # Do not plot by default for the documentation
 # Users should change doplot=true to see the plots callbacks
 callback = function (p, l, pred; doplot = false)
-  println(l)
-  # plot current prediction against data
-  if doplot
-    plt = scatter(tsteps, ode_data[1,:], label = "data")
-    scatter!(plt, tsteps, pred[1,:], label = "prediction")
-    display(plot(plt))
-  end
-  return false
+    println(l)
+    # plot current prediction against data
+    if doplot
+        plt = scatter(tsteps, ode_data[1, :], label = "data")
+        scatter!(plt, tsteps, pred[1, :], label = "prediction")
+        display(plot(plt))
+    end
+    return false
 end
 
 pinit = ComponentArray(p)
-callback(pinit, loss_neuralode(pinit)...; doplot=true)
+callback(pinit, loss_neuralode(pinit)...; doplot = true)
 
 # use Optimization.jl to solve the problem
 adtype = Optimization.AutoZygote()
@@ -67,18 +68,18 @@ optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
-                                       Adam(0.05),
-                                       callback = callback,
-                                       maxiters = 300)
+    Adam(0.05),
+    callback = callback,
+    maxiters = 300)
 
-optprob2 = remake(optprob,u0 = result_neuralode.u)
+optprob2 = remake(optprob, u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.BFGS(initial_stepnorm=0.01),
-                                        callback=callback,
-                                        allow_f_increases = false)
+    Optim.BFGS(initial_stepnorm = 0.01),
+    callback = callback,
+    allow_f_increases = false)
 
-callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=true)
+callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)
 ```
 
 ![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
@@ -88,7 +89,8 @@ callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=tru
 Let's get a time series array from a spiral ODE to train against.
 
 ```@example neuralode
-using ComponentArrays, Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, OptimizationOptimisers, Random, Plots
+using ComponentArrays, Lux, DiffEqFlux, DifferentialEquations, Optimization,
+    OptimizationOptimJL, OptimizationOptimisers, Random, Plots
 
 rng = Random.default_rng()
 u0 = Float32[2.0; 0.0]
@@ -98,7 +100,7 @@ tsteps = range(tspan[1], tspan[2], length = datasize)
 
 function trueODEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
-    du .= ((u.^3)'true_A)'
+    du .= ((u .^ 3)'true_A)'
 end
 
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
@@ -110,9 +112,9 @@ the layer. Here we're going to use `Lux.Chain`, which is a suitable neural netwo
 structure for NeuralODEs with separate handling of state variables:
 
 ```@example neuralode
-dudt2 = Lux.Chain(x -> x.^3,
-                  Lux.Dense(2, 50, tanh),
-                  Lux.Dense(50, 2))
+dudt2 = Lux.Chain(x -> x .^ 3,
+    Lux.Dense(2, 50, tanh),
+    Lux.Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 ```
@@ -120,9 +122,9 @@ prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
 Note that we can directly use `Chain`s from Flux.jl as well, for example:
 
 ```julia
-dudt2 = Chain(x -> x.^3,
-              Dense(2, 50, tanh),
-              Dense(50, 2))
+dudt2 = Chain(x -> x .^ 3,
+    Dense(2, 50, tanh),
+    Dense(50, 2))
 ```
 
 In our model, we used the `x -> x.^3` assumption in the model. By incorporating
@@ -136,7 +138,7 @@ output against the time series data:
 
 ```@example neuralode
 function predict_neuralode(p)
-  Array(prob_neuralode(u0, p, st)[1])
+    Array(prob_neuralode(u0, p, st)[1])
 end
 
 function loss_neuralode(p)
@@ -153,14 +155,14 @@ it would show every step and overflow the documentation, but for your use case
 ```@example neuralode
 # Callback function to observe training
 callback = function (p, l, pred; doplot = false)
-  println(l)
-  # plot current prediction against data
-  if doplot
-    plt = scatter(tsteps, ode_data[1,:], label = "data")
-    scatter!(plt, tsteps, pred[1,:], label = "prediction")
-    display(plot(plt))
-  end
-  return false
+    println(l)
+    # plot current prediction against data
+    if doplot
+        plt = scatter(tsteps, ode_data[1, :], label = "data")
+        scatter!(plt, tsteps, pred[1, :], label = "prediction")
+        display(plot(plt))
+    end
+    return false
 end
 
 pinit = ComponentArray(p)
@@ -189,9 +191,9 @@ optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
-                                       Adam(0.05),
-                                       callback = callback,
-                                       maxiters = 300)
+    Adam(0.05),
+    callback = callback,
+    maxiters = 300)
 ```
 
 We then complete the training using a different optimizer, starting from where
@@ -200,16 +202,16 @@ halt when near the minimum.
 
 ```@example neuralode
 # Retrain using the LBFGS optimizer
-optprob2 = remake(optprob,u0 = result_neuralode.u)
+optprob2 = remake(optprob, u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.BFGS(initial_stepnorm=0.01),
-                                        callback = callback,
-                                        allow_f_increases = false)
+    Optim.BFGS(initial_stepnorm = 0.01),
+    callback = callback,
+    allow_f_increases = false)
 ```
 
 And then we use the callback with `doplot=true` to see the final plot:
 
 ```@example neuralode
-callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=true)
+callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)
 ```

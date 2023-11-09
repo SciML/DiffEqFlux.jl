@@ -42,19 +42,20 @@ import Lux.Experimental: StatefulLuxLayer
 # include("ffjord.jl")
 include("neural_de.jl")
 # include("spline_layer.jl")
-# include("tensor_product_basis.jl")
-# include("tensor_product_layer.jl")
+include("tensor_product.jl")
 include("collocation.jl")
 # include("hnn.jl")
 # include("multiple_shooting.jl")
 
-export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE
-# export FFJORD, NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE,
-#        NeuralODEMM, TensorLayer, AugmentedNDELayer, SplineLayer, NeuralHamiltonianDE
+export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
+    NeuralODEMM, TensorLayer
+# export FFJORD,
+#        , TensorLayer,SplineLayer, NeuralHamiltonianDE
 # export HamiltonianNN
-# export ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
+export TensorProductBasisFunction,
+    ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
 # export FFJORDDistribution
-# export DimMover, FluxBatchOrder
+export DimMover
 
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel, TriweightKernel,
     TricubeKernel, GaussianKernel, CosineKernel, LogisticKernel, SigmoidKernel,

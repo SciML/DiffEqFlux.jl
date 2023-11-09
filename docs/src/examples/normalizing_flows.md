@@ -9,12 +9,10 @@ follow a full explanation of the definition and training process:
 
 ```@example cnf
 using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimisers,
-      OptimizationOptimJL, Distributions
+    OptimizationOptimJL, Distributions
 
-nn = Flux.Chain(
-    Flux.Dense(1, 3, tanh),
-    Flux.Dense(3, 1, tanh),
-) |> f32
+nn = Flux.Chain(Flux.Dense(1, 3, tanh),
+    Flux.Dense(3, 1, tanh)) |> f32
 tspan = (0.0f0, 10.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
@@ -29,7 +27,7 @@ function loss(θ)
 end
 
 function cb(p, l)
-    @info "Training" loss = loss(p)
+    @info "Training" loss=loss(p)
     false
 end
 
@@ -38,25 +36,25 @@ optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
-                          Adam(0.1),
-                          maxiters = 100,
-                          callback=cb)
+    Adam(0.1),
+    maxiters = 100,
+    callback = cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
-                          Optim.LBFGS(),
-                          allow_f_increases=false,
-                          callback=cb)
+    Optim.LBFGS(),
+    allow_f_increases = false,
+    callback = cb)
 
 # Evaluation
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo=false)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo = false)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 # Data Generation
-ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
+ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p = res2.u))
 new_data = rand(ffjord_dist, 100)
 ```
 
@@ -66,12 +64,10 @@ We can use DiffEqFlux.jl to define, train and output the densities computed by C
 
 ```@example cnf2
 using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimisers,
-      OptimizationOptimJL, Distributions
+    OptimizationOptimJL, Distributions
 
-nn = Flux.Chain(
-    Flux.Dense(1, 3, tanh),
-    Flux.Dense(3, 1, tanh),
-) |> f32
+nn = Flux.Chain(Flux.Dense(1, 3, tanh),
+    Flux.Dense(3, 1, tanh)) |> f32
 tspan = (0.0f0, 10.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, Tsit5())
@@ -99,7 +95,7 @@ function loss(θ)
 end
 
 function cb(p, l)
-    @info "Training" loss = loss(p)
+    @info "Training" loss=loss(p)
     false
 end
 ```
@@ -116,9 +112,9 @@ optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
-                          Adam(0.1),
-                          maxiters = 100,
-                          callback=cb)
+    Adam(0.1),
+    maxiters = 100,
+    callback = cb)
 ```
 
 We then complete the training using a different optimizer, starting from where `Adam` stopped.
@@ -126,9 +122,9 @@ We then complete the training using a different optimizer, starting from where `
 ```@example cnf2
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
-                          Optim.LBFGS(),
-                          allow_f_increases=false,
-                          callback=cb)
+    Optim.LBFGS(),
+    allow_f_increases = false,
+    callback = cb)
 ```
 
 ### Evaluation
@@ -140,7 +136,7 @@ Then we use a distance function between these distributions.
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo=false)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo = false)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 ```
 
@@ -149,7 +145,7 @@ train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 What's more, we can generate new data by using FFJORD as a distribution in `rand`.
 
 ```@example cnf2
-ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p=res2.u))
+ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p = res2.u))
 new_data = rand(ffjord_dist, 100)
 ```
 
