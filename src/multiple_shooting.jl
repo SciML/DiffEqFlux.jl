@@ -35,18 +35,16 @@ Note:
 The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
 whenever the last point of any group doesn't coincide with the first point of next group.
 """
-function multiple_shoot(
-    p::AbstractArray,
-    ode_data::AbstractArray,
-    tsteps::AbstractArray,
-    prob::ODEProblem,
-    loss_function,
-    continuity_loss,
-    solver::DiffEqBase.AbstractODEAlgorithm,
-    group_size::Integer;
-    continuity_term::Real=100,
-    kwargs...
-)
+function multiple_shoot(p::AbstractArray,
+        ode_data::AbstractArray,
+        tsteps::AbstractArray,
+        prob::ODEProblem,
+        loss_function,
+        continuity_loss,
+        solver::DiffEqBase.AbstractODEAlgorithm,
+        group_size::Integer;
+        continuity_term::Real = 100,
+        kwargs...)
     datasize = size(ode_data, 2)
 
     if group_size < 2 || group_size > datasize
@@ -57,19 +55,13 @@ function multiple_shoot(
     ranges = group_ranges(datasize, group_size)
 
     # Multiple shooting predictions
-    sols = [
-        solve(
-            remake(
-                prob;
-                p=p,
-                tspan=(tsteps[first(rg)], tsteps[last(rg)]),
-                u0=ode_data[:, first(rg)],
-            ),
-            solver;
-            saveat=tsteps[rg],
-            kwargs...
-        ) for rg in ranges
-    ]
+    sols = [solve(remake(prob;
+            p = p,
+            tspan = (tsteps[first(rg)], tsteps[last(rg)]),
+            u0 = ode_data[:, first(rg)],),
+        solver;
+        saveat = tsteps[rg],
+        kwargs...) for rg in ranges]
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations failed
@@ -88,27 +80,23 @@ function multiple_shoot(
         if i > 1
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
-            loss +=
-                continuity_term * continuity_loss(group_predictions[i - 1][:, end], u[:, 1])
+            loss += continuity_term *
+                    continuity_loss(group_predictions[i - 1][:, end], u[:, 1])
         end
     end
 
     return loss, group_predictions
 end
 
-function multiple_shoot(
-    p::AbstractArray,
-    ode_data::AbstractArray,
-    tsteps::AbstractArray,
-    prob::ODEProblem,
-    loss_function::Function,
-    solver::DiffEqBase.AbstractODEAlgorithm,
-    group_size::Integer;
-    kwargs...,
-)
-
-    return multiple_shoot(
-        p,
+function multiple_shoot(p::AbstractArray,
+        ode_data::AbstractArray,
+        tsteps::AbstractArray,
+        prob::ODEProblem,
+        loss_function::Function,
+        solver::DiffEqBase.AbstractODEAlgorithm,
+        group_size::Integer;
+        kwargs...,)
+    return multiple_shoot(p,
         ode_data,
         tsteps,
         prob,
@@ -116,8 +104,7 @@ function multiple_shoot(
         _default_continuity_loss,
         solver,
         group_size;
-        kwargs...,
-    )
+        kwargs...,)
 end
 
 """
@@ -159,19 +146,17 @@ Note:
 The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
 whenever the last point of any group doesn't coincide with the first point of next group.
 """
-function multiple_shoot(
-    p::AbstractArray,
-    ode_data::AbstractArray,
-    tsteps::AbstractArray,
-    ensembleprob::EnsembleProblem,
-    ensemblealg::SciMLBase.BasicEnsembleAlgorithm,
-    loss_function,
-    continuity_loss,
-    solver::DiffEqBase.AbstractODEAlgorithm,
-    group_size::Integer;
-    continuity_term::Real=100,
-    kwargs...
-)
+function multiple_shoot(p::AbstractArray,
+        ode_data::AbstractArray,
+        tsteps::AbstractArray,
+        ensembleprob::EnsembleProblem,
+        ensemblealg::SciMLBase.BasicEnsembleAlgorithm,
+        loss_function,
+        continuity_loss,
+        solver::DiffEqBase.AbstractODEAlgorithm,
+        group_size::Integer;
+        continuity_term::Real = 100,
+        kwargs...)
     datasize = size(ode_data, 2)
     prob = ensembleprob.prob
 
@@ -179,44 +164,40 @@ function multiple_shoot(
         throw(DomainError(group_size, "group_size can't be < 2 or > number of data points"))
     end
 
-    @assert ndims(ode_data) == 3 "ode_data must have three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
-    @assert size(ode_data,2) == length(tsteps)
-    @assert size(ode_data,3) == kwargs[:trajectories]
+    @assert ndims(ode_data)==3 "ode_data must have three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
+    @assert size(ode_data, 2) == length(tsteps)
+    @assert size(ode_data, 3) == kwargs[:trajectories]
 
     # Get ranges that partition data to groups of size group_size
     ranges = group_ranges(datasize, group_size)
 
     # Multiple shooting predictions
     # by using map we avoid mutating an array
-    sols = map(
-        rg -> begin
-            newprob = remake(
-                    prob;
-                    p=p,
-                    tspan=(tsteps[first(rg)], tsteps[last(rg)]),
-                    )
+    sols = map(rg -> begin
+            newprob = remake(prob;
+                p = p,
+                tspan = (tsteps[first(rg)], tsteps[last(rg)]),)
             function prob_func(prob, i, repeat)
                 remake(prob, u0 = ode_data[:, first(rg), i])
             end
             newensembleprob = EnsembleProblem(newprob,
-                                            prob_func,
-                                            ensembleprob.output_func,
-                                            ensembleprob.reduction,
-                                            ensembleprob.u_init,
-                                            ensembleprob.safetycopy);
+                prob_func,
+                ensembleprob.output_func,
+                ensembleprob.reduction,
+                ensembleprob.u_init,
+                ensembleprob.safetycopy)
             solve(newensembleprob,
                 solver,
                 ensemblealg;
-                saveat=tsteps[rg],
-                kwargs...
-            )
+                saveat = tsteps[rg],
+                kwargs...)
         end,
         ranges)
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations did not converge?
     convergeds = [sol.converged for sol in sols]
-    if any(.! convergeds)
+    if any(.!convergeds)
         return Inf, group_predictions
     end
 
@@ -233,29 +214,25 @@ function multiple_shoot(
         if i > 1
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
-            loss +=
-                continuity_term * continuity_loss(group_predictions[i - 1][:, end, :], u[:, 1, :])
+            loss += continuity_term *
+                    continuity_loss(group_predictions[i - 1][:, end, :], u[:, 1, :])
         end
     end
 
     return loss, group_predictions
 end
 
-function multiple_shoot(
-    p::AbstractArray,
-    ode_data::AbstractArray,
-    tsteps::AbstractArray,
-    ensembleprob::EnsembleProblem,
-    ensemblealg::SciMLBase.BasicEnsembleAlgorithm,
-    loss_function::Function,
-    solver::DiffEqBase.AbstractODEAlgorithm,
-    group_size::Integer;
-    continuity_term::Real=100,
-    kwargs...
-)
-
-    return multiple_shoot(
-        p,
+function multiple_shoot(p::AbstractArray,
+        ode_data::AbstractArray,
+        tsteps::AbstractArray,
+        ensembleprob::EnsembleProblem,
+        ensemblealg::SciMLBase.BasicEnsembleAlgorithm,
+        loss_function::Function,
+        solver::DiffEqBase.AbstractODEAlgorithm,
+        group_size::Integer;
+        continuity_term::Real = 100,
+        kwargs...)
+    return multiple_shoot(p,
         ode_data,
         tsteps,
         ensembleprob,
@@ -265,9 +242,7 @@ function multiple_shoot(
         solver,
         group_size;
         continuity_term,
-        kwargs...
-    )
-
+        kwargs...)
 end
 
 """
@@ -293,18 +268,14 @@ julia> group_ranges(10, 5)
 ```
 """
 function group_ranges(datasize::Integer, groupsize::Integer)
-    2 <= groupsize <= datasize || throw(
-        DomainError(
-            groupsize,
-            "datasize must be positive and groupsize must to be within [2, datasize]",
-        ),
-    )
-    return [i:min(datasize, i + groupsize - 1) for i in 1:groupsize-1:datasize-1]
+    2 <= groupsize <= datasize || throw(DomainError(groupsize,
+        "datasize must be positive and groupsize must to be within [2, datasize]"))
+    return [i:min(datasize, i + groupsize - 1) for i in 1:(groupsize - 1):(datasize - 1)]
 end
 
 # Default ontinuity loss between last state in previous prediction
 # and current initial condition in ode_data
 function _default_continuity_loss(û_end::AbstractArray,
-                                  u_0::AbstractArray)
+        u_0::AbstractArray)
     return sum(abs, û_end - u_0)
 end

@@ -1,21 +1,24 @@
 using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
-      ComponentArrays, Random, Optimization, OptimizationOptimisers
+    ComponentArrays, Random, Optimization, OptimizationOptimisers
 using MLDatasets: MNIST
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 
 CUDA.allowscalar(false)
 ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 
-logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims=1); dims=1))
+logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims = 1); dims = 1))
 
-function loadmnist(batchsize=bs)
+function loadmnist(batchsize = bs)
     # Use MLDataUtils LabelEnc for natural onehot conversion
-    onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
+    function onehot(labels_raw)
+        convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
+    end
     # Load MNIST
-    mnist = MNIST(split=:train)
+    mnist = MNIST(split = :train)
     imgs, labels_raw = mnist.features, mnist.targets
     # Process images into (H,W,C,BS) batches
-    x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |> Lux.gpu
+    x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
+              Lux.gpu
     x_train = batchview(x_train, batchsize)
     # Onehot and batch the labels
     y_train = onehot(labels_raw) |> Lux.gpu
@@ -29,11 +32,11 @@ x_train, y_train = loadmnist(bs)
 
 down = Lux.Chain(Lux.FlattenLayer(), Lux.Dense(784, 20, tanh))
 nn = Lux.Chain(Lux.Dense(20, 10, tanh), Lux.Dense(10, 10, tanh),
-               Lux.Dense(10, 20, tanh))
+    Lux.Dense(10, 20, tanh))
 fc = Lux.Dense(20, 10)
 
-nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(), save_everystep=false, reltol=1e-3,
-                   abstol=1e-3, save_start=false)
+nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(), save_everystep = false, reltol = 1e-3,
+    abstol = 1e-3, save_start = false)
 
 """
     DiffEqArray_to_Array(x)
@@ -46,7 +49,7 @@ function DiffEqArray_to_Array(x)
 end
 
 #Build our over-all model topology
-m = Lux.Chain(; down, nn_ode, convert=Lux.WrappedFunction(DiffEqArray_to_Array), fc)
+m = Lux.Chain(; down, nn_ode, convert = Lux.WrappedFunction(DiffEqArray_to_Array), fc)
 ps, st = Lux.setup(Random.default_rng(), m)
 ps = ComponentArray(ps) |> Lux.gpu
 st = st |> Lux.gpu
@@ -67,7 +70,7 @@ x_m = first(m_no_ode(x_train[1], ps_no_ode, st_no_ode))
 
 classify(x) = argmax.(eachcol(x))
 
-function accuracy(model, data, ps, st; n_batches=100)
+function accuracy(model, data, ps, st; n_batches = 100)
     total_correct = 0
     total = 0
     st = Lux.testmode(st)
@@ -94,7 +97,7 @@ opt = OptimizationOptimisers.Adam(0.05)
 iter = 0
 
 opt_func = OptimizationFunction((ps, _, x, y) -> loss_function(ps, x, y),
-                                Optimization.AutoZygote())
+    Optimization.AutoZygote())
 opt_prob = OptimizationProblem(opt_func, ps)
 
 function callback(ps, l, pred)

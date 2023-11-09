@@ -10,10 +10,10 @@
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 [![SciML Code Style](https://img.shields.io/static/v1?label=code%20style&message=SciML&color=9558b2&labelColor=389826)](https://github.com/SciML/SciMLStyle)
 
-DiffEqFlux.jl fuses the world of differential equations with machine learning
+DiffEq(For)lux.jl fuses the world of differential equations with machine learning
 by helping users put diffeq solvers into neural networks. This package utilizes
 [DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/stable/),
-[Flux.jl](https://docs.sciml.ai/Flux/stable/) and [Lux.jl](https://lux.csail.mit.edu/v0.5.5/api/)  as its building blocks to support research in
+[Flux.jl](https://docs.sciml.ai/Flux/stable/) and [Lux.jl](https://lux.csail.mit.edu/)  as its building blocks to support research in
 [Scientific Machine Learning](https://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/),
 specifically neural differential equations and universal differential equations,
 to add physical information into traditional machine learning.
@@ -65,3 +65,8 @@ explore various ways to integrate the two methodologies:
 - Cost functions on ODEs can define neural networks
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
+
+## Breaking Changes in v3
+
+- Flux dependency is dropped. If a non Lux `AbstractExplicitLayer` is passed we try to automatically convert it to a Lux model with `Lux.transform(model)`.
+- `NeuralDAE` now allows an optional `du0` as input.

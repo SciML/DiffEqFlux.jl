@@ -36,7 +36,15 @@ References:
 [3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
 
 """
-struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVector{<: AbstractFloat}, Nothing}, RE <: Union{Function, Nothing}, D <: Distribution, T, A, K}
+struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {
+    M,
+    P <: Union{AbstractVector{<:AbstractFloat}, Nothing},
+    RE <: Union{Function, Nothing},
+    D <: Distribution,
+    T,
+    A,
+    K,
+}
     model::M
     p::P
     re::RE
@@ -45,20 +53,31 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVec
     args::A
     kwargs::K
 
-    function FFJORD(model::LuxCore.AbstractExplicitLayer,tspan,args...;p=nothing,basedist=nothing,kwargs...)
+    function FFJORD(model::LuxCore.AbstractExplicitLayer,
+            tspan,
+            args...;
+            p = nothing,
+            basedist = nothing,
+            kwargs...)
         re = nothing
         p = nothing
         if isnothing(basedist)
             size_input = model.layers.layer_1.in_dims
             type_input = eltype(tspan)
-            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
+            basedist = MvNormal(zeros(type_input, size_input),
+                Diagonal(ones(type_input, size_input)))
         end
-        new{typeof(model),typeof(p),typeof(re),
-          typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-          model,p,re,basedist,tspan,args,kwargs)
+        new{typeof(model), typeof(p), typeof(re),
+            typeof(basedist), typeof(tspan), typeof(args), typeof(kwargs)}(model,
+            p,
+            re,
+            basedist,
+            tspan,
+            args,
+            kwargs)
     end
 
-    function FFJORD(model, tspan, args...;p=nothing, basedist=nothing, kwargs...)
+    function FFJORD(model, tspan, args...; p = nothing, basedist = nothing, kwargs...)
         #
         _p, re = Flux.destructure(model)
         if isnothing(p)
@@ -67,20 +86,26 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {M, P <: Union{AbstractVec
         if isnothing(basedist)
             size_input = size(model[1].weight, 2)
             type_input = eltype(model[1].weight)
-            basedist = MvNormal(zeros(type_input, size_input), Diagonal(ones(type_input, size_input)))
+            basedist = MvNormal(zeros(type_input, size_input),
+                Diagonal(ones(type_input, size_input)))
         end
-        new{typeof(model),typeof(p),typeof(re),
-            typeof(basedist),typeof(tspan),typeof(args),typeof(kwargs)}(
-                model,p,re,basedist,tspan,args,kwargs)
+        new{typeof(model), typeof(p), typeof(re),
+            typeof(basedist), typeof(tspan), typeof(args), typeof(kwargs)}(model,
+            p,
+            re,
+            basedist,
+            tspan,
+            args,
+            kwargs)
     end
 end
 
-_norm_batched(x::AbstractMatrix) = sqrt.(sum(x.^2, dims=1))
+_norm_batched(x::AbstractMatrix) = sqrt.(sum(x .^ 2, dims = 1))
 
 function jacobian_fn(f, x::AbstractVector, args...)
     y::AbstractVector, back = Zygote.pullback(f, x)
-    ȳ(i) = [i == j for j = 1:length(y)]
-    vcat([transpose(back(ȳ(i))[1]) for i = 1:length(y)]...)
+    ȳ(i) = [i == j for j in 1:length(y)]
+    vcat([transpose(back(ȳ(i))[1]) for i in 1:length(y)]...)
 end
 
 function jacobian_fn(f, x::AbstractMatrix, args...)
@@ -97,8 +122,8 @@ function jacobian_fn(f, x::AbstractMatrix, args...)
 end
 
 function jacobian_fn(f::LuxCore.AbstractExplicitLayer, x::AbstractMatrix, args...)
-    p,st = args
-    y, back = Zygote.pullback((z,ps,s)->f(z,ps,s)[1], x, p, st)
+    p, st = args
+    y, back = Zygote.pullback((z, ps, s) -> f(z, ps, s)[1], x, p, st)
     z = ChainRulesCore.@ignore_derivatives similar(y)
     ChainRulesCore.@ignore_derivatives fill!(z, zero(eltype(x)))
     vec = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
@@ -110,29 +135,30 @@ function jacobian_fn(f::LuxCore.AbstractExplicitLayer, x::AbstractMatrix, args..
     copy(vec)
 end
 
-_trace_batched(x::AbstractArray{T, 3}) where T =
+function _trace_batched(x::AbstractArray{T, 3}) where {T}
     reshape([tr(x[:, :, i]) for i in 1:size(x, 3)], 1, size(x, 3))
+end
 
 function ffjord(u, p, t, re, e, st;
-                regularize=false, monte_carlo=true)
+        regularize = false, monte_carlo = true)
     m = re(p)
     if regularize
-        z = u[1:end - 3, :]
+        z = u[1:(end - 3), :]
         if monte_carlo
             mz, back = Zygote.pullback(m, z)
             eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims=1)
+            trace_jac = sum(eJ .* e, dims = 1)
         else
             mz = m(z)
             trace_jac = _trace_batched(jacobian_fn(m, z))
         end
-        vcat(mz, -trace_jac, sum(abs2, mz, dims=1), _norm_batched(eJ))
+        vcat(mz, -trace_jac, sum(abs2, mz, dims = 1), _norm_batched(eJ))
     else
-        z = u[1:end - 1, :]
+        z = u[1:(end - 1), :]
         if monte_carlo
             mz, back = Zygote.pullback(m, z)
             eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims=1)
+            trace_jac = sum(eJ .* e, dims = 1)
         else
             mz = m(z)
             trace_jac = _trace_batched(jacobian_fn(m, z))
@@ -142,24 +168,24 @@ function ffjord(u, p, t, re, e, st;
 end
 
 function ffjord(u, p, t, re::LuxCore.AbstractExplicitLayer, e, st;
-    regularize=false, monte_carlo=true)
+        regularize = false, monte_carlo = true)
     if regularize
-        z = u[1:end - 3, :]
+        z = u[1:(end - 3), :]
         if monte_carlo
-            mz, back = Zygote.pullback((x,ps,s)->re(x,ps,s)[1], z, p, st)
+            mz, back = Zygote.pullback((x, ps, s) -> re(x, ps, s)[1], z, p, st)
             eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims=1)
+            trace_jac = sum(eJ .* e, dims = 1)
         else
             mz = re(z, ps, st)[1]
             trace_jac = _trace_batched(jacobian_fn(re, z, p, st))
         end
-        vcat(mz, -trace_jac, sum(abs2, mz, dims=1), _norm_batched(eJ))
+        vcat(mz, -trace_jac, sum(abs2, mz, dims = 1), _norm_batched(eJ))
     else
-        z = u[1:end - 1, :]
+        z = u[1:(end - 1), :]
         if monte_carlo
-            mz, back = Zygote.pullback((x,ps,s)->re(x,ps,s)[1], z, p, st)
+            mz, back = Zygote.pullback((x, ps, s) -> re(x, ps, s)[1], z, p, st)
             eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims=1)
+            trace_jac = sum(eJ .* e, dims = 1)
         else
             mz = re(z, p, st)[1]
             trace_jac = _trace_batched(jacobian_fn(re, z, p, st))
@@ -171,8 +197,8 @@ end
 # When running on GPU e needs to be passed separately, when using Lux pass st as a kwarg
 (n::FFJORD)(args...; kwargs...) = forward_ffjord(n, args...; kwargs...)
 
-function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
-                        regularize=false, monte_carlo=true, st=nothing)
+function forward_ffjord(n::FFJORD, x, p = n.p, e = randn(eltype(x), size(x));
+        regularize = false, monte_carlo = true, st = nothing)
     pz = n.basedist
     sensealg = InterpolatingAdjoint()
     ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, st; regularize, monte_carlo)
@@ -182,8 +208,8 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), n.tspan, p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
-        z = pred[1:end - 3, :]
-        delta_logp = pred[end - 2:end - 2, :]
+        z = pred[1:(end - 3), :]
+        delta_logp = pred[(end - 2):(end - 2), :]
         λ₁ = pred[end - 1, :]
         λ₂ = pred[end, :]
     else
@@ -191,7 +217,7 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), n.tspan, p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
-        z = pred[1:end - 1, :]
+        z = pred[1:(end - 1), :]
         delta_logp = pred[end:end, :]
         λ₁ = λ₂ = _z[1, :]
     end
@@ -202,8 +228,9 @@ function forward_ffjord(n::FFJORD, x, p=n.p, e=randn(eltype(x), size(x));
     logpx, λ₁, λ₂
 end
 
-function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].weight), n_samples);
-                         regularize=false, monte_carlo=true, rng=nothing, st=nothing)
+function backward_ffjord(n::FFJORD, n_samples, p = n.p,
+        e = randn(eltype(n.model[1].weight), n_samples);
+        regularize = false, monte_carlo = true, rng = nothing, st = nothing)
     px = n.basedist
     x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
     sensealg = InterpolatingAdjoint()
@@ -213,13 +240,13 @@ function backward_ffjord(n::FFJORD, n_samples, p=n.p, e=randn(eltype(n.model[1].
         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
-        z = pred[1:end - 3, :]
+        z = pred[1:(end - 3), :]
     else
         _z = ChainRulesCore.@ignore_derivatives similar(x, 1, size(x, 2))
         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
         prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
-        z = pred[1:end - 1, :]
+        z = pred[1:(end - 1), :]
     end
 
     z
@@ -240,10 +267,22 @@ struct FFJORDDistribution <: ContinuousMultivariateDistribution
     monte_carlo::Bool
 end
 
-FFJORDDistribution(model; regularize=false, monte_carlo=true) = FFJORDDistribution(model, regularize, monte_carlo)
+function FFJORDDistribution(model; regularize = false, monte_carlo = true)
+    FFJORDDistribution(model, regularize, monte_carlo)
+end
 
 Base.length(d::FFJORDDistribution) = size(d.model.model[1].weight, 2)
 Base.eltype(d::FFJORDDistribution) = eltype(d.model.model[1].weight)
-Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray) = forward_ffjord(d.model, x; d.regularize, d.monte_carlo)[1]
-Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution, x::AbstractVector{<: Real}) = (x[:] = backward_ffjord(d.model, size(x, 2); d.regularize, d.monte_carlo, rng))
-Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution, A::DenseMatrix{<: Real}) = (A[:] = backward_ffjord(d.model, size(A, 2); d.regularize, d.monte_carlo, rng))
+function Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray)
+    forward_ffjord(d.model, x; d.regularize, d.monte_carlo)[1]
+end
+function Distributions._rand!(rng::AbstractRNG,
+        d::FFJORDDistribution,
+        x::AbstractVector{<:Real})
+    (x[:] = backward_ffjord(d.model, size(x, 2); d.regularize, d.monte_carlo, rng))
+end
+function Distributions._rand!(rng::AbstractRNG,
+        d::FFJORDDistribution,
+        A::DenseMatrix{<:Real})
+    (A[:] = backward_ffjord(d.model, size(A, 2); d.regularize, d.monte_carlo, rng))
+end
