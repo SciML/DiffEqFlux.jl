@@ -1,113 +1,172 @@
-using DiffEqFlux,
-    Lux, CUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test, Random,
-    ComponentArrays
+using DiffEqFlux, Lux, LuxCUDA, CUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test,
+    Random, ComponentArrays
 
 CUDA.allowscalar(false)
 
-x = Float32[2.0; 0.0] |> Lux.gpu
-xs = hcat([0.0; 0.0], [1.0; 0.0], [2.0; 0.0]) |> Lux.gpu
-tspan = (0.0f0, 25.0f0)
+rng = Random.default_rng()
 
-mp = Lux.Chain(Lux.Dense(2, 2))
+const gdev = gpu_device()
+const cdev = cpu_device()
 
-dudt = Lux.Chain(Lux.Dense(2, 50, tanh), Lux.Dense(50, 2))
-ps_dudt, st_dudt = Lux.setup(Random.default_rng(), dudt)
-ps_dudt = ComponentArray(ps_dudt) |> Lux.gpu
-st_dudt = st_dudt |> Lux.gpu
+@testset "[CUDA] Neural DE: $(nnlib)" for nnlib in ("Flux", "Lux")
+    mp = Float32[0.1, 0.1] |> gdev
+    x = Float32[2.0; 0.0] |> gdev
+    xs = Float32.(hcat([0.0; 0.0], [1.0; 0.0], [2.0; 0.0])) |> gdev
+    tspan = (0.0f0, 1.0f0)
 
-NeuralODE(dudt, tspan, Tsit5(); save_everystep = false, save_start = false)(x,
-    ps_dudt,
-    st_dudt)
-NeuralODE(dudt, tspan, Tsit5(); saveat = 0.1)(x, ps_dudt, st_dudt)
-NeuralODE(dudt, tspan, Tsit5(); saveat = 0.1, sensealg = TrackerAdjoint())(x,
-    ps_dudt,
-    st_dudt)
+    dudt = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(2 => 50, tanh), Flux.Dense(50 => 2))
+    else
+        Chain(Dense(2 => 50, tanh), Dense(50 => 2))
+    end
 
-NeuralODE(dudt, tspan, Tsit5(); save_everystep = false, save_start = false)(xs,
-    ps_dudt,
-    st_dudt)
-NeuralODE(dudt, tspan, Tsit5(); saveat = 0.1)(xs, ps_dudt, st_dudt)
-NeuralODE(dudt, tspan, Tsit5(); saveat = 0.1, sensealg = TrackerAdjoint())(xs,
-    ps_dudt,
-    st_dudt)
+    aug_dudt = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(4 => 50, tanh), Flux.Dense(50 => 4))
+    else
+        Chain(Dense(4 => 50, tanh), Dense(50 => 4))
+    end
 
-node = NeuralODE(dudt, tspan, Tsit5(); save_everystep = false, save_start = false)
-ps_node, st_node = Lux.setup(Random.default_rng(), node)
-ps_node = ComponentArray(ps_node) |> Lux.gpu
-st_node = st_node |> Lux.gpu
-grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
-@test !iszero(grads[1])
-@test !iszero(grads[2])
+    @testset "Neural ODE" begin
+        @testset "u0: $(typeof(u0))" for u0 in (x, xs)
+            @testset "kwargs: $(kwargs))" for kwargs in ((; save_everystep = false,
+                    save_start = false),
+                (; save_everystep = false, save_start = false, sensealg = TrackerAdjoint()),
+                (; save_everystep = false, save_start = false,
+                    sensealg = BacksolveAdjoint()),
+                (; saveat = 0.0f0:0.1f0:1.0f0),
+                (; saveat = 0.1f0),
+                (; saveat = 0.0f0:0.1f0:1.0f0, sensealg = TrackerAdjoint()),
+                (; saveat = 0.1f0, sensealg = TrackerAdjoint()))
+                node = NeuralODE(dudt, tspan, Tsit5(); kwargs...)
+                pd, st = Lux.setup(rng, node)
+                pd = ComponentArray(pd) |> gdev
+                st = st |> gdev
+                grads = Zygote.gradient(sum ∘ first ∘ node, u0, pd, st)
+                @test !iszero(grads[1])
+                @test !iszero(grads[2])
 
-grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
-@test !iszero(grads[1])
-@test !iszero(grads[2])
+                anode = AugmentedNDELayer(NeuralODE(aug_dudt, tspan, Tsit5(); kwargs...), 2)
+                pd, st = Lux.setup(rng, anode)
+                pd = ComponentArray(pd) |> gdev
+                st = st |> gdev
+                grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
+                @test !iszero(grads[1])
+                @test !iszero(grads[2])
+            end
+        end
+    end
 
-node = NeuralODE(dudt, tspan, Tsit5(); save_everystep = false, save_start = false,
-    sensealg = TrackerAdjoint())
-grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
-@test !iszero(grads[1])
-@test !iszero(grads[2])
+    diffusion = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(2 => 50, tanh), Flux.Dense(50 => 2))
+    else
+        Chain(Dense(2 => 50, tanh), Dense(50 => 2))
+    end
 
-grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
-@test !iszero(grads[1])
-@test !iszero(grads[2])
+    aug_diffusion = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(4 => 50, tanh), Flux.Dense(50 => 4))
+    else
+        Chain(Dense(4 => 50, tanh), Dense(50 => 4))
+    end
 
-node = NeuralODE(dudt, tspan, Tsit5(); save_everystep = false, save_start = false,
-    sensealg = BacksolveAdjoint())
-grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
-@test !iszero(grads[1])
-@test !iszero(grads[2])
+    tspan = (0.0f0, 0.1f0)
+    @testset "NeuralDSDE u0: $(typeof(u0)), solver: $(solver)" for u0 in (x, xs),
+        solver in (EulerHeun(), LambaEM(), SOSRI())
 
-grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
-@test !iszero(grads[1])
-@test !iszero(grads[2])
+        sode = NeuralDSDE(dudt, diffusion, tspan, solver; saveat = 0.0f0:0.01f0:0.1f0,
+            dt = 0.01f0)
+        pd, st = Lux.setup(rng, sode)
+        pd = ComponentArray(pd) |> gdev
+        st = st |> gdev
 
-# Adjoint
-@testset "adjoint mode" begin
-    node = NeuralODE(dudt, tspan, Tsit5(); save_everystep = false, save_start = false)
-    grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
-    @test !iszero(grads[1])
-    @test !iszero(grads[2])
+        grads = Zygote.gradient(sum ∘ first ∘ sode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+        @test !iszero(grads[2][end])
 
-    grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
-    @test !iszero(grads[1])
-    @test !iszero(grads[2])
+        sode = NeuralDSDE(aug_dudt, aug_diffusion, tspan, solver;
+            saveat = 0.0f0:0.01f0:0.1f0, dt = 0.01f0)
+        anode = AugmentedNDELayer(sode, 2)
+        pd, st = Lux.setup(rng, anode)
+        pd = ComponentArray(pd) |> gdev
+        st = st |> gdev
 
-    node = NeuralODE(dudt, tspan, Tsit5(); saveat = 0.0:0.1:10.0)
-    grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
-    @test !iszero(grads[1])
-    @test !iszero(grads[2])
+        grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+        @test !iszero(grads[2][end])
+    end
 
-    grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
-    @test !iszero(grads[1])
-    @test !iszero(grads[2])
+    diffusion_sde = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(2 => 50, tanh), Flux.Dense(50 => 4), x -> reshape(x, 2, 2))
+    else
+        Chain(Dense(2 => 50, tanh), Dense(50 => 4), x -> reshape(x, 2, 2))
+    end
 
-    node = NeuralODE(dudt, tspan, Tsit5(); saveat = 1.0f-1)
-    grads = Zygote.gradient((x, ps) -> sum(first(node(x, ps, st_node))), x, ps_node)
-    @test !iszero(grads[1])
-    @test !iszero(grads[2])
+    aug_diffusion_sde = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(4 => 50, tanh), Flux.Dense(50 => 16), x -> reshape(x, 4, 4))
+    else
+        Chain(Dense(4 => 50, tanh), Dense(50 => 16), x -> reshape(x, 4, 4))
+    end
 
-    grads = Zygote.gradient((xs, ps) -> sum(first(node(xs, ps, st_node))), xs, ps_node)
-    @test !iszero(grads[1])
-    @test !iszero(grads[2])
+    @testset "NeuralSDE u0: $(typeof(u0)), solver: $(solver)" for u0 in (x,),
+        solver in (EulerHeun(), LambaEM())
+
+        sode = NeuralSDE(dudt, diffusion_sde, tspan, 2, solver;
+            saveat = 0.0f0:0.01f0:0.1f0, dt = 0.01f0)
+        pd, st = Lux.setup(rng, sode)
+        pd = ComponentArray(pd) |> gdev
+        st = st |> gdev
+
+        grads = Zygote.gradient(sum ∘ first ∘ sode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+        @test !iszero(grads[2][end])
+
+        sode = NeuralSDE(aug_dudt, aug_diffusion_sde, tspan, 4, solver;
+            saveat = 0.0f0:0.01f0:0.1f0, dt = 0.01f0)
+        anode = AugmentedNDELayer(sode, 2)
+        pd, st = Lux.setup(rng, anode)
+        pd = ComponentArray(pd) |> gdev
+        st = st |> gdev
+
+        grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+        @test !iszero(grads[2][end])
+    end
+
+    dudt = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(6 => 50, tanh), Flux.Dense(50 => 2))
+    else
+        Chain(Dense(6 => 50, tanh), Dense(50 => 2))
+    end
+
+    aug_dudt = if nnlib == "Flux"
+        Flux.Chain(Flux.Dense(12 => 50, tanh), Flux.Dense(50 => 4))
+    else
+        Chain(Dense(12 => 50, tanh), Dense(50 => 4))
+    end
+
+    @testset "NeuralCDDE u0: $(typeof(u0))" for u0 in (x, xs)
+        dode = NeuralCDDE(dudt, (0.0f0, 2.0f0), (u, p, t) -> zero(u), (0.1f0, 0.2f0),
+            MethodOfSteps(Tsit5()); saveat = 0.0f0:0.1f0:2.0f0)
+        pd, st = Lux.setup(rng, dode)
+        pd = ComponentArray(pd) |> gdev
+        st = st |> gdev
+
+        grads = Zygote.gradient(sum ∘ first ∘ dode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+
+        dode = NeuralCDDE(aug_dudt, (0.0f0, 2.0f0), (u, p, t) -> zero(u), (0.1f0, 0.2f0),
+            MethodOfSteps(Tsit5()); saveat = 0.0f0:0.1f0:2.0f0)
+        anode = AugmentedNDELayer(dode, 2)
+        pd, st = Lux.setup(rng, anode)
+        pd = ComponentArray(pd) |> gdev
+        st = st |> gdev
+
+        grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
+        @test !iszero(grads[1])
+        @test !iszero(grads[2])
+    end
 end
-
-ndsde = NeuralDSDE(dudt, mp, (0.0f0, 2.0f0), SOSRI(); saveat = 0.0:0.1:2.0)
-ps_ndsde, st_ndsde = Lux.setup(Random.default_rng(), ndsde)
-ps_ndsde = ComponentArray(ps_ndsde) |> Lux.gpu
-st_ndsde = st_ndsde |> Lux.gpu
-ndsde(x, ps_ndsde, st_ndsde)
-
-sode = NeuralDSDE(dudt, mp, (0.0f0, 2.0f0), SOSRI(); saveat = Float32.(0.0:0.1:2.0),
-    dt = 1.0f-1, sensealg = TrackerAdjoint())
-ps_sode, st_sode = Lux.setup(Random.default_rng(), sode)
-ps_sode = ComponentArray(ps_sode) |> Lux.gpu
-st_sode = st_sode |> Lux.gpu
-grads = Zygote.gradient((x, ps) -> sum(first(sode(x, ps, st_sode))), x, ps_sode)
-@test !iszero(grads[1])
-@test !iszero(grads[2])
-
-grads = Zygote.gradient((xs, ps) -> sum(first(sode(xs, ps, st_sode))), xs, ps_sode)
-@test !iszero(grads[1])
-@test !iszero(grads[2])

@@ -1,4 +1,4 @@
-using ComponentArrays, DiffEqFlux, Zygote, Optimization, OrdinaryDiffEq
+using ComponentArrays, DiffEqFlux, Zygote, Optimization, OrdinaryDiffEq, Random
 
 #A desired MWE for now, not a test yet.
 
@@ -19,18 +19,19 @@ prob_mm = ODEProblem(ODEFunction(rober; mass_matrix = M),
     (0.04, 3e7, 1e4))
 sol = solve(prob_mm, Rodas5(); reltol = 1e-8, abstol = 1e-8)
 
-dudt2 = Flux.Chain(x -> x .^ 3, Flux.Dense(6, 50, tanh), Flux.Dense(50, 2))
+dudt2 = Chain(x -> x .^ 3, Dense(6, 50, tanh), Dense(50, 3))
 
-ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler();
+u₀ = [1.0, 0, 0]
+tspan = (0.0, 10.0)
+
+ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, DImplicitEuler();
     differential_vars = [true, true, false])
+ps, st = Lux.setup(Xoshiro(0), ndae)
 truedu0 = similar(u₀)
-f(truedu0, u₀, p, 0.0)
 
-ndae(u₀, truedu0, Float64.(ndae.p))
+ndae((u₀, truedu0), ps, st)
 
-function predict_n_dae(p)
-    ndae(u₀, p)
-end
+predict_n_dae(p) = first(ndae(u₀, p, st))
 
 function loss(p)
     pred = predict_n_dae(p)

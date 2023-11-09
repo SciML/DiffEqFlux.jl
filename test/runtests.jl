@@ -21,9 +21,6 @@ const is_CI = haskey(ENV, "CI")
         @safetestset "Neural Graph DE" begin
             include("neural_gde.jl")
         end
-        @safetestset "Neural ODE MM Tests" begin
-            include("neural_ode_mm.jl")
-        end
         @safetestset "Tensor Product Layer" begin
             include("tensor_product_test.jl")
         end
@@ -39,9 +36,16 @@ const is_CI = haskey(ENV, "CI")
         #     @safetestset "CNF Layer Tests" begin
         #         include("cnf_test.jl")
         #     end
-        #     @safetestset "Neural Second Order ODE Tests" begin
-        #         include("second_order_ode.jl")
-        #     end
+        @safetestset "Neural Second Order ODE Tests" begin
+            include("second_order_ode.jl")
+        end
+        @safetestset "Neural ODE MM Tests" begin
+            include("neural_ode_mm.jl")
+        end
+        # DAE Tests were never included
+        # @safetestset "Neural DAE Tests" begin
+        #     include("neural_dae.jl")
+        # end
         #     @safetestset "Neural Hamiltonian ODE Tests" begin
         #         include("hamiltonian_nn.jl")
         #     end
@@ -54,9 +58,9 @@ const is_CI = haskey(ENV, "CI")
     end
 
     if !is_APPVEYOR && GROUP == "GPU"
-        #     @safetestset "Neural DE GPU Tests" begin
-        #         include("neural_de_gpu.jl")
-        #     end
+        @safetestset "Neural DE GPU Tests" begin
+            include("neural_de_gpu.jl")
+        end
         #     @safetestset "MNIST GPU Tests: Fully Connected NN" begin
         #         include("mnist_gpu.jl")
         #     end

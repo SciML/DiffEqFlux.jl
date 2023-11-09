@@ -238,11 +238,10 @@ Arguments:
     kwargs
 end
 
-function NeuralDAE(model, constraints_model, tspan, init_du0 = (u) -> nothing, args...;
-        differential_vars = nothing, kwargs...)
+function NeuralDAE(model, constraints_model, tspan, args...; differential_vars = nothing,
+        kwargs...)
     !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
-    return NeuralDAE(model, constraints_model, init_du0, tspan, args, differential_vars,
-        kwargs)
+    return NeuralDAE(model, constraints_model, tspan, args, differential_vars, kwargs)
 end
 
 (n::NeuralDAE)(x, p, st) = n((x, nothing), p, st)
@@ -266,7 +265,7 @@ function (n::NeuralDAE)(u_du::Tuple, p, st)
         end
     end
 
-    prob = DAEProblem{false}(f, du0, u0, n.tspan, p; differential_vars)
+    prob = DAEProblem{false}(f, du0, u0, n.tspan, p; n.differential_vars)
     return solve(prob, n.args...; sensealg = TrackerAdjoint(), n.kwargs...), st
 end
 
