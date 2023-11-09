@@ -9,9 +9,9 @@ const is_CI = haskey(ENV, "CI")
         @safetestset "Collocation" begin
             include("collocation.jl")
         end
-        #     @safetestset "Stiff Nested AD Tests" begin
-        #         include("stiff_nested_ad.jl")
-        #     end
+        @safetestset "Stiff Nested AD Tests" begin
+            include("stiff_nested_ad.jl")
+        end
     end
 
     if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
