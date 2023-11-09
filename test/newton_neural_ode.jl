@@ -1,5 +1,5 @@
-using DiffEqFlux,
-    Flux, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
+using DiffEqFlux, ComponentArrays,
+    Lux, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
 
 Random.seed!(100)
 
@@ -11,43 +11,51 @@ x = rand(Float32, n, 5)
 y = rand(Float32, n, 5)
 
 cb = function (p, l)
-    @show l
+    @info "[Newton NeuralODE] Loss: $l"
     false
 end
 
-NN = Flux.Chain(Flux.Dense(n, 5n, tanh),
-    Flux.Dense(5n, n))
+NN = Chain(Dense(n => 5n, tanh), Dense(5n => n))
 
 @info "ROCK4"
-nODE = NeuralODE(NN, tspan, ROCK4(), reltol = 1.0f-4, saveat = [tspan[end]])
+nODE = NeuralODE(NN, tspan, ROCK4(); reltol = 1.0f-4, saveat = [tspan[end]])
 
-loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
-l1 = loss_function(nODE.p)
+ps, st = Lux.setup(Xoshiro(0), nODE)
+ps = ComponentArray(ps)
+stnODE = Lux.Experimental.StatefulLuxLayer(nODE, ps, st)
+
+# KrylovTrustRegion is hardcoded to use `Array`
+psd, psax = getdata(ps), getaxes(ps)
+
+loss_function(θ) = sum(abs2, y .- stnODE(x, ComponentArray(θ, psax))[end])
+l1 = loss_function(psd)
 optf = Optimization.OptimizationFunction((x, p) -> loss_function(x),
     Optimization.AutoZygote())
-optprob = Optimization.OptimizationProblem(optf, nODE.p)
+optprob = Optimization.OptimizationProblem(optf, psd)
 
-res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters = 100, callback = cb)
+res = Optimization.solve(optprob, NewtonTrustRegion(); maxiters = 100, callback = cb)
 @test loss_function(res.minimizer) < l1
-res = Optimization.solve(optprob,
-    OptimizationOptimJL.Optim.KrylovTrustRegion(),
-    maxiters = 100,
-    callback = cb)
+res = Optimization.solve(optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
+    maxiters = 100, callback = cb)
 @test loss_function(res.minimizer) < l1
 
 @info "ROCK2"
-nODE = NeuralODE(NN, tspan, ROCK2(), reltol = 1.0f-4, saveat = [tspan[end]])
+nODE = NeuralODE(NN, tspan, ROCK2(); reltol = 1.0f-4, saveat = [tspan[end]])
+ps, st = Lux.setup(Xoshiro(0), nODE)
+ps = ComponentArray(ps)
+stnODE = Lux.Experimental.StatefulLuxLayer(nODE, ps, st)
 
-loss_function(θ) = Flux.Losses.mse(y, nODE(x, θ)[end])
-l1 = loss_function(nODE.p)
+# KrylovTrustRegion is hardcoded to use `Array`
+psd, psax = getdata(ps), getaxes(ps)
+
+loss_function(θ) = sum(abs2, y .- stnODE(x, ComponentArray(θ, psax))[end])
+l1 = loss_function(psd)
 optfunc = Optimization.OptimizationFunction((x, p) -> loss_function(x),
     Optimization.AutoZygote())
-optprob = Optimization.OptimizationProblem(optfunc, nODE.p)
+optprob = Optimization.OptimizationProblem(optfunc, psd)
 
-res = Optimization.solve(optprob, NewtonTrustRegion(), maxiters = 100, callback = cb)
+res = Optimization.solve(optprob, NewtonTrustRegion(); maxiters = 100, callback = cb)
 @test loss_function(res.minimizer) < l1
-res = Optimization.solve(optprob,
-    OptimizationOptimJL.Optim.KrylovTrustRegion(),
-    maxiters = 100,
-    callback = cb)
+res = Optimization.solve(optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
+    maxiters = 100, callback = cb)
 @test loss_function(res.minimizer) < l1

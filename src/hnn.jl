@@ -95,7 +95,7 @@ end
 
 # TODO: Make sensealg an argument
 function NeuralHamiltonianDE(model, tspan, args...; p = nothing, kwargs...)
-    hnn = HamiltonianNN(model, p = p)
+    hnn = HamiltonianNN(model; p = p)
     return NeuralHamiltonianDE{typeof(hnn.model), typeof(hnn.p), typeof(hnn.re),
         typeof(tspan), typeof(args), typeof(kwargs)}(hnn,
         hnn.p,

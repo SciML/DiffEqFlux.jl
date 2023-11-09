@@ -100,7 +100,7 @@ struct FFJORD{M, P, RE, D, T, A, K} <: CNFLayer where {
     end
 end
 
-_norm_batched(x::AbstractMatrix) = sqrt.(sum(x .^ 2, dims = 1))
+_norm_batched(x::AbstractMatrix) = sqrt.(sum(x .^ 2; dims = 1))
 
 function jacobian_fn(f, x::AbstractVector, args...)
     y::AbstractVector, back = Zygote.pullback(f, x)
@@ -147,18 +147,18 @@ function ffjord(u, p, t, re, e, st;
         if monte_carlo
             mz, back = Zygote.pullback(m, z)
             eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims = 1)
+            trace_jac = sum(eJ .* e; dims = 1)
         else
             mz = m(z)
             trace_jac = _trace_batched(jacobian_fn(m, z))
         end
-        vcat(mz, -trace_jac, sum(abs2, mz, dims = 1), _norm_batched(eJ))
+        vcat(mz, -trace_jac, sum(abs2, mz; dims = 1), _norm_batched(eJ))
     else
         z = u[1:(end - 1), :]
         if monte_carlo
             mz, back = Zygote.pullback(m, z)
             eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims = 1)
+            trace_jac = sum(eJ .* e; dims = 1)
         else
             mz = m(z)
             trace_jac = _trace_batched(jacobian_fn(m, z))
@@ -174,18 +174,18 @@ function ffjord(u, p, t, re::LuxCore.AbstractExplicitLayer, e, st;
         if monte_carlo
             mz, back = Zygote.pullback((x, ps, s) -> re(x, ps, s)[1], z, p, st)
             eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims = 1)
+            trace_jac = sum(eJ .* e; dims = 1)
         else
             mz = re(z, ps, st)[1]
             trace_jac = _trace_batched(jacobian_fn(re, z, p, st))
         end
-        vcat(mz, -trace_jac, sum(abs2, mz, dims = 1), _norm_batched(eJ))
+        vcat(mz, -trace_jac, sum(abs2, mz; dims = 1), _norm_batched(eJ))
     else
         z = u[1:(end - 1), :]
         if monte_carlo
             mz, back = Zygote.pullback((x, ps, s) -> re(x, ps, s)[1], z, p, st)
             eJ = back(e)[1]
-            trace_jac = sum(eJ .* e, dims = 1)
+            trace_jac = sum(eJ .* e; dims = 1)
         else
             mz = re(z, p, st)[1]
             trace_jac = _trace_batched(jacobian_fn(re, z, p, st))

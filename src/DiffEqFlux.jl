@@ -4,7 +4,7 @@ import PrecompileTools
 
 PrecompileTools.@recompile_invalidations begin
     using ChainRulesCore, ConcreteStructs,
-        LinearAlgebra, Lux, LuxCore, Reexport, SciMLBase, SciMLSensitivity, Zygote
+        LinearAlgebra, Lux, LuxCore, Random, Reexport, SciMLBase, SciMLSensitivity, Zygote
 end
 
 import ChainRulesCore as CRC
@@ -39,18 +39,27 @@ import Lux.Experimental: StatefulLuxLayer
 # ZygoteRules.@adjoint ZygoteRules.literal_getproperty(A::Tridiagonal, ::Val{:du}) = A.dl, y -> Tridiagonal(zeros(length(dl)), zeros(length(d), du),)
 # ZygoteRules.@adjoint Tridiagonal(dl, d, du) = Tridiagonal(dl, d, du), p̄ -> (diag(p̄[2:end, 1:end-1]), diag(p̄), diag(p̄[1:end-1, 2:end]))
 
+# FIXME: Type Piracy
+function CRC.rrule(::Type{Tridiagonal}, dl, d, du)
+    y = Tridiagonal(dl, d, du)
+    @views function ∇Tridiagonal(∂y)
+        return (NoTangent(), diag(∂y[2:end, 1:(end - 1)]), diag(∂y),
+            diag(∂y[1:(end - 1), 2:end]))
+    end
+    return y, ∇Tridiagonal
+end
+
 # include("ffjord.jl")
 include("neural_de.jl")
-# include("spline_layer.jl")
+include("spline_layer.jl")
 include("tensor_product.jl")
 include("collocation.jl")
 # include("hnn.jl")
-# include("multiple_shooting.jl")
+include("multiple_shooting.jl")
 
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
-    NeuralODEMM, TensorLayer
-# export FFJORD,
-#        , TensorLayer,SplineLayer, NeuralHamiltonianDE
+    NeuralODEMM, TensorLayer, SplineLayer
+# export FFJORD, NeuralHamiltonianDE
 # export HamiltonianNN
 export TensorProductBasisFunction,
     ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
@@ -62,6 +71,6 @@ export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel, Triwe
     SilvermanKernel
 export collocate_data
 
-# export multiple_shoot
+export multiple_shoot
 
 end

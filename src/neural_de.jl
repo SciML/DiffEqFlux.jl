@@ -332,7 +332,7 @@ function (n::NeuralODEMM)(x, ps, st)
     prob = ODEProblem{false}(dudt, x, n.tspan, ps)
 
     return (solve(prob, n.args...;
-            sensealg = InterpolatingAdjoint(autojacvec = ZygoteVJP()), n.kwargs...), model.st)
+            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...), model.st)
 end
 
 """

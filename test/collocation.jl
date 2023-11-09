@@ -39,9 +39,9 @@ end
     ps = repeat([-0.001], rc)
     tspan = (0.0, 50.0)
     u0 = 3.4 .+ ones(rc)
-    t = collect(range(minimum(tspan), stop = maximum(tspan), length = 1000))
+    t = collect(range(minimum(tspan); stop = maximum(tspan), length = 1000))
     prob = ODEProblem(f, u0, tspan, ps)
-    data = Array(solve(prob, Tsit5(), saveat = t, abstol = 1e-12, reltol = 1e-12))
+    data = Array(solve(prob, Tsit5(); saveat = t, abstol = 1e-12, reltol = 1e-12))
     @testset "$kernel" for kernel in [
         bounded_support_kernels...,
         unbounded_support_kernels...,

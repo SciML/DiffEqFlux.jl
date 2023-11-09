@@ -1,50 +1,48 @@
-abstract type AbstractSplineLayer <: Function end
-Flux.trainable(m::AbstractSplineLayer) = (m.p,)
-
 """
-Constructs a Spline Layer. At a high-level, it performs the following:
-1. Takes as input a one-dimensional training dataset, a time span, a time step and
-an interpolation method.
-2. During training, adjusts the values of the function at multiples of the time-step
-such that the curve interpolated through these points has minimum loss on the corresponding
-one-dimensional dataset.
+    SplineLayer(time_span, time_step, spline_basis, init_saved_points = nothing)
 
-```julia
-SplineLayer(time_span,time_step,spline_basis,saved_points=nothing)
-```
+Constructs a Spline Layer. At a high-level, it performs the following:
+
+1. Takes as input a one-dimensional training dataset, a time span, a time step and
+   an interpolation method.
+2. During training, adjusts the values of the function at multiples of the time-step such
+   that the curve interpolated through these points has minimum loss on the corresponding
+   one-dimensional dataset.
+
 Arguments:
+
 - `time_span`: Tuple of real numbers corresponding to the time span.
 - `time_step`: Real number corresponding to the time step.
 - `spline_basis`: Interpolation method to be used yb the basis (current supported
-  interpolation methods: ConstantInterpolation, LinearInterpolation, QuadraticInterpolation,
-  QuadraticSpline, CubicSpline).
-- 'saved_points': values of the function at multiples of the time step. Initialized by default
-to a random vector sampled from the unit normal.
+  interpolation methods: `ConstantInterpolation`, `LinearInterpolation`,
+  `QuadraticInterpolation`, `QuadraticSpline`, `CubicSpline`).
+- 'init_saved_points': values of the function at multiples of the time step. Initialized by
+  default to a random vector sampled from the unit normal. Alternatively, can take a
+  function with the signature `init_saved_points(rng, time_span, time_step)`.
 """
-struct SplineLayer{
-    T <: Tuple{Real, Real},
-    R <: Real,
-    S1 <: AbstractVector,
-    S2 <: UnionAll,
-} <: AbstractSplineLayer
-    time_span::T
-    time_step::R
-    saved_points::S1
-    spline_basis::S2
-    function SplineLayer(time_span, time_step, spline_basis, saved_points = nothing)
-        saved_points = randn(length(time_span[1]:time_step:time_span[2]))
-        new{
-            typeof(time_span),
-            typeof(time_step),
-            typeof(saved_points),
-            typeof(spline_basis),
-        }(time_span,
-            time_step,
-            saved_points,
-            spline_basis)
+@concrete struct SplineLayer <: AbstractExplicitLayer
+    tspan
+    tstep
+    spline_basis
+    init_saved_points
+end
+
+function SplineLayer(tspan, tstep, spline_basis;
+        init_saved_points::Union{Nothing, F} = nothing) where {F <: Function}
+    return SplineLayer(tspan, tstep, spline_basis, init_saved_points)
+end
+
+function LuxCore.initialparameters(rng::AbstractRNG, l::SplineLayer)
+    if l.init_saved_points === nothing
+        return (;
+            saved_points = randn(rng, typeof(l.tspan[1]),
+                length(l.tspan[1]:(l.tstep):l.tspan[2])))
+    else
+        return (; saved_points = l.init_saved_points(rng, l.tspan, l.tstep))
     end
 end
 
-function (layer::SplineLayer)(t::Real, p = layer.saved_points)
-    return layer.spline_basis(p, layer.time_span[1]:(layer.time_step):layer.time_span[2])(t)
+function (layer::SplineLayer)(t, ps, st)
+    return (layer.spline_basis(ps.saved_points,
+            layer.tspan[1]:(layer.tstep):layer.tspan[2])(t), st)
 end

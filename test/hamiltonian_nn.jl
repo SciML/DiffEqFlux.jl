@@ -21,7 +21,7 @@ ps = ps |> ComponentArray
 @test !iszero(ForwardDiff.gradient(ps -> sum(first(hnn(u0, ps, st))), ps))
 
 # Test Convergence on a toy problem
-t = range(0.0f0, 1.0f0, length = 64)
+t = range(0.0f0, 1.0f0; length = 64)
 π_32 = Float32(π)
 q_t = reshape(sin.(2π_32 * t), 1, :)
 p_t = reshape(cos.(2π_32 * t), 1, :)
@@ -55,9 +55,9 @@ final_loss = loss(data, target, ps)
 # Test output and gradient of NeuralHamiltonianDE Layer
 tspan = (0.0f0, 1.0f0)
 
-model = NeuralHamiltonianDE(hnn, tspan, Tsit5(),
+model = NeuralHamiltonianDE(hnn, tspan, Tsit5();
     save_everystep = false, save_start = true,
-    saveat = range(tspan[1], tspan[2], length = 10))
+    saveat = range(tspan[1], tspan[2]; length = 10))
 sol = Array(first(model(data[:, 1], ps, st)))
 @test size(sol) == (2, 10)
 

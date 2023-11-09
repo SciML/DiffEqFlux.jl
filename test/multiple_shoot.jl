@@ -1,4 +1,4 @@
-using ComponentArrays, DiffEqFlux, Zygote, Lux, Optimization, OptimizationOptmisers,
+using ComponentArrays, DiffEqFlux, Zygote, Lux, Optimization, OptimizationOptimisers,
     OrdinaryDiffEq, Test, Random
 using DiffEqFlux: group_ranges
 rng = Random.default_rng()
@@ -14,7 +14,7 @@ rng = Random.default_rng()
 datasize = 30
 u0 = Float32[2.0, 0.0]
 tspan = (0.0f0, 5.0f0)
-tsteps = range(tspan[1], tspan[2], length = datasize)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
 
 # Get the data
 function trueODEfunc(du, u, p, t)
@@ -22,26 +22,20 @@ function trueODEfunc(du, u, p, t)
     du .= ((u .^ 3)'true_A)'
 end
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
-ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
+ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))
 
 # Define the Neural Network
-nn = Lux.Chain(x -> x .^ 3,
-    Lux.Dense(2, 16, tanh),
-    Lux.Dense(16, 2))
+nn = Chain(x -> x .^ 3, Dense(2 => 16, tanh), Dense(16 => 2))
 p_init, st = Lux.setup(rng, nn)
 p_init = ComponentArray(p_init)
 
-neuralode = NeuralODE(nn, tspan, Tsit5(), saveat = tsteps)
-prob_node = ODEProblem((u, p, t) -> nn(u, p, st)[1], u0, tspan, p_init)
+neuralode = NeuralODE(nn, tspan, Tsit5(); saveat = tsteps)
+prob_node = ODEProblem((u, p, t) -> first(nn(u, p, st)), u0, tspan, p_init)
 
-function predict_single_shooting(p)
-    return Array(neuralode(u0, p, st)[1])
-end
+predict_single_shooting(p) = Array(first(neuralode(u0, p, st)))
 
 # Define loss function
-function loss_function(data, pred)
-    return sum(abs2, data - pred)
-end
+loss_function(data, pred) = sum(abs2, data - pred)
 
 ## Evaluate Single Shooting
 function loss_single_shooting(p)
@@ -53,11 +47,10 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p, _) -> loss_single_shooting(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_single_shooting = Optimization.solve(optprob, Adam(0.05),
-    maxiters = 300)
+res_single_shooting = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
 loss_ss, _ = loss_single_shooting(res_single_shooting.minimizer)
-println("Single shooting loss: $(loss_ss)")
+@info "Single shooting loss: $(loss_ss)"
 
 ## Test Multiple Shooting
 group_size = 3
@@ -72,7 +65,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p, _) -> loss_multiple_shooting(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms = Optimization.solve(optprob, Adam(0.05), maxiters = 300)
+res_ms = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
 loss_ms, _ = loss_single_shooting(res_ms.minimizer)
@@ -96,7 +89,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p, _) -> loss_multiple_shooting_abs2(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms_abs2 = Optimization.solve(optprob, Adam(0.05), maxiters = 300)
+res_ms_abs2 = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
 loss_ms_abs2, _ = loss_single_shooting(res_ms_abs2.minimizer)
 println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
@@ -104,16 +97,15 @@ println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
 
 ## Test different SensitivityAlgorithm (default is InterpolatingAdjoint)
 function loss_multiple_shooting_fd(p)
-    return multiple_shoot(p, ode_data, tsteps, prob_node,
-        loss_function, continuity_loss_abs2, Tsit5(),
-        group_size; continuity_term,
+    return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function,
+        continuity_loss_abs2, Tsit5(), group_size; continuity_term,
         sensealg = ForwardDiffSensitivity())
 end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p, _) -> loss_multiple_shooting_fd(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms_fd = Optimization.solve(optprob, Adam(0.05), maxiters = 300)
+res_ms_fd = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
 # Calculate single shooting loss with parameter from multiple_shoot training
 loss_ms_fd, _ = loss_single_shooting(res_ms_fd.minimizer)
@@ -135,33 +127,27 @@ loss_fail, _ = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function
 ## Ensembles
 u0s = [Float32[2.0, 0.0], Float32[3.0, 1.0]]
 function prob_func(prob, i, repeat)
-    remake(prob, u0 = u0s[i])
+    remake(prob; u0 = u0s[i])
 end
-ensemble_prob = EnsembleProblem(prob_node, prob_func = prob_func)
-ensemble_prob_trueODE = EnsembleProblem(prob_trueode, prob_func = prob_func)
+ensemble_prob = EnsembleProblem(prob_node; prob_func = prob_func)
+ensemble_prob_trueODE = EnsembleProblem(prob_trueode; prob_func = prob_func)
 ensemble_alg = EnsembleThreads()
 trajectories = 2
-ode_data_ensemble = Array(solve(ensemble_prob_trueODE,
-    Tsit5(),
-    ensemble_alg,
-    trajectories = trajectories,
+ode_data_ensemble = Array(solve(ensemble_prob_trueODE, Tsit5(), ensemble_alg; trajectories,
     saveat = tsteps))
 
 group_size = 3
 continuity_term = 200
 function loss_multiple_shooting_ens(p)
     return multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg,
-        loss_function, Tsit5(),
-        group_size; continuity_term,
-        trajectories,
+        loss_function, Tsit5(), group_size; continuity_term, trajectories,
         abstol = 1e-8, reltol = 1e-6) # test solver kwargs
 end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((p, _) -> loss_multiple_shooting_ens(p), adtype)
 optprob = Optimization.OptimizationProblem(optf, p_init)
-res_ms_ensembles = Optimization.solve(optprob,
-    Adam(0.05), maxiters = 300)
+res_ms_ensembles = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
 loss_ms_ensembles, _ = loss_single_shooting(res_ms_ensembles.minimizer)
 

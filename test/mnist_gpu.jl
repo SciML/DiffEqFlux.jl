@@ -14,7 +14,7 @@ function loadmnist(batchsize = bs)
         convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
     end
     # Load MNIST
-    mnist = MNIST(split = :train)
+    mnist = MNIST(; split = :train)
     imgs, labels_raw = mnist.features, mnist.targets
     # Process images into (H,W,C,BS) batches
     x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
@@ -35,7 +35,7 @@ nn = Lux.Chain(Lux.Dense(20, 10, tanh), Lux.Dense(10, 10, tanh),
     Lux.Dense(10, 20, tanh))
 fc = Lux.Dense(20, 10)
 
-nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(), save_everystep = false, reltol = 1e-3,
+nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol = 1e-3,
     abstol = 1e-3, save_start = false)
 
 """

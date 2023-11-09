@@ -13,15 +13,15 @@ end
 M = [1.0 0 0
     0 1.0 0
     0 0 0]
-prob_mm = ODEProblem(ODEFunction(rober, mass_matrix = M),
+prob_mm = ODEProblem(ODEFunction(rober; mass_matrix = M),
     [1.0, 0.0, 0.0],
     (0.0, 10.0),
     (0.04, 3e7, 1e4))
-sol = solve(prob_mm, Rodas5(), reltol = 1e-8, abstol = 1e-8)
+sol = solve(prob_mm, Rodas5(); reltol = 1e-8, abstol = 1e-8)
 
 dudt2 = Flux.Chain(x -> x .^ 3, Flux.Dense(6, 50, tanh), Flux.Dense(50, 2))
 
-ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler(),
+ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler();
     differential_vars = [true, true, false])
 truedu0 = similar(u₀)
 f(truedu0, u₀, p, 0.0)
@@ -42,14 +42,14 @@ p = p .+ rand(3) .* p
 
 optfunc = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoZygote())
 optprob = Optimization.OptimizationProblem(optfunc, p)
-res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.0001))
+res = Optimization.solve(optprob, BFGS(; initial_stepnorm = 0.0001))
 
 # Same stuff with Lux
 rng = Random.default_rng()
 dudt2 = Lux.Chain(x -> x .^ 3, Lux.Dense(6, 50, tanh), Lux.Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
 p = ComponentArray(p)
-ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler(),
+ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler();
     differential_vars = [true, true, false])
 truedu0 = similar(u₀)
 f(truedu0, u₀, p, 0.0)
@@ -68,4 +68,4 @@ end
 
 optfunc = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoZygote())
 optprob = Optimization.OptimizationProblem(optfunc, p)
-res = Optimization.solve(optprob, BFGS(initial_stepnorm = 0.0001))
+res = Optimization.solve(optprob, BFGS(; initial_stepnorm = 0.0001))

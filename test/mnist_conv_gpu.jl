@@ -13,12 +13,12 @@ function loadmnist(batchsize = bs, train_split = 0.9)
             LabelEnc.NativeLabels(collect(0:9)))
     end
     # Load MNIST
-    mnist = MNIST(split = :train)
+    mnist = MNIST(; split = :train)
     imgs, labels_raw = mnist.features, mnist.targets
     # Process images into (H,W,C,BS) batches
     x_data = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3)))
     y_data = onehot(labels_raw)
-    (x_train, y_train), (x_test, y_test) = stratifiedobs((x_data, y_data),
+    (x_train, y_train), (x_test, y_test) = stratifiedobs((x_data, y_data);
         p = train_split)
     return (
         # Use Flux's DataLoader to automatically minibatch and shuffle the data
@@ -34,17 +34,17 @@ const bs = 128
 const train_split = 0.9
 train_dataloader, test_dataloader = loadmnist(bs, train_split)
 
-down = Flux.Chain(Flux.Conv((3, 3), 1 => 64, relu, stride = 1), Flux.GroupNorm(64, 64),
-    Flux.Conv((4, 4), 64 => 64, relu, stride = 2, pad = 1), Flux.GroupNorm(64, 64),
-    Flux.Conv((4, 4), 64 => 64, stride = 2, pad = 1)) |> Flux.gpu
+down = Flux.Chain(Flux.Conv((3, 3), 1 => 64, relu; stride = 1), Flux.GroupNorm(64, 64),
+    Flux.Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1), Flux.GroupNorm(64, 64),
+    Flux.Conv((4, 4), 64 => 64; stride = 2, pad = 1)) |> Flux.gpu
 
-dudt = Flux.Chain(Flux.Conv((3, 3), 64 => 64, tanh, stride = 1, pad = 1),
-    Flux.Conv((3, 3), 64 => 64, tanh, stride = 1, pad = 1)) |> Flux.gpu
+dudt = Flux.Chain(Flux.Conv((3, 3), 64 => 64, tanh; stride = 1, pad = 1),
+    Flux.Conv((3, 3), 64 => 64, tanh; stride = 1, pad = 1)) |> Flux.gpu
 
 fc = Flux.Chain(Flux.GroupNorm(64, 64), x -> relu.(x), Flux.MeanPool((6, 6)),
     x -> reshape(x, (64, :)), Flux.Dense(64, 10)) |> Flux.gpu
 
-nn_ode = NeuralODE(dudt, (0.0f0, 1.0f0), Tsit5(),
+nn_ode = NeuralODE(dudt, (0.0f0, 1.0f0), Tsit5();
     save_everystep = false,
     reltol = 1e-3, abstol = 1e-3,
     save_start = false) |> Flux.gpu
@@ -109,5 +109,5 @@ function cb()
     end
 end
 
-Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt, cb = cb)
+Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt; cb = cb)
 @test accuracy(model, test_dataloader; n_batches = length(test_dataloader)) > 0.8
