@@ -25,7 +25,7 @@ end
 u0 = [1.0, 0.0]
 ts = collect(0.0:0.1:tspan[2])
 prob_train = ODEProblem{true}(dxdt_train, u0, tspan)
-data_train = Array(solve(prob_train, Tsit5(), saveat = ts))
+data_train = Array(solve(prob_train, Tsit5(); saveat = ts))
 ```
 
 Now, we create a TensorLayer that will be able to perform 10th order expansions in
@@ -60,8 +60,8 @@ Finally, we introduce the corresponding loss function:
 
 ```@example tensor
 function predict_adjoint(θ)
-    x = Array(solve(prob_pred, Tsit5(), p = θ, saveat = ts,
-        sensealg = InterpolatingAdjoint(autojacvec = ReverseDiffVJP(true))))
+    x = Array(solve(prob_pred, Tsit5(); p = θ, saveat = ts,
+        sensealg = InterpolatingAdjoint(; autojacvec = ReverseDiffVJP(true))))
 end
 
 function loss_adjoint(θ)
@@ -87,10 +87,10 @@ and we train the network using two rounds of `Adam`:
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_adjoint(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, α)
-res1 = Optimization.solve(optprob, Adam(0.05), callback = callback, maxiters = 150)
+res1 = Optimization.solve(optprob, Adam(0.05); callback = callback, maxiters = 150)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
-res2 = Optimization.solve(optprob2, Adam(0.001), callback = callback, maxiters = 150)
+res2 = Optimization.solve(optprob2, Adam(0.001); callback = callback, maxiters = 150)
 opt = res2.u
 ```
 
@@ -99,10 +99,10 @@ We plot the results, and we obtain a fairly accurate learned model:
 ```@example tensor
 using Plots
 data_pred = predict_adjoint(res1.u)
-plot(ts, data_train[1, :], label = "X (ODE)")
-plot!(ts, data_train[2, :], label = "V (ODE)")
-plot!(ts, data_pred[1, :], label = "X (NN)")
-plot!(ts, data_pred[2, :], label = "V (NN)")
+plot(ts, data_train[1, :]; label = "X (ODE)")
+plot!(ts, data_train[2, :]; label = "V (ODE)")
+plot!(ts, data_pred[1, :]; label = "X (NN)")
+plot!(ts, data_pred[2, :]; label = "V (NN)")
 ```
 
 ![plot_tutorial](https://user-images.githubusercontent.com/61364108/85925795-e2d5e680-b868-11ea-9816-29f8125c8cb5.png)

@@ -45,14 +45,14 @@ FEATURE_NAMES = ["Mean temperature", "Humidity", "Wind speed", "Mean pressure"]
 
 function plot_data(df)
     plots = map(enumerate(zip(FEATURES, FEATURE_NAMES, UNITS))) do (i, (f, n, u))
-        plot(df[:, :date], df[:, f],
+        plot(df[:, :date], df[:, f];
             title = n, label = nothing,
             ylabel = u, size = (800, 600),
             color = i)
     end
 
     n = length(plots)
-    plot(plots..., layout = (Int(n / 2), Int(n / 2)))
+    plot(plots...; layout = (Int(n / 2), Int(n / 2)))
 end
 
 plot_data(df)
@@ -78,7 +78,7 @@ function featurize(raw_df, num_train = 20)
         :meantemp => mean,
         :humidity => mean,
         :wind_speed => mean,
-        :meanpressure => mean,
+        :meanpressure => mean;
         renamecols = false)
     @show size(df)
     t_and_y(df) = df.date', Matrix(select(df, FEATURES))'
@@ -96,19 +96,19 @@ function featurize(raw_df, num_train = 20)
 end
 
 function plot_features(t_train, y_train, t_test, y_test)
-    plt_split = plot(reshape(t_train, :), y_train',
+    plt_split = plot(reshape(t_train, :), y_train';
         linewidth = 3, colors = 1:4,
         xlabel = "Normalized time",
         ylabel = "Normalized values",
         label = nothing,
         title = "Features")
-    plot!(plt_split, reshape(t_test, :), y_test',
+    plot!(plt_split, reshape(t_test, :), y_test';
         linewidth = 3, linestyle = :dash,
         color = [1 2 3 4], label = nothing)
 
-    plot!(plt_split, [0], [0], linewidth = 0,
+    plot!(plt_split, [0], [0]; linewidth = 0,
         label = "Train", color = 1)
-    plot!(plt_split, [0], [0], linewidth = 0,
+    plot!(plt_split, [0], [0]; linewidth = 0,
         linestyle = :dash, label = "Test",
         color = 1,
         ylims = (-5, 5))
@@ -134,7 +134,7 @@ function neural_ode(t, data_dim)
         Lux.Dense(64, 32, swish),
         Lux.Dense(32, data_dim))
 
-    node = NeuralODE(f, extrema(t), Tsit5(),
+    node = NeuralODE(f, extrema(t), Tsit5();
         saveat = t,
         abstol = 1e-9, reltol = 1e-9)
 
@@ -151,7 +151,7 @@ function train_one_round(node, p, state, y, opt, maxiters, rng, y0 = y[:, 1]; kw
     adtype = Optimization.AutoZygote()
     optf = OptimizationFunction((p, _) -> loss(p), adtype)
     optprob = OptimizationProblem(optf, p)
-    res = solve(optprob, opt, maxiters = maxiters; kwargs...)
+    res = solve(optprob, opt; maxiters = maxiters, kwargs...)
     res.minimizer, state
 end
 
@@ -183,7 +183,7 @@ rng = MersenneTwister(123)
 obs_grid = 4:4:length(t_train) # we train on an increasing amount of the first k obs
 maxiters = 150
 lr = 5e-3
-ps, state, losses = train(t_train, y_train, obs_grid, maxiters, lr, rng, progress = true);
+ps, state, losses = train(t_train, y_train, obs_grid, maxiters, lr, rng; progress = true);
 ```
 
 We can now animate the training to get a better understanding of the fit.
@@ -214,16 +214,16 @@ function plot_pred(t_train,
 end
 
 function plot_pred(t, y, y_pred)
-    plt = Plots.scatter(t, y, label = "Observation")
-    Plots.plot!(plt, t, y_pred, label = "Prediction")
+    plt = Plots.scatter(t, y; label = "Observation")
+    Plots.plot!(plt, t, y_pred; label = "Prediction")
 end
 
 function plot_pred(t, y, t_pred, y_pred; kwargs...)
     plot_params = zip(eachrow(y), eachrow(y_pred), FEATURE_NAMES, UNITS)
     map(enumerate(plot_params)) do (i, (yᵢ, ŷᵢ, name, unit))
-        plt = Plots.plot(t_pred, ŷᵢ, label = "Prediction", color = i, linewidth = 3,
-            legend = nothing, title = name; kwargs...)
-        Plots.scatter!(plt, t, yᵢ, label = "Observation",
+        plt = Plots.plot(t_pred, ŷᵢ; label = "Prediction", color = i, linewidth = 3,
+            legend = nothing, title = name, kwargs...)
+        Plots.scatter!(plt, t, yᵢ; label = "Observation",
             xlabel = "Time", ylabel = unit,
             markersize = 5, color = i)
     end
@@ -231,16 +231,16 @@ end
 
 function plot_result(t, y, t_pred, y_pred, loss, num_iters; kwargs...)
     plts_preds = plot_pred(t, y, t_pred, y_pred; kwargs...)
-    plot!(plts_preds[1], ylim = (10, 40), legend = (0.65, 1.0))
-    plot!(plts_preds[2], ylim = (20, 100))
-    plot!(plts_preds[3], ylim = (2, 12))
-    plot!(plts_preds[4], ylim = (990, 1025))
+    plot!(plts_preds[1]; ylim = (10, 40), legend = (0.65, 1.0))
+    plot!(plts_preds[2]; ylim = (20, 100))
+    plot!(plts_preds[3]; ylim = (2, 12))
+    plot!(plts_preds[4]; ylim = (990, 1025))
 
-    p_loss = Plots.plot(loss, label = nothing, linewidth = 3,
+    p_loss = Plots.plot(loss; label = nothing, linewidth = 3,
         title = "Loss", xlabel = "Iterations",
         xlim = (0, num_iters))
     plots = [plts_preds..., p_loss]
-    plot(plots..., layout = grid(length(plots), 1), size = (900, 900))
+    plot(plots...; layout = grid(length(plots), 1), size = (900, 900))
 end
 
 function animate_training(plot_frame,
@@ -260,7 +260,7 @@ function animate_training(plot_frame,
 end
 
 num_iters = length(losses)
-t_train_grid = collect(range(extrema(t_train)..., length = 500))
+t_train_grid = collect(range(extrema(t_train)...; length = 500))
 rescale_t(x) = t_scale .* x .+ t_mean
 rescale_y(x) = y_scale .* x .+ y_mean
 function plot_frame(t, y, p, loss)
@@ -278,20 +278,20 @@ function plot_extrapolation(t_train, y_train, t_test, y_test, t̂, ŷ)
     for (i, (plt, y)) in enumerate(zip(plts, eachrow(y_test)))
         scatter!(plt,
             t_test,
-            y,
+            y;
             color = i,
             markerstrokecolor = :white,
             label = "Test observation")
     end
 
-    plot!(plts[1], ylim = (10, 40), legend = :topleft)
-    plot!(plts[2], ylim = (20, 100))
-    plot!(plts[3], ylim = (2, 12))
-    plot!(plts[4], ylim = (990, 1025))
-    plot(plts..., layout = grid(length(plts), 1), size = (900, 900))
+    plot!(plts[1]; ylim = (10, 40), legend = :topleft)
+    plot!(plts[2]; ylim = (20, 100))
+    plot!(plts[3]; ylim = (2, 12))
+    plot!(plts[4]; ylim = (990, 1025))
+    plot(plts...; layout = grid(length(plts), 1), size = (900, 900))
 end
 
-t_grid = collect(range(minimum(t_train), maximum(t_test), length = 500))
+t_grid = collect(range(minimum(t_train), maximum(t_test); length = 500))
 y_pred = predict(y_train[:, 1], t_grid, ps[end], state)
 plot_extrapolation(rescale_t(t_train),
     rescale_y(y_train),

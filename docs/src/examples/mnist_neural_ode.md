@@ -12,8 +12,8 @@ using MLDatasets
 using CUDA
 CUDA.allowscalar(false)
 
-train_data = MNIST(split = :train)
-test_data = MNIST(split = :test)
+train_data = MNIST(; split = :train)
+test_data = MNIST(; split = :test)
 
 function loadmnist(data::MNIST; batchsize::Int = 128, shuffle = true)
     # Process images into (H,W,C,N) batches by inserting channel dimension
@@ -26,20 +26,19 @@ end
 
 # Main
 train_dataloader = loadmnist(train_data)
-test_dataloader = loadmnist(test_data, batchsize = length(test_data), shuffle = false)
+test_dataloader = loadmnist(test_data; batchsize = length(test_data), shuffle = false)
 
 down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |> Flux.gpu
 
 nn = Flux.Chain(Flux.Dense(20, 10, tanh),
-           Flux.Dense(10, 10, tanh),
-           Flux.Dense(10, 20, tanh)) |> Flux.gpu
+    Flux.Dense(10, 10, tanh),
+    Flux.Dense(10, 20, tanh)) |> Flux.gpu
 
-
-nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
-                   save_everystep = false,
-                   reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |> Flux.gpu
-fc  = Flux.Chain(Flux.Dense(20, 10)) |> Flux.gpu
+nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5();
+    save_everystep = false,
+    reltol = 1e-3, abstol = 1e-3,
+    save_start = false) |> Flux.gpu
+fc = Flux.Chain(Flux.Dense(20, 10)) |> Flux.gpu
 
 function DiffEqArray_to_Array(x)
     xarr = Flux.gpu(x)
@@ -48,9 +47,9 @@ end
 
 # Build our overall model topology
 model = Flux.Chain(down,
-              nn_ode,
-              DiffEqArray_to_Array,
-              fc) |> Flux.gpu;
+    nn_ode,
+    DiffEqArray_to_Array,
+    fc) |> Flux.gpu;
 
 # To understand the intermediate NN-ODE layer, we can examine it's dimensionality
 img, lab = train_dataloader.data[1:1]
@@ -87,23 +86,22 @@ loss(img, lab)
 opt = Adam(0.05)
 iter = 0
 
-callback() = begin
+function callback()
     global iter += 1
     # Monitor that the weights do infact update
     # Every 10 training iterations show accuracy
     if iter % 10 == 1
         train_accuracy = accuracy(model, train_dataloader) * 100
         test_accuracy = accuracy(model, test_dataloader;
-                                 n_batches = length(test_dataloader)) * 100
+            n_batches = length(test_dataloader)) * 100
         @printf("Iter: %3d || Train Accuracy: %2.3f || Test Accuracy: %2.3f\n",
-                iter, train_accuracy, test_accuracy)
+            iter, train_accuracy, test_accuracy)
     end
 end
 
 # Train the NN-ODE and monitor the loss and weights.
-Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt, cb = callback)
+Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt; cb = callback)
 ```
-
 
 ## Step-by-Step Description
 
@@ -116,6 +114,7 @@ using MLDatasets
 ```
 
 ### GPU
+
 A good trick used here:
 
 ```julia
@@ -136,14 +135,14 @@ The preprocessing is done in `loadmnist` where the raw MNIST data is split into 
 Features are reshaped into format **[Height, Width, Color, Samples]**, in case of the train set **[28, 28, 1, 60000]**.
 Using Flux's `onehotbatch` function, the labels (numbers 0 to 9) are one-hot encoded, resulting in a a **[10, 60000]** `OneHotMatrix`.
 
-Features and labels are then passed to Flux's DataLoader. 
+Features and labels are then passed to Flux's DataLoader.
 This automatically minibatches both the images and labels using the specified `batchsize`,
 meaning that every minibatch will contain 128 images with a single color channel of 28x28 pixels.
 Additionally, it allows us to shuffle the train dataset in each epoch.
 
 ```julia
-train_data = MNIST(split = :train)
-test_data = MNIST(split = :test)
+train_data = MNIST(; split = :train)
+test_data = MNIST(; split = :test)
 
 function loadmnist(data::MNIST; batchsize::Int = 128, shuffle = true)
     # Process images into (H,W,C,N) batches by inserting channel dimension
@@ -160,9 +159,8 @@ and then loaded from main:
 ```julia
 # Main
 train_dataloader = loadmnist(train_data)
-test_dataloader = loadmnist(test_data, batchsize = length(test_data), shuffle = false)
+test_dataloader = loadmnist(test_data; batchsize = length(test_data), shuffle = false)
 ```
-
 
 ### Layers
 
@@ -170,34 +168,32 @@ The Neural Network requires passing inputs sequentially through multiple layers.
 `Chain` which allows inputs to functions to come from the previous layer and sends the outputs
 to the next. Four different sets of layers are used here:
 
-
 ```julia
 down = Flux.Chain(Flux.flatten, Flux.Dense(784, 20, tanh)) |> Flux.gpu
 
 nn = Flux.Chain(Flux.Dense(20, 10, tanh),
-           Flux.Dense(10, 10, tanh),
-           Flux.Dense(10, 20, tanh)) |> Flux.gpu
+    Flux.Dense(10, 10, tanh),
+    Flux.Dense(10, 20, tanh)) |> Flux.gpu
 
+nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5();
+    save_everystep = false,
+    reltol = 1e-3, abstol = 1e-3,
+    save_start = false) |> Flux.gpu
 
-nn_ode = NeuralODE(nn, (0.f0, 1.f0), Tsit5(),
-                   save_everystep = false,
-                   reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |> Flux.gpu
-
-fc  = Flux.Chain(Flux.Dense(20, 10)) |> Flux.gpu
+fc = Flux.Chain(Flux.Dense(20, 10)) |> Flux.gpu
 ```
 
 `down`: This layer downsamples our images into a 20 dimensional feature vector.
-        It takes a 28 x 28 image, flattens it, and then passes it through a fully connected
-        layer with `tanh` activation
+It takes a 28 x 28 image, flattens it, and then passes it through a fully connected
+layer with `tanh` activation
 
 `nn`: A 3 layers Deep Neural Network Chain with `tanh` activation which is used to model
-      our differential equation
+our differential equation
 
 `nn_ode`: ODE solver layer
 
 `fc`: The final fully connected layer which maps our learned feature vector to the probability of
-      the feature vector of belonging to a particular class
+the feature vector of belonging to a particular class
 
 `|> gpu`: An utility function which transfers our model to GPU, if it is available
 
@@ -216,7 +212,6 @@ end
 For CPU: If this function does not automatically fall back to CPU when no GPU is present, we can
 change `gpu(x)` to `Array(x)`.
 
-
 ### Build Topology
 
 Next, we connect all layers together in a single chain:
@@ -224,9 +219,9 @@ Next, we connect all layers together in a single chain:
 ```julia
 # Build our overall model topology
 model = Flux.Chain(down,
-              nn_ode,
-              DiffEqArray_to_Array,
-              fc) |> Flux.gpu;
+    nn_ode,
+    DiffEqArray_to_Array,
+    fc) |> Flux.gpu;
 ```
 
 There are a few things we can do to examine the inner workings of our neural network:
@@ -247,8 +242,8 @@ This can also be built without the NN-ODE by replacing `nn-ode` with a simple `n
 ```julia
 # We can also build the model topology without a NN-ODE
 m_no_ode = Flux.Chain(down,
-                 nn,
-                 fc) |> Flux.gpu
+    nn,
+    fc) |> Flux.gpu
 
 x_m = m_no_ode(img)
 ```
@@ -317,16 +312,16 @@ This callback function is used to print both the training and testing accuracy a
 10 training iterations:
 
 ```julia
-callback() = begin
+function callback()
     global iter += 1
     # Monitor that the weights update
     # Every 10 training iterations show accuracy
     if iter % 10 == 1
         train_accuracy = accuracy(model, train_dataloader) * 100
         test_accuracy = accuracy(model, test_dataloader;
-                                 n_batches = length(test_dataloader)) * 100
+            n_batches = length(test_dataloader)) * 100
         @printf("Iter: %3d || Train Accuracy: %2.3f || Test Accuracy: %2.3f\n",
-                iter, train_accuracy, test_accuracy)
+            iter, train_accuracy, test_accuracy)
     end
 end
 ```
@@ -339,12 +334,16 @@ for Neural ODE is given by `nn_ode.p`:
 
 ```julia
 # Train the NN-ODE and monitor the loss and weights.
-Flux.train!(loss, Flux.params( down, nn_ode.p, fc), zip( x_train, y_train ), opt, callback = callback)
+Flux.train!(loss,
+    Flux.params(down, nn_ode.p, fc),
+    zip(x_train, y_train),
+    opt;
+    callback = callback)
 ```
 
 ### Expected Output
 
-```julia
+```txt
 Iter:   1 || Train Accuracy: 16.203 || Test Accuracy: 16.933
 Iter:  11 || Train Accuracy: 64.406 || Test Accuracy: 64.900
 Iter:  21 || Train Accuracy: 76.656 || Test Accuracy: 76.667

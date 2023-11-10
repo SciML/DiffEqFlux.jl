@@ -38,7 +38,7 @@ using Flux, Optimization, OptimizationOptimisers, DiffEqFlux, StochasticDiffEq,
 u0 = Float32[2.0; 0.0]
 datasize = 30
 tspan = (0.0f0, 1.0f0)
-tsteps = range(tspan[1], tspan[2], length = datasize)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
 ```
 
 ```@example nsde
@@ -61,8 +61,8 @@ data from the average of 10,000 runs of the SDE:
 
 ```@example nsde
 # Take a typical sample from the mean
-ensemble_prob = EnsembleProblem(prob_truesde, safetycopy = false)
-ensemble_sol = solve(ensemble_prob, SOSRI(), trajectories = 10000)
+ensemble_prob = EnsembleProblem(prob_truesde; safetycopy = false)
+ensemble_sol = solve(ensemble_prob, SOSRI(); trajectories = 10000)
 ensemble_sum = EnsembleSummary(ensemble_sol)
 
 sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))
@@ -80,7 +80,7 @@ p1, re1 = Flux.destructure(drift_dudt)
 diffusion_dudt = Flux.Chain(Flux.Dense(2, 2))
 p2, re2 = Flux.destructure(diffusion_dudt)
 
-neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
+neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI();
     saveat = tsteps, reltol = 1e-1, abstol = 1e-1);
 nothing
 ```
@@ -96,16 +96,16 @@ diffusion_(u, p, t) = re2(p[(neuralsde.len + 1):end])(u)
 
 prob_neuralsde = SDEProblem(drift_, diffusion_, u0, (0.0f0, 1.2f0), neuralsde.p)
 
-ensemble_nprob = EnsembleProblem(prob_neuralsde, safetycopy = false)
-ensemble_nsol = solve(ensemble_nprob, SOSRI(), trajectories = 100,
+ensemble_nprob = EnsembleProblem(prob_neuralsde; safetycopy = false)
+ensemble_nsol = solve(ensemble_nprob, SOSRI(); trajectories = 100,
     saveat = tsteps)
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
 
-plt1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
-scatter!(plt1, tsteps, sde_data', lw = 3)
+plt1 = plot(ensemble_nsum; title = "Neural SDE: Before Training")
+scatter!(plt1, tsteps, sde_data'; lw = 3)
 
-scatter(tsteps, sde_data[1, :], label = "data")
-scatter!(tsteps, prediction0[1, :], label = "prediction")
+scatter(tsteps, sde_data[1, :]; label = "data")
+scatter!(tsteps, prediction0[1, :]; label = "prediction")
 ```
 
 Now just as with the neural ODE we define a loss function that calculates the
@@ -120,8 +120,8 @@ end
 function loss_neuralsde(p; n = 100)
     u = repeat(reshape(u0, :, 1), 1, n)
     samples = predict_neuralsde(p, u)
-    means = mean(samples, dims = 2)
-    vars = var(samples, dims = 2, mean = means)[:, 1, :]
+    means = mean(samples; dims = 2)
+    vars = var(samples; dims = 2, mean = means)[:, 1, :]
     means = means[:, 1, :]
     loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
     return loss, means, vars
@@ -145,9 +145,9 @@ callback = function (p, loss, means, vars; doplot = false)
     display(loss)
 
     # plot current prediction against data
-    plt = Plots.scatter(tsteps, sde_data[1, :], yerror = sde_data_vars[1, :],
+    plt = Plots.scatter(tsteps, sde_data[1, :]; yerror = sde_data_vars[1, :],
         ylim = (-4.0, 8.0), label = "data")
-    Plots.scatter!(plt, tsteps, means[1, :], ribbon = vars[1, :], label = "prediction")
+    Plots.scatter!(plt, tsteps, means[1, :]; ribbon = vars[1, :], label = "prediction")
     push!(list_plots, plt)
 
     if doplot
@@ -166,9 +166,9 @@ opt = Adam(0.025)
 
 # First round of training with n = 10
 adtype = Optimization.AutoZygote()
-optf = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x, n = 10), adtype)
+optf = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 10), adtype)
 optprob = Optimization.OptimizationProblem(optf, neuralsde.p)
-result1 = Optimization.solve(optprob, opt,
+result1 = Optimization.solve(optprob, opt;
     callback = callback, maxiters = 100)
 ```
 
@@ -176,23 +176,23 @@ We resume the training with a larger `n`. (WARNING - this step is a couple of
 orders of magnitude longer than the previous one).
 
 ```@example nsde
-optf2 = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x, n = 100), adtype)
+optf2 = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 100), adtype)
 optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
-result2 = Optimization.solve(optprob2, opt,
+result2 = Optimization.solve(optprob2, opt;
     callback = callback, maxiters = 20)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```@example nsde
-_, means, vars = loss_neuralsde(result2.u, n = 1000)
+_, means, vars = loss_neuralsde(result2.u; n = 1000)
 
-plt2 = Plots.scatter(tsteps, sde_data', yerror = sde_data_vars',
+plt2 = Plots.scatter(tsteps, sde_data'; yerror = sde_data_vars',
     label = "data", title = "Neural SDE: After Training",
     xlabel = "Time")
-plot!(plt2, tsteps, means', lw = 8, ribbon = vars', label = "prediction")
+plot!(plt2, tsteps, means'; lw = 8, ribbon = vars', label = "prediction")
 
-plt = plot(plt1, plt2, layout = (2, 1))
+plt = plot(plt1, plt2; layout = (2, 1))
 savefig(plt, "NN_sde_combined.png");
 nothing; # sde
 ```

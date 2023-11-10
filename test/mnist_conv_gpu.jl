@@ -58,7 +58,7 @@ m = Chain(down,                 # (28, 28, 1, BS) -> (6, 6, 64, BS)
 ps, st = Lux.setup(Random.default_rng(), m)
 ps = ComponentArray(ps) |> gdev
 st = st |> gdev
-    
+
 # To understand the intermediate NN-ODE layer, we can examine it's dimensionality
 img = x_train[1][:, :, :, 1:1] |> gdev
 lab = x_train[2][:, 1:1] |> gdev

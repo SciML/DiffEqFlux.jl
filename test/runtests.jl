@@ -40,9 +40,9 @@ const is_CI = haskey(ENV, "CI")
     end
 
     if GROUP == "All" || GROUP == "AdvancedNeuralDE"
-        #     @safetestset "CNF Layer Tests" begin
-        #         include("cnf_test.jl")
-        #     end
+        @safetestset "CNF Layer Tests" begin
+            include("cnf_test.jl")
+        end
         @safetestset "Neural Second Order ODE Tests" begin
             include("second_order_ode.jl")
         end

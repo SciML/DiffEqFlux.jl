@@ -7,7 +7,10 @@ PrecompileTools.@recompile_invalidations begin
         LuxCore, Random, Reexport, SciMLBase, SciMLSensitivity
 
     # AD Packages
-    using ForwardDiff, Zygote, ZygoteRules
+    using ForwardDiff, Zygote
+
+    # FFJORD Specific
+    using Distributions, DistributionsAD
 end
 
 import ChainRulesCore as CRC
@@ -32,7 +35,7 @@ function CRC.rrule(::Type{Tridiagonal}, dl, d, du)
     return y, ∇Tridiagonal
 end
 
-# include("ffjord.jl")
+include("ffjord.jl")
 include("neural_de.jl")
 include("spline_layer.jl")
 include("tensor_product.jl")
@@ -43,10 +46,9 @@ include("multiple_shooting.jl")
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
     NeuralODEMM, TensorLayer, SplineLayer
 export NeuralHamiltonianDE, HamiltonianNN
-# export FFJORD
+export FFJORD, FFJORDDistribution
 export TensorProductBasisFunction,
     ChebyshevBasis, SinBasis, CosBasis, FourierBasis, LegendreBasis, PolynomialBasis
-# export FFJORDDistribution
 export DimMover
 
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel, TriweightKernel,

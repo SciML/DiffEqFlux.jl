@@ -36,13 +36,13 @@ optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
-    Adam(0.1),
+    Adam(0.1);
     maxiters = 100,
     callback = cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
-    Optim.LBFGS(),
+    Optim.LBFGS();
     allow_f_increases = false,
     callback = cb)
 
@@ -50,7 +50,7 @@ res2 = Optimization.solve(optprob2,
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo = false)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u; monte_carlo = false)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 # Data Generation
@@ -112,7 +112,7 @@ optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
 
 res1 = Optimization.solve(optprob,
-    Adam(0.1),
+    Adam(0.1);
     maxiters = 100,
     callback = cb)
 ```
@@ -122,7 +122,7 @@ We then complete the training using a different optimizer, starting from where `
 ```@example cnf2
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2,
-    Optim.LBFGS(),
+    Optim.LBFGS();
     allow_f_increases = false,
     callback = cb)
 ```
@@ -136,7 +136,7 @@ Then we use a distance function between these distributions.
 using Distances
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u, monte_carlo = false)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u; monte_carlo = false)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 ```
 

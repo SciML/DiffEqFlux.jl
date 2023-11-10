@@ -42,16 +42,20 @@ const cdev = cpu_device()
                 pd = ComponentArray(pd) |> gdev
                 st = st |> gdev
                 grads = Zygote.gradient(sum ∘ first ∘ node, u0, pd, st)
-                @test !iszero(grads[1])
-                @test !iszero(grads[2])
+                CUDA.@allowscalar begin
+                    @test !iszero(grads[1])
+                    @test !iszero(grads[2])
+                end
 
                 anode = AugmentedNDELayer(NeuralODE(aug_dudt, tspan, Tsit5(); kwargs...), 2)
                 pd, st = Lux.setup(rng, anode)
                 pd = ComponentArray(pd) |> gdev
                 st = st |> gdev
                 grads = Zygote.gradient(sum ∘ first ∘ anode, u0, pd, st)
-                @test !iszero(grads[1])
-                @test !iszero(grads[2])
+                CUDA.@allowscalar begin
+                    @test !iszero(grads[1])
+                    @test !iszero(grads[2])
+                end
             end
         end
     end
@@ -79,8 +83,10 @@ const cdev = cpu_device()
         st = st |> gdev
 
         grads = Zygote.gradient(sum ∘ first ∘ sode, u0, pd, st)
-        @test !iszero(grads[1])
-        @test !iszero(grads[2])
-        @test !iszero(CUDA.@allowscalar(grads[2][end]))
+        CUDA.@allowscalar begin
+            @test !iszero(grads[1])
+            @test !iszero(grads[2])
+            @test !iszero(grads[2][end])
+        end
     end
 end

@@ -27,8 +27,8 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         push!(data, reshape(random_point_in_sphere(dim, outer_radius_range...), :, 1))
         push!(labels, -ones(1, 1))
     end
-    data = cat(data..., dims = 2)
-    labels = cat(labels..., dims = 2)
+    data = cat(data...; dims = 2)
+    labels = cat(labels...; dims = 2)
     DataLoader((data |> Flux.gpu, labels |> Flux.gpu); batchsize = batch_size,
         shuffle = true,
         partial = false)
@@ -41,7 +41,7 @@ function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     node = NeuralODE(Flux.Chain(Flux.Dense(input_dim, hidden_dim, relu),
             Flux.Dense(hidden_dim, hidden_dim, relu),
             Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
-        (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+        (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
         reltol = 1.0f-3, abstol = 1.0f-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
     return Flux.Chain((x, p = node.p) -> node(x, p),
@@ -54,15 +54,15 @@ end
 function plot_contour(model, npoints = 300)
     grid_points = zeros(Float32, 2, npoints^2)
     idx = 1
-    x = range(-4.0f0, 4.0f0, length = npoints)
-    y = range(-4.0f0, 4.0f0, length = npoints)
+    x = range(-4.0f0, 4.0f0; length = npoints)
+    y = range(-4.0f0, 4.0f0; length = npoints)
     for x1 in x, x2 in y
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
     sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> Flux.cpu
 
-    return contour(x, y, sol, fill = true, linewidth = 0.0)
+    return contour(x, y, sol; fill = true, linewidth = 0.0)
 end
 
 loss_node(x, y) = mean((model(x) .- y) .^ 2)
@@ -91,7 +91,7 @@ opt = Adam(0.005)
 println("Training Neural ODE")
 
 for _ in 1:10
-    Flux.train!(loss_node, Flux.params(parameters, model), dataloader, opt, cb = cb)
+    Flux.train!(loss_node, Flux.params(parameters, model), dataloader, opt; cb = cb)
 end
 
 plt_node = plot_contour(model)
@@ -103,7 +103,7 @@ println()
 println("Training Augmented Neural ODE")
 
 for _ in 1:10
-    Flux.train!(loss_node, Flux.params(parameters, model), dataloader, opt, cb = cb)
+    Flux.train!(loss_node, Flux.params(parameters, model), dataloader, opt; cb = cb)
 end
 
 plt_anode = plot_contour(model)
@@ -153,8 +153,8 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         push!(data, reshape(random_point_in_sphere(dim, outer_radius_range...), :, 1))
         push!(labels, -ones(1, 1))
     end
-    data = cat(data..., dims = 2)
-    labels = cat(labels..., dims = 2)
+    data = cat(data...; dims = 2)
+    labels = cat(labels...; dims = 2)
     return DataLoader((data |> Flux.gpu, labels |> Flux.gpu); batchsize = batch_size,
         shuffle = true,
         partial = false)
@@ -181,7 +181,7 @@ function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     node = NeuralODE(Flux.Chain(Flux.Dense(input_dim, hidden_dim, relu),
             Flux.Dense(hidden_dim, hidden_dim, relu),
             Flux.Dense(hidden_dim, input_dim)) |> Flux.gpu,
-        (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+        (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
         reltol = 1.0f-3, abstol = 1.0f-3, save_start = false) |> Flux.gpu
     node = augment_dim == 0 ? node : (AugmentedNDELayer(node, augment_dim) |> Flux.gpu)
     return Flux.Chain((x, p = node.p) -> node(x, p),
@@ -200,15 +200,15 @@ Here, we define a utility to plot our model regression results as a heatmap.
 function plot_contour(model, npoints = 300)
     grid_points = zeros(2, npoints^2)
     idx = 1
-    x = range(-4.0f0, 4.0f0, length = npoints)
-    y = range(-4.0f0, 4.0f0, length = npoints)
+    x = range(-4.0f0, 4.0f0; length = npoints)
+    y = range(-4.0f0, 4.0f0; length = npoints)
     for x1 in x, x2 in y
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
     sol = reshape(model(grid_points |> Flux.gpu), npoints, npoints) |> Flux.cpu
 
-    return contour(x, y, sol, fill = true, linewidth = 0.0)
+    return contour(x, y, sol; fill = true, linewidth = 0.0)
 end
 ```
 
@@ -269,7 +269,7 @@ for `20` epochs.
 model, parameters = construct_model(1, 2, 64, 0)
 
 for _ in 1:10
-    Flux.train!(loss_node, Flux.params(model, parameters), dataloader, opt, cb = cb)
+    Flux.train!(loss_node, Flux.params(model, parameters), dataloader, opt; cb = cb)
 end
 ```
 
@@ -288,7 +288,7 @@ a function which can be expressed by the neural ode. For more details and proofs
 model, parameters = construct_model(1, 2, 64, 1)
 
 for _ in 1:10
-    Flux.train!(loss_node, Flux.params(model, parameters), dataloader, opt, cb = cb)
+    Flux.train!(loss_node, Flux.params(model, parameters), dataloader, opt; cb = cb)
 end
 ```
 

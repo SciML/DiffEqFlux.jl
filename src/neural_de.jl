@@ -244,8 +244,6 @@ function NeuralDAE(model, constraints_model, tspan, args...; differential_vars =
     return NeuralDAE(model, constraints_model, tspan, args, differential_vars, kwargs)
 end
 
-(n::NeuralDAE)(x, p, st) = n((x, nothing), p, st)
-
 function (n::NeuralDAE)(u_du::Tuple, p, st)
     u0, du0 = u_du
     model = StatefulLuxLayer(n.model, nothing, st)

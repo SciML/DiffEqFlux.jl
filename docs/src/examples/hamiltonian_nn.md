@@ -12,7 +12,7 @@ Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. An
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
     ComponentArrays, Optimization, OptimizationOptimisers, IterTools
 
-t = range(0.0f0, 1.0f0, length = 1024)
+t = range(0.0f0, 1.0f0; length = 1024)
 π_32 = Float32(π)
 q_t = reshape(sin.(2π_32 * t), 1, :)
 p_t = reshape(cos.(2π_32 * t), 1, :)
@@ -46,12 +46,12 @@ res = Optimization.solve(opt_prob, opt, dataloader)
 
 ps_trained = res.u
 
-model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
-plot(data[1, :], data[2, :], lw = 4, label = "Original")
-plot!(pred[1, :], pred[2, :], lw = 4, label = "Predicted")
+plot(data[1, :], data[2, :]; lw = 4, label = "Original")
+plot!(pred[1, :], pred[2, :]; lw = 4, label = "Predicted")
 xlabel!("Position (q)")
 ylabel!("Momentum (p)")
 ```
@@ -66,15 +66,15 @@ The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we 
 using Flux, DiffEqFlux, DifferentialEquations, Statistics, Plots, ReverseDiff, Random,
     IterTools, Lux, ComponentArrays, Optimization, OptimizationOptimisers
 
-t = range(0.0f0, 1.0f0, length = 1024)
+t = range(0.0f0, 1.0f0; length = 1024)
 π_32 = Float32(π)
 q_t = reshape(sin.(2π_32 * t), 1, :)
 p_t = reshape(cos.(2π_32 * t), 1, :)
 dqdt = 2π_32 .* p_t
 dpdt = -2π_32 .* q_t
 
-data = cat(q_t, p_t, dims = 1)
-target = cat(dqdt, dpdt, dims = 1)
+data = cat(q_t, p_t; dims = 1)
+target = cat(dqdt, dpdt; dims = 1)
 B = 256
 NEPOCHS = 500
 dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
@@ -117,12 +117,12 @@ ps_trained = res.u
 In order to visualize the learned trajectories, we need to solve the ODE. We will use the `NeuralHamiltonianDE` layer, which is essentially a wrapper over `HamiltonianNN` layer, and solves the ODE.
 
 ```@example hamiltonian
-model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
-plot(data[1, :], data[2, :], lw = 4, label = "Original")
-plot!(pred[1, :], pred[2, :], lw = 4, label = "Predicted")
+plot(data[1, :], data[2, :]; lw = 4, label = "Original")
+plot!(pred[1, :], pred[2, :]; lw = 4, label = "Predicted")
 xlabel!("Position (q)")
 ylabel!("Momentum (p)")
 ```

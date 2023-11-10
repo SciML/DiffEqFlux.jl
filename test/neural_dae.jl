@@ -23,15 +23,15 @@ sol = solve(prob_mm, Rodas5(); reltol = 1e-8, abstol = 1e-8)
 dudt2 = Chain(x -> x .^ 3, Dense(6, 50, tanh), Dense(50, 3))
 
 u₀ = [1.0, 0, 0]
+du₀ = [-0.04, 0.04, 0.0]
 tspan = (0.0, 10.0)
 
-ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, DImplicitEuler();
+ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, DFBDF();
     differential_vars = [true, true, false])
 ps, st = Lux.setup(Xoshiro(0), ndae)
 ps = ComponentArray(ps)
-truedu0 = similar(u₀)
 
-ndae((u₀, truedu0), ps, st)
+ndae((u₀, du₀), ps, st)
 
 predict_n_dae(p) = first(ndae(u₀, p, st))
 
@@ -47,7 +47,7 @@ res = Optimization.solve(optprob, BFGS(; initial_stepnorm = 0.0001))
 
 # Same stuff with Lux
 rng = Random.default_rng()
-dudt2 = Lux.Chain(x -> x .^ 3, Lux.Dense(6, 50, tanh), Lux.Dense(50, 2))
+dudt2 = Chain(x -> x .^ 3, Dense(6, 50, tanh), Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
 p = ComponentArray(p)
 ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, M, DImplicitEuler();
