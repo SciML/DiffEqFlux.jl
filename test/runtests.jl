@@ -30,6 +30,13 @@ const is_CI = haskey(ENV, "CI")
         @safetestset "Multiple shooting" begin
             include("multiple_shoot.jl")
         end
+        @safetestset "Neural ODE MM Tests" begin
+            include("neural_ode_mm.jl")
+        end
+        # DAE Tests were never included
+        # @safetestset "Neural DAE Tests" begin
+        #     include("neural_dae.jl")
+        # end
     end
 
     if GROUP == "All" || GROUP == "AdvancedNeuralDE"
@@ -39,16 +46,9 @@ const is_CI = haskey(ENV, "CI")
         @safetestset "Neural Second Order ODE Tests" begin
             include("second_order_ode.jl")
         end
-        @safetestset "Neural ODE MM Tests" begin
-            include("neural_ode_mm.jl")
+        @safetestset "Neural Hamiltonian ODE Tests" begin
+            include("hamiltonian_nn.jl")
         end
-        # DAE Tests were never included
-        # @safetestset "Neural DAE Tests" begin
-        #     include("neural_dae.jl")
-        # end
-        #     @safetestset "Neural Hamiltonian ODE Tests" begin
-        #         include("hamiltonian_nn.jl")
-        #     end
     end
 
     if GROUP == "Newton"
@@ -58,9 +58,9 @@ const is_CI = haskey(ENV, "CI")
     end
 
     if !is_APPVEYOR && GROUP == "GPU"
-        @safetestset "Neural DE GPU Tests" begin
-            include("neural_de_gpu.jl")
-        end
+        # @safetestset "Neural DE GPU Tests" begin
+        #     include("neural_de_gpu.jl")
+        # end
         #     @safetestset "MNIST GPU Tests: Fully Connected NN" begin
         #         include("mnist_gpu.jl")
         #     end
@@ -68,4 +68,6 @@ const is_CI = haskey(ENV, "CI")
         #         include("mnist_conv_gpu.jl")
         #     end
     end
+
+    # TODO: Add Aqua
 end

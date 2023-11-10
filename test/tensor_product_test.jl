@@ -1,5 +1,5 @@
 using DiffEqFlux, Distributions, Zygote, Optimization, OptimizationOptimJL,
-    OptimizationOptimisers, LinearAlgebra, Random, Test
+    OptimizationOptimisers, LinearAlgebra, Random, ComponentArrays, Test
 
 function run_test(f, layer, atol, N)
     ps, st = Lux.setup(Xoshiro(0), layer)

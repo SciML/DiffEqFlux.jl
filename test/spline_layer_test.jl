@@ -1,4 +1,4 @@
-using DiffEqFlux,
+using DiffEqFlux, ComponentArrays,
     Zygote, DataInterpolations, Distributions, Optimization, LinearAlgebra, Random, Test
 
 function run_test(f, layer, atol)
