@@ -1,10 +1,13 @@
 using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
-    ComponentArrays, Random, Optimization, OptimizationOptimisers
+    ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
 using MLDatasets: MNIST
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 
 CUDA.allowscalar(false)
 ENV["DATADEPS_ALWAYS_ACCEPT"] = true
+
+const cdev = cpu_device()
+const gdev = gpu_device()
 
 logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims = 1); dims = 1))
 
@@ -18,10 +21,10 @@ function loadmnist(batchsize = bs)
     imgs, labels_raw = mnist.features, mnist.targets
     # Process images into (H,W,C,BS) batches
     x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
-              Lux.gpu
+              gdev
     x_train = batchview(x_train, batchsize)
     # Onehot and batch the labels
-    y_train = onehot(labels_raw) |> Lux.gpu
+    y_train = onehot(labels_raw) |> gdev
     y_train = batchview(y_train, batchsize)
     return x_train, y_train
 end
@@ -44,21 +47,21 @@ nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol =
 Cheap conversion of a `DiffEqArray` instance to a Matrix.
 """
 function DiffEqArray_to_Array(x)
-    xarr = Lux.gpu(x)
+    xarr = gdev(x)
     return reshape(xarr, size(xarr)[1:2])
 end
 
 #Build our over-all model topology
 m = Lux.Chain(; down, nn_ode, convert = Lux.WrappedFunction(DiffEqArray_to_Array), fc)
 ps, st = Lux.setup(Random.default_rng(), m)
-ps = ComponentArray(ps) |> Lux.gpu
-st = st |> Lux.gpu
+ps = ComponentArray(ps) |> gdev
+st = st |> gdev
 
 #We can also build the model topology without a NN-ODE
 m_no_ode = Lux.Chain(; down, nn, fc)
 ps_no_ode, st_no_ode = Lux.setup(Random.default_rng(), m_no_ode)
-ps_no_ode = ComponentArray(ps_no_ode) |> Lux.gpu
-st_no_ode = st_no_ode |> Lux.gpu
+ps_no_ode = ComponentArray(ps_no_ode) |> gdev
+st_no_ode = st_no_ode |> gdev
 
 #To understand the intermediate NN-ODE layer, we can examine it's dimensionality
 x_d = first(down(x_train[1], ps.down, st.down))
@@ -75,8 +78,8 @@ function accuracy(model, data, ps, st; n_batches = 100)
     total = 0
     st = Lux.testmode(st)
     for (x, y) in collect(data)[1:n_batches]
-        target_class = classify(Lux.cpu(y))
-        predicted_class = classify(Lux.cpu(first(model(x, ps, st))))
+        target_class = classify(cdev(y))
+        predicted_class = classify(cdev(first(model(x, ps, st))))
         total_correct += sum(target_class .== predicted_class)
         total += length(target_class)
     end
@@ -104,7 +107,9 @@ function callback(ps, l, pred)
     global iter += 1
     #Monitor that the weights do infact update
     #Every 10 training iterations show accuracy
-    (iter % 10 == 0) && @show accuracy(m, zip(x_train, y_train), ps, st)
+    if (iter % 10 == 0)
+        @info "[MNIST GPU] Accuracy: $(accuracy(m, zip(x_train, y_train), ps, st))"
+    end
     return false
 end
 

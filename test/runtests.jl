@@ -58,15 +58,15 @@ const is_CI = haskey(ENV, "CI")
     end
 
     if !is_APPVEYOR && GROUP == "GPU"
-        # @safetestset "Neural DE GPU Tests" begin
-        #     include("neural_de_gpu.jl")
-        # end
-        #     @safetestset "MNIST GPU Tests: Fully Connected NN" begin
-        #         include("mnist_gpu.jl")
-        #     end
-        #     @safetestset "MNIST GPU Tests: Convolutional NN" begin
-        #         include("mnist_conv_gpu.jl")
-        #     end
+        @safetestset "Neural DE GPU Tests" begin
+            include("neural_de_gpu.jl")
+        end
+        @safetestset "MNIST GPU Tests: Fully Connected NN" begin
+            include("mnist_gpu.jl")
+        end
+        @safetestset "MNIST GPU Tests: Convolutional NN" begin
+            include("mnist_conv_gpu.jl")
+        end
     end
 
     # TODO: Add Aqua
