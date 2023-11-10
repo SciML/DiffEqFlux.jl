@@ -1,5 +1,5 @@
 using DiffEqFlux, ComponentArrays, GeometricFlux, GraphSignals, OrdinaryDiffEq, Random,
-    Test, OptimizationOptimisers, Optimization
+    Test, OptimizationOptimisers, Optimization, Statistics
 import Flux
 
 # Fully Connected Graph

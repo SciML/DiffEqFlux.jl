@@ -254,15 +254,16 @@ function (n::NeuralDAE)(u_du::Tuple, p, st)
         nn_out = model(vcat(u, du), p)
         alg_out = n.constraints_model(u, p, t)
         iter_nn, iter_const = 0, 0
-        map(n.differential_vars) do isdiff
+        res = map(n.differential_vars) do isdiff
             if isdiff
                 iter_nn += 1
-                selectdim(nn_out, 1, iter_nn)
+                nn_out[iter_nn]
             else
                 iter_const += 1
-                selectdim(alg_out, 1, iter_const)
+                alg_out[iter_const]
             end
         end
+        return res
     end
 
     prob = DAEProblem{false}(f, du0, u0, n.tspan, p; n.differential_vars)

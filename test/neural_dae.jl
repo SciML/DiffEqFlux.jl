@@ -1,4 +1,5 @@
-using ComponentArrays, DiffEqFlux, Zygote, Optimization, OrdinaryDiffEq, Random
+using ComponentArrays,
+    DiffEqFlux, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random
 
 #A desired MWE for now, not a test yet.
 
@@ -27,6 +28,7 @@ tspan = (0.0, 10.0)
 ndae = NeuralDAE(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1], tspan, DImplicitEuler();
     differential_vars = [true, true, false])
 ps, st = Lux.setup(Xoshiro(0), ndae)
+ps = ComponentArray(ps)
 truedu0 = similar(u₀)
 
 ndae((u₀, truedu0), ps, st)
@@ -36,13 +38,11 @@ predict_n_dae(p) = first(ndae(u₀, p, st))
 function loss(p)
     pred = predict_n_dae(p)
     loss = sum(abs2, sol .- pred)
-    loss, pred
+    return loss, pred
 end
 
-p = p .+ rand(3) .* p
-
 optfunc = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoZygote())
-optprob = Optimization.OptimizationProblem(optfunc, p)
+optprob = Optimization.OptimizationProblem(optfunc, ps)
 res = Optimization.solve(optprob, BFGS(; initial_stepnorm = 0.0001))
 
 # Same stuff with Lux
