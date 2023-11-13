@@ -1,38 +1,43 @@
 abstract type CNFLayer <: LuxCore.AbstractExplicitContainerLayer{(:model,)} end
 
-# """
-# Constructs a continuous-time recurrent neural network, also known as a neural
-# ordinary differential equation (neural ODE), with fast gradient calculation
-# via adjoints [1] and specialized for density estimation based on continuous
-# normalizing flows (CNF) [2] with a stochastic approach [2] for the computation of the trace
-# of the dynamics' jacobian. At a high level this corresponds to the following steps:
+"""
+    FFJORD(model, tspan, input_dims, args...; ad = AutoForwardDiff(),
+        basedist = nothing, kwargs...)
 
-# 1. Parameterize the variable of interest x(t) as a function f(z, θ, t) of a base variable z(t) with known density p_z;
-# 2. Use the transformation of variables formula to predict the density p_x as a function of the density p_z and the trace of the Jacobian of f;
-# 3. Choose the parameter θ to minimize a loss function of p_x (usually the negative likelihood of the data);
+Constructs a continuous-time recurrent neural network, also known as a neural
+ordinary differential equation (neural ODE), with fast gradient calculation
+via adjoints [1] and specialized for density estimation based on continuous
+normalizing flows (CNF) [2] with a stochastic approach [2] for the computation of the trace
+of the dynamics' jacobian. At a high level this corresponds to the following steps:
 
-# After these steps one may use the NN model and the learned θ to predict the density p_x for new values of x.
+1. Parameterize the variable of interest x(t) as a function f(z, θ, t) of a base variable z(t) with known density p_z;
+2. Use the transformation of variables formula to predict the density p_x as a function of the density p_z and the trace of the Jacobian of f;
+3. Choose the parameter θ to minimize a loss function of p_x (usually the negative likelihood of the data);
 
-# ```julia
-# FFJORD(model, basedist=nothing, monte_carlo=false, tspan, args...; kwargs...)
-# ```
-# Arguments:
-# - `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the dynamics of the model.
-# - `basedist`: Distribution of the base variable. Set to the unit normal by default.
-# - `tspan`: The timespan to be solved on.
-# - `kwargs`: Additional arguments splatted to the ODE solver. See the
-#   [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-#   documentation for more details.
+After these steps one may use the NN model and the learned θ to predict the density p_x for new values of x.
 
-# References:
+Arguments:
+- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the dynamics of the model.
+- `basedist`: Distribution of the base variable. Set to the unit normal by default.
+- `input_dims`: Input Dimensions of the model.
+- `tspan`: The timespan to be solved on.
+- `args`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+  documentation for more details.
+- `ad`: The automatic differentiation method to use for the internal jacobian trace. Defaults to `AutoForwardDiff()`.
+- `kwargs`: Additional arguments splatted to the ODE solver. See the
+  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+  documentation for more details.
 
-# [1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
+References:
 
-# [2] Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural ordinary differential equations." In Proceedings of the 32nd International Conference on Neural Information Processing Systems, pp. 6572-6583. 2018.
+[1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
 
-# [3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
+[2] Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural ordinary differential equations." In Proceedings of the 32nd International Conference on Neural Information Processing Systems, pp. 6572-6583. 2018.
 
-# """
+[3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
+
+"""
 @concrete struct FFJORD{M <: AbstractExplicitLayer, D <: Union{Nothing, Distribution}} <:
                  CNFLayer
     model::M
@@ -81,15 +86,23 @@ end
 
 function __jacobian(::AutoZygote, model, x::AbstractMatrix, ps)
     y, pb_f = Zygote.pullback(vec ∘ model, x, ps)
-    z = ChainRulesCore.@ignore_derivatives fill!(similar(y), one(eltype(y)))
+    z = ChainRulesCore.@ignore_derivatives fill!(similar(y), __one(y))
     J = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
     for i in 1:size(y, 1)
-        ChainRulesCore.@ignore_derivatives z[i, :] .= one(eltype(x))
+        ChainRulesCore.@ignore_derivatives z[i, :] .= __one(x)
         J[i, :, :] = pb_f(z)[1]
-        ChainRulesCore.@ignore_derivatives z[i, :] .= zero(eltype(x))
+        ChainRulesCore.@ignore_derivatives z[i, :] .= __zero(x)
     end
     return copy(J)
 end
+
+__one(::T) where {T <: Real} = one(T)
+__one(x::T) where {T <: AbstractArray} = __one(first(x))
+__one(::Tracker.TrackedReal{T}) where {T <: Real} = one(T)
+
+__zero(::T) where {T <: Real} = zero(T)
+__zero(x::T) where {T <: AbstractArray} = __zero(first(x))
+__zero(::Tracker.TrackedReal{T}) where {T <: Real} = zero(T)
 
 function _jacobian(ad, model, x, ps)
     if ndims(x) == 1
@@ -105,7 +118,7 @@ end
 # This implementation constructs the final trace vector on the correct device
 function __trace_batched(x::AbstractArray{T, 3}) where {T}
     __diag(x) = reshape(@view(x[diagind(x)]), :, 1)
-    return sum(reduce(hcat, diag.(eachslice(x; dims = 3))); dims = 1)
+    return sum(reduce(hcat, __diag.(eachslice(x; dims = 3))); dims = 1)
 end
 
 __norm_batched(x) = sqrt.(sum(abs2, x; dims = 1:(ndims(x) - 1)))

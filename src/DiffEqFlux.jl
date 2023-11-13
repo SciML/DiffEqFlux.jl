@@ -7,7 +7,7 @@ PrecompileTools.@recompile_invalidations begin
         LuxCore, Random, Reexport, SciMLBase, SciMLSensitivity
 
     # AD Packages
-    using ForwardDiff, Zygote
+    using ForwardDiff, Tracker, Zygote
 
     # FFJORD Specific
     using Distributions, DistributionsAD
