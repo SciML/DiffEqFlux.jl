@@ -3,8 +3,8 @@ module DiffEqFlux
 import PrecompileTools
 
 PrecompileTools.@recompile_invalidations begin
-    using ADTypes, ChainRulesCore, ComponentArrays, ConcreteStructs, LinearAlgebra, Lux,
-        LuxCore, Random, Reexport, SciMLBase, SciMLSensitivity
+    using ADTypes, ChainRulesCore, ComponentArrays, ConcreteStructs, Functors,
+        LinearAlgebra, Lux, LuxCore, Random, Reexport, SciMLBase, SciMLSensitivity
 
     # AD Packages
     using ForwardDiff, Tracker, Zygote

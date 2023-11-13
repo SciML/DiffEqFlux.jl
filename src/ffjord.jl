@@ -193,61 +193,76 @@ end
 __get_pred(sol::ODESolution) = last(sol.u)
 __get_pred(sol::AbstractArray{T, N}) where {T, N} = selectdim(sol, N, size(sol, N))
 
-# function backward_ffjord(n::FFJORD, n_samples, p = n.p,
-#         e = randn(eltype(n.model[1].weight), n_samples);
-#         regularize = false, monte_carlo = true, rng = nothing, st = nothing)
-#     px = n.basedist
-#     x = isnothing(rng) ? rand(px, n_samples) : rand(rng, px, n_samples)
-#     sensealg = InterpolatingAdjoint()
-#     ffjord_(u, p, t) = ffjord(u, p, t, n.re, e, st; regularize, monte_carlo)
-#     if regularize
-#         _z = ChainRulesCore.@ignore_derivatives similar(x, 3, size(x, 2))
-#         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
-#         prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
-#         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
-#         z = pred[1:(end - 3), :]
-#     else
-#         _z = ChainRulesCore.@ignore_derivatives similar(x, 1, size(x, 2))
-#         ChainRulesCore.@ignore_derivatives fill!(_z, zero(eltype(x)))
-#         prob = ODEProblem{false}(ffjord_, vcat(x, _z), reverse(n.tspan), p)
-#         pred = solve(prob, n.args...; sensealg, n.kwargs...)[:, :, end]
-#         z = pred[1:(end - 1), :]
-#     end
+function __backward_ffjord(n::FFJORD, n_samples::Int, ps, st, rng)
+    px = n.basedist
 
-#     z
-# end
+    if px === nothing
+        if rng === nothing
+            x = randn(eltype(n), (n.input_dims..., n_samples))
+        else
+            x = randn(rng, eltype(n), (n.input_dims..., n_samples))
+        end
+    else
+        if rng === nothing
+            x = rand(px, n_samples)
+        else
+            x = rand(rng, px, n_samples)
+        end
+    end
 
-# """
-# FFJORD can be used as a distribution to generate new samples by `rand` or estimate densities by `pdf` or `logpdf` (from `Distributions.jl`).
+    N, S, T = ndims(x), size(x), eltype(x)
+    (; regularize, monte_carlo) = st
+    sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP())
 
-# Arguments:
-# - `model`: A FFJORD instance
-# - `regularize`: Whether we use regularization (default: `false`)
-# - `monte_carlo`: Whether we use monte carlo (default: `true`)
+    ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 
-# """
-# struct FFJORDDistribution <: ContinuousMultivariateDistribution
-#     model::FFJORD
-#     regularize::Bool
-#     monte_carlo::Bool
-# end
+    _z = ChainRulesCore.@ignore_derivatives fill!(similar(x,
+            S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
+    L = size(_z, N - 1)
 
-# function FFJORDDistribution(model; regularize = false, monte_carlo = true)
-#     FFJORDDistribution(model, regularize, monte_carlo)
-# end
+    prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), reverse(n.tspan), ps)
+    sol = solve(prob, n.args...; sensealg, n.kwargs..., save_everystep = false,
+        save_start = false, save_end = true)
+    pred = __get_pred(sol)
 
-# Base.length(d::FFJORDDistribution) = size(d.model.model[1].weight, 2)
-# Base.eltype(d::FFJORDDistribution) = eltype(d.model.model[1].weight)
-# function Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray)
-#     forward_ffjord(d.model, x; d.regularize, d.monte_carlo)[1]
-# end
-# function Distributions._rand!(rng::AbstractRNG,
-#         d::FFJORDDistribution,
-#         x::AbstractVector{<:Real})
-#     (x[:] = backward_ffjord(d.model, size(x, 2); d.regularize, d.monte_carlo, rng))
-# end
-# function Distributions._rand!(rng::AbstractRNG,
-#         d::FFJORDDistribution,
-#         A::DenseMatrix{<:Real})
-#     (A[:] = backward_ffjord(d.model, size(A, 2); d.regularize, d.monte_carlo, rng))
-# end
+    return selectdim(pred, N - 1, 1:(L - ifelse(regularize, 3, 1)))
+end
+
+"""
+FFJORD can be used as a distribution to generate new samples by `rand` or estimate densities
+by `pdf` or `logpdf` (from `Distributions.jl`).
+
+Arguments:
+
+- `model`: A FFJORD instance
+- `regularize`: Whether we use regularization (default: `false`)
+- `monte_carlo`: Whether we use monte carlo (default: `true`)
+"""
+@concrete struct FFJORDDistribution{F <: FFJORD} <: ContinuousMultivariateDistribution
+    model::F
+    ps
+    st
+end
+
+Base.length(d::FFJORDDistribution) = prod(d.model.input_dims)
+Base.eltype(d::FFJORDDistribution) = __eltype(d.ps)
+
+__eltype(ps::ComponentArray) = __eltype(getdata(ps))
+__eltype(x::AbstractArray) = eltype(x)
+function __eltype(x::NamedTuple)
+    T = Ref(Float64)
+    fmap(x) do x_
+        T[] = __eltype(x_)
+        x_
+    end
+    return T[]
+end
+
+function Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray)
+    return first(__forward_ffjord(d.model, x, d.ps, d.st))
+end
+function Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution,
+        x::AbstractArray{<:Real})
+    x[:] = __backward_ffjord(d.model, size(x, ndims(x)), d.ps, d.st, rng)
+    return x
+end
