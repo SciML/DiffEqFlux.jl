@@ -69,5 +69,9 @@ const is_CI = haskey(ENV, "CI")
         end
     end
 
-    # TODO: Add Aqua
+    @safetestset "Aqua Q/A" begin
+        using Aqua, DiffEqFlux
+
+        Aqua.test_all(DiffEqFlux; ambiguities = false)
+    end
 end

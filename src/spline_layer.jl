@@ -27,8 +27,7 @@ Arguments:
     init_saved_points
 end
 
-function SplineLayer(tspan, tstep, spline_basis;
-        init_saved_points::Union{Nothing, F} = nothing) where {F <: Function}
+function SplineLayer(tspan, tstep, spline_basis; init_saved_points::F = nothing) where {F}
     return SplineLayer(tspan, tstep, spline_basis, init_saved_points)
 end
 
