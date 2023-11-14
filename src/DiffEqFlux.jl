@@ -17,12 +17,6 @@ import ChainRulesCore as CRC
 import LuxCore: AbstractExplicitLayer, AbstractExplicitContainerLayer
 import Lux.Experimental: StatefulLuxLayer
 
-# using Adapt, Base.Iterators, ChainRulesCore, ConsoleProgressMonitor,
-#     DataInterpolations, DiffEqBase, Distributions, DistributionsAD,
-#     ForwardDiff, Functors, LinearAlgebra, Logging, LoggingExtras, LuxCore,
-#     Printf, ProgressLogging, Random, RecursiveArrayTools, Reexport,
-#     SciMLBase, TerminalLoggers, Zygote, ZygoteRules
-
 @reexport using ADTypes, Lux, SciMLSensitivity
 
 # FIXME: Type Piracy

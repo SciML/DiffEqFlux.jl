@@ -55,7 +55,7 @@ function LuxCore.initialstates(rng::AbstractRNG, n::FFJORD)
 end
 
 function FFJORD(model, tspan, input_dims, args...; ad = AutoForwardDiff(),
-        basedist = nothing, kwargs...)
+    basedist = nothing, kwargs...)
     !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
     return FFJORD(model, basedist, ad, input_dims, tspan, args, kwargs)
 end
@@ -69,7 +69,7 @@ function __jacobian_with_ps(model, psax, N, x)
 end
 
 function __jacobian(::AutoForwardDiff{nothing}, model, x::AbstractMatrix,
-        ps::ComponentArray)
+    ps::ComponentArray)
     psd = getdata(ps)
     psx = vcat(vec(x), psd)
     N = length(x)
@@ -124,7 +124,7 @@ end
 __norm_batched(x) = sqrt.(sum(abs2, x; dims = 1:(ndims(x) - 1)))
 
 function __ffjord(model, u, p, ad = AutoForwardDiff(), regularize::Bool = false,
-        monte_carlo::Bool = true)
+    monte_carlo::Bool = true)
     N = ndims(u)
     L = size(u, N - 1)
     z = selectdim(u, N - 1, 1:(L - ifelse(regularize, 3, 1)))
@@ -161,12 +161,12 @@ function __forward_ffjord(n::FFJORD, x, ps, st)
 
     _z = ChainRulesCore.@ignore_derivatives fill!(similar(x,
             S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
-    L = size(_z, N - 1)
 
     prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), n.tspan, ps)
     sol = solve(prob, n.args...; sensealg, n.kwargs..., save_everystep = false,
         save_start = false, save_end = true)
     pred = __get_pred(sol)
+    L = size(pred, N - 1)
 
     z = selectdim(pred, N - 1, 1:(L - ifelse(regularize, 3, 1)))
     i₁ = L - ifelse(regularize, 2, 0)
@@ -193,14 +193,14 @@ end
 __get_pred(sol::ODESolution) = last(sol.u)
 __get_pred(sol::AbstractArray{T, N}) where {T, N} = selectdim(sol, N, size(sol, N))
 
-function __backward_ffjord(n::FFJORD, n_samples::Int, ps, st, rng)
+function __backward_ffjord(::Type{T1}, n::FFJORD, n_samples::Int, ps, st, rng) where {T1}
     px = n.basedist
 
     if px === nothing
         if rng === nothing
-            x = randn(eltype(n), (n.input_dims..., n_samples))
+            x = randn(T1, (n.input_dims..., n_samples))
         else
-            x = randn(rng, eltype(n), (n.input_dims..., n_samples))
+            x = randn(rng, T1, (n.input_dims..., n_samples))
         end
     else
         if rng === nothing
@@ -214,16 +214,18 @@ function __backward_ffjord(n::FFJORD, n_samples::Int, ps, st, rng)
     (; regularize, monte_carlo) = st
     sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP())
 
+    model = StatefulLuxLayer(n.model, nothing, st.model)
+
     ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 
     _z = ChainRulesCore.@ignore_derivatives fill!(similar(x,
             S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
-    L = size(_z, N - 1)
 
     prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), reverse(n.tspan), ps)
     sol = solve(prob, n.args...; sensealg, n.kwargs..., save_everystep = false,
         save_start = false, save_end = true)
     pred = __get_pred(sol)
+    L = size(pred, N - 1)
 
     return selectdim(pred, N - 1, 1:(L - ifelse(regularize, 3, 1)))
 end
@@ -250,19 +252,22 @@ Base.eltype(d::FFJORDDistribution) = __eltype(d.ps)
 __eltype(ps::ComponentArray) = __eltype(getdata(ps))
 __eltype(x::AbstractArray) = eltype(x)
 function __eltype(x::NamedTuple)
-    T = Ref(Float64)
+    T = Ref(Bool)
     fmap(x) do x_
-        T[] = __eltype(x_)
+        T[] = promote_type(T[], __eltype(x_))
         x_
     end
     return T[]
 end
 
+function Distributions._logpdf(d::FFJORDDistribution, x::AbstractVector)
+    return first(first(__forward_ffjord(d.model, reshape(x, :, 1), d.ps, d.st)))
+end
 function Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray)
-    return first(__forward_ffjord(d.model, x, d.ps, d.st))
+    return first(first(__forward_ffjord(d.model, x, d.ps, d.st)))
 end
 function Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution,
-        x::AbstractArray{<:Real})
-    x[:] = __backward_ffjord(d.model, size(x, ndims(x)), d.ps, d.st, rng)
+    x::AbstractArray{<:Real})
+    x[:] = __backward_ffjord(eltype(d), d.model, size(x, ndims(x)), d.ps, d.st, rng)
     return x
 end

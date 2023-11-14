@@ -29,9 +29,8 @@ end
 
     # FIXME: Tracker
     @testset "ADType: $(adtype)" for adtype in (Optimization.AutoForwardDiff(),
-            Optimization.AutoReverseDiff(), # Optimization.AutoTracker(),
-            Optimization.AutoZygote(), Optimization.AutoFiniteDiff())
-
+        Optimization.AutoReverseDiff(), # Optimization.AutoTracker(),
+        Optimization.AutoZygote(), Optimization.AutoFiniteDiff())
         @testset "regularize = $(regularize) & monte_carlo = $(monte_carlo)" for regularize in (true,
                 false), monte_carlo in (true, false)
             @info "regularize = $(regularize) & monte_carlo = $(monte_carlo)"
@@ -45,147 +44,180 @@ end
     end
 end
 
-# @testset "Smoke test for FFJORDDistribution (sampling & pdf)" begin
-#     nn = Chain(Dense(1, 1, tanh))
-#     tspan = (0.0f0, 1.0f0)
-#     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
+@testset "Smoke test for FFJORDDistribution (sampling & pdf)" begin
+    nn = Chain(Dense(1, 1, tanh))
+    tspan = (0.0f0, 1.0f0)
+    ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
+    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps = ComponentArray(ps)
 
-#     data_dist = Beta(2.0f0, 2.0f0)
-#     train_data = Float32.(rand(data_dist, 1, 100))
+    regularize = false
+    monte_carlo = false
 
-#     function loss(θ; regularize, monte_carlo)
-#         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-#         -mean(logpx)
-#     end
+    data_dist = Beta(2.0f0, 2.0f0)
+    train_data = Float32.(rand(data_dist, 1, 100))
 
-#     adtype = Optimization.AutoZygote()
+    function loss(model, θ)
+        logpx, λ₁, λ₂ = model(train_data, θ)
+        return -mean(logpx)
+    end
 
-#     regularize = false
-#     monte_carlo = false
+    adtype = Optimization.AutoZygote()
 
-#     optf = Optimization.OptimizationFunction((θ, _) -> loss(θ; regularize, monte_carlo),
-#         adtype)
-#     optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
-#     res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 10)
+    st_ = (; st..., regularize, monte_carlo)
+    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
 
-#     ffjord_d = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p = res.u);
-#         regularize,
-#         monte_carlo)
+    optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, ps)
+    res = Optimization.solve(optprob, Adam(0.1); callback = callback(adtype), maxiters = 10)
 
-#     @test !isnothing(pdf(ffjord_d, train_data))
-#     @test !isnothing(rand(ffjord_d))
-#     @test !isnothing(rand(ffjord_d, 10))
-# end
-# @testset "Test for default base distribution and deterministic trace FFJORD" begin
-#     nn = Chain(Dense(1, 1, tanh))
-#     tspan = (0.0f0, 1.0f0)
-#     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
-#     regularize = false
-#     monte_carlo = false
+    ffjord_d = FFJORDDistribution(ffjord_mdl, res.u, st_)
 
-#     data_dist = Beta(7.0f0, 7.0f0)
-#     train_data = Float32.(rand(data_dist, 1, 100))
-#     test_data = Float32.(rand(data_dist, 1, 100))
+    @test !isnothing(pdf(ffjord_d, train_data))
+    @test !isnothing(rand(ffjord_d))
+    @test !isnothing(rand(ffjord_d, 10))
+end
 
-#     function loss(θ)
-#         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-#         -mean(logpx)
-#     end
+@testset "Test for default base distribution and deterministic trace FFJORD" begin
+    nn = Chain(Dense(1, 1, tanh))
+    tspan = (0.0f0, 1.0f0)
+    ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
+    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps = ComponentArray(ps)
 
-#     adtype = Optimization.AutoZygote()
-#     optf = Optimization.OptimizationFunction((θ, _) -> loss(θ), adtype)
-#     optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
-#     res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 10)
+    regularize = false
+    monte_carlo = false
 
-#     actual_pdf = pdf.(data_dist, test_data)
-#     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
+    data_dist = Beta(7.0f0, 7.0f0)
+    train_data = Float32.(rand(data_dist, 1, 100))
+    test_data = Float32.(rand(data_dist, 1, 100))
 
-#     @test ffjord_mdl.p != res.u
-#     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.9
-# end
-# @testset "Test for alternative base distribution and deterministic trace FFJORD" begin
-#     nn = Chain(Dense(1, 3, tanh),
-#         Dense(3, 1, tanh))
-#     tspan = (0.0f0, 1.0f0)
-#     ffjord_mdl = FFJORD(nn, tspan, Tsit5(); basedist = MvNormal([0.0f0], Diagonal([4.0f0])))
-#     regularize = false
-#     monte_carlo = false
+    function loss(model, θ)
+        logpx, λ₁, λ₂ = model(train_data, θ)
+        return -mean(logpx)
+    end
 
-#     data_dist = Normal(6.0f0, 0.7f0)
-#     train_data = Float32.(rand(data_dist, 1, 100))
-#     test_data = Float32.(rand(data_dist, 1, 100))
+    adtype = Optimization.AutoZygote()
+    st_ = (; st..., regularize, monte_carlo)
+    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
 
-#     function loss(θ)
-#         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-#         -mean(logpx)
-#     end
+    optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, ps)
+    res = Optimization.solve(optprob, Adam(0.1); callback = callback(adtype), maxiters = 10)
 
-#     adtype = Optimization.AutoZygote()
-#     optf = Optimization.OptimizationFunction((θ, _) -> loss(θ), adtype)
-#     optprob = Optimization.OptimizationProblem(optf, 0.01f0 * ffjord_mdl.p)
-#     res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 300)
+    actual_pdf = pdf.(data_dist, test_data)
+    learned_pdf = exp.(model(test_data, res.u)[1])
 
-#     actual_pdf = pdf.(data_dist, test_data)
-#     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
+    @test ps != res.u
+    @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.9
+end
 
-#     @test 0.01f0 * ffjord_mdl.p != res.u
-#     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
-# end
-# @testset "Test for multivariate distribution and deterministic trace FFJORD" begin
-#     nn = Chain(Dense(2, 2, tanh))
-#     tspan = (0.0f0, 1.0f0)
-#     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
-#     regularize = false
-#     monte_carlo = false
+@testset "Test for alternative base distribution and deterministic trace FFJORD" begin
+    nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
+    tspan = (0.0f0, 1.0f0)
+    ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5();
+        basedist = MvNormal([0.0f0], Diagonal([4.0f0])))
+    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps = ComponentArray(ps)
 
-#     μ = ones(Float32, 2)
-#     Σ = Diagonal([7.0f0, 7.0f0])
-#     data_dist = MvNormal(μ, Σ)
-#     train_data = Float32.(rand(data_dist, 100))
-#     test_data = Float32.(rand(data_dist, 100))
+    regularize = false
+    monte_carlo = false
 
-#     function loss(θ)
-#         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-#         -mean(logpx)
-#     end
+    data_dist = Normal(6.0f0, 0.7f0)
+    train_data = Float32.(rand(data_dist, 1, 100))
+    test_data = Float32.(rand(data_dist, 1, 100))
 
-#     adtype = Optimization.AutoZygote()
-#     optf = Optimization.OptimizationFunction((θ, _) -> loss(θ), adtype)
-#     optprob = Optimization.OptimizationProblem(optf, 0.01f0 * ffjord_mdl.p)
-#     res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 300)
+    function loss(model, θ)
+        logpx, λ₁, λ₂ = model(train_data, θ)
+        return -mean(logpx)
+    end
 
-#     actual_pdf = pdf(data_dist, test_data)
-#     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
+    adtype = Optimization.AutoZygote()
+    st_ = (; st..., regularize, monte_carlo)
+    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
 
-#     @test 0.01f0 * ffjord_mdl.p != res.u
-#     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
-# end
-# @testset "Test for default multivariate distribution and FFJORD with regularizers" begin
-#     nn = Chain(Dense(2, 2, tanh))
-#     tspan = (0.0f0, 1.0f0)
-#     ffjord_mdl = FFJORD(nn, tspan, Tsit5())
-#     regularize = true
-#     monte_carlo = true
+    optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, ps)
+    res = Optimization.solve(optprob, Adam(0.1); callback = callback(adtype),
+        maxiters = 30)
 
-#     μ = ones(Float32, 2)
-#     Σ = Diagonal([7.0f0, 7.0f0])
-#     data_dist = MvNormal(μ, Σ)
-#     train_data = Float32.(rand(data_dist, 100))
-#     test_data = Float32.(rand(data_dist, 100))
+    actual_pdf = pdf.(data_dist, test_data)
+    learned_pdf = exp.(model(test_data, res.u)[1])
 
-#     function loss(θ)
-#         logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ; regularize, monte_carlo)
-#         mean(-logpx .+ 1.0f-1 * λ₁ .+ 1.0f-1 * λ₂)
-#     end
+    @test ps != res.u
+    @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
+end
 
-#     adtype = Optimization.AutoZygote()
-#     optf = Optimization.OptimizationFunction((θ, _) -> loss(θ), adtype)
-#     optprob = Optimization.OptimizationProblem(optf, 0.01f0 * ffjord_mdl.p)
-#     res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 300)
+@testset "Test for multivariate distribution and deterministic trace FFJORD" begin
+    nn = Chain(Dense(2, 2, tanh))
+    tspan = (0.0f0, 1.0f0)
+    ffjord_mdl = FFJORD(nn, tspan, (2,), Tsit5())
+    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps = ComponentArray(ps)
 
-#     actual_pdf = pdf(data_dist, test_data)
-#     learned_pdf = exp.(ffjord_mdl(test_data, res.u; regularize, monte_carlo)[1])
+    regularize = false
+    monte_carlo = false
 
-#     @test 0.01f0 * ffjord_mdl.p != res.u
-#     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.40
-# end
+    μ = ones(Float32, 2)
+    Σ = Diagonal([7.0f0, 7.0f0])
+    data_dist = MvNormal(μ, Σ)
+    train_data = Float32.(rand(data_dist, 100))
+    test_data = Float32.(rand(data_dist, 100))
+
+    function loss(model, θ)
+        logpx, λ₁, λ₂ = model(train_data, θ)
+        return -mean(logpx)
+    end
+
+    adtype = Optimization.AutoZygote()
+    st_ = (; st..., regularize, monte_carlo)
+    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
+
+    optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, ps)
+    res = Optimization.solve(optprob, Adam(0.01); callback = callback(adtype),
+        maxiters = 30)
+
+    actual_pdf = pdf(data_dist, test_data)
+    learned_pdf = exp.(model(test_data, res.u)[1])
+
+    @test ps != res.u
+    @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
+end
+
+@testset "Test for default multivariate distribution and FFJORD with regularizers" begin
+    nn = Chain(Dense(2, 2, tanh))
+    tspan = (0.0f0, 1.0f0)
+    ffjord_mdl = FFJORD(nn, tspan, (2,), Tsit5())
+    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps = ComponentArray(ps)
+
+    regularize = true
+    monte_carlo = true
+
+    μ = ones(Float32, 2)
+    Σ = Diagonal([7.0f0, 7.0f0])
+    data_dist = MvNormal(μ, Σ)
+    train_data = Float32.(rand(data_dist, 100))
+    test_data = Float32.(rand(data_dist, 100))
+
+    function loss(model, θ)
+        logpx, λ₁, λ₂ = model(train_data, θ)
+        return -mean(logpx)
+    end
+
+    adtype = Optimization.AutoZygote()
+    st_ = (; st..., regularize, monte_carlo)
+    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
+
+    optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
+    optprob = Optimization.OptimizationProblem(optf, ps)
+    res = Optimization.solve(optprob, Adam(0.01); callback = callback(adtype),
+        maxiters = 30)
+
+    actual_pdf = pdf(data_dist, test_data)
+    learned_pdf = exp.(model(test_data, res.u)[1])
+
+    @test ps != res.u
+    @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
+end
