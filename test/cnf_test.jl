@@ -27,9 +27,8 @@ end
         return -mean(logpx)
     end
 
-    # FIXME: Tracker
     @testset "ADType: $(adtype)" for adtype in (Optimization.AutoForwardDiff(),
-        Optimization.AutoReverseDiff(), # Optimization.AutoTracker(),
+        Optimization.AutoReverseDiff(), Optimization.AutoTracker(),
         Optimization.AutoZygote(), Optimization.AutoFiniteDiff())
         @testset "regularize = $(regularize) & monte_carlo = $(monte_carlo)" for regularize in (true,
                 false), monte_carlo in (true, false)
@@ -39,7 +38,7 @@ end
             optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
             optprob = Optimization.OptimizationProblem(optf, ps)
             @test !isnothing(Optimization.solve(optprob, Adam(0.1);
-                callback = callback(adtype), maxiters = 3))
+                callback = callback(adtype), maxiters = 3)) broken=(adtype isa Optimization.AutoTracker)
         end
     end
 end
