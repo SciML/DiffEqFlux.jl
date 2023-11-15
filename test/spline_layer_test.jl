@@ -1,5 +1,5 @@
-using DiffEqFlux, ComponentArrays,
-    Zygote, DataInterpolations, Distributions, Optimization, LinearAlgebra, Random, Test
+using DiffEqFlux, ComponentArrays, Zygote, DataInterpolations, Distributions, Optimization,
+    OptimizationOptimisers, LinearAlgebra, Random, Test
 
 function run_test(f, layer, atol)
     ps, st = Lux.setup(Xoshiro(0), layer)

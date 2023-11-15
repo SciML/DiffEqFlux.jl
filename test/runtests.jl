@@ -51,7 +51,7 @@ const is_CI = haskey(ENV, "CI")
         end
     end
 
-    if GROUP == "Newton"
+    if GROUP == "All" || GROUP == "Newton"
         @safetestset "Newton Neural ODE Tests" begin
             include("newton_neural_ode.jl")
         end
@@ -69,9 +69,19 @@ const is_CI = haskey(ENV, "CI")
         end
     end
 
-    @safetestset "Aqua Q/A" begin
-        using Aqua, DiffEqFlux
+    if GROUP == "All" || GROUP == "Aqua"
+        @safetestset "Aqua Q/A" begin
+            using Aqua, DiffEqFlux, LinearAlgebra
 
-        Aqua.test_all(DiffEqFlux; ambiguities = false)
+            # TODO: Enable persistent tasks once the downstream PRs are merged
+            Aqua.test_all(DiffEqFlux; ambiguities = false, piracies = false,
+                persistent_tasks = false)
+
+            Aqua.test_ambiguities(DiffEqFlux; recursive = false)
+
+            # FIXME: Remove Tridiagonal piracy after
+            # https://github.com/JuliaDiff/ChainRules.jl/issues/713 is merged!
+            Aqua.test_piracies(DiffEqFlux; treat_as_own = [LinearAlgebra.Tridiagonal])
+        end
     end
 end

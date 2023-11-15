@@ -17,7 +17,7 @@ import ChainRulesCore as CRC
 import LuxCore: AbstractExplicitLayer, AbstractExplicitContainerLayer
 import Lux.Experimental: StatefulLuxLayer
 
-@reexport using ADTypes, Lux, SciMLSensitivity
+@reexport using ADTypes, Lux
 
 # FIXME: Type Piracy
 function CRC.rrule(::Type{Tridiagonal}, dl, d, du)
@@ -51,5 +51,12 @@ export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel, Triwe
 export collocate_data
 
 export multiple_shoot
+
+# Reexporting only certain functions from SciMLSensitivity
+export BacksolveAdjoint, QuadratureAdjoint, GaussAdjoint, InterpolatingAdjoint,
+    TrackerAdjoint, ZygoteAdjoint, ReverseDiffAdjoint, ForwardSensitivity,
+    ForwardDiffSensitivity, ForwardDiffOverAdjoint, SteadyStateAdjoint,
+    ForwardLSS, AdjointLSS, NILSS, NILSAS
+export TrackerVJP, ZygoteVJP, EnzymeVJP, ReverseDiffVJP
 
 end

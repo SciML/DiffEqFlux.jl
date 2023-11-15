@@ -55,7 +55,7 @@ function LuxCore.initialstates(rng::AbstractRNG, n::FFJORD)
 end
 
 function FFJORD(model, tspan, input_dims, args...; ad = AutoForwardDiff(),
-    basedist = nothing, kwargs...)
+        basedist = nothing, kwargs...)
     !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
     return FFJORD(model, basedist, ad, input_dims, tspan, args, kwargs)
 end
@@ -69,7 +69,7 @@ function __jacobian_with_ps(model, psax, N, x)
 end
 
 function __jacobian(::AutoForwardDiff{nothing}, model, x::AbstractMatrix,
-    ps::ComponentArray)
+        ps::ComponentArray)
     psd = getdata(ps)
     psx = vcat(vec(x), psd)
     N = length(x)
@@ -124,7 +124,7 @@ end
 __norm_batched(x) = sqrt.(sum(abs2, x; dims = 1:(ndims(x) - 1)))
 
 function __ffjord(model, u, p, ad = AutoForwardDiff(), regularize::Bool = false,
-    monte_carlo::Bool = true)
+        monte_carlo::Bool = true)
     N = ndims(u)
     L = size(u, N - 1)
     z = selectdim(u, N - 1, 1:(L - ifelse(regularize, 3, 1)))
@@ -267,7 +267,7 @@ function Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray)
     return first(first(__forward_ffjord(d.model, x, d.ps, d.st)))
 end
 function Distributions._rand!(rng::AbstractRNG, d::FFJORDDistribution,
-    x::AbstractArray{<:Real})
+        x::AbstractArray{<:Real})
     x[:] = __backward_ffjord(eltype(d), d.model, size(x, ndims(x)), d.ps, d.st, rng)
     return x
 end

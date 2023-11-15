@@ -2,7 +2,7 @@
 
 julia_version = "1.10.0-rc1"
 manifest_format = "2.0"
-project_hash = "33d5f46deb395b3db16d766ef39217d71a80867a"
+project_hash = "461882012e6e993286bb5accc7e9d45749a2da45"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "332e5d7baeff8497b923b730b994fa480601efc7"
@@ -250,9 +250,9 @@ version = "1.9.1"
 
 [[deps.DiffEqBase]]
 deps = ["ArrayInterface", "DataStructures", "DocStringExtensions", "EnumX", "EnzymeCore", "FastBroadcast", "ForwardDiff", "FunctionWrappers", "FunctionWrappersWrappers", "LinearAlgebra", "Logging", "Markdown", "MuladdMacro", "Parameters", "PreallocationTools", "PrecompileTools", "Printf", "RecursiveArrayTools", "Reexport", "SciMLBase", "SciMLOperators", "Setfield", "SparseArrays", "Static", "StaticArraysCore", "Statistics", "Tricks", "TruncatedStacktraces"]
-git-tree-sha1 = "de4709e30bd5490435122c4b415b90a812c23fbf"
+git-tree-sha1 = "5e365e0744ae1fdd44e62416343e7bfe848999d8"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "6.138.1"
+version = "6.139.0"
 
     [deps.DiffEqBase.extensions]
     DiffEqBaseChainRulesCoreExt = "ChainRulesCore"
@@ -641,9 +641,9 @@ version = "6.4.0"
 
 [[deps.LLVMExtra_jll]]
 deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl", "TOML"]
-git-tree-sha1 = "a84f8f1e8caaaa4e3b4c101306b9e801d3883ace"
+git-tree-sha1 = "98eaee04d96d973e79c25d49167668c5c8fb50e2"
 uuid = "dad2f222-ce93-54a1-a47d-0025e8a3acab"
-version = "0.0.27+0"
+version = "0.0.27+1"
 
 [[deps.LatticeRules]]
 deps = ["Random"]
@@ -1128,9 +1128,9 @@ version = "1.3.4"
 
 [[deps.RecursiveArrayTools]]
 deps = ["Adapt", "ArrayInterface", "DocStringExtensions", "GPUArraysCore", "IteratorInterfaceExtensions", "LinearAlgebra", "RecipesBase", "Requires", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables"]
-git-tree-sha1 = "fa453b42ba1623bd2e70260bf44dac850a3430a7"
+git-tree-sha1 = "d7087c013e8a496ff396bae843b1e16d9a30ede8"
 uuid = "731186ca-8d62-57ce-b412-fbd966d074cd"
-version = "2.39.0"
+version = "2.38.10"
 
     [deps.RecursiveArrayTools.extensions]
     RecursiveArrayToolsMeasurementsExt = "Measurements"
@@ -1208,9 +1208,9 @@ version = "0.6.42"
 
 [[deps.SciMLBase]]
 deps = ["ADTypes", "ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FillArrays", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "PrecompileTools", "Preferences", "Printf", "QuasiMonteCarlo", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLOperators", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables", "TruncatedStacktraces"]
-git-tree-sha1 = "dd2d18b981d09a2376ba49c5fab480f497992c88"
+git-tree-sha1 = "baa0f858af55ea937183c988bd4b3e79e0bf699a"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "2.8.0"
+version = "2.8.1"
 
     [deps.SciMLBase.extensions]
     SciMLBaseChainRulesCoreExt = "ChainRulesCore"
@@ -1309,9 +1309,9 @@ version = "1.10.0"
 
 [[deps.SparseDiffTools]]
 deps = ["ADTypes", "Adapt", "ArrayInterface", "Compat", "DataStructures", "FiniteDiff", "ForwardDiff", "Graphs", "LinearAlgebra", "PackageExtensionCompat", "Random", "Reexport", "SciMLOperators", "Setfield", "SparseArrays", "StaticArrayInterface", "StaticArrays", "Tricks", "UnPack", "VertexSafeGraphs"]
-git-tree-sha1 = "e162b74fd1ce6d371ff5c584b53e34538edb9212"
+git-tree-sha1 = "49068dceed7febe32afe2d7b874172a7c3198cb3"
 uuid = "47a9eef4-7e08-11e9-0b38-333d64bd3804"
-version = "2.11.0"
+version = "2.12.0"
 
     [deps.SparseDiffTools.extensions]
     SparseDiffToolsEnzymeExt = "Enzyme"
@@ -1484,11 +1484,11 @@ version = "0.5.23"
 
 [[deps.Tracker]]
 deps = ["Adapt", "DiffRules", "ForwardDiff", "Functors", "LinearAlgebra", "LogExpFunctions", "MacroTools", "NNlib", "NaNMath", "Optimisers", "Printf", "Random", "Requires", "SpecialFunctions", "Statistics"]
-git-tree-sha1 = "8e895c98c27a4203a8061dd8c10b010269e8d3a6"
+git-tree-sha1 = "752daa5bbd9721b0566e39cdc75cffdc3ef5593d"
 repo-rev = "ap/ambiguous"
 repo-url = "https://github.com/avik-pal/Tracker.jl"
 uuid = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
-version = "0.2.29"
+version = "0.2.30"
 weakdeps = ["PDMats"]
 
     [deps.Tracker.extensions]
