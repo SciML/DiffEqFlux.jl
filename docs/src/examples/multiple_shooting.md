@@ -45,9 +45,7 @@ prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))
 
 # Define the Neural Network
-nn = Lux.Chain(x -> x .^ 3,
-    Lux.Dense(2, 16, tanh),
-    Lux.Dense(16, 2))
+nn = Chain(x -> x .^ 3, Dense(2, 16, tanh), Dense(16, 2))
 p_init, st = Lux.setup(rng, nn)
 
 neuralode = NeuralODE(nn, tspan, Tsit5(); saveat = tsteps)
@@ -89,8 +87,12 @@ function loss_function(data, pred)
     return sum(abs2, data - pred)
 end
 
+ps = ComponentArray(p_init)
+pd, pax = getdata(ps), getaxes(ps)
+
 function loss_multiple_shooting(p)
-    return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
+    ps = ComponentArray(p, pax)
+    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function, Tsit5(),
         group_size; continuity_term)
 end
 

@@ -8,19 +8,8 @@ This example is adapted from [Forecasting the weather with neural ODEs - Sebatia
 The data is a four-dimensional dataset of daily temperature, humidity, wind speed and pressure meassured over four years in the city Delhi. Let us download and plot it.
 
 ```julia
-using Random
-using Dates
-using Optimization
-using ComponentArrays
-using Lux
-using DiffEqFlux: NeuralODE, AdamW, swish
-using DifferentialEquations
-using CSV
-using DataFrames
-using Dates
-using Statistics
-using Plots
-using DataDeps
+using Random, Dates, Optimization, ComponentArrays, Lux, OptimizationOptimisers, DiffEqFlux,
+    DifferentialEquations, CSV, DataFrames, Dates, Statistics, Plots, DataDeps
 
 function download_data(data_url = "https://raw.githubusercontent.com/SebastianCallh/neural-ode-weather-forecast/master/data/",
         data_local_path = "./delhi")
@@ -45,10 +34,8 @@ FEATURE_NAMES = ["Mean temperature", "Humidity", "Wind speed", "Mean pressure"]
 
 function plot_data(df)
     plots = map(enumerate(zip(FEATURES, FEATURE_NAMES, UNITS))) do (i, (f, n, u))
-        plot(df[:, :date], df[:, f];
-            title = n, label = nothing,
-            ylabel = u, size = (800, 600),
-            color = i)
+        plot(df[:, :date], df[:, f]; title = n, label = nothing,
+            ylabel = u, size = (800, 600), color = i)
     end
 
     n = length(plots)
@@ -130,12 +117,9 @@ We are now ready to construct and train our model! To avoid local minimas we wil
 
 ```julia
 function neural_ode(t, data_dim)
-    f = Lux.Chain(Lux.Dense(data_dim, 64, swish),
-        Lux.Dense(64, 32, swish),
-        Lux.Dense(32, data_dim))
+    f = Chain(Dense(data_dim => 64, swish), Dense(64 => 32, swish), Dense(32 => data_dim))
 
-    node = NeuralODE(f, extrema(t), Tsit5();
-        saveat = t,
+    node = NeuralODE(f, extrema(t), Tsit5(); saveat = t,
         abstol = 1e-9, reltol = 1e-9)
 
     rng = Random.default_rng()
@@ -165,16 +149,11 @@ function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; 
     ps, losses = ComponentArray[], Float32[]
     for k in obs_grid
         node, p_new, state_new = neural_ode(t, size(y, 1))
-        if p === nothing
-            p = p_new
-        end
-        if state === nothing
-            state = state_new
-        end
+        p === nothing && (p = p_new)
+        state === nothing && (state = state_new)
 
         p, state = train_one_round(node, p, state, y, AdamW(lr), maxiters, rng;
-            callback = log_results(ps, losses),
-            kwargs...)
+            callback = log_results(ps, losses), kwargs...)
     end
     ps, state, losses
 end
@@ -194,23 +173,11 @@ predict(y0, t, p, state) = begin
     Array(node(y0, p, state)[1])
 end
 
-function plot_pred(t_train,
-        y_train,
-        t_grid,
-        rescale_t,
-        rescale_y,
-        num_iters,
-        p,
-        state,
-        loss,
-        y0 = y_train[:, 1])
+function plot_pred(t_train, y_train, t_grid, rescale_t, rescale_y, num_iters, p, state,
+        loss, y0 = y_train[:, 1])
     y_pred = predict(y0, t_grid, p, state)
-    plot_result(rescale_t(t_train),
-        rescale_y(y_train),
-        rescale_t(t_grid),
-        rescale_y(y_pred),
-        loss,
-        num_iters)
+    return plot_result(rescale_t(t_train), rescale_y(y_train), rescale_t(t_grid),
+        rescale_y(y_pred), loss, num_iters)
 end
 
 function plot_pred(t, y, y_pred)
@@ -223,8 +190,7 @@ function plot_pred(t, y, t_pred, y_pred; kwargs...)
     map(enumerate(plot_params)) do (i, (yᵢ, ŷᵢ, name, unit))
         plt = Plots.plot(t_pred, ŷᵢ; label = "Prediction", color = i, linewidth = 3,
             legend = nothing, title = name, kwargs...)
-        Plots.scatter!(plt, t, yᵢ; label = "Observation",
-            xlabel = "Time", ylabel = unit,
+        Plots.scatter!(plt, t, yᵢ; label = "Observation", xlabel = "Time", ylabel = unit,
             markersize = 5, color = i)
     end
 end
@@ -237,18 +203,12 @@ function plot_result(t, y, t_pred, y_pred, loss, num_iters; kwargs...)
     plot!(plts_preds[4]; ylim = (990, 1025))
 
     p_loss = Plots.plot(loss; label = nothing, linewidth = 3,
-        title = "Loss", xlabel = "Iterations",
-        xlim = (0, num_iters))
+        title = "Loss", xlabel = "Iterations", xlim = (0, num_iters))
     plots = [plts_preds..., p_loss]
     plot(plots...; layout = grid(length(plots), 1), size = (900, 900))
 end
 
-function animate_training(plot_frame,
-        t_train,
-        y_train,
-        ps,
-        losses,
-        obs_grid;
+function animate_training(plot_frame, t_train, y_train, ps, losses, obs_grid;
         pause_for = 300)
     obs_count = Dict(i - 1 => n for (i, n) in enumerate(obs_grid))
     is = [min(i, length(losses)) for i in 2:(length(losses) + pause_for)]
@@ -276,11 +236,7 @@ Looks good! But how well does the model forecast?
 function plot_extrapolation(t_train, y_train, t_test, y_test, t̂, ŷ)
     plts = plot_pred(t_train, y_train, t̂, ŷ)
     for (i, (plt, y)) in enumerate(zip(plts, eachrow(y_test)))
-        scatter!(plt,
-            t_test,
-            y;
-            color = i,
-            markerstrokecolor = :white,
+        scatter!(plt, t_test, y; color = i, markerstrokecolor = :white,
             label = "Test observation")
     end
 
@@ -293,12 +249,8 @@ end
 
 t_grid = collect(range(minimum(t_train), maximum(t_test); length = 500))
 y_pred = predict(y_train[:, 1], t_grid, ps[end], state)
-plot_extrapolation(rescale_t(t_train),
-    rescale_y(y_train),
-    rescale_t(t_test),
-    rescale_y(y_test),
-    rescale_t(t_grid),
-    rescale_y(y_pred))
+plot_extrapolation(rescale_t(t_train), rescale_y(y_train), rescale_t(t_test),
+    rescale_y(y_test), rescale_t(t_grid), rescale_y(y_pred))
 ```
 
 While there is some drift in the weather patterns, the model extrapolates very well.

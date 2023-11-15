@@ -40,12 +40,12 @@ Scientific Machine Learning](https://arxiv.org/abs/2001.04385).
 
 As such, it is the first package to support and demonstrate:
 
-- Stiff and non-stiff universal ordinary differential equations (universal ODEs)
-- Universal stochastic differential equations (universal SDEs)
-- Universal delay differential equations (universal DDEs)
-- Universal partial differential equations (universal PDEs)
-- Universal jump stochastic differential equations (universal jump diffusions)
-- Hybrid universal differential equations (universal DEs with event handling)
+  - Stiff and non-stiff universal ordinary differential equations (universal ODEs)
+  - Universal stochastic differential equations (universal SDEs)
+  - Universal delay differential equations (universal DDEs)
+  - Universal partial differential equations (universal PDEs)
+  - Universal jump stochastic differential equations (universal jump diffusions)
+  - Hybrid universal differential equations (universal DEs with event handling)
 
 with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc.
 methods. For examples, please refer to
@@ -58,18 +58,18 @@ PDEs and neural jump SDEs, can be found
 Do not limit yourself to the current neuralization. With this package, you can
 explore various ways to integrate the two methodologies:
 
-- Neural networks can be defined where the “activations” are nonlinear functions
-  described by differential equations
-- Neural networks can be defined where some layers are ODE solves
-- ODEs can be defined where some terms are neural networks
-- Cost functions on ODEs can define neural networks
+  - Neural networks can be defined where the “activations” are nonlinear functions
+    described by differential equations
+  - Neural networks can be defined where some layers are ODE solves
+  - ODEs can be defined where some terms are neural networks
+  - Cost functions on ODEs can define neural networks
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
 
 ## Breaking Changes in v3
 
-- Flux dependency is dropped. If a non Lux `AbstractExplicitLayer` is passed we try to automatically convert it to a Lux model with `Lux.transform(model)`.
-- `Flux` is no longer re-exported from `DiffEqFlux`. Instead we reexport `Lux`.
-- `NeuralDAE` now allows an optional `du0` as input.
-- `TensorLayer` is now a Lux Neural Network.
-- APIs for quite a few layer constructions have changed. Please refer to the updated documentation for more details.
+  - Flux dependency is dropped. If a non Lux `AbstractExplicitLayer` is passed we try to automatically convert it to a Lux model with `Lux.transform(model)`.
+  - `Flux` is no longer re-exported from `DiffEqFlux`. Instead we reexport `Lux`.
+  - `NeuralDAE` now allows an optional `du0` as input.
+  - `TensorLayer` is now a Lux Neural Network.
+  - APIs for quite a few layer constructions have changed. Please refer to the updated documentation for more details.

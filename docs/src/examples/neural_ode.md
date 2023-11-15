@@ -29,9 +29,7 @@ end
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))
 
-dudt2 = Lux.Chain(x -> x .^ 3,
-    Lux.Dense(2, 50, tanh),
-    Lux.Dense(50, 2))
+dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 
@@ -67,17 +65,13 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
-result_neuralode = Optimization.solve(optprob,
-    Adam(0.05);
-    callback = callback,
+result_neuralode = Optimization.solve(optprob, Adam(0.05); callback = callback,
     maxiters = 300)
 
 optprob2 = remake(optprob; u0 = result_neuralode.u)
 
-result_neuralode2 = Optimization.solve(optprob2,
-    Optim.BFGS(; initial_stepnorm = 0.01);
-    callback = callback,
-    allow_f_increases = false)
+result_neuralode2 = Optimization.solve(optprob2, Optim.BFGS(; initial_stepnorm = 0.01);
+    callback, allow_f_increases = false)
 
 callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)
 ```
@@ -112,19 +106,15 @@ the layer. Here we're going to use `Lux.Chain`, which is a suitable neural netwo
 structure for NeuralODEs with separate handling of state variables:
 
 ```@example neuralode
-dudt2 = Lux.Chain(x -> x .^ 3,
-    Lux.Dense(2, 50, tanh),
-    Lux.Dense(50, 2))
+dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 ```
 
-Note that we can directly use `Chain`s from Flux.jl as well, for example:
+Note that we can directly use `Chain`s from Lux.jl as well, for example:
 
 ```julia
-dudt2 = Chain(x -> x .^ 3,
-    Dense(2, 50, tanh),
-    Dense(50, 2))
+dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 ```
 
 In our model, we used the `x -> x.^3` assumption in the model. By incorporating

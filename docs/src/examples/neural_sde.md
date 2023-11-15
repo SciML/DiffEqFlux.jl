@@ -32,8 +32,8 @@ First, let's build training data from the same example as the neural ODE:
 
 ```@example nsde
 using Plots, Statistics
-using Flux, Optimization, OptimizationOptimisers, DiffEqFlux, StochasticDiffEq,
-    SciMLBase.EnsembleAnalysis
+using ComponentArrays, Optimization,
+    OptimizationOptimisers, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
 
 u0 = Float32[2.0; 0.0]
 datasize = 30
@@ -72,33 +72,31 @@ Now we build a neural SDE. For simplicity, we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
 ```@example nsde
-drift_dudt = Flux.Chain(x -> x .^ 3,
-    Flux.Dense(2, 50, tanh),
-    Flux.Dense(50, 2))
-p1, re1 = Flux.destructure(drift_dudt)
-
-diffusion_dudt = Flux.Chain(Flux.Dense(2, 2))
-p2, re2 = Flux.destructure(diffusion_dudt)
+drift_dudt = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
+diffusion_dudt = Dense(2, 2)
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI();
-    saveat = tsteps, reltol = 1e-1, abstol = 1e-1);
-nothing
+    saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
+ps, st = Lux.setup(Random.default_rng(), neuralsde)
+ps = ComponentArray(ps)
 ```
 
 Let's see what that looks like:
 
 ```@example nsde
 # Get the prediction using the correct initial condition
-prediction0 = neuralsde(u0)
+prediction0 = neuralsde(u0, ps, st)[1]
 
-drift_(u, p, t) = re1(p[1:(neuralsde.len)])(u)
-diffusion_(u, p, t) = re2(p[(neuralsde.len + 1):end])(u)
+drift_model = Lux.Experimental.StatefulLuxLayer(drift_dudt, nothing, st.drift)
+diffusion_model = Lux.Experimental.StatefulLuxLayer(diffusion_dudt, nothing, st.diffusion)
 
-prob_neuralsde = SDEProblem(drift_, diffusion_, u0, (0.0f0, 1.2f0), neuralsde.p)
+drift_(u, p, t) = drift_model(u, p.drift)
+diffusion_(u, p, t) = diffusion_model(u, p.diffusion)
+
+prob_neuralsde = SDEProblem(drift_, diffusion_, u0, (0.0f0, 1.2f0), ps)
 
 ensemble_nprob = EnsembleProblem(prob_neuralsde; safetycopy = false)
-ensemble_nsol = solve(ensemble_nprob, SOSRI(); trajectories = 100,
-    saveat = tsteps)
+ensemble_nsol = solve(ensemble_nprob, SOSRI(); trajectories = 100, saveat = tsteps)
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
 
 plt1 = plot(ensemble_nsum; title = "Neural SDE: Before Training")
@@ -113,8 +111,10 @@ mean and variance from `n` runs at each time point and uses the distance from
 the data values:
 
 ```@example nsde
+neuralsde_model = Lux.Experimental.StatefulLuxLayer(neuralsde, nothing, st)
+
 function predict_neuralsde(p, u = u0)
-    return Array(neuralsde(u, p))
+    return Array(neuralsde_model(u, p))
 end
 
 function loss_neuralsde(p; n = 100)
@@ -167,9 +167,8 @@ opt = Adam(0.025)
 # First round of training with n = 10
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 10), adtype)
-optprob = Optimization.OptimizationProblem(optf, neuralsde.p)
-result1 = Optimization.solve(optprob, opt;
-    callback = callback, maxiters = 100)
+optprob = Optimization.OptimizationProblem(optf, ps)
+result1 = Optimization.solve(optprob, opt; callback, maxiters = 100)
 ```
 
 We resume the training with a larger `n`. (WARNING - this step is a couple of
@@ -178,8 +177,7 @@ orders of magnitude longer than the previous one).
 ```@example nsde
 optf2 = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 100), adtype)
 optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
-result2 = Optimization.solve(optprob2, opt;
-    callback = callback, maxiters = 20)
+result2 = Optimization.solve(optprob2, opt; callback, maxiters = 20)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
@@ -197,6 +195,6 @@ savefig(plt, "NN_sde_combined.png");
 nothing; # sde
 ```
 
-![](https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png)
+![Neural SDE Trained Example](https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png)
 
 Try this with GPUs as well!
