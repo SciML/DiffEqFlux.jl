@@ -1,5 +1,6 @@
 using DiffEqFlux, Lux, LuxCUDA, CUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test,
     Random, ComponentArrays
+import Flux
 
 CUDA.allowscalar(false)
 

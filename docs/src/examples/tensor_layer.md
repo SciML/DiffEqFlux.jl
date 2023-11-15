@@ -13,7 +13,8 @@ To obtain the training data, we solve the equation of motion using one of the
 solvers in `DifferentialEquations`:
 
 ```@example tensor
-using DiffEqFlux, Optimization, OptimizationOptimisers, DifferentialEquations, LinearAlgebra
+using ComponentArrays, DiffEqFlux, Optimization, OptimizationOptimisers,
+    DifferentialEquations, LinearAlgebra, Random
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0, 10.0)
 
@@ -34,6 +35,9 @@ a Legendre Basis:
 ```@example tensor
 A = [LegendreBasis(10), LegendreBasis(10)]
 nn = TensorLayer(A, 1)
+ps, st = Lux.setup(Random.default_rng(), nn)
+ps = ComponentArray(ps)
+nn = Lux.Experimental.StatefulLuxLayer(nn, nothing, st)
 ```
 
 and we also instantiate the model we are trying to learn, “informing” the neural
@@ -44,12 +48,13 @@ f = x -> min(30one(x), x)
 
 function dxdt_pred(du, u, p, t)
     du[1] = u[2]
-    du[2] = -p[1] * u[1] - p[2] * u[2] + f(nn(u, p[3:end])[1])
+    du[2] = -p.p_model[1] * u[1] - p.p_model[2] * u[2] + f(nn(u, p.ps)[1])
 end
 
-α = zeros(102)
+p_model = zeros(2)
+α = ComponentArray(; p_model, ps = ps .* 0)
 
-prob_pred = ODEProblem{true}(dxdt_pred, u0, tspan)
+prob_pred = ODEProblem{true}(dxdt_pred, u0, tspan, α)
 ```
 
 Note that we introduced a “cap” in the neural network term to avoid instabilities

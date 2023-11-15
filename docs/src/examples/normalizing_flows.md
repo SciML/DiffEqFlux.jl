@@ -8,53 +8,52 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example cnf
-using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimisers,
-    OptimizationOptimJL, Distributions
+using ComponentArrays, DiffEqFlux, DifferentialEquations, Optimization,
+    OptimizationOptimisers, OptimizationOptimJL, Distributions, Random
 
-nn = Flux.Chain(Flux.Dense(1, 3, tanh),
-    Flux.Dense(3, 1, tanh)) |> f32
+nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
 
-ffjord_mdl = FFJORD(nn, tspan, Tsit5())
+ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
+ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+ps = ComponentArray(ps)
+model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st)
 
 # Training
 data_dist = Normal(6.0f0, 0.7f0)
 train_data = Float32.(rand(data_dist, 1, 100))
 
 function loss(θ)
-    logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
-    -mean(logpx)
+    logpx, λ₁, λ₂ = model(train_data, θ)
+    return -mean(logpx)
 end
 
 function cb(p, l)
-    @info "Training" loss=loss(p)
-    false
+    @info "FFJORD Training" loss=loss(p)
+    return false
 end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+optprob = Optimization.OptimizationProblem(optf, ps)
 
-res1 = Optimization.solve(optprob,
-    Adam(0.1);
-    maxiters = 100,
-    callback = cb)
+res1 = Optimization.solve(optprob, Adam(0.1); maxiters = 100, callback = cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
-res2 = Optimization.solve(optprob2,
-    Optim.LBFGS();
-    allow_f_increases = false,
+res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false,
     callback = cb)
 
 # Evaluation
 using Distances
 
+st_ = (; st..., monte_carlo = false)
+
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u; monte_carlo = false)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, st_)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 # Data Generation
-ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p = res2.u))
+ffjord_dist = FFJORDDistribution(ffjord_mdl, ps, st)
 new_data = rand(ffjord_dist, 100)
 ```
 
@@ -63,15 +62,17 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```@example cnf2
-using Flux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimisers,
-    OptimizationOptimJL, Distributions
+using ComponentArray, DiffEqFlux, DifferentialEquations, Optimization,
+    OptimizationOptimisers, OptimizationOptimJL, Distributions, Random
 
-nn = Flux.Chain(Flux.Dense(1, 3, tanh),
-    Flux.Dense(3, 1, tanh)) |> f32
+nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
 
-ffjord_mdl = FFJORD(nn, tspan, Tsit5())
-nothing
+ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
+ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+ps = ComponentArray(ps)
+model = Lux.Experimental.StatefulLuxLayer(ps, st, ffjord_mdl)
+ffjord_mdl
 ```
 
 where we also pass as an input the desired timespan for which the differential equation that defines `log p_x` and `z(t)` will be solved.
@@ -90,13 +91,13 @@ Now we define a loss function that we wish to minimize and a callback function t
 
 ```@example cnf2
 function loss(θ)
-    logpx, λ₁, λ₂ = ffjord_mdl(train_data, θ)
-    -mean(logpx)
+    logpx, λ₁, λ₂ = model(train_data, θ)
+    return -mean(logpx)
 end
 
 function cb(p, l)
-    @info "Training" loss=loss(p)
-    false
+    @info "FFJORD Training" loss=loss(p)
+    return false
 end
 ```
 
@@ -107,13 +108,12 @@ We then train the neural network to learn the distribution of `x`.
 Here we showcase starting the optimization with `Adam` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
 ```@example cnf2
+
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, ffjord_mdl.p)
+optprob = Optimization.OptimizationProblem(optf, ps)
 
-res1 = Optimization.solve(optprob,
-    Adam(0.1);
-    maxiters = 100,
+res1 = Optimization.solve(optprob, Adam(0.1); maxiters = 100,
     callback = cb)
 ```
 
@@ -121,9 +121,7 @@ We then complete the training using a different optimizer, starting from where `
 
 ```@example cnf2
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
-res2 = Optimization.solve(optprob2,
-    Optim.LBFGS();
-    allow_f_increases = false,
+res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false,
     callback = cb)
 ```
 
@@ -135,8 +133,10 @@ Then we use a distance function between these distributions.
 ```@example cnf2
 using Distances
 
+st_ = (; st..., monte_carlo = false)
+
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u; monte_carlo = false)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, st_)[1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 ```
 
@@ -145,7 +145,7 @@ train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 What's more, we can generate new data by using FFJORD as a distribution in `rand`.
 
 ```@example cnf2
-ffjord_dist = FFJORDDistribution(FFJORD(nn, tspan, Tsit5(); p = res2.u))
+ffjord_dist = FFJORDDistribution(ffjord_mdl, ps, st)
 new_data = rand(ffjord_dist, 100)
 ```
 
