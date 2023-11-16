@@ -38,9 +38,7 @@ savefig("colloc.png")
 plot(tsteps, du')
 savefig("colloc_du.png")
 
-dudt2 = Lux.Chain(x -> x .^ 3,
-    Lux.Dense(2, 50, tanh),
-    Lux.Dense(50, 2))
+dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 
 function loss(p)
     cost = zero(first(p))
@@ -62,10 +60,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-result_neuralode = Optimization.solve(optprob,
-    Adam(0.05);
-    callback = callback,
-    maxiters = 10000)
+result_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 nn_sol, st = prob_neuralode(u0, result_neuralode.u, st)
@@ -87,10 +82,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-numerical_neuralode = Optimization.solve(optprob,
-    Adam(0.05);
-    callback = callback,
-    maxiters = 300)
+numerical_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
 scatter(tsteps, data')
@@ -140,9 +132,7 @@ calculates the squared difference between `f(u,p,t)` and `u'` at each
 point, and find the parameters which minimize this difference:
 
 ```@example collocation
-dudt2 = Lux.Chain(x -> x .^ 3,
-    Lux.Dense(2, 50, tanh),
-    Lux.Dense(50, 2))
+dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 
 function loss(p)
     cost = zero(first(p))
@@ -164,10 +154,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-result_neuralode = Optimization.solve(optprob,
-    Adam(0.05);
-    callback = callback,
-    maxiters = 10000)
+result_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 nn_sol, st = prob_neuralode(u0, result_neuralode.u, st)
@@ -195,10 +182,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-numerical_neuralode = Optimization.solve(optprob,
-    Adam(0.05);
-    callback = callback,
-    maxiters = 300)
+numerical_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
 scatter(tsteps, data')

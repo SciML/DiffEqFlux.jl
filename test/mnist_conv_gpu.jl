@@ -1,4 +1,4 @@
-using DiffEqFlux,
+using DiffEqFlux, Statistics,
     ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq, Printf, Test, LuxCUDA, Random
 using Optimization, OptimizationOptimisers
 using MLDatasets: MNIST

@@ -27,7 +27,7 @@ dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data
         selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
                      for i in 1:(size(data, 2) ÷ B)), NEPOCHS)
 
-hnn = HamiltonianNN(Lux.Chain(Lux.Dense(2, 64, relu), Lux.Dense(64, 1)))
+hnn = HamiltonianNN(Chain(Lux.Dense(2, 64, relu), Dense(64, 1)))
 ps, st = Lux.setup(Random.default_rng(), hnn)
 ps_c = ps |> ComponentArray
 
@@ -131,16 +131,16 @@ ylabel!("Momentum (p)")
 
 ## Expected Output
 
-```julia
-Loss:19.865715
-Loss:18.196068
-Loss:19.179213
-Loss:19.58956
+```txt
+Loss: 19.865715
+Loss: 18.196068
+Loss: 19.179213
+Loss: 19.58956
 ⋮
-Loss:0.02267044
-Loss:0.019175647
-Loss:0.02218909
-Loss:0.018870523
+Loss: 0.02267044
+Loss: 0.019175647
+Loss: 0.02218909
+Loss: 0.018870523
 ```
 
 ## References
