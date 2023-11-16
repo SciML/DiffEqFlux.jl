@@ -1,6 +1,9 @@
-using DiffEqFlux, CUDA, Zygote, MLDatasets, OrdinaryDiffEq, Printf, Test, LuxCUDA
+using DiffEqFlux,
+    ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq, Printf, Test, LuxCUDA, Random
+using Optimization, OptimizationOptimisers
 using MLDatasets: MNIST
-using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
+using MLDataUtils: LabelEnc, convertlabel, stratifiedobs, batchview
+using OneHotArrays
 
 const cdev = cpu_device()
 const gdev = gpu_device()
@@ -109,5 +112,5 @@ function callback(ps, l, pred)
 end
 
 # Train the NN-ODE and monitor the loss and weights.
-res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); callback)
+res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); maxiters = 10, callback)
 @test accuracy(m, zip(x_train, y_train), res.u, st) > 0.8

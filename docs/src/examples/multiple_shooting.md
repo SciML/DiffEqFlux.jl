@@ -98,7 +98,7 @@ end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_multiple_shooting(x), adtype)
-optprob = Optimization.OptimizationProblem(optf, ComponentArray(p_init))
+optprob = Optimization.OptimizationProblem(optf, pd)
 res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback)
 gif(anim, "multiple_shooting.gif"; fps = 15)
 ```
