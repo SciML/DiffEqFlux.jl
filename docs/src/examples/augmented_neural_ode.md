@@ -4,7 +4,7 @@
 
 ```@example augneuralode_cp
 using DiffEqFlux, DifferentialEquations, Statistics, LinearAlgebra, Plots, LuxCUDA, Random
-using MLUtils
+using MLUtils, ComponentArrays
 using Optimization, OptimizationOptimisers, IterTools
 
 const cdev = cpu_device()
@@ -115,7 +115,7 @@ plt_node = plot_contour(model, res.u, st)
 
 ```@example augneuralode
 using DiffEqFlux, DifferentialEquations, Statistics, LinearAlgebra, Plots, LuxCUDA, Random
-using MLUtils
+using MLUtils, ComponentArrays
 using Optimization, OptimizationOptimisers, IterTools
 
 const cdev = cpu_device()
