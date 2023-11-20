@@ -14,7 +14,7 @@ using ComponentArrays, DiffEqFlux, DifferentialEquations, Optimization,
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
 
-ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
+ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5(); ad = AutoZygote())
 ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
 ps = ComponentArray(ps)
 model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st)
@@ -33,7 +33,7 @@ function cb(p, l)
     return false
 end
 
-adtype = Optimization.AutoZygote()
+adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
@@ -68,7 +68,7 @@ using ComponentArray, DiffEqFlux, DifferentialEquations, Optimization,
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
 
-ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
+ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5(); ad = AutoZygote())
 ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
 ps = ComponentArray(ps)
 model = Lux.Experimental.StatefulLuxLayer(ps, st, ffjord_mdl)
@@ -109,7 +109,7 @@ Here we showcase starting the optimization with `Adam` to more quickly find a mi
 
 ```@example cnf2
 
-adtype = Optimization.AutoZygote()
+adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
