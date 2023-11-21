@@ -92,7 +92,7 @@ dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data
 We parameterize the HamiltonianNN with a small MultiLayered Perceptron. HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn't support nesting itself, so we will be using ForwardDiff in the training loop to compute the gradients of the HNN Layer for Optimization.
 
 ```@example hamiltonian
-hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad - AutoZygote())
+hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
 ps, st = Lux.setup(Random.default_rng(), hnn)
 ps_c = ps |> ComponentArray
 

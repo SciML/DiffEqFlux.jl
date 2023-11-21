@@ -96,7 +96,7 @@ us to get an estimate of the approximate noiseless dynamics:
 
 ```@example collocation
 using ComponentArrays,
-    Lux, DiffEqFlux, Optimization, OptimizationOptimisers, DifferentialEquations, Plots
+    Lux, DiffEqFlux, Optimization, OptimizationOptimisers, OrdinaryDiffEq, Plots
 
 using Random
 rng = Random.default_rng()

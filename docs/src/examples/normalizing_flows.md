@@ -8,8 +8,8 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example cnf
-using ComponentArrays, DiffEqFlux, DifferentialEquations, Optimization,
-    OptimizationOptimisers, OptimizationOptimJL, Distributions, Random
+using ComponentArrays, DiffEqFlux, OrdinaryDiffEq, Optimization, Distributions,
+    Random, OptimizationOptimisers, OptimizationOptimJL
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
@@ -37,7 +37,7 @@ adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
-res1 = Optimization.solve(optprob, Adam(0.1); maxiters = 20, callback = cb)
+res1 = Optimization.solve(optprob, Adam(0.01); maxiters = 20, callback = cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false,
@@ -62,8 +62,8 @@ new_data = rand(ffjord_dist, 100)
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
 ```@example cnf2
-using ComponentArray, DiffEqFlux, DifferentialEquations, Optimization,
-    OptimizationOptimisers, OptimizationOptimJL, Distributions, Random
+using ComponentArrays, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimisers,
+    OptimizationOptimJL, Distributions, Random
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
@@ -113,7 +113,7 @@ adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
-res1 = Optimization.solve(optprob, Adam(0.1); maxiters = 20, callback = cb)
+res1 = Optimization.solve(optprob, Adam(0.01); maxiters = 20, callback = cb)
 ```
 
 We then complete the training using a different optimizer, starting from where `Adam` stopped.

@@ -8,7 +8,7 @@ For a detailed discussion on how GPUs need to be setup refer to
 [Lux Docs](https://lux.csail.mit.edu/stable/manual/gpu_management).
 
 ```julia
-using DifferentialEquations, Lux, LuxCUDA, SciMLSensitivity, ComponentArrays
+using OrdinaryDiffEq, Lux, LuxCUDA, SciMLSensitivity, ComponentArrays
 using Random
 rng = Random.default_rng()
 

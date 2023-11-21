@@ -9,7 +9,7 @@ The data is a four-dimensional dataset of daily temperature, humidity, wind spee
 
 ```julia
 using Random, Dates, Optimization, ComponentArrays, Lux, OptimizationOptimisers, DiffEqFlux,
-    DifferentialEquations, CSV, DataFrames, Dates, Statistics, Plots, DataDeps
+    OrdinaryDiffEq, CSV, DataFrames, Dates, Statistics, Plots, DataDeps
 
 function download_data(data_url = "https://raw.githubusercontent.com/SebastianCallh/neural-ode-weather-forecast/master/data/",
         data_local_path = "./delhi")

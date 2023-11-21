@@ -12,8 +12,8 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example neuralode_cp
-using ComponentArrays, Lux, DiffEqFlux, DifferentialEquations, Optimization,
-    OptimizationOptimJL, OptimizationOptimisers, Random, Plots
+using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
+    OptimizationOptimisers, Random, Plots
 
 rng = Random.default_rng()
 u0 = Float32[2.0; 0.0]
@@ -83,7 +83,7 @@ callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = t
 Let's get a time series array from a spiral ODE to train against.
 
 ```@example neuralode
-using ComponentArrays, Lux, DiffEqFlux, DifferentialEquations, Optimization,
+using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization,
     OptimizationOptimJL, OptimizationOptimisers, Random, Plots
 
 rng = Random.default_rng()

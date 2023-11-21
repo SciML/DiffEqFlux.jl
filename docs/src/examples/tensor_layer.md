@@ -13,8 +13,9 @@ To obtain the training data, we solve the equation of motion using one of the
 solvers in `DifferentialEquations`:
 
 ```@example tensor
-using ComponentArrays, DiffEqFlux, Optimization, OptimizationOptimisers,
-    DifferentialEquations, LinearAlgebra, Random
+using ComponentArrays,
+    DiffEqFlux, Optimization, OptimizationOptimisers,
+    OrdinaryDiffEq, LinearAlgebra, Random
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0, 10.0)
 
