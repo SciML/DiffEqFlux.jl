@@ -87,7 +87,7 @@ end
 function __jacobian(::AutoZygote, model, x::AbstractMatrix, ps)
     y, pb_f = Zygote.pullback(vec ∘ model, x, ps)
     z = ChainRulesCore.@ignore_derivatives fill!(similar(y), __one(y))
-    J = Zygote.Buffer(x, size(x, 1), size(x, 1), size(x, 2))
+    J = Zygote.Buffer(x, size(y, 1), size(x, 1), size(x, 2))
     for i in 1:size(y, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= __one(x)
         J[i, :, :] = pb_f(z)[1]

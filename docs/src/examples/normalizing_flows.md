@@ -49,7 +49,7 @@ using Distances
 st_ = (; st..., monte_carlo = false)
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u, st_)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, st_)[1][1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 # Data Generation
@@ -71,7 +71,7 @@ tspan = (0.0f0, 10.0f0)
 ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5(); ad = AutoZygote())
 ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
 ps = ComponentArray(ps)
-model = Lux.Experimental.StatefulLuxLayer(ps, st, ffjord_mdl)
+model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, ps, st)
 ffjord_mdl
 ```
 

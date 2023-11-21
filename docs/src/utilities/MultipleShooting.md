@@ -6,4 +6,5 @@
 
 ```@docs
 multiple_shoot
+DiffEqFlux.group_ranges
 ```
