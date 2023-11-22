@@ -1,28 +1,27 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neural Ordinary Differential Equations · DiffEqFlux.jl</title><meta name="title" content="Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta property="og:title" content="Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta property="twitter:title" content="Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li class="is-active"><a class="tocitem" href>Neural Ordinary Differential Equations</a><ul class="internal"><li><a class="tocitem" href="#Copy-Pasteable-Code"><span>Copy-Pasteable Code</span></a></li><li><a class="tocitem" href="#Explanation"><span>Explanation</span></a></li></ul></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Neural Ordinary Differential Equations</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Neural Ordinary Differential Equations</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/neural_ode.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Neural-Ordinary-Differential-Equations"><a class="docs-heading-anchor" href="#Neural-Ordinary-Differential-Equations">Neural Ordinary Differential Equations</a><a id="Neural-Ordinary-Differential-Equations-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-Ordinary-Differential-Equations" title="Permalink"></a></h1><p>A neural ODE is an ODE where a neural network defines its derivative function. For example, with the multilayer perceptron neural network <code>Lux.Chain(Lux.Dense(2, 50, tanh), Lux.Dense(50, 2))</code>, we can define a differential equation which is <code>u&#39; = NN(u)</code>. This is done simply by the <code>NeuralODE</code> struct. Let&#39;s take a look at an example.</p><h2 id="Copy-Pasteable-Code"><a class="docs-heading-anchor" href="#Copy-Pasteable-Code">Copy-Pasteable Code</a><a id="Copy-Pasteable-Code-1"></a><a class="docs-heading-anchor-permalink" href="#Copy-Pasteable-Code" title="Permalink"></a></h2><p>Before getting to the explanation, here&#39;s some code to start with. We will follow a full explanation of the definition and training process:</p><pre><code class="language-julia hljs">using ComponentArrays, Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, OptimizationFlux, Random, Plots
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neural Ordinary Differential Equations · DiffEqFlux.jl</title><meta name="title" content="Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta property="og:title" content="Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta property="twitter:title" content="Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li class="is-active"><a class="tocitem" href>Neural Ordinary Differential Equations</a><ul class="internal"><li><a class="tocitem" href="#Copy-Pasteable-Code"><span>Copy-Pasteable Code</span></a></li><li><a class="tocitem" href="#Explanation"><span>Explanation</span></a></li></ul></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Neural Ordinary Differential Equations</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Neural Ordinary Differential Equations</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/neural_ode.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Neural-Ordinary-Differential-Equations"><a class="docs-heading-anchor" href="#Neural-Ordinary-Differential-Equations">Neural Ordinary Differential Equations</a><a id="Neural-Ordinary-Differential-Equations-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-Ordinary-Differential-Equations" title="Permalink"></a></h1><p>A neural ODE is an ODE where a neural network defines its derivative function. For example, with the multilayer perceptron neural network <code>Lux.Chain(Lux.Dense(2, 50, tanh), Lux.Dense(50, 2))</code>, we can define a differential equation which is <code>u&#39; = NN(u)</code>. This is done simply by the <code>NeuralODE</code> struct. Let&#39;s take a look at an example.</p><h2 id="Copy-Pasteable-Code"><a class="docs-heading-anchor" href="#Copy-Pasteable-Code">Copy-Pasteable Code</a><a id="Copy-Pasteable-Code-1"></a><a class="docs-heading-anchor-permalink" href="#Copy-Pasteable-Code" title="Permalink"></a></h2><p>Before getting to the explanation, here&#39;s some code to start with. We will follow a full explanation of the definition and training process:</p><pre><code class="language-julia hljs">using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
+    OptimizationOptimisers, Random, Plots
 
 rng = Random.default_rng()
 u0 = Float32[2.0; 0.0]
 datasize = 30
 tspan = (0.0f0, 1.5f0)
-tsteps = range(tspan[1], tspan[2], length = datasize)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
 
 function trueODEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
-    du .= ((u.^3)&#39;true_A)&#39;
+    du .= ((u .^ 3)&#39;true_A)&#39;
 end
 
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
-ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))
+ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))
 
-dudt2 = Lux.Chain(x -&gt; x.^3,
-                  Lux.Dense(2, 50, tanh),
-                  Lux.Dense(50, 2))
+dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
-prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
+prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 
 function predict_neuralode(p)
-  Array(prob_neuralode(u0, p, st)[1])
+    Array(prob_neuralode(u0, p, st)[1])
 end
 
 function loss_neuralode(p)
@@ -34,18 +33,18 @@ end
 # Do not plot by default for the documentation
 # Users should change doplot=true to see the plots callbacks
 callback = function (p, l, pred; doplot = false)
-  println(l)
-  # plot current prediction against data
-  if doplot
-    plt = scatter(tsteps, ode_data[1,:], label = &quot;data&quot;)
-    scatter!(plt, tsteps, pred[1,:], label = &quot;prediction&quot;)
-    display(plot(plt))
-  end
-  return false
+    println(l)
+    # plot current prediction against data
+    if doplot
+        plt = scatter(tsteps, ode_data[1, :]; label = &quot;data&quot;)
+        scatter!(plt, tsteps, pred[1, :]; label = &quot;prediction&quot;)
+        display(plot(plt))
+    end
+    return false
 end
 
 pinit = ComponentArray(p)
-callback(pinit, loss_neuralode(pinit)...; doplot=true)
+callback(pinit, loss_neuralode(pinit)...; doplot = true)
 
 # use Optimization.jl to solve the problem
 adtype = Optimization.AutoZygote()
@@ -53,49 +52,42 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
-result_neuralode = Optimization.solve(optprob,
-                                       Adam(0.05),
-                                       callback = callback,
-                                       maxiters = 300)
+result_neuralode = Optimization.solve(optprob, Adam(0.05); callback = callback,
+    maxiters = 300)
 
-optprob2 = remake(optprob,u0 = result_neuralode.u)
+optprob2 = remake(optprob; u0 = result_neuralode.u)
 
-result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.BFGS(initial_stepnorm=0.01),
-                                        callback=callback,
-                                        allow_f_increases = false)
+result_neuralode2 = Optimization.solve(optprob2, Optim.BFGS(; initial_stepnorm = 0.01);
+    callback, allow_f_increases = false)
 
-callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif" alt="Neural ODE"/></p><h2 id="Explanation"><a class="docs-heading-anchor" href="#Explanation">Explanation</a><a id="Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Explanation" title="Permalink"></a></h2><p>Let&#39;s get a time series array from a spiral ODE to train against.</p><pre><code class="language-julia hljs">using ComponentArrays, Lux, DiffEqFlux, DifferentialEquations, Optimization, OptimizationOptimJL, OptimizationFlux, Random, Plots
+callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif" alt="Neural ODE"/></p><h2 id="Explanation"><a class="docs-heading-anchor" href="#Explanation">Explanation</a><a id="Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Explanation" title="Permalink"></a></h2><p>Let&#39;s get a time series array from a spiral ODE to train against.</p><pre><code class="language-julia hljs">using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization,
+    OptimizationOptimJL, OptimizationOptimisers, Random, Plots
 
 rng = Random.default_rng()
 u0 = Float32[2.0; 0.0]
 datasize = 30
 tspan = (0.0f0, 1.5f0)
-tsteps = range(tspan[1], tspan[2], length = datasize)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
 
 function trueODEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
-    du .= ((u.^3)&#39;true_A)&#39;
+    du .= ((u .^ 3)&#39;true_A)&#39;
 end
 
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
-ode_data = Array(solve(prob_trueode, Tsit5(), saveat = tsteps))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×30 Matrix{Float32}:
+ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×30 Matrix{Float32}:
  2.0  1.9465    1.74178  1.23837  0.577125  …  1.40688   1.37022   1.29214
- 0.0  0.798831  1.46473  1.80877  1.86465      0.451368  0.728686  0.972085</code></pre><p>Now let&#39;s define a neural network with a <code>NeuralODE</code> layer. First, we define the layer. Here we&#39;re going to use <code>Lux.Chain</code>, which is a suitable neural network structure for NeuralODEs with separate handling of state variables:</p><pre><code class="language-julia hljs">dudt2 = Lux.Chain(x -&gt; x.^3,
-                  Lux.Dense(2, 50, tanh),
-                  Lux.Dense(50, 2))
+ 0.0  0.798831  1.46473  1.80877  1.86465      0.451368  0.728686  0.972085</code></pre><p>Now let&#39;s define a neural network with a <code>NeuralODE</code> layer. First, we define the layer. Here we&#39;re going to use <code>Lux.Chain</code>, which is a suitable neural network structure for NeuralODEs with separate handling of state variables:</p><pre><code class="language-julia hljs">dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
-prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NeuralODE(
+prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NeuralODE(
     model = Chain(
         layer_1 = WrappedFunction(#1),
         layer_2 = Dense(2 =&gt; 50, tanh_fast),  <span class="sgr90"># 150 parameters</span>
         layer_3 = Dense(50 =&gt; 2),       <span class="sgr90"># 102 parameters</span>
     ),
 ) <span class="sgr90">        # Total: </span>252 parameters,
-<span class="sgr90">          #        plus </span>0 states.</code></pre><p>Note that we can directly use <code>Chain</code>s from Flux.jl as well, for example:</p><pre><code class="language-julia hljs">dudt2 = Chain(x -&gt; x.^3,
-              Dense(2, 50, tanh),
-              Dense(50, 2))</code></pre><p>In our model, we used the <code>x -&gt; x.^3</code> assumption in the model. By incorporating structure into our equations, we can reduce the required size and training time for the neural network, but a good guess needs to be known!</p><p>From here we build a loss function around it. The <code>NeuralODE</code> has an optional second argument for new parameters, which we will use to change the neural network iteratively in our training loop. We will use the L2 loss of the network&#39;s output against the time series data:</p><pre><code class="language-julia hljs">function predict_neuralode(p)
-  Array(prob_neuralode(u0, p, st)[1])
+<span class="sgr90">          #        plus </span>0 states.</code></pre><p>Note that we can directly use <code>Chain</code>s from Lux.jl as well, for example:</p><pre><code class="language-julia hljs">dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))</code></pre><p>In our model, we used the <code>x -&gt; x.^3</code> assumption in the model. By incorporating structure into our equations, we can reduce the required size and training time for the neural network, but a good guess needs to be known!</p><p>From here we build a loss function around it. The <code>NeuralODE</code> has an optional second argument for new parameters, which we will use to change the neural network iteratively in our training loop. We will use the L2 loss of the network&#39;s output against the time series data:</p><pre><code class="language-julia hljs">function predict_neuralode(p)
+    Array(prob_neuralode(u0, p, st)[1])
 end
 
 function loss_neuralode(p)
@@ -104,14 +96,14 @@ function loss_neuralode(p)
     return loss, pred
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">loss_neuralode (generic function with 1 method)</code></pre><p>We define a callback function. In this example, we set <code>doplot = false</code> because otherwise it would show every step and overflow the documentation, but for your use case <strong>set doplot=true to see a live animation of the training process!</strong></p><pre><code class="language-julia hljs"># Callback function to observe training
 callback = function (p, l, pred; doplot = false)
-  println(l)
-  # plot current prediction against data
-  if doplot
-    plt = scatter(tsteps, ode_data[1,:], label = &quot;data&quot;)
-    scatter!(plt, tsteps, pred[1,:], label = &quot;prediction&quot;)
-    display(plot(plt))
-  end
-  return false
+    println(l)
+    # plot current prediction against data
+    if doplot
+        plt = scatter(tsteps, ode_data[1, :]; label = &quot;data&quot;)
+        scatter!(plt, tsteps, pred[1, :]; label = &quot;prediction&quot;)
+        display(plot(plt))
+    end
+    return false
 end
 
 pinit = ComponentArray(p)
@@ -122,12 +114,12 @@ optf = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(optprob,
-                                       Adam(0.05),
-                                       callback = callback,
-                                       maxiters = 300)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[-0.65224355 0.3913785; 0.36207977 -0.009423747; … ; -0.24959399 0.300903; -0.20721456 0.2702596], bias = Float32[0.25139832; 0.92841864; … ; -0.07496018; 0.16789982;;]), layer_3 = (weight = Float32[-0.60016984 -0.6141866 … -0.54080975 -0.42604464; -0.19498968 0.19470356 … -0.51624924 -0.55333865], bias = Float32[-0.48840818; 0.45059648;;]))</code></pre><p>We then complete the training using a different optimizer, starting from where <code>Adam</code> stopped. We do <code>allow_f_increases=false</code> to make the optimization automatically halt when near the minimum.</p><pre><code class="language-julia hljs"># Retrain using the LBFGS optimizer
-optprob2 = remake(optprob,u0 = result_neuralode.u)
+    Adam(0.05);
+    callback = callback,
+    maxiters = 300)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[0.6720041 -0.41207162; 0.8637322 -0.72324246; … ; -0.3484728 -0.3995637; 0.1721793 -0.30327418], bias = Float32[-0.2668274; -0.12291575; … ; -0.114946745; 0.09565755;;]), layer_3 = (weight = Float32[0.2506052 0.63870734 … 0.4717042 0.41262317; -0.10916944 0.20248069 … -0.016193373 0.7096411], bias = Float32[-0.57242006; -0.25283358;;]))</code></pre><p>We then complete the training using a different optimizer, starting from where <code>Adam</code> stopped. We do <code>allow_f_increases=false</code> to make the optimization automatically halt when near the minimum.</p><pre><code class="language-julia hljs"># Retrain using the LBFGS optimizer
+optprob2 = remake(optprob; u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2,
-                                        Optim.BFGS(initial_stepnorm=0.01),
-                                        callback = callback,
-                                        allow_f_increases = false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[-0.5750165 0.47358987; 0.06705624 -0.05980971; … ; -0.08878169 0.49418336; -0.13903148 0.16380905], bias = Float32[0.16455586; 0.9130041; … ; -0.20599066; 0.14239748;;]), layer_3 = (weight = Float32[-0.504784 -0.47997442 … -0.6538887 -0.4134575; -0.13011177 0.29727513 … -0.6443377 -0.77891624], bias = Float32[-0.3472223; 1.1864074;;]))</code></pre><p>And then we use the callback with <code>doplot=true</code> to see the final plot:</p><pre><code class="language-julia hljs">callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot=true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><a class="docs-footer-nextpage" href="../GPUs/">Neural ODEs on GPUs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.2 on <span class="colophon-date" title="Sunday 29 October 2023 04:47">Sunday 29 October 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    Optim.BFGS(; initial_stepnorm = 0.01);
+    callback = callback,
+    allow_f_increases = false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[0.66803324 -0.46439716; 0.80627406 -0.79142773; … ; -0.39306834 -0.36727795; 0.11143809 -0.35086], bias = Float32[-0.2579003; -0.11446984; … ; -0.12865518; 0.11256123;;]), layer_3 = (weight = Float32[0.28501546 0.70169127 … 0.45276138 0.50382656; -0.14286219 0.13459715 … -0.02259822 0.7887839], bias = Float32[-0.5872609; -0.038115107;;]))</code></pre><p>And then we use the callback with <code>doplot=true</code> to see the final plot:</p><pre><code class="language-julia hljs">callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><a class="docs-footer-nextpage" href="../GPUs/">Neural ODEs on GPUs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.2 on <span class="colophon-date" title="Wednesday 22 November 2023 12:13">Wednesday 22 November 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
