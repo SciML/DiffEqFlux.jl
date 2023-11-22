@@ -135,7 +135,7 @@ using Distances
 st_ = (; st..., monte_carlo = false)
 
 actual_pdf = pdf.(data_dist, train_data)
-learned_pdf = exp.(ffjord_mdl(train_data, res2.u, st_)[1])
+learned_pdf = exp.(ffjord_mdl(train_data, res2.u, st_)[1][1])
 train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 ```
 
