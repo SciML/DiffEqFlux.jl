@@ -3,89 +3,89 @@
 Training a Convolutional Neural Net Classifier for **MNIST** using a neural
 ordinary differential equation **NN-ODE** on **GPUs** with **Minibatching**.
 
-(Step-by-step description below)
+For a step-by-step tutorial see the tutorial on the MNIST Neural ODE Classification Tutorial
+using Fully Connected Layers.
 
 ```julia
-using DiffEqFlux, DifferentialEquations, Printf
-using Flux.Losses: logitcrossentropy
-using Flux.Data: DataLoader
-using MLDatasets
-using MLDataUtils:  LabelEnc, convertlabel, stratifiedobs
-using CUDA
-CUDA.allowscalar(false)
+using DiffEqFlux, Statistics,
+    ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq, Printf, Test, LuxCUDA, Random
+using Optimization, OptimizationOptimisers
+using MLDatasets: MNIST
+using MLDataUtils: LabelEnc, convertlabel, stratifiedobs, batchview
+using OneHotArrays
 
-function loadmnist(batchsize = bs, train_split = 0.9)
+const cdev = cpu_device()
+const gdev = gpu_device()
+
+CUDA.allowscalar(false)
+ENV["DATADEPS_ALWAYS_ACCEPT"] = true
+
+logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims = 1); dims = 1))
+
+function loadmnist(batchsize = bs)
     # Use MLDataUtils LabelEnc for natural onehot conversion
-    onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw,
-                                      LabelEnc.NativeLabels(collect(0:9)))
+    function onehot(labels_raw)
+        convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
+    end
     # Load MNIST
-    mnist = MNIST(split = :train)
+    mnist = MNIST(; split = :train)
     imgs, labels_raw = mnist.features, mnist.targets
     # Process images into (H,W,C,BS) batches
-    x_data = Float32.(reshape(imgs, size(imgs,1), size(imgs,2), 1, size(imgs,3)))
-    y_data = onehot(labels_raw)
-    (x_train, y_train), (x_test, y_test) = stratifiedobs((x_data, y_data),
-                                                         p = train_split)
-    return (
-        # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(Flux.gpu.(collect.((x_train, y_train))); batchsize = batchsize,
-                   shuffle = true),
-        # Don't shuffle the test data
-        DataLoader(Flux.gpu.(collect.((x_test, y_test))); batchsize = batchsize,
-                   shuffle = false)
-    )
+    x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
+              gdev
+    x_train = batchview(x_train, batchsize)
+    # Onehot and batch the labels
+    y_train = onehot(labels_raw) |> gdev
+    y_train = batchview(y_train, batchsize)
+    return x_train, y_train
 end
 
 # Main
 const bs = 128
-const train_split = 0.9
-train_dataloader, test_dataloader = loadmnist(bs, train_split)
+x_train, y_train = loadmnist(bs)
 
-down = Flux.Chain(Flux.Conv((3, 3), 1=>64, relu, stride = 1), Flux.GroupNorm(64, 64),
-             Flux.Conv((4, 4), 64=>64, relu, stride = 2, pad=1), Flux.GroupNorm(64, 64),
-             Flux.Conv((4, 4), 64=>64, stride = 2, pad = 1)) |> Flux.gpu
+down = Chain(Conv((3, 3), 1 => 64, relu; stride = 1), GroupNorm(64, 64),
+    Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1), GroupNorm(64, 64),
+    Conv((4, 4), 64 => 64; stride = 2, pad = 1))
 
-dudt = Flux.Chain(Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
-             Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |> Flux.gpu
+dudt = Chain(Conv((3, 3), 64 => 64, tanh; stride = 1, pad = 1),
+    Conv((3, 3), 64 => 64, tanh; stride = 1, pad = 1))
 
-fc = Flux.Chain(Flux.GroupNorm(64, 64), x -> relu.(x), Flux.MeanPool((6, 6)),
-           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> Flux.gpu
-          
-nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
-                   save_everystep = false,
-                   reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |> Flux.gpu
+fc = Chain(GroupNorm(64, 64), x -> relu.(x), MeanPool((6, 6)),
+    x -> reshape(x, (64, :)), Dense(64, 10))
+
+nn_ode = NeuralODE(dudt, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+    reltol = 1e-3, abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
-    xarr = Flux.gpu(x)
-    return xarr[:,:,:,:,1]
+    xarr = gdev(x)
+    return xarr[:, :, :, :, 1]
 end
 
 # Build our over-all model topology
-model = Flux.Chain(down,                 # (28, 28, 1, BS) -> (6, 6, 64, BS)
-              nn_ode,               # (6, 6, 64, BS) -> (6, 6, 64, BS, 1)
-              DiffEqArray_to_Array, # (6, 6, 64, BS, 1) -> (6, 6, 64, BS)
-              fc)                   # (6, 6, 64, BS) -> (10, BS)
+m = Chain(down,                 # (28, 28, 1, BS) -> (6, 6, 64, BS)
+    nn_ode,               # (6, 6, 64, BS) -> (6, 6, 64, BS, 1)
+    DiffEqArray_to_Array, # (6, 6, 64, BS, 1) -> (6, 6, 64, BS)
+    fc)                   # (6, 6, 64, BS) -> (10, BS)
+ps, st = Lux.setup(Random.default_rng(), m)
+ps = ComponentArray(ps) |> gdev
+st = st |> gdev
 
 # To understand the intermediate NN-ODE layer, we can examine it's dimensionality
-img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
+img = x_train[1][:, :, :, 1:1] |> gdev
+lab = x_train[2][:, 1:1] |> gdev
 
-x_d = down(img)
-
-# We can see that we can compute the forward pass through the NN topology
-# featuring an NNODE layer.
-x_m = model(img)
+x_m, _ = m(img, ps, st)
 
 classify(x) = argmax.(eachcol(x))
 
-function accuracy(model, data; n_batches = 100)
+function accuracy(model, data, ps, st; n_batches = 10)
     total_correct = 0
     total = 0
-    for (i, (x, y)) in enumerate(data)
-        # Only evaluate accuracy for n_batches
-        i > n_batches && break
-        target_class = classify(Flux.cpu(y))
-        predicted_class = classify(Flux.cpu(model(x)))
+    st = Lux.testmode(st)
+    for (x, y) in collect(data)[1:n_batches]
+        target_class = classify(cdev(y))
+        predicted_class = classify(cdev(first(model(x, ps, st))))
         total_correct += sum(target_class .== predicted_class)
         total += length(target_class)
     end
@@ -93,285 +93,41 @@ function accuracy(model, data; n_batches = 100)
 end
 
 # burn in accuracy
-accuracy(model, train_dataloader)
+accuracy(m, zip(x_train, y_train), ps, st)
 
-loss(x, y) = logitcrossentropy(model(x), y)
+function loss_function(ps, x, y)
+    pred, st_ = m(x, ps, st)
+    return logitcrossentropy(pred, y), pred
+end
 
-# burn in loss
-loss(img, lab)
+#burn in loss
+loss_function(ps, x_train[1], y_train[1])
 
-opt = Adam(0.05)
+opt = OptimizationOptimisers.Adam(0.05)
 iter = 0
 
-callback() = begin
+opt_func = OptimizationFunction((ps, _, x, y) -> loss_function(ps, x, y),
+    Optimization.AutoZygote())
+opt_prob = OptimizationProblem(opt_func, ps)
+
+function callback(ps, l, pred)
     global iter += 1
-    # Monitor that the weights do infact update
-    # Every 10 training iterations show accuracy
-    if iter % 10 == 1
-        train_accuracy = accuracy(model, train_dataloader) * 100
-        test_accuracy = accuracy(model, test_dataloader;
-                                 n_batches = length(test_dataloader)) * 100
-        @printf("Iter: %3d || Train Accuracy: %2.3f || Test Accuracy: %2.3f\n",
-                iter, train_accuracy, test_accuracy)
+    #Monitor that the weights do infact update
+    #Every 10 training iterations show accuracy
+    if (iter % 10 == 0)
+        @info "[MNIST Conv GPU] Accuracy: $(accuracy(m, zip(x_train, y_train), ps, st))"
     end
+    return false
 end
 
-Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt, cb = callback)
-```
-
-
-## Step-by-Step Description
-
-### Load Packages
-
-```julia
-using DiffEqFlux, DifferentialEquations, Printf
-using Flux.Losses: logitcrossentropy
-using Flux.Data: DataLoader
-using MLDatasets
-using MLDataUtils:  LabelEnc, convertlabel, stratifiedobs
-```
-
-### GPU
-A good trick used here:
-
-```julia
-using CUDA
-CUDA.allowscalar(false)
-```
-
-Ensures that only optimized kernels are called when using the GPU.
-Additionally, the `gpu` function is shown as a way to translate models and data over to the GPU.
-Note that this function is CPU-safe, so if the GPU is disabled or unavailable, this
-code will fallback to the CPU.
-
-### Load MNIST Dataset into Minibatches
-
-The preprocessing is done in `loadmnist` where the raw MNIST data is split into features `x_train`
-and labels `y_train` by specifying batchsize `bs`. The function `convertlabel` will then transform
-the current labels (`labels_raw`) from numbers 0 to 9 (`LabelEnc.NativeLabels(collect(0:9))`) into
-one hot encoding (`LabelEnc.OneOfK`).
-
-Features are reshaped into format **[Height, Width, Color, BatchSize]** or in this case **[28, 28, 1, 128]**
-meaning that every minibatch will contain 128 images with a single color channel of 28x28 pixels.
-The entire dataset of 60,000 images is split into the train and test dataset, ensuring a balanced ratio
-of labels. These splits are then passed to Flux's DataLoader. This automatically minibatches both the images and
-labels. Additionally, it allows us to shuffle the train dataset in each epoch while keeping the order of the
-test data the same.
-
-```julia
-function loadmnist(batchsize = bs, train_split = 0.9)
-    # Use MLDataUtils LabelEnc for natural onehot conversion
-    onehot(labels_raw) = convertlabel(LabelEnc.OneOfK, labels_raw,
-                                      LabelEnc.NativeLabels(collect(0:9)))
-    # Load MNIST
-    mnist = MNIST(split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
-    # Process images into (H,W,C,BS) batches
-    x_data = Float32.(reshape(imgs, size(imgs,1), size(imgs,2), 1, size(imgs,3)))
-    y_data = onehot(labels_raw)
-    (x_train, y_train), (x_test, y_test) = stratifiedobs((x_data, y_data),
-                                                         p = train_split)
-    return (
-        # Use Flux's DataLoader to automatically minibatch and shuffle the data
-        DataLoader(Flux.gpu.(collect.((x_train, y_train))); batchsize = batchsize,
-                   shuffle = true),
-        # Don't shuffle the test data
-        DataLoader(Flux.gpu.(collect.((x_test, y_test))); batchsize = batchsize,
-                   shuffle = false)
-    )
-end
-```
-
-and then loaded from main:
-```julia
-# Main
-const bs = 128
-const train_split = 0.9
-train_dataloader, test_dataloader = loadmnist(bs, train_split)
-```
-
-
-### Layers
-
-The Neural Network requires passing inputs sequentially through multiple layers. We use
-`Chain` which allows inputs to functions to come from previous layer and sends the outputs
-to the next. Four different sets of layers are used here:
-
-
-```julia
-down = Flux.Chain(Flux.Conv((3, 3), 1=>64, relu, stride = 1), Flux.GroupNorm(64, 64),
-             Flux.Conv((4, 4), 64=>64, relu, stride = 2, pad=1), Flux.GroupNorm(64, 64),
-             Flux.Conv((4, 4), 64=>64, stride = 2, pad = 1)) |> Flux.gpu
-
-dudt = Flux.Chain(Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1),
-             Flux.Conv((3, 3), 64=>64, tanh, stride=1, pad=1)) |> Flux.gpu
-
-fc = Flux.Chain(Flux.GroupNorm(64, 64), x -> relu.(x), Flux.MeanPool((6, 6)),
-           x -> reshape(x, (64, :)), Flux.Dense(64,10)) |> Flux.gpu
-          
-nn_ode = NeuralODE(dudt, (0.f0, 1.f0), Tsit5(),
-                   save_everystep = false,
-                   reltol = 1e-3, abstol = 1e-3,
-                   save_start = false) |> Flux.gpu
-```
-
-`down`: This layer downsamples our images into `6 x 6 x 64` dimensional features.
-        It takes a 28 x 28 image, and passes it through a convolutional neural network
-        layer with `relu` activation
-
-`nn`: A 2 layer Convolutional Neural Network Chain with `tanh` activation which is used to model
-      our differential equation
-
-`nn_ode`: ODE solver layer
-
-`fc`: The final fully connected layer which maps our learned features to the probability of
-      the feature vector of belonging to a particular class
-
-`gpu`: A utility function which transfers our model to GPU, if one is available
-
-### Array Conversion
-
-When using `NeuralODE`, we can use the following function as a cheap conversion of `DiffEqArray`
-from the ODE solver into a Matrix that can be used in the following layer:
-
-```julia
-function DiffEqArray_to_Array(x)
-    xarr = Flux.gpu(x)
-    return xarr[:,:,:,:,1]
-end
-```
-
-For CPU: If this function does not automatically fallback to CPU when no GPU is present, we can
-change `gpu(x)` with `Array(x)`.
-
-
-### Build Topology
-
-Next we connect all layers together in a single chain:
-
-```julia
-# Build our over-all model topology
-model = Flux.Chain(down,                 # (28, 28, 1, BS) -> (6, 6, 64, BS)
-              nn_ode,               # (6, 6, 64, BS) -> (6, 6, 64, BS, 1)
-              DiffEqArray_to_Array, # (6, 6, 64, BS, 1) -> (6, 6, 64, BS)
-              fc)                   # (6, 6, 64, BS) -> (10, BS)
-```
-
-There are a few things we can do to examine the inner workings of our neural network:
-
-```julia
-img, lab = train_dataloader.data[1][:, :, :, 1:1], train_dataloader.data[2][:, 1:1]
-
-# To understand the intermediate NN-ODE layer, we can examine it's dimensionality
-x_d = down(img)
-
-# We can see that we can compute the forward pass through the NN topology
-# featuring an NNODE layer.
-x_m = model(img)
-```
-
-This can also be built without the NN-ODE by replacing `nn-ode` with a simple `nn`:
-
-```julia
-# We can also build the model topology without a NN-ODE
-m_no_ode = Flux.Chain(down, nn, fc) |> Flux.gpu
-
-x_m = m_no_ode(img)
-```
-
-### Prediction
-
-To convert the classification back into readable numbers, we use `classify` which returns the
-prediction by taking the arg max of the output for each column of the minibatch:
-
-```julia
-classify(x) = argmax.(eachcol(x))
-```
-
-### Accuracy
-
-We then evaluate the accuracy on `n_batches` at a time through the entire network:
-
-```julia
-function accuracy(model, data; n_batches = 100)
-    total_correct = 0
-    total = 0
-    for (i, (x, y)) in enumerate(data)
-        # Only evaluate accuracy for n_batches
-        i > n_batches && break
-        target_class = classify(Flux.cpu(y))
-        predicted_class = classify(Flux.cpu(model(x)))
-        total_correct += sum(target_class .== predicted_class)
-        total += length(target_class)
-    end
-    return total_correct / total
-end
-
-# burn in accuracy
-accuracy(model, train_dataloader)
-```
-
-### Training Parameters
-
-Once we have our model, we can train our neural network by backpropagation using `Flux.train!`.
-This function requires **Loss**, **Optimizer** and **Callback** functions.
-
-#### Loss
-
-**Cross Entropy** is the loss function computed here which applies a **Softmax** operation on the
-final output of our model. `logitcrossentropy` takes in the prediction from our
-model `model(x)` and compares it to actual output `y`:
-
-```julia
-loss(x, y) = logitcrossentropy(model(x), y)
-
-# burn in loss
-loss(img, lab)
-```
-
-#### Optimizer
-
-`Adam` is specified here as our optimizer with a **learning rate of 0.05**:
-
-```julia
-opt = Adam(0.05)
-```
-
-#### CallBack
-
-This callback function is used to print both the training and testing accuracy after
-10 training iterations:
-
-```julia
-callback() = begin
-    global iter += 1
-    # Monitor that the weights update
-    # Every 10 training iterations show accuracy
-    if iter % 10 == 1
-        train_accuracy = accuracy(model, train_dataloader) * 100
-        test_accuracy = accuracy(model, test_dataloader;
-                                 n_batches = length(test_dataloader)) * 100
-        @printf("Iter: %3d || Train Accuracy: %2.3f || Test Accuracy: %2.3f\n",
-                iter, train_accuracy, test_accuracy)
-    end
-end
-```
-
-### Train
-
-To train our model, we select the appropriate trainable parameters of our network with `params`.
-In our case, backpropagation is required for `down`, `nn_ode` and `fc`. Notice that the parameters
-for Neural ODE is given by `nn_ode.p`:
-
-```julia
 # Train the NN-ODE and monitor the loss and weights.
-Flux.train!(loss, Flux.params(down, nn_ode.p, fc), train_dataloader, opt, callback = callback)
+res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); maxiters = 10, callback)
+@test accuracy(m, zip(x_train, y_train), res.u, st) > 0.8
 ```
 
-### Expected Output
+## Expected Output
 
-```julia
+```txt
 Iter:   1 || Train Accuracy: 8.453 || Test Accuracy: 8.883
 Iter:  11 || Train Accuracy: 14.773 || Test Accuracy: 14.967
 Iter:  21 || Train Accuracy: 24.383 || Test Accuracy: 24.433

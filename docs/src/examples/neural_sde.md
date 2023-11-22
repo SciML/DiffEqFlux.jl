@@ -28,28 +28,28 @@ dudt!(u, h, p, t) = model([u; h(t - p.tau)])
 prob = DDEProblem(dudt_, u0, h, tspan, nothing)
 ```
 
-
 First, let's build training data from the same example as the neural ODE:
 
 ```@example nsde
 using Plots, Statistics
-using Flux, Optimization, OptimizationOptimisers, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis
+using ComponentArrays, Optimization,
+    OptimizationOptimisers, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
 
-u0 = Float32[2.; 0.]
+u0 = Float32[2.0; 0.0]
 datasize = 30
 tspan = (0.0f0, 1.0f0)
-tsteps = range(tspan[1], tspan[2], length = datasize)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
 ```
 
 ```@example nsde
 function trueSDEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
-    du .= ((u.^3)'true_A)'
+    du .= ((u .^ 3)'true_A)'
 end
 
 mp = Float32[0.2, 0.2]
 function true_noise_func(du, u, p, t)
-    du .= mp.*u
+    du .= mp .* u
 end
 
 prob_truesde = SDEProblem(trueSDEfunc, true_noise_func, u0, tspan)
@@ -61,8 +61,8 @@ data from the average of 10,000 runs of the SDE:
 
 ```@example nsde
 # Take a typical sample from the mean
-ensemble_prob = EnsembleProblem(prob_truesde, safetycopy = false)
-ensemble_sol = solve(ensemble_prob, SOSRI(), trajectories = 10000)
+ensemble_prob = EnsembleProblem(prob_truesde; safetycopy = false)
+ensemble_sol = solve(ensemble_prob, SOSRI(); trajectories = 10000)
 ensemble_sum = EnsembleSummary(ensemble_sol)
 
 sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))
@@ -72,40 +72,38 @@ Now we build a neural SDE. For simplicity, we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
 ```@example nsde
-drift_dudt = Flux.Chain(x -> x.^3,
-                       Flux.Dense(2, 50, tanh),
-                       Flux.Dense(50, 2))
-p1, re1 = Flux.destructure(drift_dudt)
+drift_dudt = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
+diffusion_dudt = Dense(2, 2)
 
-diffusion_dudt = Flux.Chain(Flux.Dense(2, 2))
-p2, re2 = Flux.destructure(diffusion_dudt)
-
-neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI(),
-                       saveat = tsteps, reltol = 1e-1, abstol = 1e-1);
-nothing
+neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI();
+    saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
+ps, st = Lux.setup(Random.default_rng(), neuralsde)
+ps = ComponentArray(ps)
 ```
 
 Let's see what that looks like:
 
 ```@example nsde
 # Get the prediction using the correct initial condition
-prediction0 = neuralsde(u0)
+prediction0 = neuralsde(u0, ps, st)[1]
 
-drift_(u, p, t) = re1(p[1:neuralsde.len])(u)
-diffusion_(u, p, t) = re2(p[neuralsde.len+1:end])(u)
+drift_model = Lux.Experimental.StatefulLuxLayer(drift_dudt, nothing, st.drift)
+diffusion_model = Lux.Experimental.StatefulLuxLayer(diffusion_dudt, nothing, st.diffusion)
 
-prob_neuralsde = SDEProblem(drift_, diffusion_, u0,(0.0f0, 1.2f0), neuralsde.p)
+drift_(u, p, t) = drift_model(u, p.drift)
+diffusion_(u, p, t) = diffusion_model(u, p.diffusion)
 
-ensemble_nprob = EnsembleProblem(prob_neuralsde, safetycopy = false)
-ensemble_nsol = solve(ensemble_nprob, SOSRI(), trajectories = 100,
-                      saveat = tsteps)
+prob_neuralsde = SDEProblem(drift_, diffusion_, u0, (0.0f0, 1.2f0), ps)
+
+ensemble_nprob = EnsembleProblem(prob_neuralsde; safetycopy = false)
+ensemble_nsol = solve(ensemble_nprob, SOSRI(); trajectories = 100, saveat = tsteps)
 ensemble_nsum = EnsembleSummary(ensemble_nsol)
 
-plt1 = plot(ensemble_nsum, title = "Neural SDE: Before Training")
-scatter!(plt1, tsteps, sde_data', lw = 3)
+plt1 = plot(ensemble_nsum; title = "Neural SDE: Before Training")
+scatter!(plt1, tsteps, sde_data'; lw = 3)
 
-scatter(tsteps, sde_data[1,:], label = "data")
-scatter!(tsteps, prediction0[1,:], label = "prediction")
+scatter(tsteps, sde_data[1, :]; label = "data")
+scatter!(tsteps, prediction0[1, :]; label = "prediction")
 ```
 
 Now just as with the neural ODE we define a loss function that calculates the
@@ -113,18 +111,20 @@ mean and variance from `n` runs at each time point and uses the distance from
 the data values:
 
 ```@example nsde
+neuralsde_model = Lux.Experimental.StatefulLuxLayer(neuralsde, nothing, st)
+
 function predict_neuralsde(p, u = u0)
-  return Array(neuralsde(u, p))
+    return Array(neuralsde_model(u, p))
 end
 
 function loss_neuralsde(p; n = 100)
-  u = repeat(reshape(u0, :, 1), 1, n)
-  samples = predict_neuralsde(p, u)
-  means = mean(samples, dims = 2)
-  vars = var(samples, dims = 2, mean = means)[:, 1, :]
-  means = means[:, 1, :]
-  loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
-  return loss, means, vars
+    u = repeat(reshape(u0, :, 1), 1, n)
+    samples = predict_neuralsde(p, u)
+    means = mean(samples; dims = 2)
+    vars = var(samples; dims = 2, mean = means)[:, 1, :]
+    means = means[:, 1, :]
+    loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
+    return loss, means, vars
 end
 ```
 
@@ -134,26 +134,26 @@ iter = 0
 
 # Callback function to observe training
 callback = function (p, loss, means, vars; doplot = false)
-  global list_plots, iter
+    global list_plots, iter
 
-  if iter == 0
-    list_plots = []
-  end
-  iter += 1
+    if iter == 0
+        list_plots = []
+    end
+    iter += 1
 
-  # loss against current data
-  display(loss)
+    # loss against current data
+    display(loss)
 
-  # plot current prediction against data
-  plt = Plots.scatter(tsteps, sde_data[1,:], yerror = sde_data_vars[1,:],
-                     ylim = (-4.0, 8.0), label = "data")
-  Plots.scatter!(plt, tsteps, means[1,:], ribbon = vars[1,:], label = "prediction")
-  push!(list_plots, plt)
+    # plot current prediction against data
+    plt = Plots.scatter(tsteps, sde_data[1, :]; yerror = sde_data_vars[1, :],
+        ylim = (-4.0, 8.0), label = "data")
+    Plots.scatter!(plt, tsteps, means[1, :]; ribbon = vars[1, :], label = "prediction")
+    push!(list_plots, plt)
 
-  if doplot
-    display(plt)
-  end
-  return false
+    if doplot
+        display(plt)
+    end
+    return false
 end
 ```
 
@@ -166,36 +166,35 @@ opt = Adam(0.025)
 
 # First round of training with n = 10
 adtype = Optimization.AutoZygote()
-optf = Optimization.OptimizationFunction((x,p) -> loss_neuralsde(x, n=10), adtype)
-optprob = Optimization.OptimizationProblem(optf, neuralsde.p)
-result1 = Optimization.solve(optprob, opt,
-                                 callback = callback, maxiters = 100)
+optf = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 10), adtype)
+optprob = Optimization.OptimizationProblem(optf, ps)
+result1 = Optimization.solve(optprob, opt; callback, maxiters = 100)
 ```
 
 We resume the training with a larger `n`. (WARNING - this step is a couple of
 orders of magnitude longer than the previous one).
 
 ```@example nsde
-optf2 = Optimization.OptimizationFunction((x,p) -> loss_neuralsde(x, n=100), adtype)
+optf2 = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 100), adtype)
 optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
-result2 = Optimization.solve(optprob2, opt,
-                                 callback = callback, maxiters = 20)
+result2 = Optimization.solve(optprob2, opt; callback, maxiters = 20)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```@example nsde
-_, means, vars = loss_neuralsde(result2.u, n = 1000)
+_, means, vars = loss_neuralsde(result2.u; n = 1000)
 
-plt2 = Plots.scatter(tsteps, sde_data', yerror = sde_data_vars',
-                     label = "data", title = "Neural SDE: After Training",
-                     xlabel = "Time")
-plot!(plt2, tsteps, means', lw = 8, ribbon = vars', label = "prediction")
+plt2 = Plots.scatter(tsteps, sde_data'; yerror = sde_data_vars',
+    label = "data", title = "Neural SDE: After Training",
+    xlabel = "Time")
+plot!(plt2, tsteps, means'; lw = 8, ribbon = vars', label = "prediction")
 
-plt = plot(plt1, plt2, layout = (2, 1))
-savefig(plt, "NN_sde_combined.png"); nothing # sde
+plt = plot(plt1, plt2; layout = (2, 1))
+savefig(plt, "NN_sde_combined.png");
+nothing; # sde
 ```
 
-![](https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png)
+![Neural SDE Trained Example](https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png)
 
 Try this with GPUs as well!

@@ -20,5 +20,4 @@ AugmentedNDELayer
 
 ```@docs
 DimMover
-FluxBatchOrder
 ```

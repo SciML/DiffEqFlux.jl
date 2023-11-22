@@ -15,19 +15,11 @@ const is_CI = haskey(ENV, "CI")
     end
 
     if GROUP == "All" || GROUP == "DiffEqFlux" || GROUP == "BasicNeuralDE"
-        @safetestset "Neural DE Tests with Lux" begin
-            include("neural_de_lux.jl")
-        end
         @safetestset "Neural DE Tests" begin
             include("neural_de.jl")
         end
-        @safetestset "Augmented Neural DE Tests" begin
-            include("augmented_nde.jl")
-        end
-        #@safetestset "Neural Graph DE" begin include("neural_gde.jl") end
-
-        @safetestset "Neural ODE MM Tests" begin
-            include("neural_ode_mm.jl")
+        @safetestset "Neural Graph DE" begin
+            include("neural_gde.jl")
         end
         @safetestset "Tensor Product Layer" begin
             include("tensor_product_test.jl")
@@ -38,6 +30,13 @@ const is_CI = haskey(ENV, "CI")
         @safetestset "Multiple shooting" begin
             include("multiple_shoot.jl")
         end
+        @safetestset "Neural ODE MM Tests" begin
+            include("neural_ode_mm.jl")
+        end
+        # DAE Tests were never included
+        # @safetestset "Neural DAE Tests" begin
+        #     include("neural_dae.jl")
+        # end
     end
 
     if GROUP == "All" || GROUP == "AdvancedNeuralDE"
@@ -52,7 +51,7 @@ const is_CI = haskey(ENV, "CI")
         end
     end
 
-    if GROUP == "Newton"
+    if GROUP == "All" || GROUP == "Newton"
         @safetestset "Newton Neural ODE Tests" begin
             include("newton_neural_ode.jl")
         end
@@ -67,6 +66,22 @@ const is_CI = haskey(ENV, "CI")
         end
         @safetestset "MNIST GPU Tests: Convolutional NN" begin
             include("mnist_conv_gpu.jl")
+        end
+    end
+
+    if GROUP == "All" || GROUP == "Aqua"
+        @safetestset "Aqua Q/A" begin
+            using Aqua, DiffEqFlux, LinearAlgebra
+
+            # TODO: Enable persistent tasks once the downstream PRs are merged
+            Aqua.test_all(DiffEqFlux; ambiguities = false, piracies = false,
+                persistent_tasks = false)
+
+            Aqua.test_ambiguities(DiffEqFlux; recursive = false)
+
+            # FIXME: Remove Tridiagonal piracy after
+            # https://github.com/JuliaDiff/ChainRules.jl/issues/713 is merged!
+            Aqua.test_piracies(DiffEqFlux; treat_as_own = [LinearAlgebra.Tridiagonal])
         end
     end
 end
