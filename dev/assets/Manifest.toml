@@ -2,7 +2,7 @@
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "9987fbe82fa801abe1a3b090cb39d76ad75ce8a1"
+project_hash = "e2d4c6d1ef6029a787aa1e13f3f8141a1935aa74"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "332e5d7baeff8497b923b730b994fa480601efc7"
@@ -494,7 +494,7 @@ version = "2.34.0"
 
 [[deps.DiffEqFlux]]
 deps = ["ADTypes", "Adapt", "ChainRulesCore", "ComponentArrays", "ConcreteStructs", "DiffEqBase", "Distributions", "DistributionsAD", "ForwardDiff", "Functors", "LinearAlgebra", "Lux", "LuxCore", "PrecompileTools", "Random", "RecursiveArrayTools", "Reexport", "SciMLBase", "SciMLSensitivity", "Tracker", "Zygote", "ZygoteRules"]
-path = "/var/lib/buildkite-agent/builds/gpuci-5/julialang/diffeqflux-dot-jl"
+path = "/var/lib/buildkite-agent/builds/gpuci-3/julialang/diffeqflux-dot-jl"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
 version = "3.0.0"
 
