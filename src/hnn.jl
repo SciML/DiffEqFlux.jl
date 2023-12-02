@@ -75,7 +75,7 @@ end
 """
     NeuralHamiltonianDE(model, tspan, args...; kwargs...)
 
-Contructs a Neural Hamiltonian DE Layer for solving Hamiltonian Problems parameterized by a
+Constructs a Neural Hamiltonian DE Layer for solving Hamiltonian Problems parameterized by a
 Neural Network [`HamiltonianNN`](@ref).
 
 Arguments:

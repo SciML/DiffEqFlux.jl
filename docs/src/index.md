@@ -29,7 +29,7 @@ The following layer functions exist:
   - [Collocation-Based Neural ODEs (Neural ODEs without a solver, by far the fastest way!)](https://www.degruyter.com/document/doi/10.1515/sagmb-2020-0025/html)
   - [Multiple Shooting Neural Ordinary Differential Equations](https://arxiv.org/abs/2109.06786)
   - [Neural Stochastic Differential Equations (Neural SDEs)](https://arxiv.org/abs/1907.07587)
-  - [Neural Differential-Algebriac Equations (Neural DAEs)](https://arxiv.org/abs/2001.04385)
+  - [Neural Differential-Algebraic Equations (Neural DAEs)](https://arxiv.org/abs/2001.04385)
   - [Neural Delay Differential Equations (Neural DDEs)](https://arxiv.org/abs/2001.04385)
   - [Augmented Neural ODEs](https://arxiv.org/abs/1904.01681)
   - [Hamiltonian Neural Networks (with specialized second order and symplectic integrators)](https://arxiv.org/abs/1906.01563)
@@ -63,7 +63,7 @@ the precision of the arguments are correct, and anything that requires alternati
 
 Lux.jl has none of these issues, is simpler to work with due to the parameters in its function calls being explicit rather than implicit global
 references, and achieves higher performance. It is built on the same foundations as Flux.jl, such as Zygote and NNLib, and thus it supports the
-same layers underneith and calls the same kernels. The better performance comes from not having the overhead of `restructure` required.
+same layers underneath and calls the same kernels. The better performance comes from not having the overhead of `restructure` required.
 Thus we highly recommend people use Lux instead and only use the Flux fallbacks for legacy code.
 
 ## Citation

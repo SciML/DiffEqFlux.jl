@@ -5,7 +5,7 @@ This example is adapted from [Forecasting the weather with neural ODEs - Sebatia
 
 ## The data
 
-The data is a four-dimensional dataset of daily temperature, humidity, wind speed and pressure meassured over four years in the city Delhi. Let us download and plot it.
+The data is a four-dimensional dataset of daily temperature, humidity, wind speed and pressure measured over four years in the city Delhi. Let us download and plot it.
 
 ```julia
 using Random, Dates, Optimization, ComponentArrays, Lux, OptimizationOptimisers, DiffEqFlux,
@@ -29,7 +29,7 @@ df = download_data()
 
 ```julia
 FEATURES = [:meantemp, :humidity, :wind_speed, :meanpressure]
-UNITS = ["Celcius", "g/m³ of water", "km/h", "hPa"]
+UNITS = ["Celsius", "g/m³ of water", "km/h", "hPa"]
 FEATURE_NAMES = ["Mean temperature", "Humidity", "Wind speed", "Mean pressure"]
 
 function plot_data(df)

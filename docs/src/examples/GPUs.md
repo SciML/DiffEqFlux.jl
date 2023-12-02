@@ -79,7 +79,7 @@ using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq,
     Plots, LuxCUDA, SciMLSensitivity, Random, ComponentArrays
 import DiffEqFlux: NeuralODE
 
-CUDA.allowscalar(false) # Makes sure no slow operations are occuring
+CUDA.allowscalar(false) # Makes sure no slow operations are occurring
 
 #rng for Lux.setup
 rng = Random.default_rng()
