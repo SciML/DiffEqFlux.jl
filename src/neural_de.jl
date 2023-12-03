@@ -19,7 +19,7 @@ Arguments:
 - `tspan`: The timespan to be solved on.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
   Defaults to an adjoint method. See
   the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
   documentation for more details.
@@ -69,7 +69,7 @@ Arguments:
 - `tspan`: The timespan to be solved on.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
@@ -118,7 +118,7 @@ Arguments:
 - `nbrown`: The number of Brownian processes
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
   documentation for more details.
@@ -172,7 +172,7 @@ Arguments:
 - `lags`: Defines the lagged values that should be utilized in the neural network.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
   Defaults to using reverse-mode automatic differentiation via Tracker.jl
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
@@ -219,11 +219,11 @@ Arguments:
   derivative function. Should take an input of size `x` and produce the residual of
   `f(dx,x,t)` for only the differential variables.
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
-  constaints to impose on the algebraic equations.
+  constraints to impose on the algebraic equations.
 - `tspan`: The timespan to be solved on.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
   Defaults to using reverse-mode automatic differentiation via Tracker.jl
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
@@ -286,7 +286,7 @@ constraint equations.
 Arguments:
 
 - `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the ̇`f(u,p,t)`
-- `constraints_model`: A function `constraints_model(u,p,t)` for the fixed constaints to
+- `constraints_model`: A function `constraints_model(u,p,t)` for the fixed constraints to
   impose on the algebraic equations.
 - `tspan`: The timespan to be solved on.
 - `mass_matrix`: The mass matrix associated with the DAE
@@ -295,7 +295,7 @@ Arguments:
   compatible with singular mass matrices. Consult the
   [DAE solvers](https://docs.sciml.ai/DiffEqDocs/stable/solvers/dae_solve/) documentation
   for more details.
-- `sensealg`: The choice of differentiation algorthm used in the backpropogation.
+- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
   Defaults to an adjoint method. See
   the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
   documentation for more details.
