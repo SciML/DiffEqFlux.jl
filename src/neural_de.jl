@@ -21,7 +21,7 @@ Arguments:
   default algorithm from DifferentialEquations.jl.
 - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
   Defaults to an adjoint method. See
-  the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
+  the [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/)
   documentation for more details.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
@@ -297,7 +297,7 @@ Arguments:
   for more details.
 - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
   Defaults to an adjoint method. See
-  the [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/)
+  the [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/)
   documentation for more details.
 - `kwargs`: Additional arguments splatted to the ODE solver. See the
   [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
