@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Weather forecasting with neural ODEs · DiffEqFlux.jl</title><meta name="title" content="Weather forecasting with neural ODEs · DiffEqFlux.jl"/><meta property="og:title" content="Weather forecasting with neural ODEs · DiffEqFlux.jl"/><meta property="twitter:title" content="Weather forecasting with neural ODEs · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode_weather_forecast/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode_weather_forecast/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_ode_weather_forecast/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li class="is-active"><a class="tocitem" href>Weather forecasting with neural ODEs</a><ul class="internal"><li><a class="tocitem" href="#The-data"><span>The data</span></a></li></ul></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Weather forecasting with neural ODEs</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Weather forecasting with neural ODEs</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/neural_ode_weather_forecast.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Weather-forecasting-with-neural-ODEs"><a class="docs-heading-anchor" href="#Weather-forecasting-with-neural-ODEs">Weather forecasting with neural ODEs</a><a id="Weather-forecasting-with-neural-ODEs-1"></a><a class="docs-heading-anchor-permalink" href="#Weather-forecasting-with-neural-ODEs" title="Permalink"></a></h1><p>In this example we are going to apply neural ODEs to a multidimensional weather dataset and use it for weather forecasting. This example is adapted from <a href="https://sebastiancallh.github.io/post/neural-ode-weather-forecast/">Forecasting the weather with neural ODEs - Sebatian Callh personal blog</a>.</p><h2 id="The-data"><a class="docs-heading-anchor" href="#The-data">The data</a><a id="The-data-1"></a><a class="docs-heading-anchor-permalink" href="#The-data" title="Permalink"></a></h2><p>The data is a four-dimensional dataset of daily temperature, humidity, wind speed and pressure measured over four years in the city Delhi. Let us download and plot it.</p><pre><code class="language-julia hljs">using Random, Dates, Optimization, ComponentArrays, Lux, OptimizationOptimisers, DiffEqFlux,
+    OrdinaryDiffEq, CSV, DataFrames, Dates, Statistics, Plots, DataDeps
+
+function download_data(data_url = &quot;https://raw.githubusercontent.com/SebastianCallh/neural-ode-weather-forecast/master/data/&quot;,
+        data_local_path = &quot;./delhi&quot;)
+    function load(file_name)
+        data_dep = DataDep(&quot;delhi/train&quot;, &quot;&quot;, &quot;$data_url/$file_name&quot;)
+        Base.download(data_dep, data_local_path; i_accept_the_terms_of_use = true)
+        CSV.read(joinpath(data_local_path, file_name), DataFrame)
+    end
+
+    train_df = load(&quot;DailyDelhiClimateTrain.csv&quot;)
+    test_df = load(&quot;DailyDelhiClimateTest.csv&quot;)
+    return vcat(train_df, test_df)
+end
+
+df = download_data()</code></pre><pre><code class="language-julia hljs">FEATURES = [:meantemp, :humidity, :wind_speed, :meanpressure]
+UNITS = [&quot;Celsius&quot;, &quot;g/m³ of water&quot;, &quot;km/h&quot;, &quot;hPa&quot;]
+FEATURE_NAMES = [&quot;Mean temperature&quot;, &quot;Humidity&quot;, &quot;Wind speed&quot;, &quot;Mean pressure&quot;]
+
+function plot_data(df)
+    plots = map(enumerate(zip(FEATURES, FEATURE_NAMES, UNITS))) do (i, (f, n, u))
+        plot(df[:, :date], df[:, f]; title = n, label = nothing,
+            ylabel = u, size = (800, 600), color = i)
+    end
+
+    n = length(plots)
+    plot(plots...; layout = (Int(n / 2), Int(n / 2)))
+end
+
+plot_data(df)</code></pre><p>The data show clear annual behaviour (it is difficult to see for pressure due to wild measurement errors but the pattern is there). It is concievable that this system can be described with an ODE, but which? Let us use an network to learn the dynamics from the dataset. Training neural networks is easier with standardised data so we will compute standardised features before training. Finally, we take the first 20 days for training and the rest for testing.</p><pre><code class="language-julia hljs">function standardize(x)
+    μ = mean(x; dims = 2)
+    σ = std(x; dims = 2)
+    z = (x .- μ) ./ σ
+    return z, μ, σ
+end
+
+function featurize(raw_df, num_train = 20)
+    raw_df.year = Float64.(year.(raw_df.date))
+    raw_df.month = Float64.(month.(raw_df.date))
+    df = combine(groupby(raw_df, [:year, :month]),
+        :date =&gt; (d -&gt; mean(year.(d)) .+ mean(month.(d)) ./ 12),
+        :meantemp =&gt; mean,
+        :humidity =&gt; mean,
+        :wind_speed =&gt; mean,
+        :meanpressure =&gt; mean;
+        renamecols = false)
+    @show size(df)
+    t_and_y(df) = df.date&#39;, Matrix(select(df, FEATURES))&#39;
+    t_train, y_train = t_and_y(df[1:num_train, :])
+    t_test, y_test = t_and_y(df[(num_train + 1):end, :])
+    t_train, t_mean, t_scale = standardize(t_train)
+    y_train, y_mean, y_scale = standardize(y_train)
+    t_test = (t_test .- t_mean) ./ t_scale
+    y_test = (y_test .- y_mean) ./ y_scale
+
+    return (vec(t_train), y_train,
+        vec(t_test), y_test,
+        (t_mean, t_scale),
+        (y_mean, y_scale))
+end
+
+function plot_features(t_train, y_train, t_test, y_test)
+    plt_split = plot(reshape(t_train, :), y_train&#39;;
+        linewidth = 3, colors = 1:4,
+        xlabel = &quot;Normalized time&quot;,
+        ylabel = &quot;Normalized values&quot;,
+        label = nothing,
+        title = &quot;Features&quot;)
+    plot!(plt_split, reshape(t_test, :), y_test&#39;;
+        linewidth = 3, linestyle = :dash,
+        color = [1 2 3 4], label = nothing)
+
+    plot!(plt_split, [0], [0]; linewidth = 0,
+        label = &quot;Train&quot;, color = 1)
+    plot!(plt_split, [0], [0]; linewidth = 0,
+        linestyle = :dash, label = &quot;Test&quot;,
+        color = 1,
+        ylims = (-5, 5))
+end
+
+(t_train,
+y_train,
+t_test,
+y_test,
+(t_mean, t_scale),
+(y_mean, y_scale)) = featurize(df)
+plot_features(t_train, y_train, t_test, y_test)</code></pre><p>The dataset is now centered around 0 with a standard deviation of 1. We will ignore the extreme pressure measurements for simplicity. Since they are in the test split they won&#39;t impact training anyway. We are now ready to construct and train our model! To avoid local minimas we will train iteratively with increasing amounts of data.</p><pre><code class="language-julia hljs">function neural_ode(t, data_dim)
+    f = Chain(Dense(data_dim =&gt; 64, swish), Dense(64 =&gt; 32, swish), Dense(32 =&gt; data_dim))
+
+    node = NeuralODE(f, extrema(t), Tsit5(); saveat = t,
+        abstol = 1e-9, reltol = 1e-9)
+
+    rng = Random.default_rng()
+    p, state = Lux.setup(rng, f)
+
+    return node, ComponentArray(p), state
+end
+
+function train_one_round(node, p, state, y, opt, maxiters, rng, y0 = y[:, 1]; kwargs...)
+    predict(p) = Array(node(y0, p, state)[1])
+    loss(p) = sum(abs2, predict(p) .- y)
+
+    adtype = Optimization.AutoZygote()
+    optf = OptimizationFunction((p, _) -&gt; loss(p), adtype)
+    optprob = OptimizationProblem(optf, p)
+    res = solve(optprob, opt; maxiters = maxiters, kwargs...)
+    res.minimizer, state
+end
+
+function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; kwargs...)
+    log_results(ps, losses) = (p, loss) -&gt; begin
+        push!(ps, copy(p))
+        push!(losses, loss)
+        false
+    end
+
+    ps, losses = ComponentArray[], Float32[]
+    for k in obs_grid
+        node, p_new, state_new = neural_ode(t, size(y, 1))
+        p === nothing &amp;&amp; (p = p_new)
+        state === nothing &amp;&amp; (state = state_new)
+
+        p, state = train_one_round(node, p, state, y, AdamW(lr), maxiters, rng;
+            callback = log_results(ps, losses), kwargs...)
+    end
+    ps, state, losses
+end
+
+rng = MersenneTwister(123)
+obs_grid = 4:4:length(t_train) # we train on an increasing amount of the first k obs
+maxiters = 150
+lr = 5e-3
+ps, state, losses = train(t_train, y_train, obs_grid, maxiters, lr, rng; progress = true);</code></pre><p>We can now animate the training to get a better understanding of the fit.</p><pre><code class="language-julia hljs">predict(y0, t, p, state) = begin
+    node, _, _ = neural_ode(t, length(y0))
+    Array(node(y0, p, state)[1])
+end
+
+function plot_pred(t_train, y_train, t_grid, rescale_t, rescale_y, num_iters, p, state,
+        loss, y0 = y_train[:, 1])
+    y_pred = predict(y0, t_grid, p, state)
+    return plot_result(rescale_t(t_train), rescale_y(y_train), rescale_t(t_grid),
+        rescale_y(y_pred), loss, num_iters)
+end
+
+function plot_pred(t, y, y_pred)
+    plt = Plots.scatter(t, y; label = &quot;Observation&quot;)
+    Plots.plot!(plt, t, y_pred; label = &quot;Prediction&quot;)
+end
+
+function plot_pred(t, y, t_pred, y_pred; kwargs...)
+    plot_params = zip(eachrow(y), eachrow(y_pred), FEATURE_NAMES, UNITS)
+    map(enumerate(plot_params)) do (i, (yᵢ, ŷᵢ, name, unit))
+        plt = Plots.plot(t_pred, ŷᵢ; label = &quot;Prediction&quot;, color = i, linewidth = 3,
+            legend = nothing, title = name, kwargs...)
+        Plots.scatter!(plt, t, yᵢ; label = &quot;Observation&quot;, xlabel = &quot;Time&quot;, ylabel = unit,
+            markersize = 5, color = i)
+    end
+end
+
+function plot_result(t, y, t_pred, y_pred, loss, num_iters; kwargs...)
+    plts_preds = plot_pred(t, y, t_pred, y_pred; kwargs...)
+    plot!(plts_preds[1]; ylim = (10, 40), legend = (0.65, 1.0))
+    plot!(plts_preds[2]; ylim = (20, 100))
+    plot!(plts_preds[3]; ylim = (2, 12))
+    plot!(plts_preds[4]; ylim = (990, 1025))
+
+    p_loss = Plots.plot(loss; label = nothing, linewidth = 3,
+        title = &quot;Loss&quot;, xlabel = &quot;Iterations&quot;, xlim = (0, num_iters))
+    plots = [plts_preds..., p_loss]
+    plot(plots...; layout = grid(length(plots), 1), size = (900, 900))
+end
+
+function animate_training(plot_frame, t_train, y_train, ps, losses, obs_grid;
+        pause_for = 300)
+    obs_count = Dict(i - 1 =&gt; n for (i, n) in enumerate(obs_grid))
+    is = [min(i, length(losses)) for i in 2:(length(losses) + pause_for)]
+    @animate for i in is
+        stage = Int(floor((i - 1) / length(losses) * length(obs_grid)))
+        k = obs_count[stage]
+        plot_frame(t_train[1:k], y_train[:, 1:k], ps[i], losses[1:i])
+    end every 2
+end
+
+num_iters = length(losses)
+t_train_grid = collect(range(extrema(t_train)...; length = 500))
+rescale_t(x) = t_scale .* x .+ t_mean
+rescale_y(x) = y_scale .* x .+ y_mean
+function plot_frame(t, y, p, loss)
+    plot_pred(t, y, t_train_grid, rescale_t, rescale_y, num_iters, p, state, loss)
+end
+anim = animate_training(plot_frame, t_train, y_train, ps, losses, obs_grid);
+gif(anim, &quot;node_weather_forecast_training.gif&quot;)</code></pre><p>Looks good! But how well does the model forecast?</p><pre><code class="language-julia hljs">function plot_extrapolation(t_train, y_train, t_test, y_test, t̂, ŷ)
+    plts = plot_pred(t_train, y_train, t̂, ŷ)
+    for (i, (plt, y)) in enumerate(zip(plts, eachrow(y_test)))
+        scatter!(plt, t_test, y; color = i, markerstrokecolor = :white,
+            label = &quot;Test observation&quot;)
+    end
+
+    plot!(plts[1]; ylim = (10, 40), legend = :topleft)
+    plot!(plts[2]; ylim = (20, 100))
+    plot!(plts[3]; ylim = (2, 12))
+    plot!(plts[4]; ylim = (990, 1025))
+    plot(plts...; layout = grid(length(plts), 1), size = (900, 900))
+end
+
+t_grid = collect(range(minimum(t_train), maximum(t_test); length = 500))
+y_pred = predict(y_train[:, 1], t_grid, ps[end], state)
+plot_extrapolation(rescale_t(t_train), rescale_y(y_train), rescale_t(t_test),
+    rescale_y(y_test), rescale_t(t_grid), rescale_y(y_pred))</code></pre><p>While there is some drift in the weather patterns, the model extrapolates very well.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../multiple_shooting/">« Multiple Shooting</a><a class="docs-footer-nextpage" href="../../layers/BasisLayers/">Classical Basis Layers »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Monday 11 December 2023 05:51">Monday 11 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
