@@ -24,7 +24,7 @@ Arguments:
   - `continuity_term`: Weight term to ensure continuity of predictions throughout
     different groups.
   - `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
-    [Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/) and
+    [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/) and
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 
@@ -107,7 +107,7 @@ them. If no custom `continuity_loss` is specified, `sum(abs, û_end - u_0)` is 
 - `continuity_term`: Weight term to ensure continuity of predictions throughout
 different groups.
 - `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
-[Local Sensitivity Analysis](https://docs.sciml.ai/DiffEqDocs/stable/analysis/sensitivity/) and
+[Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/) and
 [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
 documentation for more details.
 
