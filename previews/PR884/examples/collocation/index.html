@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Smoothed Collocation for Fast Two-Stage Training · DiffEqFlux.jl</title><meta name="title" content="Smoothed Collocation for Fast Two-Stage Training · DiffEqFlux.jl"/><meta property="og:title" content="Smoothed Collocation for Fast Two-Stage Training · DiffEqFlux.jl"/><meta property="twitter:title" content="Smoothed Collocation for Fast Two-Stage Training · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/collocation/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/collocation/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/collocation/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li class="is-active"><a class="tocitem" href>Smoothed Collocation for Fast Two-Stage Training</a><ul class="internal"><li><a class="tocitem" href="#Generating-the-Collocation"><span>Generating the Collocation</span></a></li></ul></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Smoothed Collocation for Fast Two-Stage Training</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Smoothed Collocation for Fast Two-Stage Training</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/collocation.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Smoothed-Collocation-for-Fast-Two-Stage-Training"><a class="docs-heading-anchor" href="#Smoothed-Collocation-for-Fast-Two-Stage-Training">Smoothed Collocation for Fast Two-Stage Training</a><a id="Smoothed-Collocation-for-Fast-Two-Stage-Training-1"></a><a class="docs-heading-anchor-permalink" href="#Smoothed-Collocation-for-Fast-Two-Stage-Training" title="Permalink"></a></h1><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>This is one of many methods for calculating the collocation coefficients for the training process. For a more comprehensive set of collocation methods, see the <a href="https://help.juliahub.com/jsmo/stable/manual/collocation/">JuliaSimModelOptimizer</a>.</p></div></div><p>One can avoid a lot of the computational cost of the ODE solver by pretraining the neural network against a smoothed collocation of the data. First the example and then an explanation.</p><pre><code class="language-julia hljs">using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization,
+    OptimizationOptimisers, Plots
+
+using Random
+rng = Random.default_rng()
+
+u0 = Float32[2.0; 0.0]
+datasize = 300
+tspan = (0.0f0, 1.5f0)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
+
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u .^ 3)&#39;true_A)&#39;
+end
+
+prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps)) .+ 0.1randn(2, 300)
+
+du, u = collocate_data(data, tsteps, EpanechnikovKernel())
+
+scatter(tsteps, data&#39;)
+plot!(tsteps, u&#39;; lw = 5)
+savefig(&quot;colloc.png&quot;)
+plot(tsteps, du&#39;)
+savefig(&quot;colloc_du.png&quot;)
+
+dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
+
+function loss(p)
+    cost = zero(first(p))
+    for i in 1:size(du, 2)
+        _du, _ = dudt2(@view(u[:, i]), p, st)
+        dui = @view du[:, i]
+        cost += sum(abs2, dui .- _du)
+    end
+    sqrt(cost)
+end
+
+pinit, st = Lux.setup(rng, dudt2)
+
+callback = function (p, l)
+    return false
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
+
+result_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 10000)
+
+prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
+nn_sol, st = prob_neuralode(u0, result_neuralode.u, st)
+scatter(tsteps, data&#39;)
+plot!(nn_sol)
+savefig(&quot;colloc_trained.png&quot;)
+
+function predict_neuralode(p)
+    Array(prob_neuralode(u0, p, st)[1])
+end
+
+function loss_neuralode(p)
+    pred = predict_neuralode(p)
+    loss = sum(abs2, data .- pred)
+    return loss
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralode(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
+
+numerical_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 300)
+
+nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
+scatter(tsteps, data&#39;)
+plot!(nn_sol; lw = 5)</code></pre><img src="91fa5a0b.svg" alt="Example block output"/><h2 id="Generating-the-Collocation"><a class="docs-heading-anchor" href="#Generating-the-Collocation">Generating the Collocation</a><a id="Generating-the-Collocation-1"></a><a class="docs-heading-anchor-permalink" href="#Generating-the-Collocation" title="Permalink"></a></h2><p>The smoothed collocation is a spline fit of the data points which allows us to get an estimate of the approximate noiseless dynamics:</p><pre><code class="language-julia hljs">using ComponentArrays,
+    Lux, DiffEqFlux, Optimization, OptimizationOptimisers, OrdinaryDiffEq, Plots
+
+using Random
+rng = Random.default_rng()
+
+u0 = Float32[2.0; 0.0]
+datasize = 300
+tspan = (0.0f0, 1.5f0)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
+
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u .^ 3)&#39;true_A)&#39;
+end
+
+prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps)) .+ 0.1randn(2, 300)
+
+du, u = collocate_data(data, tsteps, EpanechnikovKernel())
+
+scatter(tsteps, data&#39;)
+plot!(tsteps, u&#39;; lw = 5)</code></pre><img src="90bdd98a.svg" alt="Example block output"/><p>We can then differentiate the smoothed function to get estimates of the derivative at each data point:</p><pre><code class="language-julia hljs">plot(tsteps, du&#39;)</code></pre><img src="a360b396.svg" alt="Example block output"/><p>Because we have <code>(u&#39;,u)</code> pairs, we can write a loss function that calculates the squared difference between <code>f(u,p,t)</code> and <code>u&#39;</code> at each point, and find the parameters which minimize this difference:</p><pre><code class="language-julia hljs">dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
+
+function loss(p)
+    cost = zero(first(p))
+    for i in 1:size(du, 2)
+        _du, _ = dudt2(@view(u[:, i]), p, st)
+        dui = @view du[:, i]
+        cost += sum(abs2, dui .- _du)
+    end
+    sqrt(cost)
+end
+
+pinit, st = Lux.setup(rng, dudt2)
+
+callback = function (p, l)
+    return false
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
+
+result_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 10000)
+
+prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
+nn_sol, st = prob_neuralode(u0, result_neuralode.u, st)
+scatter(tsteps, data&#39;)
+plot!(nn_sol)</code></pre><img src="4105c8ac.svg" alt="Example block output"/><p>While this doesn&#39;t look great, it has the characteristics of the full solution all throughout the timeseries, but it does have a drift. We can continue to optimize like this, or we can use this as the initial condition to the next phase of our fitting:</p><pre><code class="language-julia hljs">function predict_neuralode(p)
+    Array(prob_neuralode(u0, p, st)[1])
+end
+
+function loss_neuralode(p)
+    pred = predict_neuralode(p)
+    loss = sum(abs2, data .- pred)
+    return loss
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralode(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
+
+numerical_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 300)
+
+nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
+scatter(tsteps, data&#39;)
+plot!(nn_sol; lw = 5)</code></pre><img src="ffcd8e59.svg" alt="Example block output"/><p>This method then has a good global starting position, making it less prone to local minima, and this method is thus a great method to mix in with other fitting methods for neural ODEs.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../neural_sde/">« Neural Stochastic Differential Equations With Method of Moments</a><a class="docs-footer-nextpage" href="../normalizing_flows/">Continuous Normalizing Flows »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Monday 11 December 2023 01:51">Monday 11 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
