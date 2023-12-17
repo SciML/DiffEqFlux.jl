@@ -108,7 +108,6 @@ We then train the neural network to learn the distribution of `x`.
 Here we showcase starting the optimization with `Adam` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
 ```@example cnf2
-
 adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)

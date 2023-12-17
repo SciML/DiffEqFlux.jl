@@ -191,10 +191,6 @@ plt2 = Plots.scatter(tsteps, sde_data'; yerror = sde_data_vars',
 plot!(plt2, tsteps, means'; lw = 8, ribbon = vars', label = "prediction")
 
 plt = plot(plt1, plt2; layout = (2, 1))
-savefig(plt, "NN_sde_combined.png");
-nothing; # sde
 ```
-
-![Neural SDE Trained Example](https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png)
 
 Try this with GPUs as well!

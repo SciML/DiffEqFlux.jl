@@ -138,9 +138,8 @@ function loss_neuralode(p)
 end
 ```
 
-We define a callback function. In this example, we set `doplot = false` because otherwise
-it would show every step and overflow the documentation, but for your use case
-**set doplot=true to see a live animation of the training process!**
+We define a callback function. In this example, we set `doplot=false` because otherwise
+it would show every step and overflow the documentation, but for your use case set `doplot=true` to see a live animation of the training process!
 
 ```@example neuralode
 # Callback function to observe training
@@ -204,4 +203,7 @@ And then we use the callback with `doplot=true` to see the final plot:
 
 ```@example neuralode
 callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)
+plt = scatter(tsteps, ode_data[1, :]; label = "data") # hide
+scatter!(plt, tsteps, loss_neuralode(result_neuralode2.u)[2][1, :]; label = "prediction") # hide 
+plt # hide
 ```

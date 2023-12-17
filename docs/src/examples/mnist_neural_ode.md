@@ -1,6 +1,6 @@
 # [GPU-based MNIST Neural ODE Classifier](@id mnist)
 
-Training a classifier for **MNIST** using a neural ordinary differential equation **NN-ODE**
+Training a classifier for **MNIST** using a neural ordinary differential equation **NeuralODE**
 on **GPUs** with **minibatching**.
 
 (Step-by-step description below)
@@ -125,7 +125,7 @@ res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); callback)
 
 ### Load Packages
 
-```julia
+```@example mnist
 using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
     ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
 using MLDatasets: MNIST
@@ -136,11 +136,9 @@ using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 
 A good trick used here:
 
-```julia
-
+```@example mnist
 CUDA.allowscalar(false)
 ENV["DATADEPS_ALWAYS_ACCEPT"] = true
-
 const cdev = cpu_device()
 const gdev = gpu_device()
 ```
@@ -152,18 +150,17 @@ code will fall back to the CPU.
 
 ### Load MNIST Dataset into Minibatches
 
-The MNIST dataset is split into `60.000` train and `10.000` test images, ensuring a balanced ratio of labels.
+The MNIST dataset is split into 60,000 train and 10,000 test images, ensuring a balanced ratio of labels.
 
 The preprocessing is done in `loadmnist` where the raw MNIST data is split into features `x` and labels `y`.
 Features are reshaped into format **[Height, Width, Color, Samples]**, in case of the train set **[28, 28, 1, 60000]**.
-Using Flux's `onehotbatch` function, the labels (numbers 0 to 9) are one-hot encoded, resulting in a a **[10, 60000]** `OneHotMatrix`.
+Using MLDataUtils's `LabelEnc` function, the labels (numbers 0 to 9) are one-hot encoded, resulting in a a **[10, 60000]** `OneHotMatrix`.
 
-Features and labels are then passed to Flux's DataLoader.
+Features and labels are then passed to MLDataUtils's `batchview`.
 This automatically minibatches both the images and labels using the specified `batchsize`,
 meaning that every minibatch will contain 128 images with a single color channel of 28x28 pixels.
-Additionally, it allows us to shuffle the train dataset in each epoch.
 
-```julia
+```@example mnist
 logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims = 1); dims = 1))
 
 function loadmnist(batchsize = bs)
@@ -187,7 +184,7 @@ end
 
 and then loaded from main:
 
-```julia
+```@example mnist
 # Main
 const bs = 128
 x_train, y_train = loadmnist(bs)
@@ -199,8 +196,7 @@ The Neural Network requires passing inputs sequentially through multiple layers.
 `Chain` which allows inputs to functions to come from the previous layer and sends the outputs
 to the next. Four different sets of layers are used here:
 
-```julia
-
+```@example mnist
 down = Lux.Chain(Lux.FlattenLayer(), Lux.Dense(784, 20, tanh))
 nn = Lux.Chain(Lux.Dense(20, 10, tanh), Lux.Dense(10, 10, tanh),
     Lux.Dense(10, 20, tanh))
@@ -224,13 +220,13 @@ the feature vector of belonging to a particular class
 When using `NeuralODE`, this function converts the ODESolution's `DiffEqArray` to
 a Matrix (CuArray), and reduces the matrix from 3 to 2 dimensions for use in the next layer.
 
-```julia
+```@example mnist
 nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol = 1e-3,
     abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
     xarr = gdev(x)
-    return reshape(xarr, size(xarr)[1:2])
+    return xarr.u[1]
 end
 ```
 
@@ -241,7 +237,7 @@ change `gdev(x)` to `Array(x)`.
 
 Next, we connect all layers together in a single chain:
 
-```julia
+```@example mnist
 # Build our overall model topology
 m = Lux.Chain(; down, nn_ode, convert = Lux.WrappedFunction(DiffEqArray_to_Array), fc)
 ps, st = Lux.setup(Random.default_rng(), m)
@@ -254,7 +250,7 @@ st = st |> gdev
 To convert the classification back into readable numbers, we use `classify` which returns the
 prediction by taking the arg max of the output for each column of the minibatch:
 
-```julia
+```@example mnist
 classify(x) = argmax.(eachcol(x))
 ```
 
@@ -262,7 +258,7 @@ classify(x) = argmax.(eachcol(x))
 
 We then evaluate the accuracy on `n_batches` at a time through the entire network:
 
-```julia
+```@example mnist
 function accuracy(model, data, ps, st; n_batches = 100)
     total_correct = 0
     total = 0
@@ -281,7 +277,7 @@ accuracy(m, zip(x_train, y_train), ps, st)
 
 ### Training Parameters
 
-Once we have our model, we can train our neural network by backpropagation using `Flux.train!`.
+Once we have our model, we can train our neural network by backpropagation using `Lux.train!`.
 This function requires **Loss**, **Optimizer** and **Callback** functions.
 
 #### Loss
@@ -290,7 +286,7 @@ This function requires **Loss**, **Optimizer** and **Callback** functions.
 final output of our model. `logitcrossentropy` takes in the prediction from our
 model `model(x)` and compares it to actual output `y`:
 
-```julia
+```@example mnist
 function loss_function(ps, x, y)
     pred, st_ = m(x, ps, st)
     return logitcrossentropy(pred, y), pred
@@ -304,16 +300,16 @@ loss_function(ps, x_train[1], y_train[1])
 
 `Adam` is specified here as our optimizer with a **learning rate of 0.05**:
 
-```julia
+```@example mnist
 opt = OptimizationOptimisers.Adam(0.05)
 ```
 
-#### CallBack
+#### Callback
 
 This callback function is used to print both the training and testing accuracy after
 10 training iterations:
 
-```julia
+```@example mnist
 iter = 0
 
 opt_func = OptimizationFunction((ps, _, x, y) -> loss_function(ps, x, y),
@@ -337,59 +333,10 @@ To train our model, we select the appropriate trainable parameters of our networ
 In our case, backpropagation is required for `down`, `nn_ode` and `fc`. Notice that the parameters
 for Neural ODE is given by `nn_ode.p`:
 
-```julia
+```@example mnist
 # Train the NN-ODE and monitor the loss and weights.
 res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); callback)
-@test accuracy(m, zip(x_train, y_train), res.u, st) > 0.8
-```
-
-### Expected Output
-
-```txt
-[ Info: [MNIST GPU] Accuracy: 0.602734375
-[ Info: [MNIST GPU] Accuracy: 0.719609375
-[ Info: [MNIST GPU] Accuracy: 0.783671875
-[ Info: [MNIST GPU] Accuracy: 0.8171875
-[ Info: [MNIST GPU] Accuracy: 0.82390625
-[ Info: [MNIST GPU] Accuracy: 0.840546875
-[ Info: [MNIST GPU] Accuracy: 0.839765625
-[ Info: [MNIST GPU] Accuracy: 0.843046875
-[ Info: [MNIST GPU] Accuracy: 0.8609375
-[ Info: [MNIST GPU] Accuracy: 0.86
-[ Info: [MNIST GPU] Accuracy: 0.866875
-[ Info: [MNIST GPU] Accuracy: 0.86484375
-[ Info: [MNIST GPU] Accuracy: 0.883515625
-[ Info: [MNIST GPU] Accuracy: 0.87046875
-[ Info: [MNIST GPU] Accuracy: 0.87609375
-[ Info: [MNIST GPU] Accuracy: 0.880703125
-[ Info: [MNIST GPU] Accuracy: 0.874609375
-[ Info: [MNIST GPU] Accuracy: 0.870859375
-[ Info: [MNIST GPU] Accuracy: 0.881640625
-[ Info: [MNIST GPU] Accuracy: 0.887734375
-[ Info: [MNIST GPU] Accuracy: 0.88734375
-[ Info: [MNIST GPU] Accuracy: 0.880078125
-[ Info: [MNIST GPU] Accuracy: 0.88078125
-[ Info: [MNIST GPU] Accuracy: 0.88125
-[ Info: [MNIST GPU] Accuracy: 0.87203125
-[ Info: [MNIST GPU] Accuracy: 0.857890625
-[ Info: [MNIST GPU] Accuracy: 0.87203125
-[ Info: [MNIST GPU] Accuracy: 0.877578125
-[ Info: [MNIST GPU] Accuracy: 0.879765625
-[ Info: [MNIST GPU] Accuracy: 0.885703125
-[ Info: [MNIST GPU] Accuracy: 0.895
-[ Info: [MNIST GPU] Accuracy: 0.90171875
-[ Info: [MNIST GPU] Accuracy: 0.893359375
-[ Info: [MNIST GPU] Accuracy: 0.882109375
-[ Info: [MNIST GPU] Accuracy: 0.87453125
-[ Info: [MNIST GPU] Accuracy: 0.881171875
-[ Info: [MNIST GPU] Accuracy: 0.891171875
-[ Info: [MNIST GPU] Accuracy: 0.899921875
-[ Info: [MNIST GPU] Accuracy: 0.89890625
-[ Info: [MNIST GPU] Accuracy: 0.895078125
-[ Info: [MNIST GPU] Accuracy: 0.89171875
-[ Info: [MNIST GPU] Accuracy: 0.899296875
-[ Info: [MNIST GPU] Accuracy: 0.891484375
-[ Info: [MNIST GPU] Accuracy: 0.899375
-[ Info: [MNIST GPU] Accuracy: 0.88953125
-[ Info: [MNIST GPU] Accuracy: 0.88890625
+acc = accuracy(m, zip(x_train, y_train), res.u, st)
+@test acc > 0.8 # hide
+acc # hide
 ```

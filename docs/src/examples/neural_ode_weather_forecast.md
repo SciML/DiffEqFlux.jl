@@ -7,7 +7,7 @@ This example is adapted from [Forecasting the weather with neural ODEs - Sebatia
 
 The data is a four-dimensional dataset of daily temperature, humidity, wind speed and pressure measured over four years in the city Delhi. Let us download and plot it.
 
-```julia
+```@example weather_forecast
 using Random, Dates, Optimization, ComponentArrays, Lux, OptimizationOptimisers, DiffEqFlux,
     OrdinaryDiffEq, CSV, DataFrames, Dates, Statistics, Plots, DataDeps
 
@@ -27,7 +27,7 @@ end
 df = download_data()
 ```
 
-```julia
+```@example weather_forecast
 FEATURES = [:meantemp, :humidity, :wind_speed, :meanpressure]
 UNITS = ["Celsius", "g/m³ of water", "km/h", "hPa"]
 FEATURE_NAMES = ["Mean temperature", "Humidity", "Wind speed", "Mean pressure"]
@@ -49,7 +49,7 @@ The data show clear annual behaviour (it is difficult to see for pressure due to
 It is concievable that this system can be described with an ODE, but which? Let us use an network to learn the dynamics from the dataset.
 Training neural networks is easier with standardised data so we will compute standardised features before training. Finally, we take the first 20 days for training and the rest for testing.
 
-```julia
+```@example weather_forecast
 function standardize(x)
     μ = mean(x; dims = 2)
     σ = std(x; dims = 2)
@@ -67,7 +67,6 @@ function featurize(raw_df, num_train = 20)
         :wind_speed => mean,
         :meanpressure => mean;
         renamecols = false)
-    @show size(df)
     t_and_y(df) = df.date', Matrix(select(df, FEATURES))'
     t_train, y_train = t_and_y(df[1:num_train, :])
     t_test, y_test = t_and_y(df[(num_train + 1):end, :])
@@ -92,7 +91,6 @@ function plot_features(t_train, y_train, t_test, y_test)
     plot!(plt_split, reshape(t_test, :), y_test';
         linewidth = 3, linestyle = :dash,
         color = [1 2 3 4], label = nothing)
-
     plot!(plt_split, [0], [0]; linewidth = 0,
         label = "Train", color = 1)
     plot!(plt_split, [0], [0]; linewidth = 0,
@@ -101,12 +99,7 @@ function plot_features(t_train, y_train, t_test, y_test)
         ylims = (-5, 5))
 end
 
-(t_train,
-y_train,
-t_test,
-y_test,
-(t_mean, t_scale),
-(y_mean, y_scale)) = featurize(df)
+t_train, y_train, t_test, y_test, (t_mean, t_scale), (y_mean, y_scale) = featurize(df)
 plot_features(t_train, y_train, t_test, y_test)
 ```
 
@@ -115,7 +108,7 @@ We will ignore the extreme pressure measurements for simplicity.
 Since they are in the test split they won't impact training anyway.
 We are now ready to construct and train our model! To avoid local minimas we will train iteratively with increasing amounts of data.
 
-```julia
+```@example weather_forecast
 function neural_ode(t, data_dim)
     f = Chain(Dense(data_dim => 64, swish), Dense(64 => 32, swish), Dense(32 => data_dim))
 
@@ -162,12 +155,12 @@ rng = MersenneTwister(123)
 obs_grid = 4:4:length(t_train) # we train on an increasing amount of the first k obs
 maxiters = 150
 lr = 5e-3
-ps, state, losses = train(t_train, y_train, obs_grid, maxiters, lr, rng; progress = true);
+ps, state, losses = train(t_train, y_train, obs_grid, maxiters, lr, rng; progress = true)
 ```
 
 We can now animate the training to get a better understanding of the fit.
 
-```julia
+```@example weather_forecast
 predict(y0, t, p, state) = begin
     node, _, _ = neural_ode(t, length(y0))
     Array(node(y0, p, state)[1])
@@ -226,13 +219,13 @@ rescale_y(x) = y_scale .* x .+ y_mean
 function plot_frame(t, y, p, loss)
     plot_pred(t, y, t_train_grid, rescale_t, rescale_y, num_iters, p, state, loss)
 end
-anim = animate_training(plot_frame, t_train, y_train, ps, losses, obs_grid);
+anim = animate_training(plot_frame, t_train, y_train, ps, losses, obs_grid)
 gif(anim, "node_weather_forecast_training.gif")
 ```
 
 Looks good! But how well does the model forecast?
 
-```julia
+```@example weather_forecast
 function plot_extrapolation(t_train, y_train, t_test, y_test, t̂, ŷ)
     plts = plot_pred(t_train, y_train, t̂, ŷ)
     for (i, (plt, y)) in enumerate(zip(plts, eachrow(y_test)))
@@ -253,4 +246,4 @@ plot_extrapolation(rescale_t(t_train), rescale_y(y_train), rescale_t(t_test),
     rescale_y(y_test), rescale_t(t_grid), rescale_y(y_pred))
 ```
 
-While there is some drift in the weather patterns, the model extrapolates very well.
+While there is some drift in the weather patterns, the model extrapolates very well!

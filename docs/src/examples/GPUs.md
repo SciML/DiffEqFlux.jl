@@ -7,7 +7,7 @@ that runs on the GPU (if no GPU is available, the calculation defaults back to t
 For a detailed discussion on how GPUs need to be setup refer to
 [Lux Docs](https://lux.csail.mit.edu/stable/manual/gpu_management).
 
-```julia
+```@example gpu
 using OrdinaryDiffEq, Lux, LuxCUDA, SciMLSensitivity, ComponentArrays
 using Random
 rng = Random.default_rng()
@@ -34,7 +34,7 @@ sol_gpu = solve(prob_gpu, Tsit5(); saveat = tsteps)
 
 Or we could directly use the neural ODE layer function, like:
 
-```julia
+```@example gpu
 using DiffEqFlux: NeuralODE
 prob_neuralode_gpu = NeuralODE(model, tspan, Tsit5(); saveat = tsteps)
 ```
@@ -42,7 +42,7 @@ prob_neuralode_gpu = NeuralODE(model, tspan, Tsit5(); saveat = tsteps)
 If one is using `Lux.Chain`, then the computation takes place on the GPU with
 `f(x,p,st)` if `x`, `p` and `st` are on the GPU. This commonly looks like:
 
-```julia
+```@example gpu
 import Lux
 
 dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
@@ -64,7 +64,7 @@ sol_gpu = solve(prob_gpu, Tsit5(); saveat = tsteps)
 
 or via the NeuralODE struct:
 
-```julia
+```@example gpu
 prob_neuralode_gpu = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 prob_neuralode_gpu(u0, p, st)
 ```
@@ -74,7 +74,7 @@ prob_neuralode_gpu(u0, p, st)
 Here is the full neural ODE example. Note that we use the `gpu_device` function so that the
 same code works on CPUs and GPUs, dependent on `using LuxCUDA`.
 
-```julia
+```@example gpu
 using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq,
     Plots, LuxCUDA, SciMLSensitivity, Random, ComponentArrays
 import DiffEqFlux: NeuralODE
