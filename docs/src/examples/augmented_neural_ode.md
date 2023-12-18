@@ -36,7 +36,7 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         shuffle = true, partial = false)
 end
 
-diffeqarray_to_array(x) = reshape(gdev(x), size(x)[1:2])
+diffeqarray_to_array(x) = gdev(x).u[1]
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
@@ -65,8 +65,6 @@ function plot_contour(model, ps, st, npoints = 300)
 end
 
 loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)
-
-println("Generating Dataset")
 
 dataloader = concentric_sphere(2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000;
     batch_size = 256)
@@ -176,7 +174,7 @@ In order to run the models on Flux.gpu, we need to manually transfer the models 
 predicting the derivatives inside the Neural ODE and the other one is the last layer in the Chain.
 
 ```@example augneuralode
-diffeqarray_to_array(x) = reshape(gdev(x), size(x)[1:2])
+diffeqarray_to_array(x) = gdev(x).u[1]
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim

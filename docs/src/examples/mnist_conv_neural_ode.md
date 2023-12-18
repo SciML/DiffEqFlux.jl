@@ -70,6 +70,10 @@ ps, st = Lux.setup(Random.default_rng(), m)
 ps = ComponentArray(ps) |> gdev
 st = st |> gdev
 
+# To understand the intermediate NN-ODE layer, we can examine it's dimensionality
+img = x_train[1][:, :, :, 1:1] |> gdev
+lab = y_train[1][:, 1:1] |> gdev
+
 x_m, _ = m(img, ps, st)
 
 classify(x) = argmax.(eachcol(x))
