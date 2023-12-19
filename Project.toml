@@ -29,7 +29,7 @@ ZygoteRules = "700de1a5-db45-46bc-99cf-38207098b444"
 
 [compat]
 ADTypes = "0.2"
-Adapt = "3"
+Adapt = "3, 4"
 ChainRulesCore = "1"
 ComponentArrays = "0.15.5"
 ConcreteStructs = "0.2"
