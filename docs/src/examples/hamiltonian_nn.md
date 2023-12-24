@@ -8,6 +8,10 @@ m\ddot x + kx = 0
 
 Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. Analytically solving this equation, we get ``x = sin(t)``. Hence, ``q = sin(t)``, and ``p = cos(t)``. Using these solutions, we generate our dataset and fit the `NeuralHamiltonianDE` to learn the dynamics of this system.
 
+## Copy-Pasteable Code
+
+Before getting to the explanation, here's some code to start with. We will follow a full explanation of the definition and training process:
+
 ```@example hamiltonian_cp
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
     ComponentArrays, Optimization, OptimizationOptimisers, IterTools
@@ -130,22 +134,6 @@ plot(data[1, :], data[2, :]; lw = 4, label = "Original")
 plot!(pred[1, :], pred[2, :]; lw = 4, label = "Predicted")
 xlabel!("Position (q)")
 ylabel!("Momentum (p)")
-```
-
-![HNN Prediction](https://user-images.githubusercontent.com/30564094/88309081-7cd76480-cd2b-11ea-981b-9cb86b153414.png)
-
-## Expected Output
-
-```txt
-Loss: 19.865715
-Loss: 18.196068
-Loss: 19.179213
-Loss: 19.58956
-⋮
-Loss: 0.02267044
-Loss: 0.019175647
-Loss: 0.02218909
-Loss: 0.018870523
 ```
 
 ## References

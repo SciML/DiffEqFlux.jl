@@ -110,5 +110,3 @@ plot!(ts, data_train[2, :]; label = "V (ODE)")
 plot!(ts, data_pred[1, :]; label = "X (NN)")
 plot!(ts, data_pred[2, :]; label = "V (NN)")
 ```
-
-![plot_tutorial](https://user-images.githubusercontent.com/61364108/85925795-e2d5e680-b868-11ea-9816-29f8125c8cb5.png)

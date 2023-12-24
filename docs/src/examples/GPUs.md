@@ -7,9 +7,8 @@ that runs on the GPU (if no GPU is available, the calculation defaults back to t
 For a detailed discussion on how GPUs need to be setup refer to
 [Lux Docs](https://lux.csail.mit.edu/stable/manual/gpu_management).
 
-```julia
-using OrdinaryDiffEq, Lux, LuxCUDA, SciMLSensitivity, ComponentArrays
-using Random
+```@example gpu
+using OrdinaryDiffEq, Lux, LuxCUDA, SciMLSensitivity, ComponentArrays, Random
 rng = Random.default_rng()
 
 const cdev = cpu_device()
@@ -34,7 +33,7 @@ sol_gpu = solve(prob_gpu, Tsit5(); saveat = tsteps)
 
 Or we could directly use the neural ODE layer function, like:
 
-```julia
+```@example gpu
 using DiffEqFlux: NeuralODE
 prob_neuralode_gpu = NeuralODE(model, tspan, Tsit5(); saveat = tsteps)
 ```
@@ -42,15 +41,13 @@ prob_neuralode_gpu = NeuralODE(model, tspan, Tsit5(); saveat = tsteps)
 If one is using `Lux.Chain`, then the computation takes place on the GPU with
 `f(x,p,st)` if `x`, `p` and `st` are on the GPU. This commonly looks like:
 
-```julia
-import Lux
-
+```@example gpu
 dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 
 u0 = Float32[2.0; 0.0] |> gdev
 p, st = Lux.setup(rng, dudt2) |> gdev
 
-dudt2_(u, p, t) = dudt2(u, p, st)[1]
+dudt2_(u, p, t) = first(dudt2(u, p, st))
 
 # Simulation interval and intermediary points
 tspan = (0.0f0, 10.0f0)
@@ -64,7 +61,7 @@ sol_gpu = solve(prob_gpu, Tsit5(); saveat = tsteps)
 
 or via the NeuralODE struct:
 
-```julia
+```@example gpu
 prob_neuralode_gpu = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 prob_neuralode_gpu(u0, p, st)
 ```
@@ -74,7 +71,7 @@ prob_neuralode_gpu(u0, p, st)
 Here is the full neural ODE example. Note that we use the `gpu_device` function so that the
 same code works on CPUs and GPUs, dependent on `using LuxCUDA`.
 
-```julia
+```@example gpu
 using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq,
     Plots, LuxCUDA, SciMLSensitivity, Random, ComponentArrays
 import DiffEqFlux: NeuralODE
@@ -94,7 +91,8 @@ function trueODEfunc(du, u, p, t)
 end
 prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
 # Make the data into a GPU-based array if the user has a GPU
-ode_data = gdev(solve(prob_trueode, Tsit5(); saveat = tsteps))
+ode_data = solve(prob_trueode, Tsit5(); saveat = tsteps)
+ode_data = Array(ode_data) |> gdev
 
 dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 u0 = Float32[2.0; 0.0] |> gdev
@@ -104,9 +102,7 @@ st = st |> gdev
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 
-function predict_neuralode(p)
-    gdev(first(prob_neuralode(u0, p, st)))
-end
+predict_neuralode(p) = reduce(hcat, first(prob_neuralode(u0, p, st)).u)
 function loss_neuralode(p)
     pred = predict_neuralode(p)
     loss = sum(abs2, ode_data .- pred)

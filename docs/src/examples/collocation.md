@@ -4,11 +4,15 @@
     
     This is one of many methods for calculating the collocation coefficients
     for the training process. For a more comprehensive set of collocation
-    methods, see the [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/manual/collocation/).
+    methods, see [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/manual/collocation/).
 
 One can avoid a lot of the computational cost of the ODE solver by
 pretraining the neural network against a smoothed collocation of the
 data. First the example and then an explanation.
+
+## Copy-Pasteable Code
+
+Before getting to the explanation, here's some code to start with. We will follow a full explanation of the definition and training process:
 
 ```@example collocation_cp
 using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization,

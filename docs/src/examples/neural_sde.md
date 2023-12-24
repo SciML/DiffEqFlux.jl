@@ -31,8 +31,7 @@ prob = DDEProblem(dudt_, u0, h, tspan, nothing)
 First, let's build training data from the same example as the neural ODE:
 
 ```@example nsde
-using Plots, Statistics
-using ComponentArrays, Optimization,
+using Plots, Statistics, ComponentArrays, Optimization,
     OptimizationOptimisers, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
 
 u0 = Float32[2.0; 0.0]
@@ -185,16 +184,11 @@ And now we plot the solution to an ensemble of the trained neural SDE:
 ```@example nsde
 _, means, vars = loss_neuralsde(result2.u; n = 1000)
 
-plt2 = Plots.scatter(tsteps, sde_data'; yerror = sde_data_vars',
-    label = "data", title = "Neural SDE: After Training",
-    xlabel = "Time")
+plt2 = Plots.scatter(tsteps, sde_data'; yerror = sde_data_vars', label = "data",
+    title = "Neural SDE: After Training", xlabel = "Time")
 plot!(plt2, tsteps, means'; lw = 8, ribbon = vars', label = "prediction")
 
 plt = plot(plt1, plt2; layout = (2, 1))
-savefig(plt, "NN_sde_combined.png");
-nothing; # sde
 ```
-
-![Neural SDE Trained Example](https://user-images.githubusercontent.com/1814174/76975872-88dc9100-6909-11ea-80f7-242f661ebad1.png)
 
 Try this with GPUs as well!

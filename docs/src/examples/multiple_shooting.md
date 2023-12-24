@@ -2,7 +2,7 @@
 
 !!! note
     
-    The form of multiple shooting found here is a specialized form for implicit layer deep learning (known as data shooting) which assumes full observability of the underlying dynamics and lack of noise. For a more general implementation of multiple shooting, see the [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/). For an implementation more directly tied to parameter estimation against data, see [DiffEqParamEstim.jl](https://docs.sciml.ai/DiffEqParamEstim/stable/).
+    The form of multiple shooting found here is a specialized form for implicit layer deep learning (known as data shooting) which assumes full observability of the underlying dynamics and lack of noise. For a more general implementation of multiple shooting, see [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/). For an implementation more directly tied to parameter estimation against data, see [DiffEqParamEstim.jl](https://docs.sciml.ai/DiffEqParamEstim/stable/).
 
 In Multiple Shooting, the training data is split into overlapping intervals.
 The solver is then trained on individual intervals. If the end conditions of any
@@ -22,7 +22,7 @@ high penalties in case the solver predicts discontinuous values.
 
 The following is a working demo, using Multiple Shooting:
 
-```julia
+```@example multiple_shooting
 using ComponentArrays,
     Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, OrdinaryDiffEq, Plots
 using DiffEqFlux: group_ranges
@@ -103,15 +103,32 @@ res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback)
 gif(anim, "multiple_shooting.gif"; fps = 15)
 ```
 
-![pic](https://camo.githubusercontent.com/9f1a4b38895ebaa47b7d90e53268e6f10d04da684b58549624c637e85c22d27b/68747470733a2f2f692e696d6775722e636f6d2f636d507a716a722e676966)
-
 The connected lines show the predictions of each group. Notice that there
 are overlapping points as well. These are the points we are trying to coincide.
 
 Here is an output with `group_size = 30` (which is the same as solving on the whole
 interval without splitting also called single shooting).
 
-![pic_single_shoot3](https://user-images.githubusercontent.com/58384989/111843307-f0fff180-8926-11eb-9a06-2731113173bc.PNG)
+```@example multiple_shooting
+anim = Plots.Animation()
+iter = 0
+group_size = 30
+
+ps = ComponentArray(p_init)
+pd, pax = getdata(ps), getaxes(ps)
+
+function loss_single_shooting(p)
+    ps = ComponentArray(p, pax)
+    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function, Tsit5(),
+        group_size; continuity_term)
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -> loss_single_shooting(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, pd)
+res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback)
+gif(anim, "single_shooting.gif"; fps = 15)
+```
 
 It is clear from the above picture, a single shoot doesn't perform very well
 with the ODE Problem we have and gets stuck in a local minimum.

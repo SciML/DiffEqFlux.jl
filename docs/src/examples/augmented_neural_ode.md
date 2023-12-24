@@ -36,7 +36,7 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         shuffle = true, partial = false)
 end
 
-diffeqarray_to_array(x) = reshape(gdev(x), size(x)[1:2])
+diffeqarray_to_array(x) = gdev(x).u[1]
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
@@ -65,8 +65,6 @@ function plot_contour(model, ps, st, npoints = 300)
 end
 
 loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)
-
-println("Generating Dataset")
 
 dataloader = concentric_sphere(2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000;
     batch_size = 256)
@@ -106,7 +104,7 @@ optfunc = OptimizationFunction((x, p, data, target) -> loss_node(model, data, ta
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
 res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
 
-plt_node = plot_contour(model, res.u, st)
+plot_contour(model, res.u, st)
 ```
 
 ## Step-by-Step Explanation
@@ -176,7 +174,7 @@ In order to run the models on Flux.gpu, we need to manually transfer the models 
 predicting the derivatives inside the Neural ODE and the other one is the last layer in the Chain.
 
 ```@example augneuralode
-diffeqarray_to_array(x) = reshape(gdev(x), size(x)[1:2])
+diffeqarray_to_array(x) = gdev(x).u[1]
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
@@ -269,12 +267,12 @@ optfunc = OptimizationFunction((x, p, data, target) -> loss_node(model, data, ta
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
 res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+
+plot_contour(model, res.u, st)
 ```
 
 Here is what the contour plot should look for Neural ODE. Notice that the regression is not perfect due to
 the thin artifact which connects the circles.
-
-![node](https://user-images.githubusercontent.com/30564094/85916605-00f31500-b870-11ea-9857-5bf1f8c0477f.png)
 
 ## Training the Augmented Neural ODE
 
@@ -289,63 +287,8 @@ optfunc = OptimizationFunction((x, p, data, target) -> loss_node(model, data, ta
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
 res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
-```
 
-For the augmented Neural ODE we notice that the artifact is gone.
-
-![anode](https://user-images.githubusercontent.com/30564094/85916607-02bcd880-b870-11ea-84fa-d15e24295ea6.png)
-
-## Expected Output
-
-```
-Generating Dataset
-┌ Info: Augmented Neural ODE
-│   iter = 10
-└   loss = 1.3382126f0
-┌ Info: Augmented Neural ODE
-│   iter = 20
-└   loss = 0.7405951f0
-┌ Info: Augmented Neural ODE
-│   iter = 30
-└   loss = 0.65393615f0
-┌ Info: Augmented Neural ODE
-│   iter = 40
-└   loss = 0.6115348f0
-┌ Info: Augmented Neural ODE
-│   iter = 50
-└   loss = 0.5469544f0
-┌ Info: Augmented Neural ODE
-│   iter = 60
-└   loss = 0.61832863f0
-┌ Info: Augmented Neural ODE
-│   iter = 70
-└   loss = 0.45164242f0
-
-Training Augmented Neural ODE
-┌ Info: Augmented Neural ODE
-│   iter = 80
-└   loss = 2.5972328f0
-┌ Info: Augmented Neural ODE
-│   iter = 90
-└   loss = 0.79345906f0
-┌ Info: Augmented Neural ODE
-│   iter = 100
-└   loss = 0.6131873f0
-┌ Info: Augmented Neural ODE
-│   iter = 110
-└   loss = 0.36244678f0
-┌ Info: Augmented Neural ODE
-│   iter = 120
-└   loss = 0.14108367f0
-┌ Info: Augmented Neural ODE
-│   iter = 130
-└   loss = 0.09875094f0
-┌ Info: Augmented Neural ODE
-│   iter = 140
-└   loss = 0.060682703f0
-┌ Info: Augmented Neural ODE
-│   iter = 150
-└   loss = 0.050104875f0
+plot_contour(model, res.u, st)
 ```
 
 ## References
