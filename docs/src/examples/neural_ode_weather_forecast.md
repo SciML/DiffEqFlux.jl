@@ -25,6 +25,7 @@ function download_data(data_url = "https://raw.githubusercontent.com/SebastianCa
 end
 
 df = download_data()
+first(df, 5) # hide
 ```
 
 ```@example weather_forecast
