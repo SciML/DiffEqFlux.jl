@@ -65,7 +65,7 @@ For kernels, the following exist:
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2631937/
 
 Additionally, we can use interpolation methods from
-[DataInterpolations.jl](https://github.com/PumasAI/DataInterpolations.jl) to generate
+[DataInterpolations.jl](https://github.com/SciML/DataInterpolations.jl) to generate
 data from intermediate timesteps. In this case, pass any of the methods like
 `QuadraticInterpolation` as `interp`, and the timestamps to sample from as `tpoints_sample`.
 """

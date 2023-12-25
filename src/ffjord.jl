@@ -10,14 +10,14 @@ via adjoints [1] and specialized for density estimation based on continuous
 normalizing flows (CNF) [2] with a stochastic approach [2] for the computation of the trace
 of the dynamics' jacobian. At a high level this corresponds to the following steps:
 
-1. Parameterize the variable of interest x(t) as a function f(z, θ, t) of a base variable z(t) with known density p_z;
-2. Use the transformation of variables formula to predict the density p_x as a function of the density p_z and the trace of the Jacobian of f;
-3. Choose the parameter θ to minimize a loss function of p_x (usually the negative likelihood of the data);
+1. Parameterize the variable of interest x(t) as a function f(z, θ, t) of a base variable z(t) with known density p\\_z.
+2. Use the transformation of variables formula to predict the density p\\_x as a function of the density p\\_z and the trace of the Jacobian of f.
+3. Choose the parameter θ to minimize a loss function of p\\_x (usually the negative likelihood of the data).
 
-After these steps one may use the NN model and the learned θ to predict the density p_x for new values of x.
+After these steps one may use the NN model and the learned θ to predict the density p\\_x for new values of x.
 
 Arguments:
-- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the dynamics of the model.
+- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the dynamics of the model.
 - `basedist`: Distribution of the base variable. Set to the unit normal by default.
 - `input_dims`: Input Dimensions of the model.
 - `tspan`: The timespan to be solved on.
@@ -236,9 +236,9 @@ by `pdf` or `logpdf` (from `Distributions.jl`).
 
 Arguments:
 
-- `model`: A FFJORD instance
-- `regularize`: Whether we use regularization (default: `false`)
-- `monte_carlo`: Whether we use monte carlo (default: `true`)
+- `model`: A FFJORD instance.
+- `regularize`: Whether we use regularization (default: `false`).
+- `monte_carlo`: Whether we use monte carlo (default: `true`).
 """
 @concrete struct FFJORDDistribution{F <: FFJORD} <: ContinuousMultivariateDistribution
     model::F
