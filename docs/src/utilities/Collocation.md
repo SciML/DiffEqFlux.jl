@@ -13,7 +13,7 @@ accumulate through time, is not as exact as other methods.
     
     This is one of many methods for calculating the collocation coefficients
     for the training process. For a more comprehensive set of collocation
-    methods, see the [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/manual/collocation/).
+    methods, see [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/manual/collocation/).
 
 ```@docs
 collocate_data

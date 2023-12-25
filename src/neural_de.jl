@@ -62,9 +62,9 @@ Constructs a neural stochastic differential equation (neural SDE) with diagonal 
 
 Arguments:
 
-- `drift`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the drift
+- `drift`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the drift
   function.
-- `diffusion`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the
+- `diffusion`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
   diffusion function. Should output a vector of the same size as the input.
 - `tspan`: The timespan to be solved on.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
@@ -110,12 +110,12 @@ Constructs a neural stochastic differential equation (neural SDE).
 
 Arguments:
 
-- `drift`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the drift
+- `drift`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the drift
   function.
-- `diffusion`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the
+- `diffusion`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
   diffusion function. Should output a matrix that is `nbrown x size(x, 1)`.
 - `tspan`: The timespan to be solved on.
-- `nbrown`: The number of Brownian processes
+- `nbrown`: The number of Brownian processes.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
   default algorithm from DifferentialEquations.jl.
 - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
@@ -162,7 +162,7 @@ Constructs a neural delay differential equation (neural DDE) with constant delay
 
 Arguments:
 
-- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the
+- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
   derivative function. Should take an input of size `[x; x(t - lag_1); ...; x(t - lag_n)]`
   and produce and output shaped like `x`.
 - `tspan`: The timespan to be solved on.
@@ -215,7 +215,7 @@ Constructs a neural differential-algebraic equation (neural DAE).
 
 Arguments:
 
-- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the
+- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
   derivative function. Should take an input of size `x` and produce the residual of
   `f(dx,x,t)` for only the differential variables.
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
@@ -285,11 +285,11 @@ constraint equations.
 
 Arguments:
 
-- `model`: A Flux.Chain or Lux.AbstractExplicitLayer neural network that defines the ̇`f(u,p,t)`
+- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the ̇`f(u,p,t)`
 - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed constraints to
   impose on the algebraic equations.
 - `tspan`: The timespan to be solved on.
-- `mass_matrix`: The mass matrix associated with the DAE
+- `mass_matrix`: The mass matrix associated with the DAE.
 - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the default
   algorithm from DifferentialEquations.jl. This method requires an implicit ODE solver
   compatible with singular mass matrices. Consult the
@@ -340,8 +340,8 @@ Constructs an Augmented Neural Differential Equation Layer.
 
 Arguments:
 
-- `nde`: Any Neural Differential Equation Layer
-- `adim`: The number of dimensions the initial conditions should be lifted
+- `nde`: Any Neural Differential Equation Layer.
+- `adim`: The number of dimensions the initial conditions should be lifted.
 
 References:
 

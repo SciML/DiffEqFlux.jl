@@ -16,7 +16,7 @@ Arguments:
 1. `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that returns the
    Hamiltonian of the system.
 2. `ad`: The autodiff framework to be used for the internal Hamiltonian computation. The
-   default is `AutoForwardDiff()`
+   default is `AutoForwardDiff()`.
 
 !!! note
     If training with Zygote, ensure that the `chunksize` for `AutoForwardDiff` is set to

@@ -16,7 +16,7 @@ Arguments:
 - `spline_basis`: Interpolation method to be used yb the basis (current supported
   interpolation methods: `ConstantInterpolation`, `LinearInterpolation`,
   `QuadraticInterpolation`, `QuadraticSpline`, `CubicSpline`).
-- 'init_saved_points': values of the function at multiples of the time step. Initialized by
+- `init_saved_points`: values of the function at multiples of the time step. Initialized by
   default to a random vector sampled from the unit normal. Alternatively, can take a
   function with the signature `init_saved_points(rng, time_span, time_step)`.
 """
