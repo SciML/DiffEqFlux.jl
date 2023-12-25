@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Hamiltonian Neural Network · DiffEqFlux.jl</title><meta name="title" content="Hamiltonian Neural Network · DiffEqFlux.jl"/><meta property="og:title" content="Hamiltonian Neural Network · DiffEqFlux.jl"/><meta property="twitter:title" content="Hamiltonian Neural Network · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/hamiltonian_nn/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/hamiltonian_nn/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/hamiltonian_nn/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li class="is-active"><a class="tocitem" href>Hamiltonian Neural Network</a><ul class="internal"><li><a class="tocitem" href="#Copy-Pasteable-Code"><span>Copy-Pasteable Code</span></a></li><li><a class="tocitem" href="#Step-by-Step-Explanation"><span>Step by Step Explanation</span></a></li><li><a class="tocitem" href="#References"><span>References</span></a></li></ul></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Hamiltonian Neural Network</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Hamiltonian Neural Network</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/hamiltonian_nn.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Hamiltonian-Neural-Network"><a class="docs-heading-anchor" href="#Hamiltonian-Neural-Network">Hamiltonian Neural Network</a><a id="Hamiltonian-Neural-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Hamiltonian-Neural-Network" title="Permalink"></a></h1><p>Hamiltonian Neural Networks introduced in [1] allow models to &quot;learn and respect exact conservation laws in an unsupervised manner&quot;. In this example, we will train a model to learn the Hamiltonian for a 1D Spring mass system. This system is described by the equation:</p><p class="math-container">\[m\ddot x + kx = 0\]</p><p>Now we make some simplifying assumptions, and assign <span>$m = 1$</span> and <span>$k = 1$</span>. Analytically solving this equation, we get <span>$x = sin(t)$</span>. Hence, <span>$q = sin(t)$</span>, and <span>$p = cos(t)$</span>. Using these solutions, we generate our dataset and fit the <code>NeuralHamiltonianDE</code> to learn the dynamics of this system.</p><h2 id="Copy-Pasteable-Code"><a class="docs-heading-anchor" href="#Copy-Pasteable-Code">Copy-Pasteable Code</a><a id="Copy-Pasteable-Code-1"></a><a class="docs-heading-anchor-permalink" href="#Copy-Pasteable-Code" title="Permalink"></a></h2><p>Before getting to the explanation, here&#39;s some code to start with. We will follow a full explanation of the definition and training process:</p><pre><code class="language-julia hljs">using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
+    ComponentArrays, Optimization, OptimizationOptimisers, IterTools
+
+t = range(0.0f0, 1.0f0; length = 1024)
+π_32 = Float32(π)
+q_t = reshape(sin.(2π_32 * t), 1, :)
+p_t = reshape(cos.(2π_32 * t), 1, :)
+dqdt = 2π_32 .* p_t
+dpdt = -2π_32 .* q_t
+
+data = vcat(q_t, p_t)
+target = vcat(dqdt, dpdt)
+B = 256
+NEPOCHS = 100
+dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
+        selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
+                     for i in 1:(size(data, 2) ÷ B)), NEPOCHS)
+
+hnn = HamiltonianNN(Chain(Dense(2 =&gt; 64, relu), Dense(64 =&gt; 1)); ad = AutoZygote())
+ps, st = Lux.setup(Random.default_rng(), hnn)
+ps_c = ps |&gt; ComponentArray
+
+opt = OptimizationOptimisers.Adam(0.01f0)
+
+function loss_function(ps, data, target)
+    pred, st_ = hnn(data, ps, st)
+    return mean(abs2, pred .- target), pred
+end
+
+function callback(ps, loss, pred)
+    println(&quot;[Hamiltonian NN] Loss: &quot;, loss)
+    return false
+end
+
+opt_func = OptimizationFunction((ps, _, data, target) -&gt; loss_function(ps, data, target),
+    Optimization.AutoForwardDiff())
+opt_prob = OptimizationProblem(opt_func, ps_c)
+
+res = Optimization.solve(opt_prob, opt, dataloader; callback)
+
+ps_trained = res.u
+
+model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+    save_start = true, saveat = t)
+
+pred = Array(first(model(data[:, 1], ps_trained, st)))
+plot(data[1, :], data[2, :]; lw = 4, label = &quot;Original&quot;)
+plot!(pred[1, :], pred[2, :]; lw = 4, label = &quot;Predicted&quot;)
+xlabel!(&quot;Position (q)&quot;)
+ylabel!(&quot;Momentum (p)&quot;)</code></pre><img src="bf3f5423.svg" alt="Example block output"/><h2 id="Step-by-Step-Explanation"><a class="docs-heading-anchor" href="#Step-by-Step-Explanation">Step by Step Explanation</a><a id="Step-by-Step-Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Explanation" title="Permalink"></a></h2><h3 id="Data-Generation"><a class="docs-heading-anchor" href="#Data-Generation">Data Generation</a><a id="Data-Generation-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Generation" title="Permalink"></a></h3><p>The HNN predicts the gradients <span>$(\dot q, \dot p)$</span> given <span>$(q, p)$</span>. Hence, we generate the pairs <span>$(q, p)$</span> using the equations given at the top. Additionally, to supervise the training, we also generate the gradients. Next, we use Flux DataLoader for automatically batching our dataset.</p><pre><code class="language-julia hljs">using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
+    ComponentArrays, Optimization, OptimizationOptimisers, IterTools
+
+t = range(0.0f0, 1.0f0; length = 1024)
+π_32 = Float32(π)
+q_t = reshape(sin.(2π_32 * t), 1, :)
+p_t = reshape(cos.(2π_32 * t), 1, :)
+dqdt = 2π_32 .* p_t
+dpdt = -2π_32 .* q_t
+
+data = cat(q_t, p_t; dims = 1)
+target = cat(dqdt, dpdt; dims = 1)
+B = 256
+NEPOCHS = 100
+dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
+        selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
+                     for i in 1:(size(data, 2) ÷ B)), NEPOCHS)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">IterTools.NCycle{Base.Generator{UnitRange{Int64}, Main.var&quot;#1#2&quot;}}(Base.Generator{UnitRange{Int64}, Main.var&quot;#1#2&quot;}(Main.var&quot;#1#2&quot;(), 1:4), 100)</code></pre><h3 id="Training-the-HamiltonianNN"><a class="docs-heading-anchor" href="#Training-the-HamiltonianNN">Training the HamiltonianNN</a><a id="Training-the-HamiltonianNN-1"></a><a class="docs-heading-anchor-permalink" href="#Training-the-HamiltonianNN" title="Permalink"></a></h3><p>We parameterize the HamiltonianNN with a small MultiLayered Perceptron. HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn&#39;t support nesting itself, so we will be using ForwardDiff in the training loop to compute the gradients of the HNN Layer for Optimization.</p><pre><code class="language-julia hljs">hnn = HamiltonianNN(Chain(Dense(2 =&gt; 64, relu), Dense(64 =&gt; 1)); ad = AutoZygote())
+ps, st = Lux.setup(Random.default_rng(), hnn)
+ps_c = ps |&gt; ComponentArray
+
+opt = OptimizationOptimisers.Adam(0.01f0)
+
+function loss_function(ps, data, target)
+    pred, st_ = hnn(data, ps, st)
+    return mean(abs2, pred .- target), pred
+end
+
+function callback(ps, loss, pred)
+    println(&quot;[Hamiltonian NN] Loss: &quot;, loss)
+    return false
+end
+
+opt_func = OptimizationFunction((ps, _, data, target) -&gt; loss_function(ps, data, target),
+    Optimization.AutoZygote())
+opt_prob = OptimizationProblem(opt_func, ps_c)
+
+res = solve(opt_prob, opt, dataloader; callback)
+
+ps_trained = res.u</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ComponentVector{Float32}(layer_1 = (weight = Float32[-0.2772567 0.62354624; -0.68176734 0.43775347; … ; 0.95599073 -0.19725643; 0.02519745 -0.1136501], bias = Float32[0.0; 0.0; … ; 0.0; 0.0;;]), layer_2 = (weight = Float32[0.53467906 0.4184257 … 0.6681683 0.10600831], bias = Float32[0.0;;]))</code></pre><h3 id="Solving-the-ODE-using-trained-HNN"><a class="docs-heading-anchor" href="#Solving-the-ODE-using-trained-HNN">Solving the ODE using trained HNN</a><a id="Solving-the-ODE-using-trained-HNN-1"></a><a class="docs-heading-anchor-permalink" href="#Solving-the-ODE-using-trained-HNN" title="Permalink"></a></h3><p>In order to visualize the learned trajectories, we need to solve the ODE. We will use the <code>NeuralHamiltonianDE</code> layer, which is essentially a wrapper over <code>HamiltonianNN</code> layer, and solves the ODE.</p><pre><code class="language-julia hljs">model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+    save_start = true, saveat = t)
+
+pred = Array(first(model(data[:, 1], ps_trained, st)))
+plot(data[1, :], data[2, :]; lw = 4, label = &quot;Original&quot;)
+plot!(pred[1, :], pred[2, :]; lw = 4, label = &quot;Predicted&quot;)
+xlabel!(&quot;Position (q)&quot;)
+ylabel!(&quot;Momentum (p)&quot;)</code></pre><img src="21e939bb.svg" alt="Example block output"/><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. &quot;Hamiltonian Neural Networks.&quot; Advances in Neural Information Processing Systems 32 (2019): 15379-15389.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../normalizing_flows/">« Continuous Normalizing Flows</a><a class="docs-footer-nextpage" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Monday 25 December 2023 16:27">Monday 25 December 2023</span>. Using Julia version 1.10.0-rc3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
