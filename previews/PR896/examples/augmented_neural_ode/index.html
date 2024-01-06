@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Augmented Neural Ordinary Differential Equations · DiffEqFlux.jl</title><meta name="title" content="Augmented Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta property="og:title" content="Augmented Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta property="twitter:title" content="Augmented Neural Ordinary Differential Equations · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/augmented_neural_ode/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/augmented_neural_ode/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/augmented_neural_ode/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li class="is-active"><a class="tocitem" href>Augmented Neural Ordinary Differential Equations</a><ul class="internal"><li><a class="tocitem" href="#Copy-Pasteable-Code"><span>Copy-Pasteable Code</span></a></li><li><a class="tocitem" href="#Step-by-Step-Explanation"><span>Step-by-Step Explanation</span></a></li><li><a class="tocitem" href="#Training-the-Augmented-Neural-ODE"><span>Training the Augmented Neural ODE</span></a></li><li><a class="tocitem" href="#References"><span>References</span></a></li></ul></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Augmented Neural Ordinary Differential Equations</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Augmented Neural Ordinary Differential Equations</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/augmented_neural_ode.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Augmented-Neural-Ordinary-Differential-Equations"><a class="docs-heading-anchor" href="#Augmented-Neural-Ordinary-Differential-Equations">Augmented Neural Ordinary Differential Equations</a><a id="Augmented-Neural-Ordinary-Differential-Equations-1"></a><a class="docs-heading-anchor-permalink" href="#Augmented-Neural-Ordinary-Differential-Equations" title="Permalink"></a></h1><h2 id="Copy-Pasteable-Code"><a class="docs-heading-anchor" href="#Copy-Pasteable-Code">Copy-Pasteable Code</a><a id="Copy-Pasteable-Code-1"></a><a class="docs-heading-anchor-permalink" href="#Copy-Pasteable-Code" title="Permalink"></a></h2><pre><code class="language-julia hljs">using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, LuxCUDA, Random
+using MLUtils, ComponentArrays
+using Optimization, OptimizationOptimisers, IterTools
+
+const cdev = cpu_device()
+const gdev = gpu_device()
+
+function random_point_in_sphere(dim, min_radius, max_radius)
+    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+
+               min_radius
+    direction = randn(Float32, dim)
+    unit_direction = direction ./ norm(direction)
+    return distance .* unit_direction
+end
+
+function concentric_sphere(dim, inner_radius_range, outer_radius_range,
+        num_samples_inner, num_samples_outer; batch_size = 64)
+    data = []
+    labels = []
+    for _ in 1:num_samples_inner
+        push!(data, reshape(random_point_in_sphere(dim, inner_radius_range...), :, 1))
+        push!(labels, ones(1, 1))
+    end
+    for _ in 1:num_samples_outer
+        push!(data, reshape(random_point_in_sphere(dim, outer_radius_range...), :, 1))
+        push!(labels, -ones(1, 1))
+    end
+    data = cat(data...; dims = 2)
+    labels = cat(labels...; dims = 2)
+    return DataLoader((data |&gt; gdev, labels |&gt; gdev); batchsize = batch_size,
+        shuffle = true, partial = false)
+end
+
+diffeqarray_to_array(x) = gdev(x).u[1]
+
+function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
+    input_dim = input_dim + augment_dim
+    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
+            Dense(hidden_dim, hidden_dim, relu),
+            Dense(hidden_dim, input_dim)), (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+        reltol = 1.0f-3, abstol = 1.0f-3, save_start = false)
+    node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
+    model = Chain(node, diffeqarray_to_array, Dense(input_dim, out_dim))
+    ps, st = Lux.setup(Random.default_rng(), model)
+    return model, ps |&gt; gdev, st |&gt; gdev
+end
+
+function plot_contour(model, ps, st, npoints = 300)
+    grid_points = zeros(Float32, 2, npoints^2)
+    idx = 1
+    x = range(-4.0f0, 4.0f0; length = npoints)
+    y = range(-4.0f0, 4.0f0; length = npoints)
+    for x1 in x, x2 in y
+        grid_points[:, idx] .= [x1, x2]
+        idx += 1
+    end
+    sol = reshape(model(grid_points |&gt; gdev, ps, st)[1], npoints, npoints) |&gt; cdev
+
+    return contour(x, y, sol; fill = true, linewidth = 0.0)
+end
+
+loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)
+
+dataloader = concentric_sphere(2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000;
+    batch_size = 256)
+
+iter = 0
+cb = function (ps, l)
+    global iter
+    iter += 1
+    if iter % 10 == 0
+        @info &quot;Augmented Neural ODE&quot; iter=iter loss=l
+    end
+    return false
+end
+
+model, ps, st = construct_model(1, 2, 64, 0)
+opt = Adam(0.005)
+
+loss_node(model, dataloader.data[1], dataloader.data[2], ps, st)
+
+println(&quot;Training Neural ODE&quot;)
+
+optfunc = OptimizationFunction((x, p, data, target) -&gt; loss_node(model, data, target, x, st),
+    Optimization.AutoZygote())
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev)
+res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+
+plt_node = plot_contour(model, res.u, st)
+
+model, ps, st = construct_model(1, 2, 64, 1)
+opt = Adam(0.005)
+
+println()
+println(&quot;Training Augmented Neural ODE&quot;)
+
+optfunc = OptimizationFunction((x, p, data, target) -&gt; loss_node(model, data, target, x, st),
+    Optimization.AutoZygote())
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev)
+res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+
+plot_contour(model, res.u, st)</code></pre><img src="8656c934.svg" alt="Example block output"/><h2 id="Step-by-Step-Explanation"><a class="docs-heading-anchor" href="#Step-by-Step-Explanation">Step-by-Step Explanation</a><a id="Step-by-Step-Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Explanation" title="Permalink"></a></h2><h3 id="Loading-required-packages"><a class="docs-heading-anchor" href="#Loading-required-packages">Loading required packages</a><a id="Loading-required-packages-1"></a><a class="docs-heading-anchor-permalink" href="#Loading-required-packages" title="Permalink"></a></h3><pre><code class="language-julia hljs">using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, LuxCUDA, Random
+using MLUtils, ComponentArrays
+using Optimization, OptimizationOptimisers, IterTools
+
+const cdev = cpu_device()
+const gdev = gpu_device()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(::LuxCUDADevice) (generic function with 5 methods)</code></pre><h3 id="Generating-a-toy-dataset"><a class="docs-heading-anchor" href="#Generating-a-toy-dataset">Generating a toy dataset</a><a id="Generating-a-toy-dataset-1"></a><a class="docs-heading-anchor-permalink" href="#Generating-a-toy-dataset" title="Permalink"></a></h3><p>In this example, we will be using data sampled uniformly in two concentric circles and then train our Neural ODEs to do regression on that values. We assign <code>1</code> to any point which lies inside the inner circle, and <code>-1</code> to any point which lies between the inner and outer circle. Our first function <code>random_point_in_sphere</code> samples points uniformly between 2 concentric circles/spheres of radii <code>min_radius</code> and <code>max_radius</code> respectively.</p><pre><code class="language-julia hljs">function random_point_in_sphere(dim, min_radius, max_radius)
+    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+
+               min_radius
+    direction = randn(Float32, dim)
+    unit_direction = direction ./ norm(direction)
+    return distance .* unit_direction
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">random_point_in_sphere (generic function with 1 method)</code></pre><p>Next, we will construct a dataset of these points and use Flux&#39;s DataLoader to automatically minibatch and shuffle the data.</p><pre><code class="language-julia hljs">function concentric_sphere(dim, inner_radius_range, outer_radius_range,
+        num_samples_inner, num_samples_outer; batch_size = 64)
+    data = []
+    labels = []
+    for _ in 1:num_samples_inner
+        push!(data, reshape(random_point_in_sphere(dim, inner_radius_range...), :, 1))
+        push!(labels, ones(1, 1))
+    end
+    for _ in 1:num_samples_outer
+        push!(data, reshape(random_point_in_sphere(dim, outer_radius_range...), :, 1))
+        push!(labels, -ones(1, 1))
+    end
+    data = cat(data...; dims = 2)
+    labels = cat(labels...; dims = 2)
+    return DataLoader((data |&gt; gdev, labels |&gt; gdev); batchsize = batch_size,
+        shuffle = true, partial = false)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">concentric_sphere (generic function with 1 method)</code></pre><h3 id="Models"><a class="docs-heading-anchor" href="#Models">Models</a><a id="Models-1"></a><a class="docs-heading-anchor-permalink" href="#Models" title="Permalink"></a></h3><p>We consider 2 models in this tutorial. The first is a simple Neural ODE which is described in detail in <a href="https://docs.sciml.ai/SciMLSensitivity/stable/examples/neural_ode/neural_ode_flux/">this tutorial</a>. The other one is an Augmented Neural ODE [1]. The idea behind this layer is very simple. It augments the input to the Neural DE Layer by appending zeros. So in order to use any arbitrary DE Layer in combination with this layer, simply assume that the input to the DE Layer is of size <code>size(x, 1) + augment_dim</code> instead of <code>size(x, 1)</code> and construct that layer accordingly.</p><p>In order to run the models on Flux.gpu, we need to manually transfer the models to Flux.gpu. First one is the network predicting the derivatives inside the Neural ODE and the other one is the last layer in the Chain.</p><pre><code class="language-julia hljs">diffeqarray_to_array(x) = gdev(x).u[1]
+
+function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
+    input_dim = input_dim + augment_dim
+    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
+            Dense(hidden_dim, hidden_dim, relu),
+            Dense(hidden_dim, input_dim)), (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+        reltol = 1.0f-3, abstol = 1.0f-3, save_start = false)
+    node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
+    model = Chain(node, diffeqarray_to_array, Dense(input_dim, out_dim))
+    ps, st = Lux.setup(Random.default_rng(), model)
+    return model, ps |&gt; gdev, st |&gt; gdev
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">construct_model (generic function with 1 method)</code></pre><h3 id="Plotting-the-Results"><a class="docs-heading-anchor" href="#Plotting-the-Results">Plotting the Results</a><a id="Plotting-the-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-the-Results" title="Permalink"></a></h3><p>Here, we define a utility to plot our model regression results as a heatmap.</p><pre><code class="language-julia hljs">function plot_contour(model, ps, st, npoints = 300)
+    grid_points = zeros(Float32, 2, npoints^2)
+    idx = 1
+    x = range(-4.0f0, 4.0f0; length = npoints)
+    y = range(-4.0f0, 4.0f0; length = npoints)
+    for x1 in x, x2 in y
+        grid_points[:, idx] .= [x1, x2]
+        idx += 1
+    end
+    sol = reshape(model(grid_points |&gt; gdev, ps, st)[1], npoints, npoints) |&gt; cdev
+
+    return contour(x, y, sol; fill = true, linewidth = 0.0)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">plot_contour (generic function with 2 methods)</code></pre><h3 id="Training-Parameters"><a class="docs-heading-anchor" href="#Training-Parameters">Training Parameters</a><a id="Training-Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Training-Parameters" title="Permalink"></a></h3><h4 id="Loss-Functions"><a class="docs-heading-anchor" href="#Loss-Functions">Loss Functions</a><a id="Loss-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Loss-Functions" title="Permalink"></a></h4><p>We use the L2 distance between the model prediction <code>model(x)</code> and the actual prediction <code>y</code> as the optimization objective.</p><pre><code class="language-julia hljs">loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">loss_node (generic function with 1 method)</code></pre><h4 id="Dataset"><a class="docs-heading-anchor" href="#Dataset">Dataset</a><a id="Dataset-1"></a><a class="docs-heading-anchor-permalink" href="#Dataset" title="Permalink"></a></h4><p>Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is easy to visualize. We sample a total of <code>4000</code> data points.</p><pre><code class="language-julia hljs">dataloader = concentric_sphere(2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000;
+    batch_size = 256)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">15-element DataLoader(::Tuple{CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}, CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}}, shuffle=true, batchsize=256, partial=false)
+  with first element:
+  (2×256 CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}, 1×256 CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer},)</code></pre><h4 id="Callback-Function"><a class="docs-heading-anchor" href="#Callback-Function">Callback Function</a><a id="Callback-Function-1"></a><a class="docs-heading-anchor-permalink" href="#Callback-Function" title="Permalink"></a></h4><p>Additionally, we define a callback function which displays the total loss at specific intervals.</p><pre><code class="language-julia hljs">iter = 0
+cb = function (ps, l)
+    global iter
+    iter += 1
+    if iter % 10 == 0
+        @info &quot;Augmented Neural ODE&quot; iter=iter loss=l
+    end
+    return false
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">#2 (generic function with 1 method)</code></pre><h4 id="Optimizer"><a class="docs-heading-anchor" href="#Optimizer">Optimizer</a><a id="Optimizer-1"></a><a class="docs-heading-anchor-permalink" href="#Optimizer" title="Permalink"></a></h4><p>We use Adam as the optimizer with a learning rate of 0.005</p><pre><code class="language-julia hljs">opt = Adam(5.0f-3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Adam(0.005, (0.9, 0.999), 1.0e-8)</code></pre><h3 id="Training-the-Neural-ODE"><a class="docs-heading-anchor" href="#Training-the-Neural-ODE">Training the Neural ODE</a><a id="Training-the-Neural-ODE-1"></a><a class="docs-heading-anchor-permalink" href="#Training-the-Neural-ODE" title="Permalink"></a></h3><p>To train our neural ode model, we need to pass the appropriate learnable parameters, <code>parameters</code> which are returned by the <code>construct_models</code> function. It is simply the <code>node.p</code> vector. We then train our model for <code>20</code> epochs.</p><pre><code class="language-julia hljs">model, ps, st = construct_model(1, 2, 64, 0)
+
+optfunc = OptimizationFunction((x, p, data, target) -&gt; loss_node(model, data, target, x, st),
+    Optimization.AutoZygote())
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev)
+res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+
+plot_contour(model, res.u, st)</code></pre><img src="3b6a19c3.svg" alt="Example block output"/><p>Here is what the contour plot should look for Neural ODE. Notice that the regression is not perfect due to the thin artifact which connects the circles.</p><h2 id="Training-the-Augmented-Neural-ODE"><a class="docs-heading-anchor" href="#Training-the-Augmented-Neural-ODE">Training the Augmented Neural ODE</a><a id="Training-the-Augmented-Neural-ODE-1"></a><a class="docs-heading-anchor-permalink" href="#Training-the-Augmented-Neural-ODE" title="Permalink"></a></h2><p>Our training configuration will be the same as that of Neural ODE. Only in this case, we have augmented the input with a single zero. This makes the problem 3-dimensional, and as such it is possible to find a function which can be expressed by the neural ode. For more details and proofs, please refer to [1].</p><pre><code class="language-julia hljs">model, ps, st = construct_model(1, 2, 64, 1)
+
+optfunc = OptimizationFunction((x, p, data, target) -&gt; loss_node(model, data, target, x, st),
+    Optimization.AutoZygote())
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev)
+res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+
+plot_contour(model, res.u, st)</code></pre><img src="e63a35c0.svg" alt="Example block output"/><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. &quot;Augmented neural ODEs.&quot; In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mnist_conv_neural_ode/">« Convolutional Neural ODE MNIST Classifier on GPU</a><a class="docs-footer-nextpage" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Saturday 6 January 2024 05:04">Saturday 6 January 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
