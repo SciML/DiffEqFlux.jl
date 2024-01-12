@@ -13,7 +13,7 @@
 DiffEq(For)Lux.jl (aka DiffEqFlux.jl) fuses the world of differential equations with machine learning
 by helping users put diffeq solvers into neural networks. This package utilizes
 [DifferentialEquations.jl](https://docs.sciml.ai/DiffEqDocs/stable/), and [Lux.jl](https://lux.csail.mit.edu/)  as its building blocks to support research in
-[Scientific Machine Learning](https://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/), specifically neural differential equations and universal differential equations, to add physical information into traditional machine learning.
+[Scientific Machine Learning](https://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/), specifically neural differential equations to add physical information into traditional machine learning.
 
 > [!NOTE]
 > We maintain backwards compatibility with [Flux.jl](https://docs.sciml.ai/Flux/stable/) via [Lux.transform](https://lux.csail.mit.edu/stable/api/Lux/flux_to_lux#Lux.transform)
@@ -27,25 +27,20 @@ the documentation, which contains the unreleased features.
 
 ## Problem Domain
 
-DiffEqFlux.jl is not just for neural ordinary differential equations.
-DiffEqFlux.jl is for universal differential equations, where these can include
-delays, physical constraints, stochasticity, events, and all other kinds of
-interesting behavior that shows up in scientific simulations. Neural networks can
-be all or part of the model. They can be around the differential equation,
-in the cost function, or inside of the differential equation. Neural networks
-representing unknown portions of the model or functions can go anywhere you
-have uncertainty in the form of the scientific simulator. For an overview of the
-topic with applications, consult the paper [Universal Differential Equations for
-Scientific Machine Learning](https://arxiv.org/abs/2001.04385).
+DiffEqFlux.jl is for neural ordinary differential equations.
+DiffEqFlux.jl provides architectures which match the interfaces of machine learning libraries such as Flux.jl and Lux.jl to make it easy to build continuous-time machine learning layers into larger machine learning applications.
 
-As such, it is the first package to support and demonstrate:
+The following layer functions exist:
 
-  - Stiff and non-stiff universal ordinary differential equations (universal ODEs)
-  - Universal stochastic differential equations (universal SDEs)
-  - Universal delay differential equations (universal DDEs)
-  - Universal partial differential equations (universal PDEs)
-  - Universal jump stochastic differential equations (universal jump diffusions)
-  - Hybrid universal differential equations (universal DEs with event handling)
+  - Neural Ordinary Differential Equations (Neural ODEs)
+  - Collocation-Based Neural ODEs (Neural ODEs without a solver, by far the fastest way!)
+  - Multiple Shooting Neural Ordinary Differential Equations
+  - Neural Stochastic Differential Equations (Neural SDEs)
+  - Neural Differential-Algebraic Equations (Neural DAEs)
+  - Neural Delay Differential Equations (Neural DDEs)
+  - Augmented Neural ODEs
+  - Hamiltonian Neural Networks (with specialized second order and symplectic integrators)
+  - Continuous Normalizing Flows (CNF) and FFJORD
 
 with high order, adaptive, implicit, GPU-accelerated, Newton-Krylov, etc.
 methods. For examples, please refer to
