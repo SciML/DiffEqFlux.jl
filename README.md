@@ -27,7 +27,7 @@ the documentation, which contains the unreleased features.
 
 ## Problem Domain
 
-DiffEqFlux.jl is for neural ordinary differential equations.
+DiffEqFlux.jl is for implicit layer machine learning.
 DiffEqFlux.jl provides architectures which match the interfaces of machine learning libraries such as Flux.jl and Lux.jl to make it easy to build continuous-time machine learning layers into larger machine learning applications.
 
 The following layer functions exist:
