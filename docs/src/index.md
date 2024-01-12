@@ -11,15 +11,15 @@ and helper functions to make training such deep implicit layer models fast and e
     learning. For details on automatic differentiation of equation solvers
     and adjoint techniques, and using these methods for doing things like
     calibrating models to data, nonlinear optimal control, and PDE-constrained
-    optimization, see [SciMLSensitivity.jl](https://docs.sciml.ai/SciMLSensitivity/stable/)
+    optimization, see [SciMLSensitivity.jl](https://docs.sciml.ai/SciMLSensitivity/stable/).
 
 ## Pre-Built Architectures
 
 The approach of this package is the easy and efficient training of
-[Universal Differential Equations](https://arxiv.org/abs/2001.04385).
+[Neural Ordinary Differential Equations](https://arxiv.org/abs/1806.07366) and its variants.
 DiffEqFlux.jl provides architectures which match the interfaces of
 machine learning libraries such as [Flux.jl](https://docs.sciml.ai/Flux/stable/)
-and [Lux.jl](https://lux.csail.mit.edu/v0.5.5/api/)
+and [Lux.jl](https://lux.csail.mit.edu/stable/api/)
 to make it easy to build continuous-time machine learning layers
 into larger machine learning applications.
 
