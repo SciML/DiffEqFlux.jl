@@ -131,5 +131,5 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, p)
-result_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 300)
+result_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 300)
 ```
