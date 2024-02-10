@@ -36,7 +36,7 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         shuffle = true, partial = false)
 end
 
-diffeqarray_to_array(x) = gdev(x[1])
+diffeqarray_to_array(x) = gdev(x.u[1])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
