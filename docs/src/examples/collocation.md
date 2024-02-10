@@ -64,7 +64,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-result_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 10000)
+result_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 nn_sol, st = prob_neuralode(u0, result_neuralode.u, st)
@@ -86,7 +86,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-numerical_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 300)
+numerical_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
 scatter(tsteps, data')
@@ -158,7 +158,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-result_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 10000)
+result_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 nn_sol, st = prob_neuralode(u0, result_neuralode.u, st)
@@ -186,7 +186,7 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-numerical_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 300)
+numerical_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
 scatter(tsteps, data')

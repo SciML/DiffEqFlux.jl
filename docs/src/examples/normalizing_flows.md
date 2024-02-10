@@ -37,7 +37,7 @@ adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
-res1 = Optimization.solve(optprob, Adam(0.01); maxiters = 20, callback = cb)
+res1 = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.01); maxiters = 20, callback = cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false,
@@ -112,7 +112,7 @@ adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
-res1 = Optimization.solve(optprob, Adam(0.01); maxiters = 20, callback = cb)
+res1 = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.01); maxiters = 20, callback = cb)
 ```
 
 We then complete the training using a different optimizer, starting from where `Adam` stopped.

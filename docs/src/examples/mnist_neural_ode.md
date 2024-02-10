@@ -5,7 +5,7 @@ on **GPUs** with **minibatching**.
 
 (Step-by-step description below)
 
-```julia
+```@example mnist
 using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
     ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
 using MLDatasets: MNIST
@@ -50,8 +50,8 @@ nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol =
     abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
-    xarr = gdev(x)
-    return reshape(xarr, size(xarr)[1:2])
+    xarr = gdev(x.u[1])
+    return xarr
 end
 
 #Build our over-all model topology
@@ -225,8 +225,8 @@ nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol =
     abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
-    xarr = gdev(x)
-    return xarr.u[1]
+    xarr = gdev(x.u[1])
+    return xarr
 end
 ```
 

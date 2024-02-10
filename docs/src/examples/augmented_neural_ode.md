@@ -36,7 +36,7 @@ function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         shuffle = true, partial = false)
 end
 
-diffeqarray_to_array(x) = gdev(x).u[1]
+diffeqarray_to_array(x) = gdev(x.u[1])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
@@ -80,7 +80,7 @@ cb = function (ps, l)
 end
 
 model, ps, st = construct_model(1, 2, 64, 0)
-opt = Adam(0.005)
+opt = OptimizationOptimisers.Adam(0.005)
 
 loss_node(model, dataloader.data[1], dataloader.data[2], ps, st)
 
@@ -94,7 +94,7 @@ res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
 plt_node = plot_contour(model, res.u, st)
 
 model, ps, st = construct_model(1, 2, 64, 1)
-opt = Adam(0.005)
+opt = OptimizationOptimisers.Adam(0.005)
 
 println()
 println("Training Augmented Neural ODE")
@@ -174,7 +174,7 @@ In order to run the models on Flux.gpu, we need to manually transfer the models 
 predicting the derivatives inside the Neural ODE and the other one is the last layer in the Chain.
 
 ```@example augneuralode
-diffeqarray_to_array(x) = gdev(x).u[1]
+diffeqarray_to_array(x) = gdev(x.u[1])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
@@ -251,7 +251,7 @@ end
 We use Adam as the optimizer with a learning rate of 0.005
 
 ```@example augneuralode
-opt = Adam(5.0f-3)
+opt = OptimizationOptimisers.Adam(5.0f-3)
 ```
 
 ### Training the Neural ODE
