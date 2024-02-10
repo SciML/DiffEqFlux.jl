@@ -174,7 +174,7 @@ In order to run the models on Flux.gpu, we need to manually transfer the models 
 predicting the derivatives inside the Neural ODE and the other one is the last layer in the Chain.
 
 ```@example augneuralode
-diffeqarray_to_array(x) = gdev(x[1])
+diffeqarray_to_array(x) = gdev(x.u[1])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim

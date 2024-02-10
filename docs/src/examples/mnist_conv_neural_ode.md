@@ -57,8 +57,7 @@ nn_ode = NeuralODE(dudt, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     reltol = 1e-3, abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
-    xarr = gdev(x)
-    return xarr[:, :, :, :, 1]
+    xarr = gdev(x.u[1])
 end
 
 # Build our over-all model topology

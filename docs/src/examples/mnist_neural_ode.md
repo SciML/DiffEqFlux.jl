@@ -50,7 +50,7 @@ nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol =
     abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
-    xarr = gdev(x[1])
+    xarr = gdev(x.u[1])
     return xarr
 end
 
@@ -225,7 +225,7 @@ nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol =
     abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
-    xarr = gdev(x[1])
+    xarr = gdev(x.u[1])
     return xarr
 end
 ```
