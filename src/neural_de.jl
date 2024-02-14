@@ -50,8 +50,10 @@ function (n::NeuralODE)(x, p, st)
     ff = ODEFunction{false}(dudt; tgrad = basic_tgrad)
     prob = ODEProblem{false}(ff, x, n.tspan, p)
 
-    return (solve(prob, n.args...;
-            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...), model.st)
+    return (
+        solve(prob, n.args...;
+            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...),
+        model.st)
 end
 
 """
@@ -329,8 +331,10 @@ function (n::NeuralODEMM)(x, ps, st)
     dudt = ODEFunction{false}(f; mass_matrix = n.mass_matrix, tgrad = basic_tgrad)
     prob = ODEProblem{false}(dudt, x, n.tspan, ps)
 
-    return (solve(prob, n.args...;
-            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...), model.st)
+    return (
+        solve(prob, n.args...;
+            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...),
+        model.st)
 end
 
 """
@@ -357,7 +361,8 @@ function __augment(x::AbstractVector, augment_dim::Int)
 end
 
 function __augment(x::AbstractArray, augment_dim::Int)
-    y = CRC.@ignore_derivatives fill!(similar(x, size(x)[1:(ndims(x) - 2)]...,
+    y = CRC.@ignore_derivatives fill!(
+        similar(x, size(x)[1:(ndims(x) - 2)]...,
             augment_dim, size(x, ndims(x))), 0)
     return cat(x, y; dims = Val(ndims(x) - 1))
 end

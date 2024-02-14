@@ -1,5 +1,5 @@
 using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
-    ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
+      ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
 using MLDatasets: MNIST
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 

@@ -1,5 +1,5 @@
 using ComponentArrays,
-    DiffEqFlux, Lux, Zygote, Random, Optimization, OptimizationOptimisers, OrdinaryDiffEq
+      DiffEqFlux, Lux, Zygote, Random, Optimization, OptimizationOptimisers, OrdinaryDiffEq
 
 rng = Random.default_rng()
 

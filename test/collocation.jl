@@ -44,7 +44,7 @@ end
     data = Array(solve(prob, Tsit5(); saveat = t, abstol = 1e-12, reltol = 1e-12))
     @testset "$kernel" for kernel in [
         bounded_support_kernels...,
-        unbounded_support_kernels...,
+        unbounded_support_kernels...
     ]
         u′, u = collocate_data(data, t, kernel, 0.003)
         @test sum(abs2, u - data) < 1e-8

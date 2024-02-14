@@ -37,7 +37,8 @@ is non-allocating and compatible with forward-mode automatic differentiation:
 using PreallocationTools
 du = PreallocationTools.dualcache(similar(prob.u0))
 preview_est_sol = [@view estimated_solution[:, i] for i in 1:size(estimated_solution, 2)]
-preview_est_deriv = [@view estimated_derivative[:, i] for i in 1:size(estimated_solution, 2)]
+preview_est_deriv = [@view estimated_derivative[:, i]
+                     for i in 1:size(estimated_solution, 2)]
 
 function construct_iip_cost_function(f, du, preview_est_sol, preview_est_deriv, tpoints)
     function (p)

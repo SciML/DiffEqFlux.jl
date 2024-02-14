@@ -14,7 +14,7 @@ Before getting to the explanation, here's some code to start with. We will follo
 
 ```@example hamiltonian_cp
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
-    ComponentArrays, Optimization, OptimizationOptimisers, IterTools
+      ComponentArrays, Optimization, OptimizationOptimisers, IterTools
 
 t = range(0.0f0, 1.0f0; length = 1024)
 π_32 = Float32(π)
@@ -27,9 +27,11 @@ data = vcat(q_t, p_t)
 target = vcat(dqdt, dpdt)
 B = 256
 NEPOCHS = 100
-dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
-        selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
-                     for i in 1:(size(data, 2) ÷ B)), NEPOCHS)
+dataloader = ncycle(
+    ((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
+         selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
+    for i in 1:(size(data, 2) ÷ B)),
+    NEPOCHS)
 
 hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
 ps, st = Lux.setup(Random.default_rng(), hnn)
@@ -73,7 +75,7 @@ The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we 
 
 ```@example hamiltonian
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
-    ComponentArrays, Optimization, OptimizationOptimisers, IterTools
+      ComponentArrays, Optimization, OptimizationOptimisers, IterTools
 
 t = range(0.0f0, 1.0f0; length = 1024)
 π_32 = Float32(π)
@@ -86,9 +88,11 @@ data = cat(q_t, p_t; dims = 1)
 target = cat(dqdt, dpdt; dims = 1)
 B = 256
 NEPOCHS = 100
-dataloader = ncycle(((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
-        selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
-                     for i in 1:(size(data, 2) ÷ B)), NEPOCHS)
+dataloader = ncycle(
+    ((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
+         selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
+    for i in 1:(size(data, 2) ÷ B)),
+    NEPOCHS)
 ```
 
 ### Training the HamiltonianNN

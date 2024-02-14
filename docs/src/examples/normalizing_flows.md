@@ -9,7 +9,7 @@ follow a full explanation of the definition and training process:
 
 ```@example cnf
 using ComponentArrays, DiffEqFlux, OrdinaryDiffEq, Optimization, Distributions,
-    Random, OptimizationOptimisers, OptimizationOptimJL
+      Random, OptimizationOptimisers, OptimizationOptimJL
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
@@ -37,7 +37,8 @@ adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
-res1 = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.01); maxiters = 20, callback = cb)
+res1 = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.01); maxiters = 20, callback = cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false,
@@ -63,7 +64,7 @@ We can use DiffEqFlux.jl to define, train and output the densities computed by C
 
 ```@example cnf2
 using ComponentArrays, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimisers,
-    OptimizationOptimJL, Distributions, Random
+      OptimizationOptimJL, Distributions, Random
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
@@ -112,7 +113,8 @@ adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
-res1 = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.01); maxiters = 20, callback = cb)
+res1 = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.01); maxiters = 20, callback = cb)
 ```
 
 We then complete the training using a different optimizer, starting from where `Adam` stopped.

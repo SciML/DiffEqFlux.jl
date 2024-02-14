@@ -24,7 +24,7 @@ The following is a working demo, using Multiple Shooting:
 
 ```@example multiple_shooting
 using ComponentArrays,
-    Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, OrdinaryDiffEq, Plots
+      Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, OrdinaryDiffEq, Plots
 using DiffEqFlux: group_ranges
 
 using Random

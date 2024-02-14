@@ -32,7 +32,8 @@ First, let's build training data from the same example as the neural ODE:
 
 ```@example nsde
 using Plots, Statistics, ComponentArrays, Optimization,
-    OptimizationOptimisers, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
+      OptimizationOptimisers, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis,
+      Random
 
 u0 = Float32[2.0; 0.0]
 datasize = 30

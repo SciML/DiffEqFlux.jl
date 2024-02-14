@@ -1,5 +1,5 @@
 using ComponentArrays,
-    DiffEqFlux, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random
+      DiffEqFlux, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random
 
 #A desired MWE for now, not a test yet.
 
@@ -12,8 +12,8 @@ function rober(du, u, p, t)
     nothing
 end
 M = [1.0 0 0
-    0 1.0 0
-    0 0 0]
+     0 1.0 0
+     0 0 0]
 prob_mm = ODEProblem(ODEFunction(rober; mass_matrix = M),
     [1.0, 0.0, 0.0],
     (0.0, 10.0),

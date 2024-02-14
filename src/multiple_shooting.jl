@@ -46,8 +46,12 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
     ranges = group_ranges(datasize, group_size)
 
     # Multiple shooting predictions
-    sols = [solve(remake(prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
-            u0 = ode_data[:, first(rg)],), solver; saveat = tsteps[rg], kwargs...)
+    sols = [solve(
+                remake(prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
+                    u0 = ode_data[:, first(rg)]),
+                solver;
+                saveat = tsteps[rg],
+                kwargs...)
             for rg in ranges]
     group_predictions = Array.(sols)
 
@@ -76,7 +80,7 @@ end
 function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
         solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer; kwargs...) where {F}
     return multiple_shoot(p, ode_data, tsteps, prob, loss_function,
-        _default_continuity_loss, solver, group_size; kwargs...,)
+        _default_continuity_loss, solver, group_size; kwargs...)
 end
 
 """
@@ -133,17 +137,19 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
     ranges = group_ranges(datasize, group_size)
 
     # Multiple shooting predictions by using map we avoid mutating an array
-    sols = map(rg -> begin
+    sols = map(
+        rg -> begin
             newprob = remake(prob;
                 p = p,
-                tspan = (tsteps[first(rg)], tsteps[last(rg)]),)
+                tspan = (tsteps[first(rg)], tsteps[last(rg)]))
             function prob_func(prob, i, repeat)
                 remake(prob; u0 = ode_data[:, first(rg), i])
             end
             newensembleprob = EnsembleProblem(newprob, prob_func, ensembleprob.output_func,
                 ensembleprob.reduction, ensembleprob.u_init, ensembleprob.safetycopy)
             solve(newensembleprob, solver, ensemblealg; saveat = tsteps[rg], kwargs...)
-        end, ranges)
+        end,
+        ranges)
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations did not converge?

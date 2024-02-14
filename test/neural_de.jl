@@ -1,5 +1,5 @@
 using ComponentArrays,
-    DiffEqFlux, Lux, Zygote, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
+      DiffEqFlux, Lux, Zygote, DelayDiffEq, OrdinaryDiffEq, StochasticDiffEq, Test, Random
 import Flux
 
 rng = Random.default_rng()
@@ -24,7 +24,8 @@ rng = Random.default_rng()
 
     @testset "Neural ODE" begin
         @testset "u0: $(typeof(u0))" for u0 in (x, xs)
-            @testset "kwargs: $(kwargs))" for kwargs in ((; save_everystep = false,
+            @testset "kwargs: $(kwargs))" for kwargs in (
+                (; save_everystep = false,
                     save_start = false),
                 (; abstol = 1e-12, reltol = 1e-12, save_everystep = false,
                     save_start = false),

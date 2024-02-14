@@ -40,9 +40,13 @@ diffeqarray_to_array(x) = gdev(x.u[1])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
-    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
+    node = NeuralODE(
+        Chain(Dense(input_dim, hidden_dim, relu),
             Dense(hidden_dim, hidden_dim, relu),
-            Dense(hidden_dim, input_dim)), (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+            Dense(hidden_dim, input_dim)),
+        (0.0f0, 1.0f0),
+        Tsit5();
+        save_everystep = false,
         reltol = 1.0f-3, abstol = 1.0f-3, save_start = false)
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
     model = Chain(node, diffeqarray_to_array, Dense(input_dim, out_dim))
@@ -86,7 +90,8 @@ loss_node(model, dataloader.data[1], dataloader.data[2], ps, st)
 
 println("Training Neural ODE")
 
-optfunc = OptimizationFunction((x, p, data, target) -> loss_node(model, data, target, x, st),
+optfunc = OptimizationFunction(
+    (x, p, data, target) -> loss_node(model, data, target, x, st),
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
 res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
@@ -99,7 +104,8 @@ opt = OptimizationOptimisers.Adam(0.005)
 println()
 println("Training Augmented Neural ODE")
 
-optfunc = OptimizationFunction((x, p, data, target) -> loss_node(model, data, target, x, st),
+optfunc = OptimizationFunction(
+    (x, p, data, target) -> loss_node(model, data, target, x, st),
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
 res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
@@ -178,9 +184,13 @@ diffeqarray_to_array(x) = gdev(x.u[1])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
-    node = NeuralODE(Chain(Dense(input_dim, hidden_dim, relu),
+    node = NeuralODE(
+        Chain(Dense(input_dim, hidden_dim, relu),
             Dense(hidden_dim, hidden_dim, relu),
-            Dense(hidden_dim, input_dim)), (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+            Dense(hidden_dim, input_dim)),
+        (0.0f0, 1.0f0),
+        Tsit5();
+        save_everystep = false,
         reltol = 1.0f-3, abstol = 1.0f-3, save_start = false)
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
     model = Chain(node, diffeqarray_to_array, Dense(input_dim, out_dim))
@@ -263,7 +273,8 @@ for `20` epochs.
 ```@example augneuralode
 model, ps, st = construct_model(1, 2, 64, 0)
 
-optfunc = OptimizationFunction((x, p, data, target) -> loss_node(model, data, target, x, st),
+optfunc = OptimizationFunction(
+    (x, p, data, target) -> loss_node(model, data, target, x, st),
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
 res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
@@ -283,7 +294,8 @@ a function which can be expressed by the neural ode. For more details and proofs
 ```@example augneuralode
 model, ps, st = construct_model(1, 2, 64, 1)
 
-optfunc = OptimizationFunction((x, p, data, target) -> loss_node(model, data, target, x, st),
+optfunc = OptimizationFunction(
+    (x, p, data, target) -> loss_node(model, data, target, x, st),
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
 res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)

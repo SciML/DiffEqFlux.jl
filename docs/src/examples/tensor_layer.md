@@ -14,8 +14,8 @@ solvers in `DifferentialEquations`:
 
 ```@example tensor
 using ComponentArrays,
-    DiffEqFlux, Optimization, OptimizationOptimisers,
-    OrdinaryDiffEq, LinearAlgebra, Random
+      DiffEqFlux, Optimization, OptimizationOptimisers,
+      OrdinaryDiffEq, LinearAlgebra, Random
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0, 10.0)
 
@@ -93,10 +93,12 @@ and we train the network using two rounds of `Adam`:
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_adjoint(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, α)
-res1 = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback = callback, maxiters = 150)
+res1 = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.05); callback = callback, maxiters = 150)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
-res2 = Optimization.solve(optprob2, OptimizationOptimisers.Adam(0.001); callback = callback, maxiters = 150)
+res2 = Optimization.solve(
+    optprob2, OptimizationOptimisers.Adam(0.001); callback = callback, maxiters = 150)
 opt = res2.u
 ```
 

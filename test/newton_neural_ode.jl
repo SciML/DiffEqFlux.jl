@@ -1,5 +1,5 @@
 using DiffEqFlux, ComponentArrays,
-    Lux, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
+      Lux, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random, Test
 
 Random.seed!(100)
 

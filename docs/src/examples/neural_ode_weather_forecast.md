@@ -9,9 +9,10 @@ The data is a four-dimensional dataset of daily temperature, humidity, wind spee
 
 ```@example weather_forecast
 using Random, Dates, Optimization, ComponentArrays, Lux, OptimizationOptimisers, DiffEqFlux,
-    OrdinaryDiffEq, CSV, DataFrames, Dates, Statistics, Plots, DataDeps
+      OrdinaryDiffEq, CSV, DataFrames, Dates, Statistics, Plots, DataDeps
 
-function download_data(data_url = "https://raw.githubusercontent.com/SebastianCallh/neural-ode-weather-forecast/master/data/",
+function download_data(
+        data_url = "https://raw.githubusercontent.com/SebastianCallh/neural-ode-weather-forecast/master/data/",
         data_local_path = "./delhi")
     function load(file_name)
         data_dep = DataDep("delhi/train", "", "$data_url/$file_name")
@@ -146,7 +147,8 @@ function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; 
         p === nothing && (p = p_new)
         state === nothing && (state = state_new)
 
-        p, state = train_one_round(node, p, state, y, OptimizationOptimisers.AdamW(lr), maxiters, rng;
+        p, state = train_one_round(
+            node, p, state, y, OptimizationOptimisers.AdamW(lr), maxiters, rng;
             callback = log_results(ps, losses), kwargs...)
     end
     ps, state, losses

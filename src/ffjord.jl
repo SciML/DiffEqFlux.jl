@@ -159,7 +159,8 @@ function __forward_ffjord(n::FFJORD, x, ps, st)
 
     ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 
-    _z = ChainRulesCore.@ignore_derivatives fill!(similar(x,
+    _z = ChainRulesCore.@ignore_derivatives fill!(
+        similar(x,
             S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
 
     prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), n.tspan, ps)
@@ -218,7 +219,8 @@ function __backward_ffjord(::Type{T1}, n::FFJORD, n_samples::Int, ps, st, rng) w
 
     ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 
-    _z = ChainRulesCore.@ignore_derivatives fill!(similar(x,
+    _z = ChainRulesCore.@ignore_derivatives fill!(
+        similar(x,
             S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
 
     prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), reverse(n.tspan), ps)

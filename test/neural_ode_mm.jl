@@ -1,5 +1,6 @@
 using ComponentArrays,
-    DiffEqFlux, Lux, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Test
+      DiffEqFlux, Lux, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq,
+      Test
 rng = Random.default_rng()
 
 #A desired MWE for now, not a test yet.
@@ -13,8 +14,8 @@ function f(du, u, p, t)
 end
 u₀ = [1.0, 0, 0]
 M = [1.0 0 0
-    0 1.0 0
-    0 0 0]
+     0 1.0 0
+     0 0 0]
 tspan = (0.0, 1.0)
 p = [0.04, 3e7, 1e4]
 func = ODEFunction(f; mass_matrix = M)

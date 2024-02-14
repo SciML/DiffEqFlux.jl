@@ -1,6 +1,6 @@
 using DiffEqFlux, Zygote, Distances, Distributions, DistributionsAD, Optimization,
-    LinearAlgebra, OrdinaryDiffEq, Random, Test, OptimizationOptimisers, Statistics,
-    ComponentArrays
+      LinearAlgebra, OrdinaryDiffEq, Random, Test, OptimizationOptimisers, Statistics,
+      ComponentArrays
 
 Random.seed!(1999)
 
@@ -30,7 +30,8 @@ end
     @testset "ADType: $(adtype)" for adtype in (Optimization.AutoForwardDiff(),
         Optimization.AutoReverseDiff(), Optimization.AutoTracker(),
         Optimization.AutoZygote(), Optimization.AutoFiniteDiff())
-        @testset "regularize = $(regularize) & monte_carlo = $(monte_carlo)" for regularize in (true,
+        @testset "regularize = $(regularize) & monte_carlo = $(monte_carlo)" for regularize in (
+                true,
                 false), monte_carlo in (true, false)
             @info "regularize = $(regularize) & monte_carlo = $(monte_carlo)"
             st_ = (; st..., regularize, monte_carlo)
@@ -38,7 +39,8 @@ end
             optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
             optprob = Optimization.OptimizationProblem(optf, ps)
             @test !isnothing(Optimization.solve(optprob, Adam(0.1);
-                callback = callback(adtype), maxiters = 3)) broken=(adtype isa Optimization.AutoTracker)
+                callback = callback(adtype), maxiters = 3)) broken=(adtype isa
+                                                                    Optimization.AutoTracker)
         end
     end
 end
