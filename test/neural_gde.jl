@@ -1,20 +1,21 @@
 using DiffEqFlux, ComponentArrays, GeometricFlux, GraphSignals, OrdinaryDiffEq, Random,
-    Test, OptimizationOptimisers, Optimization, Statistics
+      Test, OptimizationOptimisers, Optimization, Statistics
 import Flux
 
 # Fully Connected Graph
 adj_mat = FeaturedGraph(Float32[0 1 1 1
-    1 0 1 1
-    1 1 0 1
-    1 1 1 0])
+                                1 0 1 1
+                                1 1 0 1
+                                1 1 1 0])
 
 features = [-10.0f0 -9.0f0 9.0f0 10.0f0
-    0.0f0 0.0f0 0.0f0 0.0f0]
+            0.0f0 0.0f0 0.0f0 0.0f0]
 
 target = Float32[1.0 1.0 0.0 0.0
-    0.0 0.0 1.0 1.0]
+                 0.0 0.0 1.0 1.0]
 
-model = Chain(NeuralODE(WithGraph(adj_mat, GCNConv(2 => 2)), (0.0f0, 1.0f0), Tsit5();
+model = Chain(
+    NeuralODE(WithGraph(adj_mat, GCNConv(2 => 2)), (0.0f0, 1.0f0), Tsit5();
         save_everystep = false, reltol = 1e-3, abstol = 1e-3, save_start = false),
     x -> reshape(Array(x), size(x)[1:2]))
 

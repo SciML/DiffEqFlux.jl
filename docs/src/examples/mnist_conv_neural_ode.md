@@ -8,7 +8,8 @@ using Fully Connected Layers.
 
 ```@example mnist_cnn
 using DiffEqFlux, Statistics,
-    ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq, Printf, Test, LuxCUDA, Random
+      ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq, Printf, Test, LuxCUDA,
+      Random
 using Optimization, OptimizationOptimisers
 using MLDatasets: MNIST
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs, batchview

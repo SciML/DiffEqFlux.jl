@@ -7,7 +7,7 @@ on **GPUs** with **minibatching**.
 
 ```@example mnist
 using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
-    ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
+      ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
 using MLDatasets: MNIST
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 
@@ -127,7 +127,7 @@ res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); callback)
 
 ```@example mnist
 using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
-    ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
+      ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
 using MLDatasets: MNIST
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 ```

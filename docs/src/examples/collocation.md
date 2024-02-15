@@ -16,7 +16,7 @@ Before getting to the explanation, here's some code to start with. We will follo
 
 ```@example collocation_cp
 using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization,
-    OptimizationOptimisers, Plots
+      OptimizationOptimisers, Plots
 
 using Random
 rng = Random.default_rng()
@@ -64,7 +64,8 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-result_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 10000)
+result_neuralode = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 nn_sol, st = prob_neuralode(u0, result_neuralode.u, st)
@@ -86,7 +87,8 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-numerical_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 300)
+numerical_neuralode = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
 scatter(tsteps, data')
@@ -100,7 +102,7 @@ us to get an estimate of the approximate noiseless dynamics:
 
 ```@example collocation
 using ComponentArrays,
-    Lux, DiffEqFlux, Optimization, OptimizationOptimisers, OrdinaryDiffEq, Plots
+      Lux, DiffEqFlux, Optimization, OptimizationOptimisers, OrdinaryDiffEq, Plots
 
 using Random
 rng = Random.default_rng()
@@ -158,7 +160,8 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-result_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 10000)
+result_neuralode = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 10000)
 
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
 nn_sol, st = prob_neuralode(u0, result_neuralode.u, st)
@@ -186,7 +189,8 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
 
-numerical_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 300)
+numerical_neuralode = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.05); callback, maxiters = 300)
 
 nn_sol, st = prob_neuralode(u0, numerical_neuralode.u, st)
 scatter(tsteps, data')

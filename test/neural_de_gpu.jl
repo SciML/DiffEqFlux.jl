@@ -1,5 +1,5 @@
 using DiffEqFlux, Lux, LuxCUDA, CUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test,
-    Random, ComponentArrays
+      Random, ComponentArrays
 import Flux
 
 CUDA.allowscalar(false)
@@ -29,7 +29,8 @@ const cdev = cpu_device()
 
     @testset "Neural ODE" begin
         @testset "u0: $(typeof(u0))" for u0 in (x, xs)
-            @testset "kwargs: $(kwargs))" for kwargs in ((; save_everystep = false,
+            @testset "kwargs: $(kwargs))" for kwargs in (
+                (; save_everystep = false,
                     save_start = false),
                 (; save_everystep = false, save_start = false, sensealg = TrackerAdjoint()),
                 (; save_everystep = false, save_start = false,

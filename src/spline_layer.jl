@@ -42,6 +42,8 @@ function LuxCore.initialparameters(rng::AbstractRNG, l::SplineLayer)
 end
 
 function (layer::SplineLayer)(t, ps, st)
-    return (layer.spline_basis(ps.saved_points,
-            layer.tspan[1]:(layer.tstep):layer.tspan[2])(t), st)
+    return (
+        layer.spline_basis(ps.saved_points,
+            layer.tspan[1]:(layer.tstep):layer.tspan[2])(t),
+        st)
 end

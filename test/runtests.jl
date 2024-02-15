@@ -73,7 +73,7 @@ const is_CI = haskey(ENV, "CI")
         @safetestset "Aqua Q/A" begin
             using Aqua, DiffEqFlux, LinearAlgebra
             Aqua.find_persistent_tasks_deps(DiffEqFlux)
-            Aqua.test_ambiguities(DiffEqFlux, recursive = false)
+            Aqua.test_ambiguities(DiffEqFlux; recursive = false)
             Aqua.test_deps_compat(DiffEqFlux)
             Aqua.test_piracies(DiffEqFlux; treat_as_own = [LinearAlgebra.Tridiagonal])
             Aqua.test_project_extras(DiffEqFlux)

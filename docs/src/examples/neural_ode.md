@@ -13,7 +13,7 @@ follow a full explanation of the definition and training process:
 
 ```@example neuralode_cp
 using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
-    OptimizationOptimisers, Random, Plots
+      OptimizationOptimisers, Random, Plots
 
 rng = Random.default_rng()
 u0 = Float32[2.0; 0.0]
@@ -65,7 +65,8 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
-result_neuralode = Optimization.solve(optprob, OptimizationOptimisers.Adam(0.05); callback = callback,
+result_neuralode = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.05); callback = callback,
     maxiters = 300)
 
 optprob2 = remake(optprob; u0 = result_neuralode.u)
@@ -84,7 +85,7 @@ Let's get a time series array from a spiral ODE to train against.
 
 ```@example neuralode
 using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization,
-    OptimizationOptimJL, OptimizationOptimisers, Random, Plots
+      OptimizationOptimJL, OptimizationOptimisers, Random, Plots
 
 rng = Random.default_rng()
 u0 = Float32[2.0; 0.0]
