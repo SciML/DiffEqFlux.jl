@@ -3,22 +3,22 @@
 
 Constructs a Spline Layer. At a high-level, it performs the following:
 
-1. Takes as input a one-dimensional training dataset, a time span, a time step and
-   an interpolation method.
-2. During training, adjusts the values of the function at multiples of the time-step such
-   that the curve interpolated through these points has minimum loss on the corresponding
-   one-dimensional dataset.
+ 1. Takes as input a one-dimensional training dataset, a time span, a time step and
+    an interpolation method.
+ 2. During training, adjusts the values of the function at multiples of the time-step such
+    that the curve interpolated through these points has minimum loss on the corresponding
+    one-dimensional dataset.
 
 Arguments:
 
-- `time_span`: Tuple of real numbers corresponding to the time span.
-- `time_step`: Real number corresponding to the time step.
-- `spline_basis`: Interpolation method to be used yb the basis (current supported
-  interpolation methods: `ConstantInterpolation`, `LinearInterpolation`,
-  `QuadraticInterpolation`, `QuadraticSpline`, `CubicSpline`).
-- `init_saved_points`: values of the function at multiples of the time step. Initialized by
-  default to a random vector sampled from the unit normal. Alternatively, can take a
-  function with the signature `init_saved_points(rng, time_span, time_step)`.
+  - `time_span`: Tuple of real numbers corresponding to the time span.
+  - `time_step`: Real number corresponding to the time step.
+  - `spline_basis`: Interpolation method to be used yb the basis (current supported
+    interpolation methods: `ConstantInterpolation`, `LinearInterpolation`,
+    `QuadraticInterpolation`, `QuadraticSpline`, `CubicSpline`).
+  - `init_saved_points`: values of the function at multiples of the time step. Initialized by
+    default to a random vector sampled from the unit normal. Alternatively, can take a
+    function with the signature `init_saved_points(rng, time_span, time_step)`.
 """
 @concrete struct SplineLayer <: AbstractExplicitLayer
     tspan

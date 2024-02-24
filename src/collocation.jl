@@ -50,17 +50,17 @@ column is a snapshot of the timeseries at `tpoints[i]`.
 
 For kernels, the following exist:
 
-- EpanechnikovKernel
-- UniformKernel
-- TriangularKernel
-- QuarticKernel
-- TriweightKernel
-- TricubeKernel
-- GaussianKernel
-- CosineKernel
-- LogisticKernel
-- SigmoidKernel
-- SilvermanKernel
+  - EpanechnikovKernel
+  - UniformKernel
+  - TriangularKernel
+  - QuarticKernel
+  - TriweightKernel
+  - TricubeKernel
+  - GaussianKernel
+  - CosineKernel
+  - LogisticKernel
+  - SigmoidKernel
+  - SilvermanKernel
 
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2631937/
 

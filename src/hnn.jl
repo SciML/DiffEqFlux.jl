@@ -8,17 +8,19 @@ and momentum (of size `n`) of the particles. It then returns the time derivative
 position and momentum.
 
 !!! note
+
     This doesn't solve the Hamiltonian Problem. Use [`NeuralHamiltonianDE`](@ref)
     for such applications.
 
 Arguments:
 
-1. `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that returns the
-   Hamiltonian of the system.
-2. `ad`: The autodiff framework to be used for the internal Hamiltonian computation. The
-   default is `AutoForwardDiff()`.
+ 1. `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that returns the
+    Hamiltonian of the system.
+ 2. `ad`: The autodiff framework to be used for the internal Hamiltonian computation. The
+    default is `AutoForwardDiff()`.
 
 !!! note
+
     If training with Zygote, ensure that the `chunksize` for `AutoForwardDiff` is set to
     `nothing`.
 
@@ -80,12 +82,12 @@ Neural Network [`HamiltonianNN`](@ref).
 
 Arguments:
 
-- `model`: A Flux.Chain, Lux.AbstractExplicitLayer, or Hamiltonian Neural Network that
-  predicts the Hamiltonian of the system.
-- `tspan`: The timespan to be solved on.
-- `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
+  - `model`: A Flux.Chain, Lux.AbstractExplicitLayer, or Hamiltonian Neural Network that
+    predicts the Hamiltonian of the system.
+  - `tspan`: The timespan to be solved on.
+  - `kwargs`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
 """
 @concrete struct NeuralHamiltonianDE{M <: HamiltonianNN} <: NeuralDELayer
     model::M

@@ -1,4 +1,5 @@
 style = "sciml"
 annotate_untyped_fields_with_any = false
 format_markdown = true
+format_docstrings = true
 separate_kwargs_with_semicolon = true
