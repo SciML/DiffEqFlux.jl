@@ -15,17 +15,17 @@ derivatives of the loss backwards in time.
 
 Arguments:
 
-- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the ̇x.
-- `tspan`: The timespan to be solved on.
-- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
-  default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
-  Defaults to an adjoint method. See
-  the [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/)
-  documentation for more details.
-- `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
+  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the ̇x.
+  - `tspan`: The timespan to be solved on.
+  - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+    default algorithm from DifferentialEquations.jl.
+  - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
+    Defaults to an adjoint method. See
+    the [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/)
+    documentation for more details.
+  - `kwargs`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
 
 References:
 
@@ -64,17 +64,17 @@ Constructs a neural stochastic differential equation (neural SDE) with diagonal 
 
 Arguments:
 
-- `drift`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the drift
-  function.
-- `diffusion`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
-  diffusion function. Should output a vector of the same size as the input.
-- `tspan`: The timespan to be solved on.
-- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
-  default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
-- `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
+  - `drift`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the drift
+    function.
+  - `diffusion`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+    diffusion function. Should output a vector of the same size as the input.
+  - `tspan`: The timespan to be solved on.
+  - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+    default algorithm from DifferentialEquations.jl.
+  - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
+  - `kwargs`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
 """
 @concrete struct NeuralDSDE{M1 <: AbstractExplicitLayer, M2 <: AbstractExplicitLayer} <:
                  NeuralSDELayer
@@ -112,18 +112,18 @@ Constructs a neural stochastic differential equation (neural SDE).
 
 Arguments:
 
-- `drift`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the drift
-  function.
-- `diffusion`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
-  diffusion function. Should output a matrix that is `nbrown x size(x, 1)`.
-- `tspan`: The timespan to be solved on.
-- `nbrown`: The number of Brownian processes.
-- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
-  default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
-- `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
+  - `drift`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the drift
+    function.
+  - `diffusion`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+    diffusion function. Should output a matrix that is `nbrown x size(x, 1)`.
+  - `tspan`: The timespan to be solved on.
+  - `nbrown`: The number of Brownian processes.
+  - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+    default algorithm from DifferentialEquations.jl.
+  - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
+  - `kwargs`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
 """
 @concrete struct NeuralSDE{M1 <: AbstractExplicitLayer, M2 <: AbstractExplicitLayer} <:
                  NeuralSDELayer
@@ -164,21 +164,21 @@ Constructs a neural delay differential equation (neural DDE) with constant delay
 
 Arguments:
 
-- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
-  derivative function. Should take an input of size `[x; x(t - lag_1); ...; x(t - lag_n)]`
-  and produce and output shaped like `x`.
-- `tspan`: The timespan to be solved on.
-- `hist`: Defines the history function `h(u, p, t)` for values before the start of the
-  integration. Note that `u` is supposed to be used to return a value that matches the size
-  of `u`.
-- `lags`: Defines the lagged values that should be utilized in the neural network.
-- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
-  default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
-  Defaults to using reverse-mode automatic differentiation via Tracker.jl
-- `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
+  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+    derivative function. Should take an input of size `[x; x(t - lag_1); ...; x(t - lag_n)]`
+    and produce and output shaped like `x`.
+  - `tspan`: The timespan to be solved on.
+  - `hist`: Defines the history function `h(u, p, t)` for values before the start of the
+    integration. Note that `u` is supposed to be used to return a value that matches the size
+    of `u`.
+  - `lags`: Defines the lagged values that should be utilized in the neural network.
+  - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+    default algorithm from DifferentialEquations.jl.
+  - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
+    Defaults to using reverse-mode automatic differentiation via Tracker.jl
+  - `kwargs`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
 """
 @concrete struct NeuralCDDE{M <: AbstractExplicitLayer} <: NeuralDELayer
     model::M
@@ -217,19 +217,19 @@ Constructs a neural differential-algebraic equation (neural DAE).
 
 Arguments:
 
-- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
-  derivative function. Should take an input of size `x` and produce the residual of
-  `f(dx,x,t)` for only the differential variables.
-- `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
-  constraints to impose on the algebraic equations.
-- `tspan`: The timespan to be solved on.
-- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
-  default algorithm from DifferentialEquations.jl.
-- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
-  Defaults to using reverse-mode automatic differentiation via Tracker.jl
-- `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
+  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+    derivative function. Should take an input of size `x` and produce the residual of
+    `f(dx,x,t)` for only the differential variables.
+  - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
+    constraints to impose on the algebraic equations.
+  - `tspan`: The timespan to be solved on.
+  - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
+    default algorithm from DifferentialEquations.jl.
+  - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
+    Defaults to using reverse-mode automatic differentiation via Tracker.jl
+  - `kwargs`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
 """
 @concrete struct NeuralDAE{M <: AbstractExplicitLayer} <: NeuralDELayer
     model::M
@@ -287,23 +287,23 @@ constraint equations.
 
 Arguments:
 
-- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the ̇`f(u,p,t)`
-- `constraints_model`: A function `constraints_model(u,p,t)` for the fixed constraints to
-  impose on the algebraic equations.
-- `tspan`: The timespan to be solved on.
-- `mass_matrix`: The mass matrix associated with the DAE.
-- `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the default
-  algorithm from DifferentialEquations.jl. This method requires an implicit ODE solver
-  compatible with singular mass matrices. Consult the
-  [DAE solvers](https://docs.sciml.ai/DiffEqDocs/stable/solvers/dae_solve/) documentation
-  for more details.
-- `sensealg`: The choice of differentiation algorithm used in the backpropogation.
-  Defaults to an adjoint method. See
-  the [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/)
-  documentation for more details.
-- `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
+  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the ̇`f(u,p,t)`
+  - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed constraints to
+    impose on the algebraic equations.
+  - `tspan`: The timespan to be solved on.
+  - `mass_matrix`: The mass matrix associated with the DAE.
+  - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the default
+    algorithm from DifferentialEquations.jl. This method requires an implicit ODE solver
+    compatible with singular mass matrices. Consult the
+    [DAE solvers](https://docs.sciml.ai/DiffEqDocs/stable/solvers/dae_solve/) documentation
+    for more details.
+  - `sensealg`: The choice of differentiation algorithm used in the backpropogation.
+    Defaults to an adjoint method. See
+    the [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/)
+    documentation for more details.
+  - `kwargs`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
 """
 @concrete struct NeuralODEMM{M <: AbstractExplicitLayer} <: NeuralDELayer
     model::M
@@ -344,8 +344,8 @@ Constructs an Augmented Neural Differential Equation Layer.
 
 Arguments:
 
-- `nde`: Any Neural Differential Equation Layer.
-- `adim`: The number of dimensions the initial conditions should be lifted.
+  - `nde`: Any Neural Differential Equation Layer.
+  - `adim`: The number of dimensions the initial conditions should be lifted.
 
 References:
 

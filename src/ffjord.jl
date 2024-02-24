@@ -10,24 +10,25 @@ via adjoints [1] and specialized for density estimation based on continuous
 normalizing flows (CNF) [2] with a stochastic approach [2] for the computation of the trace
 of the dynamics' jacobian. At a high level this corresponds to the following steps:
 
-1. Parameterize the variable of interest x(t) as a function f(z, θ, t) of a base variable z(t) with known density p\\_z.
-2. Use the transformation of variables formula to predict the density p\\_x as a function of the density p\\_z and the trace of the Jacobian of f.
-3. Choose the parameter θ to minimize a loss function of p\\_x (usually the negative likelihood of the data).
+ 1. Parameterize the variable of interest x(t) as a function f(z, θ, t) of a base variable z(t) with known density p\\_z.
+ 2. Use the transformation of variables formula to predict the density p\\_x as a function of the density p\\_z and the trace of the Jacobian of f.
+ 3. Choose the parameter θ to minimize a loss function of p\\_x (usually the negative likelihood of the data).
 
 After these steps one may use the NN model and the learned θ to predict the density p\\_x for new values of x.
 
 Arguments:
-- `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the dynamics of the model.
-- `basedist`: Distribution of the base variable. Set to the unit normal by default.
-- `input_dims`: Input Dimensions of the model.
-- `tspan`: The timespan to be solved on.
-- `args`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
-- `ad`: The automatic differentiation method to use for the internal jacobian trace. Defaults to `AutoForwardDiff()`.
-- `kwargs`: Additional arguments splatted to the ODE solver. See the
-  [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
-  documentation for more details.
+
+  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the dynamics of the model.
+  - `basedist`: Distribution of the base variable. Set to the unit normal by default.
+  - `input_dims`: Input Dimensions of the model.
+  - `tspan`: The timespan to be solved on.
+  - `args`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
+  - `ad`: The automatic differentiation method to use for the internal jacobian trace. Defaults to `AutoForwardDiff()`.
+  - `kwargs`: Additional arguments splatted to the ODE solver. See the
+    [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
+    documentation for more details.
 
 References:
 
@@ -36,7 +37,6 @@ References:
 [2] Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural ordinary differential equations." In Proceedings of the 32nd International Conference on Neural Information Processing Systems, pp. 6572-6583. 2018.
 
 [3] Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).
-
 """
 @concrete struct FFJORD{M <: AbstractExplicitLayer, D <: Union{Nothing, Distribution}} <:
                  CNFLayer
@@ -238,9 +238,9 @@ by `pdf` or `logpdf` (from `Distributions.jl`).
 
 Arguments:
 
-- `model`: A FFJORD instance.
-- `regularize`: Whether we use regularization (default: `false`).
-- `monte_carlo`: Whether we use monte carlo (default: `true`).
+  - `model`: A FFJORD instance.
+  - `regularize`: Whether we use regularization (default: `false`).
+  - `monte_carlo`: Whether we use monte carlo (default: `true`).
 """
 @concrete struct FFJORDDistribution{F <: FFJORD} <: ContinuousMultivariateDistribution
     model::F

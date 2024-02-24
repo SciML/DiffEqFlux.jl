@@ -15,7 +15,7 @@ is the j-th Chebyshev polynomial of the first kind.
 
 Arguments:
 
-- `n`: number of terms in the polynomial expansion.
+  - `n`: number of terms in the polynomial expansion.
 """
 ChebyshevBasis(n) = TensorProductBasisFunction(__chebyshev, n)
 
@@ -28,7 +28,7 @@ Constructs a sine basis of the form [sin(x), sin(2x), ..., sin(nx)].
 
 Arguments:
 
-- `n`: number of terms in the sine expansion.
+  - `n`: number of terms in the sine expansion.
 """
 SinBasis(n) = TensorProductBasisFunction(sin ∘ *, n)
 
@@ -39,7 +39,7 @@ Constructs a cosine basis of the form [cos(x), cos(2x), ..., cos(nx)].
 
 Arguments:
 
-- `n`: number of terms in the cosine expansion.
+  - `n`: number of terms in the cosine expansion.
 """
 CosBasis(n) = TensorProductBasisFunction(cos ∘ *, n)
 
@@ -51,7 +51,7 @@ F\\_j(x) = j is even ? cos((j÷2)x) : sin((j÷2)x) => [F\\_0(x), F\\_1(x), ..., 
 
 Arguments:
 
-- `n`: number of terms in the Fourier expansion.
+  - `n`: number of terms in the Fourier expansion.
 """
 FourierBasis(n) = TensorProductBasisFunction(__fourier, n)
 
@@ -65,7 +65,7 @@ P\\_j(.) is the j-th Legendre polynomial.
 
 Arguments:
 
-- `n`: number of terms in the polynomial expansion.
+  - `n`: number of terms in the polynomial expansion.
 """
 LegendreBasis(n) = TensorProductBasisFunction(__legendre_poly, n)
 
@@ -92,7 +92,7 @@ Constructs a Polynomial basis of the form [1, x, ..., x^(n-1)].
 
 Arguments:
 
-- `n`: number of terms in the polynomial expansion.
+  - `n`: number of terms in the polynomial expansion.
 """
 PolynomialBasis(n) = TensorProductBasisFunction(__polynomial, n)
 
@@ -108,11 +108,11 @@ and returns [z[1], ..., z[out]].
 
 Arguments:
 
-- `model`: Array of TensorProductBasis [B\\_1(n\\_1), ..., B\\_k(n\\_k)], where k corresponds to the
-  dimension of the input.
-- `out`: Dimension of the output.
-- `p`: Optional initialization of the layer's weight. Initialized to standard normal by
-  default.
+  - `model`: Array of TensorProductBasis [B\\_1(n\\_1), ..., B\\_k(n\\_k)], where k corresponds to the
+    dimension of the input.
+  - `out`: Dimension of the output.
+  - `p`: Optional initialization of the layer's weight. Initialized to standard normal by
+    default.
 """
 function TensorLayer(model, out_dim::Int, init_p::F = randn) where {F <: Function}
     number_of_weights = prod(Base.Fix2(getproperty, :n), model)
