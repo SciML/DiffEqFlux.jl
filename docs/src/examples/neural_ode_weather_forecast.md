@@ -136,7 +136,7 @@ end
 
 function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; kwargs...)
     log_results(ps, losses) = (p, loss) -> begin
-        push!(ps, copy(p))
+        push!(ps, copy(p.u))
         push!(losses, loss)
         false
     end
