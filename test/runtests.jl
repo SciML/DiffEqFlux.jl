@@ -1,4 +1,9 @@
-using DiffEqFlux, SafeTestsets, Test
+using DiffEqFlux, SafeTestsets, Test, Logging
+
+GC.enable_logging(true)
+
+debuglogger = ConsoleLogger(Debug)
+global_logger(debuglogger)
 
 const GROUP = get(ENV, "GROUP", "All")
 const is_APPVEYOR = (Sys.iswindows() && haskey(ENV, "APPVEYOR"))
