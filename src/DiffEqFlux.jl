@@ -19,16 +19,6 @@ import Lux.Experimental: StatefulLuxLayer
 
 @reexport using ADTypes, Lux
 
-# FIXME: Type Piracy
-function CRC.rrule(::Type{Tridiagonal}, dl, d, du)
-    y = Tridiagonal(dl, d, du)
-    @views function ∇Tridiagonal(∂y)
-        return (NoTangent(), diag(∂y[2:end, 1:(end - 1)]), diag(∂y),
-            diag(∂y[1:(end - 1), 2:end]))
-    end
-    return y, ∇Tridiagonal
-end
-
 include("ffjord.jl")
 include("neural_de.jl")
 include("spline_layer.jl")
