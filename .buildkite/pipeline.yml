@@ -21,14 +21,11 @@ steps:
       - JuliaCI/julia#v1:
           version: "1.10"
     command: |
-      julia --project -e '
+      julia --project=docs -e '
         println("--- :julia: Instantiating project")
         using Pkg
         Pkg.instantiate()
-        Pkg.activate("docs")
         Pkg.develop(PackageSpec(path=pwd()))
-        Pkg.instantiate()
-        push!(LOAD_PATH, @__DIR__)
         println("+++ :julia: Building documentation")
         include("docs/make.jl")'
     agents:
