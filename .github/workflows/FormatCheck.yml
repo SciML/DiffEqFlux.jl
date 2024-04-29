@@ -1,9 +1,13 @@
-name: Format suggestions
+name: "Format Check"
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - 'master'
+    tags: '*'
+  pull_request:
 
 jobs:
-  code-style:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: julia-actions/julia-format@v3
+  format-check:
+    name: "Format Check"
+    uses: "SciML/.github/.github/workflows/format-check.yml@v1"
