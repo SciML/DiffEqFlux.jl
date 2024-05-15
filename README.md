@@ -18,6 +18,7 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 > [!NOTE]
 > We maintain backwards compatibility with [Flux.jl](https://docs.sciml.ai/Flux/stable/) via [Lux.transform](https://lux.csail.mit.edu/stable/api/Lux/flux_to_lux#Lux.transform)
 
+
 ## Tutorials and Documentation
 
 For information on using the package,
