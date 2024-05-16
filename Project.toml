@@ -62,8 +62,6 @@ DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
-GeometricFlux = "7e08b658-56d3-11e9-2997-919d5b31e4ea"
-GraphSignals = "3ebe565e-a4b5-49c6-aed2-300248c3a9c1"
 LuxCUDA = "d0bbae9a-e099-4d5b-a835-1c6931763bda"
 MLDataUtils = "cc2ba9b6-d476-5e6d-8eaf-a92d5412d41d"
 MLDatasets = "eb30cadb-4394-5ae3-aed4-317e484a6458"
@@ -85,4 +83,4 @@ StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "BenchmarkTools", "CUDA", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "Flux", "GeometricFlux", "GraphSignals", "LuxCUDA", "MLDataUtils", "MLDatasets", "NLopt", "NNlib", "OneHotArrays", "Optimisers", "Optimization",  "OptimizationOptimJL",  "OptimizationOptimisers", "OrdinaryDiffEq", "Printf", "RecursiveArrayTools", "ReverseDiff", "SafeTestsets", "StaticArrays", "Statistics", "StochasticDiffEq", "Test"]
+test = ["Aqua", "BenchmarkTools", "CUDA", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "Flux", "LuxCUDA", "MLDataUtils", "MLDatasets", "NLopt", "NNlib", "OneHotArrays", "Optimisers", "Optimization",  "OptimizationOptimJL",  "OptimizationOptimisers", "OrdinaryDiffEq", "Printf", "RecursiveArrayTools", "ReverseDiff", "SafeTestsets", "StaticArrays", "Statistics", "StochasticDiffEq", "Test"]
