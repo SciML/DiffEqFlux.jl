@@ -25,7 +25,6 @@ For information on using the package,
 [in-development documentation](https://docs.sciml.ai/DiffEqFlux/dev/) for the version of
 the documentation, which contains the unreleased features.
 
-
 ## Problem Domain
 
 DiffEqFlux.jl is for implicit layer machine learning.
