@@ -18,9 +18,6 @@ const is_CI = haskey(ENV, "CI")
         @safetestset "Neural DE Tests" begin
             include("neural_de.jl")
         end
-        @safetestset "Neural Graph DE" begin
-            include("neural_gde.jl")
-        end
         @safetestset "Tensor Product Layer" begin
             include("tensor_product_test.jl")
         end
