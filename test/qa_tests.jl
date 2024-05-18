@@ -1,7 +1,7 @@
 @testitem "Aqua Q/A" tags=[:qa] begin
     using Aqua
 
-    Aqua.test_all(DiffEqFlux; ambiguities=false)
+    Aqua.test_all(DiffEqFlux; ambiguities = false)
     Aqua.test_ambiguities(DiffEqFlux; recursive = false)
 end
 
