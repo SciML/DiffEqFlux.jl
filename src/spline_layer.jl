@@ -34,8 +34,8 @@ end
 function LuxCore.initialparameters(rng::AbstractRNG, l::SplineLayer)
     if l.init_saved_points === nothing
         return (;
-            saved_points = randn(rng, typeof(l.tspan[1]),
-                length(l.tspan[1]:(l.tstep):l.tspan[2])))
+            saved_points = randn(
+                rng, typeof(l.tspan[1]), length(l.tspan[1]:(l.tstep):l.tspan[2])))
     else
         return (; saved_points = l.init_saved_points(rng, l.tspan, l.tstep))
     end
@@ -43,7 +43,6 @@ end
 
 function (layer::SplineLayer)(t, ps, st)
     return (
-        layer.spline_basis(ps.saved_points,
-            layer.tspan[1]:(layer.tstep):layer.tspan[2])(t),
+        layer.spline_basis(ps.saved_points, layer.tspan[1]:(layer.tstep):layer.tspan[2])(t),
         st)
 end

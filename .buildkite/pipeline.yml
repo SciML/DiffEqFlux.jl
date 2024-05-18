@@ -12,7 +12,8 @@ steps:
     # Don't run Buildkite if the commit message includes the text [skip tests]
     if: build.message !~ /\[skip tests\]/
     env:
-      GROUP: GPU
+      RETESTITEMS_NWORKERS: 4
+      GROUP: CUDA
       DATADEPS_ALWAYS_ACCEPT: 'true'
       JULIA_PKG_SERVER: "" # it often struggles with our large artifacts
 

@@ -42,15 +42,16 @@ function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
     node = NeuralODE(
         Chain(Dense(input_dim, hidden_dim, relu),
-            Dense(hidden_dim, hidden_dim, relu),
-            Dense(hidden_dim, input_dim)),
+            Dense(hidden_dim, hidden_dim, relu), Dense(hidden_dim, input_dim)),
         (0.0f0, 1.0f0),
         Tsit5();
         save_everystep = false,
-        reltol = 1.0f-3, abstol = 1.0f-3, save_start = false)
+        reltol = 1.0f-3,
+        abstol = 1.0f-3,
+        save_start = false)
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
     model = Chain(node, diffeqarray_to_array, Dense(input_dim, out_dim))
-    ps, st = Lux.setup(Random.default_rng(), model)
+    ps, st = Lux.setup(Xoshiro(0), model)
     return model, ps |> gdev, st |> gdev
 end
 
@@ -70,8 +71,8 @@ end
 
 loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)
 
-dataloader = concentric_sphere(2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000;
-    batch_size = 256)
+dataloader = concentric_sphere(
+    2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000; batch_size = 256)
 
 iter = 0
 cb = function (ps, l)
@@ -186,15 +187,16 @@ function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
     input_dim = input_dim + augment_dim
     node = NeuralODE(
         Chain(Dense(input_dim, hidden_dim, relu),
-            Dense(hidden_dim, hidden_dim, relu),
-            Dense(hidden_dim, input_dim)),
+            Dense(hidden_dim, hidden_dim, relu), Dense(hidden_dim, input_dim)),
         (0.0f0, 1.0f0),
         Tsit5();
         save_everystep = false,
-        reltol = 1.0f-3, abstol = 1.0f-3, save_start = false)
+        reltol = 1.0f-3,
+        abstol = 1.0f-3,
+        save_start = false)
     node = augment_dim == 0 ? node : AugmentedNDELayer(node, augment_dim)
     model = Chain(node, diffeqarray_to_array, Dense(input_dim, out_dim))
-    ps, st = Lux.setup(Random.default_rng(), model)
+    ps, st = Lux.setup(Xoshiro(0), model)
     return model, ps |> gdev, st |> gdev
 end
 ```
@@ -236,8 +238,8 @@ Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is ea
 We sample a total of `4000` data points.
 
 ```@example augneuralode
-dataloader = concentric_sphere(2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000;
-    batch_size = 256)
+dataloader = concentric_sphere(
+    2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000; batch_size = 256)
 ```
 
 #### Callback Function

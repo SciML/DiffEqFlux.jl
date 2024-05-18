@@ -7,9 +7,8 @@ For a step-by-step tutorial see the tutorial on the MNIST Neural ODE Classificat
 using Fully Connected Layers.
 
 ```@example mnist_cnn
-using DiffEqFlux, Statistics,
-      ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq, Printf, Test, LuxCUDA,
-      Random
+using DiffEqFlux, Statistics, ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq,
+      Printf, Test, LuxCUDA, Random
 using Optimization, OptimizationOptimisers
 using MLDatasets: MNIST
 using MLDataUtils: LabelEnc, convertlabel, stratifiedobs, batchview
@@ -45,8 +44,8 @@ const bs = 128
 x_train, y_train = loadmnist(bs)
 
 down = Chain(Conv((3, 3), 1 => 64, relu; stride = 1), GroupNorm(64, 64),
-    Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1), GroupNorm(64, 64),
-    Conv((4, 4), 64 => 64; stride = 2, pad = 1))
+    Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1),
+    GroupNorm(64, 64), Conv((4, 4), 64 => 64; stride = 2, pad = 1))
 
 dudt = Chain(Conv((3, 3), 64 => 64, tanh; stride = 1, pad = 1),
     Conv((3, 3), 64 => 64, tanh; stride = 1, pad = 1))
@@ -66,7 +65,7 @@ m = Chain(down,                 # (28, 28, 1, BS) -> (6, 6, 64, BS)
     nn_ode,               # (6, 6, 64, BS) -> (6, 6, 64, BS, 1)
     DiffEqArray_to_Array, # (6, 6, 64, BS, 1) -> (6, 6, 64, BS)
     fc)                   # (6, 6, 64, BS) -> (10, BS)
-ps, st = Lux.setup(Random.default_rng(), m)
+ps, st = Lux.setup(Xoshiro(0), m)
 ps = ComponentArray(ps) |> gdev
 st = st |> gdev
 
@@ -105,8 +104,8 @@ loss_function(ps, x_train[1], y_train[1])
 opt = OptimizationOptimisers.Adam(0.05)
 iter = 0
 
-opt_func = OptimizationFunction((ps, _, x, y) -> loss_function(ps, x, y),
-    Optimization.AutoZygote())
+opt_func = OptimizationFunction(
+    (ps, _, x, y) -> loss_function(ps, x, y), Optimization.AutoZygote())
 opt_prob = OptimizationProblem(opt_func, ps)
 
 function callback(ps, l, pred)

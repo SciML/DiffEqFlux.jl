@@ -68,7 +68,7 @@ function __hamiltonian_forward(::AutoZygote, model, x, ps)
 end
 
 function (hnn::HamiltonianNN{<:LuxCore.AbstractExplicitLayer})(x, ps, st)
-    model = StatefulLuxLayer(hnn.model, nothing, st)
+    model = StatefulLuxLayer{true}(hnn.model, nothing, st)
     H = __hamiltonian_forward(hnn.ad, model, x, ps)
     n = size(x, 1) ÷ 2
     return vcat(selectdim(H, 1, (n + 1):(2n)), -selectdim(H, 1, 1:n)), model.st
@@ -102,7 +102,7 @@ function NeuralHamiltonianDE(model, tspan, args...; ad = AutoForwardDiff(), kwar
 end
 
 function (nhde::NeuralHamiltonianDE)(x, ps, st)
-    model = StatefulLuxLayer(nhde.model, nothing, st)
+    model = StatefulLuxLayer{true}(nhde.model, nothing, st)
     neural_hamiltonian(u, p, t) = model(u, p)
     prob = ODEProblem{false}(neural_hamiltonian, x, nhde.tspan, ps)
     sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP())

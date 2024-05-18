@@ -34,7 +34,7 @@ dataloader = ncycle(
     NEPOCHS)
 
 hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
-ps, st = Lux.setup(Random.default_rng(), hnn)
+ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
 
 opt = OptimizationOptimisers.Adam(0.01f0)
@@ -57,8 +57,8 @@ res = Optimization.solve(opt_prob, opt, dataloader; callback)
 
 ps_trained = res.u
 
-model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
-    save_start = true, saveat = t)
+model = NeuralHamiltonianDE(
+    hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
 plot(data[1, :], data[2, :]; lw = 4, label = "Original")
@@ -101,7 +101,7 @@ We parameterize the HamiltonianNN with a small MultiLayered Perceptron. HNNs are
 
 ```@example hamiltonian
 hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
-ps, st = Lux.setup(Random.default_rng(), hnn)
+ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
 
 opt = OptimizationOptimisers.Adam(0.01f0)
@@ -116,8 +116,8 @@ function callback(ps, loss, pred)
     return false
 end
 
-opt_func = OptimizationFunction((ps, _, data, target) -> loss_function(ps, data, target),
-    Optimization.AutoZygote())
+opt_func = OptimizationFunction(
+    (ps, _, data, target) -> loss_function(ps, data, target), Optimization.AutoZygote())
 opt_prob = OptimizationProblem(opt_func, ps_c)
 
 res = solve(opt_prob, opt, dataloader; callback)
@@ -130,8 +130,8 @@ ps_trained = res.u
 In order to visualize the learned trajectories, we need to solve the ODE. We will use the `NeuralHamiltonianDE` layer, which is essentially a wrapper over `HamiltonianNN` layer, and solves the ODE.
 
 ```@example hamiltonian
-model = NeuralHamiltonianDE(hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
-    save_start = true, saveat = t)
+model = NeuralHamiltonianDE(
+    hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
 plot(data[1, :], data[2, :]; lw = 4, label = "Original")

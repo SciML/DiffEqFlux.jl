@@ -31,9 +31,8 @@ prob = DDEProblem(dudt_, u0, h, tspan, nothing)
 First, let's build training data from the same example as the neural ODE:
 
 ```@example nsde
-using Plots, Statistics, ComponentArrays, Optimization,
-      OptimizationOptimisers, DiffEqFlux, StochasticDiffEq, SciMLBase.EnsembleAnalysis,
-      Random
+using Plots, Statistics, ComponentArrays, Optimization, OptimizationOptimisers, DiffEqFlux,
+      StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
 
 u0 = Float32[2.0; 0.0]
 datasize = 30
@@ -77,7 +76,7 @@ diffusion_dudt = Dense(2, 2)
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI();
     saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
-ps, st = Lux.setup(Random.default_rng(), neuralsde)
+ps, st = Lux.setup(Xoshiro(0), neuralsde)
 ps = ComponentArray(ps)
 ```
 
@@ -87,8 +86,8 @@ Let's see what that looks like:
 # Get the prediction using the correct initial condition
 prediction0 = neuralsde(u0, ps, st)[1]
 
-drift_model = Lux.Experimental.StatefulLuxLayer(drift_dudt, nothing, st.drift)
-diffusion_model = Lux.Experimental.StatefulLuxLayer(diffusion_dudt, nothing, st.diffusion)
+drift_model = StatefulLuxLayer{true}(drift_dudt, nothing, st.drift)
+diffusion_model = StatefulLuxLayer{true}(diffusion_dudt, nothing, st.diffusion)
 
 drift_(u, p, t) = drift_model(u, p.drift)
 diffusion_(u, p, t) = diffusion_model(u, p.diffusion)
@@ -111,7 +110,7 @@ mean and variance from `n` runs at each time point and uses the distance from
 the data values:
 
 ```@example nsde
-neuralsde_model = Lux.Experimental.StatefulLuxLayer(neuralsde, nothing, st)
+neuralsde_model = StatefulLuxLayer{true}(neuralsde, nothing, st)
 
 function predict_neuralsde(p, u = u0)
     return Array(neuralsde_model(u, p))

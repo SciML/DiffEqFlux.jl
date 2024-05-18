@@ -9,7 +9,7 @@ For a detailed discussion on how GPUs need to be setup refer to
 
 ```@example gpu
 using OrdinaryDiffEq, Lux, LuxCUDA, SciMLSensitivity, ComponentArrays, Random
-rng = Random.default_rng()
+rng = Xoshiro(0)
 
 const cdev = cpu_device()
 const gdev = gpu_device()
@@ -72,14 +72,14 @@ Here is the full neural ODE example. Note that we use the `gpu_device` function 
 same code works on CPUs and GPUs, dependent on `using LuxCUDA`.
 
 ```@example gpu
-using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq,
-      Plots, LuxCUDA, SciMLSensitivity, Random, ComponentArrays
+using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq, Plots, LuxCUDA,
+      SciMLSensitivity, Random, ComponentArrays
 import DiffEqFlux: NeuralODE
 
 CUDA.allowscalar(false) # Makes sure no slow operations are occurring
 
 #rng for Lux.setup
-rng = Random.default_rng()
+rng = Xoshiro(0)
 # Generate Data
 u0 = Float32[2.0; 0.0]
 datasize = 30

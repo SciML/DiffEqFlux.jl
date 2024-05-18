@@ -16,7 +16,7 @@ end
     nn = Chain(Dense(1, 1, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
-    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
     ps = ComponentArray(ps)
 
     data_dist = Beta(2.0f0, 2.0f0)
@@ -31,16 +31,17 @@ end
         Optimization.AutoReverseDiff(), Optimization.AutoTracker(),
         Optimization.AutoZygote(), Optimization.AutoFiniteDiff())
         @testset "regularize = $(regularize) & monte_carlo = $(monte_carlo)" for regularize in (
-                true,
-                false), monte_carlo in (true, false)
+                true, false),
+            monte_carlo in (true, false)
+
             @info "regularize = $(regularize) & monte_carlo = $(monte_carlo)"
             st_ = (; st..., regularize, monte_carlo)
-            model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
+            model = StatefulLuxLayer{true}(ffjord_mdl, nothing, st_)
             optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
             optprob = Optimization.OptimizationProblem(optf, ps)
-            @test !isnothing(Optimization.solve(optprob, Adam(0.1);
-                callback = callback(adtype), maxiters = 3)) broken=(adtype isa
-                                                                    Optimization.AutoTracker)
+            @test !isnothing(Optimization.solve(
+                optprob, Adam(0.1); callback = callback(adtype), maxiters = 3)) broken=(adtype isa
+                                                                                        Optimization.AutoTracker)
         end
     end
 end
@@ -49,7 +50,7 @@ end
     nn = Chain(Dense(1, 1, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
-    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
     ps = ComponentArray(ps)
 
     regularize = false
@@ -66,7 +67,7 @@ end
     adtype = Optimization.AutoZygote()
 
     st_ = (; st..., regularize, monte_carlo)
-    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
+    model = StatefulLuxLayer{true}(ffjord_mdl, nothing, st_)
 
     optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
     optprob = Optimization.OptimizationProblem(optf, ps)
@@ -83,7 +84,7 @@ end
     nn = Chain(Dense(1, 1, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
-    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
     ps = ComponentArray(ps)
 
     regularize = false
@@ -100,7 +101,7 @@ end
 
     adtype = Optimization.AutoZygote()
     st_ = (; st..., regularize, monte_carlo)
-    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
+    model = StatefulLuxLayer{true}(ffjord_mdl, nothing, st_)
 
     optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
     optprob = Optimization.OptimizationProblem(optf, ps)
@@ -116,9 +117,9 @@ end
 @testset "Test for alternative base distribution and deterministic trace FFJORD" begin
     nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
     tspan = (0.0f0, 1.0f0)
-    ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5();
-        basedist = MvNormal([0.0f0], Diagonal([4.0f0])))
-    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ffjord_mdl = FFJORD(
+        nn, tspan, (1,), Tsit5(); basedist = MvNormal([0.0f0], Diagonal([4.0f0])))
+    ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
     ps = ComponentArray(ps)
 
     regularize = false
@@ -135,12 +136,11 @@ end
 
     adtype = Optimization.AutoZygote()
     st_ = (; st..., regularize, monte_carlo)
-    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
+    model = StatefulLuxLayer{true}(ffjord_mdl, nothing, st_)
 
     optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
     optprob = Optimization.OptimizationProblem(optf, ps)
-    res = Optimization.solve(optprob, Adam(0.1); callback = callback(adtype),
-        maxiters = 30)
+    res = Optimization.solve(optprob, Adam(0.1); callback = callback(adtype), maxiters = 30)
 
     actual_pdf = pdf.(data_dist, test_data)
     learned_pdf = exp.(model(test_data, res.u)[1])
@@ -153,7 +153,7 @@ end
     nn = Chain(Dense(2, 2, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (2,), Tsit5())
-    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
     ps = ComponentArray(ps)
 
     regularize = false
@@ -172,12 +172,12 @@ end
 
     adtype = Optimization.AutoZygote()
     st_ = (; st..., regularize, monte_carlo)
-    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
+    model = StatefulLuxLayer{true}(ffjord_mdl, nothing, st_)
 
     optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
     optprob = Optimization.OptimizationProblem(optf, ps)
-    res = Optimization.solve(optprob, Adam(0.01); callback = callback(adtype),
-        maxiters = 30)
+    res = Optimization.solve(
+        optprob, Adam(0.01); callback = callback(adtype), maxiters = 30)
 
     actual_pdf = pdf(data_dist, test_data)
     learned_pdf = exp.(model(test_data, res.u)[1])
@@ -190,7 +190,7 @@ end
     nn = Chain(Dense(2, 2, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (2,), Tsit5())
-    ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+    ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
     ps = ComponentArray(ps)
 
     regularize = true
@@ -209,12 +209,12 @@ end
 
     adtype = Optimization.AutoZygote()
     st_ = (; st..., regularize, monte_carlo)
-    model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st_)
+    model = StatefulLuxLayer{true}(ffjord_mdl, nothing, st_)
 
     optf = Optimization.OptimizationFunction((θ, _) -> loss(model, θ), adtype)
     optprob = Optimization.OptimizationProblem(optf, ps)
-    res = Optimization.solve(optprob, Adam(0.01); callback = callback(adtype),
-        maxiters = 30)
+    res = Optimization.solve(
+        optprob, Adam(0.01); callback = callback(adtype), maxiters = 30)
 
     actual_pdf = pdf(data_dist, test_data)
     learned_pdf = exp.(model(test_data, res.u)[1])

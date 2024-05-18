@@ -6,7 +6,7 @@ u0 = rand(Float32, 6, 1)
 
 for ad in (AutoForwardDiff(), AutoZygote())
     hnn = HamiltonianNN(Chain(Dense(6 => 12, relu), Dense(12 => 1)); ad)
-    ps, st = Lux.setup(Random.default_rng(), hnn)
+    ps, st = Lux.setup(Xoshiro(0), hnn)
     ps = ps |> ComponentArray
 
     @test size(first(hnn(u0, ps, st))) == (6, 1)
@@ -30,7 +30,7 @@ data = vcat(q_t, p_t)
 target = vcat(dqdt, dpdt)
 
 hnn = HamiltonianNN(Chain(Dense(2 => 16, relu), Dense(16 => 1)); ad = AutoForwardDiff())
-ps, st = Lux.setup(Random.default_rng(), hnn)
+ps, st = Lux.setup(Xoshiro(0), hnn)
 ps = ps |> ComponentArray
 
 opt = Optimisers.Adam(0.01)

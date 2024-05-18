@@ -19,7 +19,7 @@ using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimi
       OptimizationOptimisers, Plots
 
 using Random
-rng = Random.default_rng()
+rng = Xoshiro(0)
 
 u0 = Float32[2.0; 0.0]
 datasize = 300
@@ -101,11 +101,11 @@ The smoothed collocation is a spline fit of the data points which allows
 us to get an estimate of the approximate noiseless dynamics:
 
 ```@example collocation
-using ComponentArrays,
-      Lux, DiffEqFlux, Optimization, OptimizationOptimisers, OrdinaryDiffEq, Plots
+using ComponentArrays, Lux, DiffEqFlux, Optimization, OptimizationOptimisers,
+      OrdinaryDiffEq, Plots
 
 using Random
-rng = Random.default_rng()
+rng = Xoshiro(0)
 
 u0 = Float32[2.0; 0.0]
 datasize = 300

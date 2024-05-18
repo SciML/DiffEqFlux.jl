@@ -23,12 +23,12 @@ high penalties in case the solver predicts discontinuous values.
 The following is a working demo, using Multiple Shooting:
 
 ```@example multiple_shooting
-using ComponentArrays,
-      Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, OrdinaryDiffEq, Plots
+using ComponentArrays, Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms,
+      OrdinaryDiffEq, Plots
 using DiffEqFlux: group_ranges
 
 using Random
-rng = Random.default_rng()
+rng = Xoshiro(0)
 
 # Define initial conditions and time steps
 datasize = 30
@@ -92,8 +92,8 @@ pd, pax = getdata(ps), getaxes(ps)
 
 function loss_multiple_shooting(p)
     ps = ComponentArray(p, pax)
-    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function, Tsit5(),
-        group_size; continuity_term)
+    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
+        Tsit5(), group_size; continuity_term)
 end
 
 adtype = Optimization.AutoZygote()
@@ -119,8 +119,8 @@ pd, pax = getdata(ps), getaxes(ps)
 
 function loss_single_shooting(p)
     ps = ComponentArray(p, pax)
-    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function, Tsit5(),
-        group_size; continuity_term)
+    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
+        Tsit5(), group_size; continuity_term)
 end
 
 adtype = Optimization.AutoZygote()

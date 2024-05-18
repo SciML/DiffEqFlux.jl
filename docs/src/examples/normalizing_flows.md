@@ -8,16 +8,16 @@ Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
 ```@example cnf
-using ComponentArrays, DiffEqFlux, OrdinaryDiffEq, Optimization, Distributions,
-      Random, OptimizationOptimisers, OptimizationOptimJL
+using ComponentArrays, DiffEqFlux, OrdinaryDiffEq, Optimization, Distributions, Random,
+      OptimizationOptimisers, OptimizationOptimJL
 
 nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5(); ad = AutoZygote())
-ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
 ps = ComponentArray(ps)
-model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, nothing, st)
+model = StatefulLuxLayer{true}(ffjord_mdl, nothing, st)
 
 # Training
 data_dist = Normal(6.0f0, 0.7f0)
@@ -41,8 +41,7 @@ res1 = Optimization.solve(
     optprob, OptimizationOptimisers.Adam(0.01); maxiters = 20, callback = cb)
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
-res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false,
-    callback = cb)
+res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false, callback = cb)
 
 # Evaluation
 using Distances
@@ -70,9 +69,9 @@ nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
 tspan = (0.0f0, 10.0f0)
 
 ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5(); ad = AutoZygote())
-ps, st = Lux.setup(Random.default_rng(), ffjord_mdl)
+ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
 ps = ComponentArray(ps)
-model = Lux.Experimental.StatefulLuxLayer(ffjord_mdl, ps, st)
+model = StatefulLuxLayer{true}(ffjord_mdl, ps, st)
 ffjord_mdl
 ```
 
@@ -121,8 +120,7 @@ We then complete the training using a different optimizer, starting from where `
 
 ```@example cnf2
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
-res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false,
-    callback = cb)
+res2 = Optimization.solve(optprob2, Optim.LBFGS(); allow_f_increases = false, callback = cb)
 ```
 
 ### Evaluation

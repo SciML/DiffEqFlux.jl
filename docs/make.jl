@@ -11,12 +11,13 @@ include("pages.jl")
 
 makedocs(; sitename = "DiffEqFlux.jl",
     authors = "Chris Rackauckas et al.",
-    clean = true, doctest = false, linkcheck = true,
+    clean = true,
+    doctest = false,
+    linkcheck = true,
     warnonly = [:docs_block, :missing_docs],
     modules = [DiffEqFlux],
     format = Documenter.HTML(; assets = ["assets/favicon.ico"],
         canonical = "https://docs.sciml.ai/DiffEqFlux/stable/"),
     pages = pages)
 
-deploydocs(; repo = "github.com/SciML/DiffEqFlux.jl.git",
-    push_preview = true)
+deploydocs(; repo = "github.com/SciML/DiffEqFlux.jl.git", push_preview = true)

@@ -15,7 +15,7 @@ follow a full explanation of the definition and training process:
 using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
       OptimizationOptimisers, Random, Plots
 
-rng = Random.default_rng()
+rng = Xoshiro(0)
 u0 = Float32[2.0; 0.0]
 datasize = 30
 tspan = (0.0f0, 1.5f0)
@@ -66,13 +66,12 @@ optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(
-    optprob, OptimizationOptimisers.Adam(0.05); callback = callback,
-    maxiters = 300)
+    optprob, OptimizationOptimisers.Adam(0.05); callback = callback, maxiters = 300)
 
 optprob2 = remake(optprob; u0 = result_neuralode.u)
 
-result_neuralode2 = Optimization.solve(optprob2, Optim.BFGS(; initial_stepnorm = 0.01);
-    callback, allow_f_increases = false)
+result_neuralode2 = Optimization.solve(
+    optprob2, Optim.BFGS(; initial_stepnorm = 0.01); callback, allow_f_increases = false)
 
 callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)
 ```
@@ -84,10 +83,10 @@ callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = t
 Let's get a time series array from a spiral ODE to train against.
 
 ```@example neuralode
-using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization,
-      OptimizationOptimJL, OptimizationOptimisers, Random, Plots
+using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
+      OptimizationOptimisers, Random, Plots
 
-rng = Random.default_rng()
+rng = Xoshiro(0)
 u0 = Float32[2.0; 0.0]
 datasize = 30
 tspan = (0.0f0, 1.5f0)
@@ -180,10 +179,8 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_neuralode(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pinit)
 
-result_neuralode = Optimization.solve(optprob,
-    OptimizationOptimisers.Adam(0.05);
-    callback = callback,
-    maxiters = 300)
+result_neuralode = Optimization.solve(
+    optprob, OptimizationOptimisers.Adam(0.05); callback = callback, maxiters = 300)
 ```
 
 We then complete the training using a different optimizer, starting from where
@@ -194,10 +191,8 @@ halt when near the minimum.
 # Retrain using the LBFGS optimizer
 optprob2 = remake(optprob; u0 = result_neuralode.u)
 
-result_neuralode2 = Optimization.solve(optprob2,
-    Optim.BFGS(; initial_stepnorm = 0.01);
-    callback = callback,
-    allow_f_increases = false)
+result_neuralode2 = Optimization.solve(optprob2, Optim.BFGS(; initial_stepnorm = 0.01);
+    callback = callback, allow_f_increases = false)
 ```
 
 And then we use the callback with `doplot=true` to see the final plot:
