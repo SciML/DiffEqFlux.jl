@@ -8,6 +8,7 @@ end
 @testitem "Explicit Imports" tags=[:qa] begin
     using ExplicitImports
 
-    @test check_no_implicit_imports(DiffEqFlux; skip=(ADTypes, Lux, Base, Core)) === nothing
+    @test check_no_implicit_imports(DiffEqFlux; skip = (ADTypes, Lux, Base, Core)) ===
+          nothing
     @test check_no_stale_explicit_imports(DiffEqFlux) === nothing
 end
