@@ -40,7 +40,7 @@ References:
 end
 
 function NeuralODE(model, tspan, args...; kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
+    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
     return NeuralODE(model, tspan, args, kwargs)
 end
 
@@ -87,8 +87,8 @@ Arguments:
 end
 
 function NeuralDSDE(drift, diffusion, tspan, args...; kwargs...)
-    !(drift isa AbstractExplicitLayer) && (drift = Lux.transform(drift))
-    !(diffusion isa AbstractExplicitLayer) && (diffusion = Lux.transform(diffusion))
+    !(drift isa AbstractExplicitLayer) && (drift = FromFluxAdaptor()(drift))
+    !(diffusion isa AbstractExplicitLayer) && (diffusion = FromFluxAdaptor()(diffusion))
     return NeuralDSDE(drift, diffusion, tspan, args, kwargs)
 end
 
@@ -137,8 +137,8 @@ Arguments:
 end
 
 function NeuralSDE(drift, diffusion, tspan, nbrown, args...; kwargs...)
-    !(drift isa AbstractExplicitLayer) && (drift = Lux.transform(drift))
-    !(diffusion isa AbstractExplicitLayer) && (diffusion = Lux.transform(diffusion))
+    !(drift isa AbstractExplicitLayer) && (drift = FromFluxAdaptor()(drift))
+    !(diffusion isa AbstractExplicitLayer) && (diffusion = FromFluxAdaptor()(diffusion))
     return NeuralSDE(drift, diffusion, tspan, nbrown, args, kwargs)
 end
 
@@ -191,7 +191,7 @@ Arguments:
 end
 
 function NeuralCDDE(model, tspan, hist, lags, args...; kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
+    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
     return NeuralCDDE(model, tspan, hist, lags, args, kwargs)
 end
 
@@ -243,7 +243,7 @@ end
 
 function NeuralDAE(
         model, constraints_model, tspan, args...; differential_vars = nothing, kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
+    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
     return NeuralDAE(model, constraints_model, tspan, args, differential_vars, kwargs)
 end
 
@@ -317,7 +317,7 @@ Arguments:
 end
 
 function NeuralODEMM(model, constraints_model, tspan, mass_matrix, args...; kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
+    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
     return NeuralODEMM(model, constraints_model, tspan, mass_matrix, args, kwargs)
 end
 

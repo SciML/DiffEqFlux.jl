@@ -3,7 +3,7 @@ module DiffEqFlux
 using PrecompileTools: @recompile_invalidations
 
 @recompile_invalidations begin
-    using ADTypes: ADTypes, AutoForwardDiff, AutoZygote, AutoEnzyme
+    using ADTypes: ADTypes, AutoForwardDiff, AutoZygote
     using ChainRulesCore: ChainRulesCore
     using ComponentArrays: ComponentArray
     using ConcreteStructs: @concrete
@@ -13,7 +13,7 @@ using PrecompileTools: @recompile_invalidations
     using ForwardDiff: ForwardDiff
     using Functors: Functors, fmap
     using LinearAlgebra: LinearAlgebra, Diagonal, det, diagind, mul!
-    using Lux: Lux, Chain, Dense, StatefulLuxLayer
+    using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor
     using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer
     using Random: Random, AbstractRNG, randn!
     using Reexport: @reexport

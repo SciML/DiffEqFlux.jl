@@ -56,7 +56,7 @@ end
 
 function FFJORD(model, tspan, input_dims, args...;
         ad = AutoForwardDiff(), basedist = nothing, kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
+    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
     return FFJORD(model, basedist, ad, input_dims, tspan, args, kwargs)
 end
 

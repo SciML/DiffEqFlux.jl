@@ -17,7 +17,7 @@ Arguments:
  1. `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that returns the
     Hamiltonian of the system.
  2. `ad`: The autodiff framework to be used for the internal Hamiltonian computation. The
-    default is `AutoForwardDiff()`.
+    default is `AutoZygote()`.
 
 !!! note
 
@@ -26,7 +26,8 @@ Arguments:
 
 References:
 
-[1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. "Hamiltonian Neural Networks." Advances in Neural Information Processing Systems 32 (2019): 15379-15389.
+[1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. "Hamiltonian Neural Networks."
+Advances in Neural Information Processing Systems 32 (2019): 15379-15389.
 """
 @concrete struct HamiltonianNN{M <: AbstractExplicitLayer} <:
                  AbstractExplicitContainerLayer{(:model,)}
@@ -34,42 +35,23 @@ References:
     ad
 end
 
-function HamiltonianNN(model; ad = AutoForwardDiff())
-    @assert ad isa AutoForwardDiff || ad isa AutoZygote || ad isa AutoEnzyme
-    !(model isa AbstractExplicitLayer) && (model = Lux.transform(model))
+function HamiltonianNN(model; ad = AutoZygote())
+    @assert ad isa AutoForwardDiff || ad isa AutoZygote
+    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
     return HamiltonianNN(model, ad)
 end
 
-function __gradient_with_ps(model, psax, N, x)
-    function __gradient_closure(psx)
-        x_ = reshape(psx[1:N], size(x))
-        ps = ComponentArray(psx[(N + 1):end], psax)
-        return sum(model(x_, ps))
-    end
+function __hamiltonian_forward(ad::AutoForwardDiff, model, x)
+    return ForwardDiff.gradient(sum ∘ model, x)
 end
 
-function __hamiltonian_forward(::AutoForwardDiff{nothing}, model, x, ps::ComponentArray)
-    psd = getdata(ps)
-    psx = vcat(vec(x), psd)
-    N = length(x)
-    H = ForwardDiff.gradient(__gradient_with_ps(model, getaxes(ps), N, x), psx)
-    return reshape(view(H, 1:N), size(x))
-end
-
-function __hamiltonian_forward(::AutoForwardDiff{CS}, model, x, ps) where {CS}
-    chunksize = CS === nothing ? ForwardDiff.pickchunksize(length(x)) : CS
-    __f = sum ∘ Base.Fix2(model, ps)
-    cfg = ForwardDiff.GradientConfig(__f, x, ForwardDiff.Chunk{chunksize}())
-    return ForwardDiff.gradient(__f, x, cfg)
-end
-
-function __hamiltonian_forward(::AutoZygote, model, x, ps)
-    return first(Zygote.gradient(sum ∘ model, x, ps))
+function __hamiltonian_forward(ad::AutoZygote, model::StatefulLuxLayer, x)
+    return only(Zygote.gradient(sum ∘ model, x))
 end
 
 function (hnn::HamiltonianNN{<:LuxCore.AbstractExplicitLayer})(x, ps, st)
-    model = StatefulLuxLayer{true}(hnn.model, nothing, st)
-    H = __hamiltonian_forward(hnn.ad, model, x, ps)
+    model = StatefulLuxLayer{true}(hnn.model, ps, st)
+    H = __hamiltonian_forward(hnn.ad, model, x)
     n = size(x, 1) ÷ 2
     return vcat(selectdim(H, 1, (n + 1):(2n)), -selectdim(H, 1, 1:n)), model.st
 end

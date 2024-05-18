@@ -16,7 +16,7 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 [Scientific Machine Learning](https://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/), specifically neural differential equations to add physical information into traditional machine learning.
 
 > [!NOTE]
-> We maintain backwards compatibility with [Flux.jl](https://docs.sciml.ai/Flux/stable/) via [Lux.transform](https://lux.csail.mit.edu/stable/api/Lux/flux_to_lux#Lux.transform)
+> We maintain backwards compatibility with [Flux.jl](https://docs.sciml.ai/Flux/stable/) via [FromFluxAdaptor()](https://lux.csail.mit.edu/stable/api/Lux/flux_to_lux#FromFluxAdaptor())
 
 ## Tutorials and Documentation
 
@@ -63,7 +63,7 @@ explore various ways to integrate the two methodologies:
 
 ## Breaking Changes in v3
 
-  - Flux dependency is dropped. If a non Lux `AbstractExplicitLayer` is passed we try to automatically convert it to a Lux model with `Lux.transform(model)`.
+  - Flux dependency is dropped. If a non Lux `AbstractExplicitLayer` is passed we try to automatically convert it to a Lux model with `FromFluxAdaptor()(model)`.
   - `Flux` is no longer re-exported from `DiffEqFlux`. Instead we reexport `Lux`.
   - `NeuralDAE` now allows an optional `du0` as input.
   - `TensorLayer` is now a Lux Neural Network.
