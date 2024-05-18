@@ -16,7 +16,7 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 [Scientific Machine Learning](https://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/), specifically neural differential equations to add physical information into traditional machine learning.
 
 > [!NOTE]
-> We maintain backwards compatibility with [Flux.jl](https://docs.sciml.ai/Flux/stable/) via [FromFluxAdaptor()](https://lux.csail.mit.edu/stable/api/Lux/flux_to_lux#FromFluxAdaptor())
+> We maintain backwards compatibility with [Flux.jl](https://docs.sciml.ai/Flux/stable/) via [FromFluxAdaptor()](https://lux.csail.mit.edu/stable/api/Lux/interop#Lux.FromFluxAdaptor)
 
 ## Tutorials and Documentation
 

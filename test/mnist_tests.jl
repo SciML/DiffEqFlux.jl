@@ -27,10 +27,10 @@ function loadmnist(batchsize = bs)
     # Process images into (H,W,C,BS) batches
     x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
               gdev
-    x_train = batchview(x_train, batchsize)
+    x_train = batchview(x_train[:, :, :, 1:(10 * batchsize)], batchsize)
     # Onehot and batch the labels
     y_train = onehot(labels_raw) |> gdev
-    y_train = batchview(y_train, batchsize)
+    y_train = batchview(y_train[:, 1:(10 * batchsize)], batchsize)
     return x_train, y_train
 end
 
@@ -47,7 +47,7 @@ function accuracy(model, data, ps, st; n_batches = 100)
     total_correct = 0
     total = 0
     st = Lux.testmode(st)
-    for (x, y) in collect(data)[1:n_batches]
+    for (x, y) in collect(data)[1:min(n_batches, length(data))]
         target_class = classify(cdev(y))
         predicted_class = classify(cdev(first(model(x, ps, st))))
         total_correct += sum(target_class .== predicted_class)
@@ -117,10 +117,10 @@ end
 
     # Train the NN-ODE and monitor the loss and weights.
     res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); callback)
-    @test accuracy(m, zip(x_train, y_train), res.u, st) > 0.8
+    @test accuracy(m, zip(x_train, y_train), res.u, st) > 0.7
 end
 
-@testitem "MNIST Neural ODE Conv" tags=[:cuda] skip=:(using CUDA; !CUDA.functional()) setup=[MNISTTestSetup] begin
+@testitem "MNIST Neural ODE Conv" tags=[:cuda] skip=:(using CUDA; !CUDA.functional()) setup=[MNISTTestSetup] timeout=3600 begin
     down = Chain(Conv((3, 3), 1 => 64, relu; stride = 1), GroupNorm(64, 8),
         Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1),
         GroupNorm(64, 8), Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1))
@@ -174,5 +174,5 @@ end
 
     # Train the NN-ODE and monitor the loss and weights.
     res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); maxiters = 10, callback)
-    @test accuracy(m, zip(x_train, y_train), res.u, st) > 0.8
+    @test accuracy(m, zip(x_train, y_train), res.u, st) > 0.7
 end

@@ -1,10 +1,13 @@
-using DiffEqFlux, Zygote, Distances, Distributions, DistributionsAD, Optimization,
-      LinearAlgebra, OrdinaryDiffEq, Random, Test, OptimizationOptimisers, Statistics,
-      ComponentArrays
+@testsetup module CNFTestSetup
+
+using Reexport
+
+@reexport using Zygote, Distances, Distributions, DistributionsAD, Optimization,
+                LinearAlgebra, OrdinaryDiffEq, Random, Test, OptimizationOptimisers,
+                Statistics, ComponentArrays
 
 Random.seed!(1999)
 
-## callback to be used by all tests
 function callback(adtype)
     return function (p, l)
         @info "[FFJORD $(nameof(typeof(adtype)))] Loss: $(l)"
@@ -12,7 +15,11 @@ function callback(adtype)
     end
 end
 
-@testset "Smoke test for FFJORD" begin
+export callback
+
+end
+
+@testitem "Smoke test for FFJORD" setup=[CNFTestSetup] tags=[:advancedneuralde] begin
     nn = Chain(Dense(1, 1, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
@@ -46,7 +53,7 @@ end
     end
 end
 
-@testset "Smoke test for FFJORDDistribution (sampling & pdf)" begin
+@testitem "Smoke test for FFJORDDistribution (sampling & pdf)" setup=[CNFTestSetup] tags=[:advancedneuralde] begin
     nn = Chain(Dense(1, 1, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
@@ -80,7 +87,7 @@ end
     @test !isnothing(rand(ffjord_d, 10))
 end
 
-@testset "Test for default base distribution and deterministic trace FFJORD" begin
+@testitem "Test for default base distribution and deterministic trace FFJORD" setup=[CNFTestSetup] tags=[:advancedneuralde] begin
     nn = Chain(Dense(1, 1, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (1,), Tsit5())
@@ -114,7 +121,7 @@ end
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.9
 end
 
-@testset "Test for alternative base distribution and deterministic trace FFJORD" begin
+@testitem "Test for alternative base distribution and deterministic trace FFJORD" setup=[CNFTestSetup] tags=[:advancedneuralde] begin
     nn = Chain(Dense(1, 3, tanh), Dense(3, 1, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(
@@ -149,7 +156,7 @@ end
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
 end
 
-@testset "Test for multivariate distribution and deterministic trace FFJORD" begin
+@testitem "Test for multivariate distribution and deterministic trace FFJORD" setup=[CNFTestSetup] tags=[:advancedneuralde] begin
     nn = Chain(Dense(2, 2, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (2,), Tsit5())
@@ -186,12 +193,12 @@ end
     @test totalvariation(learned_pdf, actual_pdf) / size(test_data, 2) < 0.25
 end
 
-@testset "Test for default multivariate distribution and FFJORD with regularizers" begin
+@testitem "Test for multivariate distribution and FFJORD with regularizers" setup=[CNFTestSetup] tags=[:advancedneuralde] begin
     nn = Chain(Dense(2, 2, tanh))
     tspan = (0.0f0, 1.0f0)
     ffjord_mdl = FFJORD(nn, tspan, (2,), Tsit5())
     ps, st = Lux.setup(Xoshiro(0), ffjord_mdl)
-    ps = ComponentArray(ps)
+    ps = ComponentArray(ps) .* 0.001f0
 
     regularize = true
     monte_carlo = true
