@@ -54,9 +54,6 @@ function construct_iip_cost_function(f, du, preview_est_sol, preview_est_deriv, 
         sqrt(cost)
     end
 end
-cost_function = construct_iip_cost_function(f,
-    du,
-    preview_est_sol,
-    preview_est_deriv,
-    tpoints)
+cost_function = construct_iip_cost_function(
+    f, du, preview_est_sol, preview_est_deriv, tpoints)
 ```

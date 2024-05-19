@@ -64,11 +64,8 @@ function featurize(raw_df, num_train = 20)
     raw_df.month = Float64.(month.(raw_df.date))
     df = combine(groupby(raw_df, [:year, :month]),
         :date => (d -> mean(year.(d)) .+ mean(month.(d)) ./ 12),
-        :meantemp => mean,
-        :humidity => mean,
-        :wind_speed => mean,
-        :meanpressure => mean;
-        renamecols = false)
+        :meantemp => mean, :humidity => mean, :wind_speed => mean,
+        :meanpressure => mean; renamecols = false)
     t_and_y(df) = df.date', Matrix(select(df, FEATURES))'
     t_train, y_train = t_and_y(df[1:num_train, :])
     t_test, y_test = t_and_y(df[(num_train + 1):end, :])
@@ -77,28 +74,19 @@ function featurize(raw_df, num_train = 20)
     t_test = (t_test .- t_mean) ./ t_scale
     y_test = (y_test .- y_mean) ./ y_scale
 
-    return (vec(t_train), y_train,
-        vec(t_test), y_test,
-        (t_mean, t_scale),
-        (y_mean, y_scale))
+    return (
+        vec(t_train), y_train, vec(t_test), y_test, (t_mean, t_scale), (y_mean, y_scale))
 end
 
 function plot_features(t_train, y_train, t_test, y_test)
-    plt_split = plot(reshape(t_train, :), y_train';
-        linewidth = 3, colors = 1:4,
-        xlabel = "Normalized time",
-        ylabel = "Normalized values",
-        label = nothing,
-        title = "Features")
-    plot!(plt_split, reshape(t_test, :), y_test';
-        linewidth = 3, linestyle = :dash,
-        color = [1 2 3 4], label = nothing)
-    plot!(plt_split, [0], [0]; linewidth = 0,
-        label = "Train", color = 1)
-    plot!(plt_split, [0], [0]; linewidth = 0,
-        linestyle = :dash, label = "Test",
-        color = 1,
-        ylims = (-5, 5))
+    plt_split = plot(reshape(t_train, :), y_train'; linewidth = 3, colors = 1:4,
+        xlabel = "Normalized time", ylabel = "Normalized values",
+        label = nothing, title = "Features")
+    plot!(plt_split, reshape(t_test, :), y_test'; linewidth = 3,
+        linestyle = :dash, color = [1 2 3 4], label = nothing)
+    plot!(plt_split, [0], [0]; linewidth = 0, label = "Train", color = 1)
+    plot!(plt_split, [0], [0]; linewidth = 0, linestyle = :dash,
+        label = "Test", color = 1, ylims = (-5, 5))
 end
 
 t_train, y_train, t_test, y_test, (t_mean, t_scale), (y_mean, y_scale) = featurize(df)
@@ -114,10 +102,9 @@ We are now ready to construct and train our model! To avoid local minimas we wil
 function neural_ode(t, data_dim)
     f = Chain(Dense(data_dim => 64, swish), Dense(64 => 32, swish), Dense(32 => data_dim))
 
-    node = NeuralODE(f, extrema(t), Tsit5(); saveat = t,
-        abstol = 1e-9, reltol = 1e-9)
+    node = NeuralODE(f, extrema(t), Tsit5(); saveat = t, abstol = 1e-9, reltol = 1e-9)
 
-    rng = Random.default_rng()
+    rng = Xoshiro(0)
     p, state = Lux.setup(rng, f)
 
     return node, ComponentArray(p), state
@@ -147,9 +134,8 @@ function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; 
         p === nothing && (p = p_new)
         state === nothing && (state = state_new)
 
-        p, state = train_one_round(
-            node, p, state, y, OptimizationOptimisers.AdamW(lr), maxiters, rng;
-            callback = log_results(ps, losses), kwargs...)
+        p, state = train_one_round(node, p, state, y, OptimizationOptimisers.AdamW(lr),
+            maxiters, rng; callback = log_results(ps, losses), kwargs...)
     end
     ps, state, losses
 end
@@ -169,11 +155,11 @@ predict(y0, t, p, state) = begin
     Array(node(y0, p, state)[1])
 end
 
-function plot_pred(t_train, y_train, t_grid, rescale_t, rescale_y, num_iters, p, state,
-        loss, y0 = y_train[:, 1])
+function plot_pred(t_train, y_train, t_grid, rescale_t, rescale_y,
+        num_iters, p, state, loss, y0 = y_train[:, 1])
     y_pred = predict(y0, t_grid, p, state)
-    return plot_result(rescale_t(t_train), rescale_y(y_train), rescale_t(t_grid),
-        rescale_y(y_pred), loss, num_iters)
+    return plot_result(rescale_t(t_train), rescale_y(y_train),
+        rescale_t(t_grid), rescale_y(y_pred), loss, num_iters)
 end
 
 function plot_pred(t, y, y_pred)
@@ -184,10 +170,10 @@ end
 function plot_pred(t, y, t_pred, y_pred; kwargs...)
     plot_params = zip(eachrow(y), eachrow(y_pred), FEATURE_NAMES, UNITS)
     map(enumerate(plot_params)) do (i, (yᵢ, ŷᵢ, name, unit))
-        plt = Plots.plot(t_pred, ŷᵢ; label = "Prediction", color = i, linewidth = 3,
-            legend = nothing, title = name, kwargs...)
-        Plots.scatter!(plt, t, yᵢ; label = "Observation", xlabel = "Time", ylabel = unit,
-            markersize = 5, color = i)
+        plt = Plots.plot(t_pred, ŷᵢ; label = "Prediction", color = i,
+            linewidth = 3, legend = nothing, title = name, kwargs...)
+        Plots.scatter!(plt, t, yᵢ; label = "Observation", xlabel = "Time",
+            ylabel = unit, markersize = 5, color = i)
     end
 end
 
@@ -198,14 +184,14 @@ function plot_result(t, y, t_pred, y_pred, loss, num_iters; kwargs...)
     plot!(plts_preds[3]; ylim = (2, 12))
     plot!(plts_preds[4]; ylim = (990, 1025))
 
-    p_loss = Plots.plot(loss; label = nothing, linewidth = 3,
-        title = "Loss", xlabel = "Iterations", xlim = (0, num_iters))
+    p_loss = Plots.plot(loss; label = nothing, linewidth = 3, title = "Loss",
+        xlabel = "Iterations", xlim = (0, num_iters))
     plots = [plts_preds..., p_loss]
     plot(plots...; layout = grid(length(plots), 1), size = (900, 900))
 end
 
-function animate_training(plot_frame, t_train, y_train, ps, losses, obs_grid;
-        pause_for = 300)
+function animate_training(
+        plot_frame, t_train, y_train, ps, losses, obs_grid; pause_for = 300)
     obs_count = Dict(i - 1 => n for (i, n) in enumerate(obs_grid))
     is = [min(i, length(losses)) for i in 2:(length(losses) + pause_for)]
     @animate for i in is

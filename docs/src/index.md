@@ -19,7 +19,7 @@ The approach of this package is the easy and efficient training of
 [Neural Ordinary Differential Equations](https://arxiv.org/abs/1806.07366) and its variants.
 DiffEqFlux.jl provides architectures which match the interfaces of
 machine learning libraries such as [Flux.jl](https://docs.sciml.ai/Flux/stable/)
-and [Lux.jl](https://lux.csail.mit.edu/stable/api/)
+and [Lux.jl](https://lux.csail.mit.edu/stable/)
 to make it easy to build continuous-time machine learning layers
 into larger machine learning applications.
 
@@ -125,9 +125,15 @@ using TOML
 using Markdown
 version = TOML.parse(read("../../Project.toml", String))["version"]
 name = TOML.parse(read("../../Project.toml", String))["name"]
-link_manifest = "https://github.com/SciML/" * name * ".jl/tree/gh-pages/v" * version *
+link_manifest = "https://github.com/SciML/" *
+                name *
+                ".jl/tree/gh-pages/v" *
+                version *
                 "/assets/Manifest.toml"
-link_project = "https://github.com/SciML/" * name * ".jl/tree/gh-pages/v" * version *
+link_project = "https://github.com/SciML/" *
+               name *
+               ".jl/tree/gh-pages/v" *
+               version *
                "/assets/Project.toml"
 Markdown.parse("""You can also download the
 [manifest]($link_manifest)

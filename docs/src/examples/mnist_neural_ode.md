@@ -42,12 +42,11 @@ const bs = 128
 x_train, y_train = loadmnist(bs)
 
 down = Lux.Chain(Lux.FlattenLayer(), Lux.Dense(784, 20, tanh))
-nn = Lux.Chain(Lux.Dense(20, 10, tanh), Lux.Dense(10, 10, tanh),
-    Lux.Dense(10, 20, tanh))
+nn = Lux.Chain(Lux.Dense(20, 10, tanh), Lux.Dense(10, 10, tanh), Lux.Dense(10, 20, tanh))
 fc = Lux.Dense(20, 10)
 
-nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol = 1e-3,
-    abstol = 1e-3, save_start = false)
+nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+    reltol = 1e-3, abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
     xarr = gdev(x.u[1])
@@ -56,13 +55,13 @@ end
 
 #Build our over-all model topology
 m = Lux.Chain(; down, nn_ode, convert = Lux.WrappedFunction(DiffEqArray_to_Array), fc)
-ps, st = Lux.setup(Random.default_rng(), m)
+ps, st = Lux.setup(Xoshiro(0), m)
 ps = ComponentArray(ps) |> gdev
 st = st |> gdev
 
 #We can also build the model topology without a NN-ODE
 m_no_ode = Lux.Chain(; down, nn, fc)
-ps_no_ode, st_no_ode = Lux.setup(Random.default_rng(), m_no_ode)
+ps_no_ode, st_no_ode = Lux.setup(Xoshiro(0), m_no_ode)
 ps_no_ode = ComponentArray(ps_no_ode) |> gdev
 st_no_ode = st_no_ode |> gdev
 
@@ -102,8 +101,8 @@ loss_function(ps, x_train[1], y_train[1])
 opt = OptimizationOptimisers.Adam(0.05)
 iter = 0
 
-opt_func = OptimizationFunction((ps, _, x, y) -> loss_function(ps, x, y),
-    Optimization.AutoZygote())
+opt_func = OptimizationFunction(
+    (ps, _, x, y) -> loss_function(ps, x, y), Optimization.AutoZygote())
 opt_prob = OptimizationProblem(opt_func, ps)
 
 function callback(ps, l, pred)
@@ -198,8 +197,7 @@ to the next. Four different sets of layers are used here:
 
 ```@example mnist
 down = Lux.Chain(Lux.FlattenLayer(), Lux.Dense(784, 20, tanh))
-nn = Lux.Chain(Lux.Dense(20, 10, tanh), Lux.Dense(10, 10, tanh),
-    Lux.Dense(10, 20, tanh))
+nn = Lux.Chain(Lux.Dense(20, 10, tanh), Lux.Dense(10, 10, tanh), Lux.Dense(10, 20, tanh))
 fc = Lux.Dense(20, 10)
 ```
 
@@ -221,8 +219,8 @@ When using `NeuralODE`, this function converts the ODESolution's `DiffEqArray` t
 a Matrix (CuArray), and reduces the matrix from 3 to 2 dimensions for use in the next layer.
 
 ```@example mnist
-nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, reltol = 1e-3,
-    abstol = 1e-3, save_start = false)
+nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+    reltol = 1e-3, abstol = 1e-3, save_start = false)
 
 function DiffEqArray_to_Array(x)
     xarr = gdev(x.u[1])
@@ -240,7 +238,7 @@ Next, we connect all layers together in a single chain:
 ```@example mnist
 # Build our overall model topology
 m = Lux.Chain(; down, nn_ode, convert = Lux.WrappedFunction(DiffEqArray_to_Array), fc)
-ps, st = Lux.setup(Random.default_rng(), m)
+ps, st = Lux.setup(Xoshiro(0), m)
 ps = ComponentArray(ps) |> gdev
 st = st |> gdev
 ```
@@ -312,8 +310,8 @@ This callback function is used to print both the training and testing accuracy a
 ```@example mnist
 iter = 0
 
-opt_func = OptimizationFunction((ps, _, x, y) -> loss_function(ps, x, y),
-    Optimization.AutoZygote())
+opt_func = OptimizationFunction(
+    (ps, _, x, y) -> loss_function(ps, x, y), Optimization.AutoZygote())
 opt_prob = OptimizationProblem(opt_func, ps)
 
 function callback(ps, l, pred)

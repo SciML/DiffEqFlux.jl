@@ -13,9 +13,8 @@ To obtain the training data, we solve the equation of motion using one of the
 solvers in `DifferentialEquations`:
 
 ```@example tensor
-using ComponentArrays,
-      DiffEqFlux, Optimization, OptimizationOptimisers,
-      OrdinaryDiffEq, LinearAlgebra, Random
+using ComponentArrays, DiffEqFlux, Optimization, OptimizationOptimisers, OrdinaryDiffEq,
+      LinearAlgebra, Random
 k, α, β, γ = 1, 0.1, 0.2, 0.3
 tspan = (0.0, 10.0)
 
@@ -36,9 +35,9 @@ a Legendre Basis:
 ```@example tensor
 A = [LegendreBasis(10), LegendreBasis(10)]
 nn = TensorLayer(A, 1)
-ps, st = Lux.setup(Random.default_rng(), nn)
+ps, st = Lux.setup(Xoshiro(0), nn)
 ps = ComponentArray(ps)
-nn = Lux.Experimental.StatefulLuxLayer(nn, nothing, st)
+nn = StatefulLuxLayer{true}(nn, nothing, st)
 ```
 
 and we also instantiate the model we are trying to learn, “informing” the neural

@@ -34,8 +34,8 @@ Arguments:
     whenever the last point of any group doesn't coincide with the first point of next group.
 """
 function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
-        continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer;
-        continuity_term::Real = 100, kwargs...) where {F, C}
+        continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
+        group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
     datasize = size(ode_data, 2)
 
     if group_size < 2 || group_size > datasize
@@ -51,8 +51,7 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
                     u0 = ode_data[:, first(rg)]),
                 solver;
                 saveat = tsteps[rg],
-                kwargs...)
-            for rg in ranges]
+                kwargs...) for rg in ranges]
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations failed
@@ -119,9 +118,9 @@ Arguments:
     whenever the last point of any group doesn't coincide with the first point of next group.
 """
 function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
-        ensemblealg::SciMLBase.BasicEnsembleAlgorithm, loss_function::F, continuity_loss::C,
-        solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer;
-        continuity_term::Real = 100, kwargs...) where {F, C}
+        ensemblealg::SciMLBase.BasicEnsembleAlgorithm, loss_function::F,
+        continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
+        group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
     datasize = size(ode_data, 2)
     prob = ensembleprob.prob
 
@@ -139,14 +138,13 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
     # Multiple shooting predictions by using map we avoid mutating an array
     sols = map(
         rg -> begin
-            newprob = remake(prob;
-                p = p,
-                tspan = (tsteps[first(rg)], tsteps[last(rg)]))
+            newprob = remake(prob; p = p, tspan = (tsteps[first(rg)], tsteps[last(rg)]))
             function prob_func(prob, i, repeat)
                 remake(prob; u0 = ode_data[:, first(rg), i])
             end
-            newensembleprob = EnsembleProblem(newprob, prob_func, ensembleprob.output_func,
-                ensembleprob.reduction, ensembleprob.u_init, ensembleprob.safetycopy)
+            newensembleprob = EnsembleProblem(
+                newprob, prob_func, ensembleprob.output_func, ensembleprob.reduction,
+                ensembleprob.u_init, ensembleprob.safetycopy)
             solve(newensembleprob, solver, ensemblealg; saveat = tsteps[rg], kwargs...)
         end,
         ranges)
@@ -208,7 +206,7 @@ julia> group_ranges(10, 5)
 ```
 """
 function group_ranges(datasize::Integer, groupsize::Integer)
-    2 <= groupsize <= datasize || throw(DomainError(groupsize,
+    2 ≤ groupsize ≤ datasize || throw(DomainError(groupsize,
         "datasize must be positive and groupsize must to be within [2, datasize]"))
     return [i:min(datasize, i + groupsize - 1) for i in 1:(groupsize - 1):(datasize - 1)]
 end
