@@ -13,7 +13,8 @@ pages = [
         "examples/hamiltonian_nn.md",
         "examples/tensor_layer.md",
         "examples/multiple_shooting.md",
-        "examples/neural_ode_weather_forecast.md"
+        "examples/neural_ode_weather_forecast.md",
+        "exmaples/neural_gde.md",
     ],
     "Layer APIs" => Any[
         "Classical Basis Layers" => "layers/BasisLayers.md",
