@@ -10,8 +10,7 @@ terms must add to one. An example of this is as follows:
 
 ```@example dae
 using SciMLSensitivity
-using Lux, ComponentArrays, Optimization, OptimizationOptimJL,
-      OrdinaryDiffEq, Plots
+using Lux, ComponentArrays, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Plots
 
 using Random
 rng = Random.default_rng()
@@ -33,17 +32,16 @@ M = [1.0 0 0
 tspan = (0.0, 1.0)
 p = [0.04, 3e7, 1e4]
 
-stiff_func = ODEFunction(f!, mass_matrix = M)
+stiff_func = ODEFunction(f!; mass_matrix = M)
 prob_stiff = ODEProblem(stiff_func, u₀, tspan, p)
-sol_stiff = solve(prob_stiff, Rodas5(), saveat = 0.1)
+sol_stiff = solve(prob_stiff, Rodas5(); saveat = 0.1)
 
-nn_dudt2 = Lux.Chain(Lux.Dense(3, 64, tanh),
-    Lux.Dense(64, 2))
+nn_dudt2 = Lux.Chain(Lux.Dense(3, 64, tanh), Lux.Dense(64, 2))
 
 pinit, st = Lux.setup(rng, nn_dudt2)
 
 model_stiff_ndae = NeuralODEMM(nn_dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
-    tspan, M, Rodas5(autodiff = false), saveat = 0.1)
+    tspan, M, Rodas5(; autodiff = false); saveat = 0.1)
 
 function predict_stiff_ndae(p)
     return model_stiff_ndae(u₀, p, st)[1]
@@ -65,7 +63,7 @@ l1 = first(loss_stiff_ndae(ComponentArray(pinit)))
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_stiff_ndae(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
-result_stiff = Optimization.solve(optprob, OptimizationOptimJL.BFGS(), maxiters = 100)
+result_stiff = Optimization.solve(optprob, OptimizationOptimJL.BFGS(); maxiters = 100)
 ```
 
 ## Step-by-Step Description
@@ -74,8 +72,7 @@ result_stiff = Optimization.solve(optprob, OptimizationOptimJL.BFGS(), maxiters 
 
 ```@example dae2
 using SciMLSensitivity
-using Lux, ComponentArrays, Optimization, OptimizationOptimJL,
-      OrdinaryDiffEq, Plots
+using Lux, ComponentArrays, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Plots
 
 using Random
 rng = Random.default_rng()
@@ -123,9 +120,9 @@ We define and solve our ODE problem to generate the “labeled” data which wil
 train our Neural Network.
 
 ```@example dae2
-stiff_func = ODEFunction(f!, mass_matrix = M)
+stiff_func = ODEFunction(f!; mass_matrix = M)
 prob_stiff = ODEProblem(stiff_func, u₀, tspan, p)
-sol_stiff = solve(prob_stiff, Rodas5(), saveat = 0.1)
+sol_stiff = solve(prob_stiff, Rodas5(); saveat = 0.1)
 ```
 
 Because this is a DAE, we need to make sure to use a **compatible solver**.
@@ -138,13 +135,12 @@ is more suited to SciML applications (similarly for `Lux.Dense`). The input to o
 will be the initial conditions fed in as `u₀`.
 
 ```@example dae2
-nn_dudt2 = Lux.Chain(Lux.Dense(3, 64, tanh),
-    Lux.Dense(64, 2))
+nn_dudt2 = Lux.Chain(Lux.Dense(3, 64, tanh), Lux.Dense(64, 2))
 
 pinit, st = Lux.setup(rng, nn_dudt2)
 
 model_stiff_ndae = NeuralODEMM(nn_dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
-    tspan, M, Rodas5(autodiff = false), saveat = 0.1)
+    tspan, M, Rodas5(; autodiff = false); saveat = 0.1)
 model_stiff_ndae(u₀, ComponentArray(pinit), st)
 ```
 
@@ -210,5 +206,5 @@ Finally, training with `Optimization.solve` by passing: *loss function*, *model 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_stiff_ndae(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ComponentArray(pinit))
-result_stiff = Optimization.solve(optprob, OptimizationOptimJL.BFGS(), maxiters = 100)
+result_stiff = Optimization.solve(optprob, OptimizationOptimJL.BFGS(); maxiters = 100)
 ```

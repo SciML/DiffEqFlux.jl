@@ -1,6 +1,7 @@
 # Neural Graph Differential Equations
 
 !!! warn
+    
     This tutorial has not been ran or updated in awhile.
 
 This tutorial has been adapted from [here](https://github.com/CarloLucibello/GraphNeuralNetworks.jl/blob/master/examples/neural_ode_cora.jl).
@@ -33,7 +34,7 @@ onecold(y) = map(argmax, eachcol(y))
 X = g.ndata.features
 y = onehotbatch(g.ndata.targets, classes) # a dense matrix is not the optimal, but we don't want to use Flux here
 
-Ã = normalized_adjacency(g, add_self_loops = true) |> device
+Ã = normalized_adjacency(g; add_self_loops = true) |> device
 
 (; train_mask, val_mask, test_mask) = g.ndata
 ytrain = y[:, train_mask]
@@ -70,9 +71,9 @@ initialstates(rng::AbstractRNG, d::ExplicitGCNConv) = (Ã = d.init_Ã(),)
 function ExplicitGCNConv(Ã, ch::Pair{Int, Int}, activation = identity;
         init_weight = glorot_normal, init_bias = zeros32)
     init_Ã = () -> copy(Ã)
-    return ExplicitGCNConv{typeof(activation), typeof(init_Ã), typeof(init_weight),
-        typeof(init_bias)}(first(ch), last(ch), activation,
-        init_Ã, init_weight, init_bias)
+    return ExplicitGCNConv{
+        typeof(activation), typeof(init_Ã), typeof(init_weight), typeof(init_bias)}(
+        first(ch), last(ch), activation, init_Ã, init_weight, init_bias)
 end
 
 function (l::ExplicitGCNConv)(x::AbstractMatrix, ps, st::NamedTuple)
@@ -94,13 +95,11 @@ initialstates(rng::AbstractRNG, node::NeuralODE) = initialstates(rng, node.model
 gnn = Chain(ExplicitGCNConv(Ã, nhidden => nhidden, relu),
     ExplicitGCNConv(Ã, nhidden => nhidden, relu))
 
-node = NeuralODE(gnn, (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+node = NeuralODE(gnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     reltol = 1e-3, abstol = 1e-3, save_start = false)
 
 model = Chain(ExplicitGCNConv(Ã, nin => nhidden, relu),
-    node,
-    diffeqsol_to_array,
-    Dense(nhidden, nout))
+    node, diffeqsol_to_array, Dense(nhidden, nout))
 
 # Loss
 logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ); dims = 1))
@@ -114,7 +113,7 @@ function eval_loss_accuracy(X, y, mask, model, ps, st)
     ŷ, _ = model(X, ps, st)
     l = logitcrossentropy(ŷ[:, mask], y[:, mask])
     acc = mean(onecold(ŷ[:, mask]) .== onecold(y[:, mask]))
-    return (loss = round(l, digits = 4), acc = round(acc * 100, digits = 2))
+    return (loss = round(l; digits = 4), acc = round(acc * 100; digits = 2))
 end
 
 # Training
@@ -183,7 +182,7 @@ onecold(y) = map(argmax, eachcol(y))
 X = g.ndata.features
 y = onehotbatch(g.ndata.targets, classes) # a dense matrix is not the optimal, but we don't want to use Flux here
 
-Ã = normalized_adjacency(g, add_self_loops = true) |> device
+Ã = normalized_adjacency(g; add_self_loops = true) |> device
 ```
 
 ### Training Data
@@ -233,12 +232,8 @@ end
 
 function ExplicitGCNConv(Ã, ch::Pair{Int, Int}, activation = identity;
         init_weight = glorot_normal, init_bias = zeros32)
-    return ExplicitGCNConv{typeof(activation), typeof(init_weight), typeof(init_bias)}(Ã,
-        first(ch),
-        last(ch),
-        activation,
-        init_weight,
-        init_bias)
+    return ExplicitGCNConv{typeof(activation), typeof(init_weight), typeof(init_bias)}(
+        Ã, first(ch), last(ch), activation, init_weight, init_bias)
 end
 
 function (l::ExplicitGCNConv)(x::AbstractMatrix, ps, st::NamedTuple)
@@ -260,13 +255,11 @@ diffeqsol_to_array(x::ODESolution) = dropdims(Array(x); dims = 3)
 gnn = Chain(ExplicitGCNConv(Ã, nhidden => nhidden, relu),
     ExplicitGCNConv(Ã, nhidden => nhidden, relu))
 
-node = NeuralODE(gnn, (0.0f0, 1.0f0), Tsit5(), save_everystep = false,
+node = NeuralODE(gnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     reltol = 1e-3, abstol = 1e-3, save_start = false)
 
 model = Chain(ExplicitGCNConv(Ã, nin => nhidden, relu),
-    node,
-    diffeqsol_to_array,
-    Dense(nhidden, nout))
+    node, diffeqsol_to_array, Dense(nhidden, nout))
 ```
 
 ## Training Configuration
@@ -287,7 +280,7 @@ function eval_loss_accuracy(X, y, mask, model, ps, st)
     ŷ, _ = model(X, ps, st)
     l = logitcrossentropy(ŷ[:, mask], y[:, mask])
     acc = mean(onecold(ŷ[:, mask]) .== onecold(y[:, mask]))
-    return (loss = round(l, digits = 4), acc = round(acc * 100, digits = 2))
+    return (loss = round(l; digits = 4), acc = round(acc * 100; digits = 2))
 end
 ```
 
