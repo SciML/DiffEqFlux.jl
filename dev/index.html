@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures · DiffEqFlux.jl</title><meta name="title" content="DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures · DiffEqFlux.jl"/><meta property="og:title" content="DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures · DiffEqFlux.jl"/><meta property="twitter:title" content="DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/"/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><ul class="internal"><li><a class="tocitem" href="#Pre-Built-Architectures"><span>Pre-Built Architectures</span></a></li><li><a class="tocitem" href="#Flux.jl-vs-Lux.jl"><span>Flux.jl vs Lux.jl</span></a></li><li><a class="tocitem" href="#Citation"><span>Citation</span></a></li><li><a class="tocitem" href="#Reproducibility"><span>Reproducibility</span></a></li></ul></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="examples/neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="examples/GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="examples/mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="examples/mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="examples/augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="examples/neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="examples/collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="examples/normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="examples/hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="examples/tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="examples/multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="examples/neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/index.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning"><a class="docs-heading-anchor" href="#DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning">DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning</a><a id="DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning-1"></a><a class="docs-heading-anchor-permalink" href="#DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning" title="Permalink"></a></h1><p>DiffEqFlux.jl is an implicit deep learning library built using the SciML ecosystem. It is a high-level interface that pulls together all the tools with heuristics and helper functions to make training such deep implicit layer models fast and easy.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>DiffEqFlux.jl is only for pre-built architectures and utility functions for deep implicit learning, mixing differential equations with machine learning. For details on automatic differentiation of equation solvers and adjoint techniques, and using these methods for doing things like calibrating models to data, nonlinear optimal control, and PDE-constrained optimization, see <a href="https://docs.sciml.ai/SciMLSensitivity/stable/">SciMLSensitivity.jl</a>.</p></div></div><h2 id="Pre-Built-Architectures"><a class="docs-heading-anchor" href="#Pre-Built-Architectures">Pre-Built Architectures</a><a id="Pre-Built-Architectures-1"></a><a class="docs-heading-anchor-permalink" href="#Pre-Built-Architectures" title="Permalink"></a></h2><p>The approach of this package is the easy and efficient training of <a href="https://arxiv.org/abs/1806.07366">Neural Ordinary Differential Equations</a> and its variants. DiffEqFlux.jl provides architectures which match the interfaces of machine learning libraries such as <a href="https://docs.sciml.ai/Flux/stable/">Flux.jl</a> and <a href="https://lux.csail.mit.edu/stable/">Lux.jl</a> to make it easy to build continuous-time machine learning layers into larger machine learning applications.</p><p>The following layer functions exist:</p><ul><li><a href="https://arxiv.org/abs/1806.07366">Neural Ordinary Differential Equations (Neural ODEs)</a></li><li><a href="https://www.degruyter.com/document/doi/10.1515/sagmb-2020-0025/html">Collocation-Based Neural ODEs (Neural ODEs without a solver, by far the fastest way!)</a></li><li><a href="https://arxiv.org/abs/2109.06786">Multiple Shooting Neural Ordinary Differential Equations</a></li><li><a href="https://arxiv.org/abs/1907.07587">Neural Stochastic Differential Equations (Neural SDEs)</a></li><li><a href="https://arxiv.org/abs/2001.04385">Neural Differential-Algebraic Equations (Neural DAEs)</a></li><li><a href="https://arxiv.org/abs/2001.04385">Neural Delay Differential Equations (Neural DDEs)</a></li><li><a href="https://arxiv.org/abs/1904.01681">Augmented Neural ODEs</a></li><li><a href="https://arxiv.org/abs/1906.01563">Hamiltonian Neural Networks (with specialized second order and symplectic integrators)</a></li><li><a href="https://arxiv.org/abs/1806.07366">Continuous Normalizing Flows (CNF)</a> and <a href="https://arxiv.org/abs/1810.01367">FFJORD</a></li></ul><p>Examples of how to build architectures from scratch, with tutorials on things like Graph Neural ODEs, can be found in the <a href="https://docs.sciml.ai/SciMLSensitivity/stable/">SciMLSensitivity.jl documentation</a>.</p><h2 id="Flux.jl-vs-Lux.jl"><a class="docs-heading-anchor" href="#Flux.jl-vs-Lux.jl">Flux.jl vs Lux.jl</a><a id="Flux.jl-vs-Lux.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Flux.jl-vs-Lux.jl" title="Permalink"></a></h2><p>Both Flux and Lux defined neural networks are supported by DiffEqFlux.jl. However, Lux.jl neural networks are greatly preferred for many correctness reasons. Particularly, a Flux <code>Chain</code> does not respect Julia&#39;s type promotion rules. This causes major problems in that the restructuring of a Flux neural network will not respect the chosen types from the solver. Demonstration:</p><pre><code class="language-julia hljs">using Flux, Tracker
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures · DiffEqFlux.jl</title><meta name="title" content="DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures · DiffEqFlux.jl"/><meta property="og:title" content="DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures · DiffEqFlux.jl"/><meta property="twitter:title" content="DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/"/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><ul class="internal"><li><a class="tocitem" href="#Pre-Built-Architectures"><span>Pre-Built Architectures</span></a></li><li><a class="tocitem" href="#Flux.jl-vs-Lux.jl"><span>Flux.jl vs Lux.jl</span></a></li><li><a class="tocitem" href="#Citation"><span>Citation</span></a></li><li><a class="tocitem" href="#Reproducibility"><span>Reproducibility</span></a></li></ul></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="examples/neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="examples/GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="examples/mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="examples/mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="examples/augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="examples/neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="examples/collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="examples/normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="examples/hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="examples/tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="examples/multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="examples/neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li><li><a class="tocitem" href="examples/neural_gde/">Neural Graph Differential Equations</a></li><li><a class="tocitem" href="examples/physical_constraints/">Enforcing Physical Constraints via Universal Differential-Algebraic Equations</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/index.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning"><a class="docs-heading-anchor" href="#DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning">DiffEqFlux: High Level Pre-Built Architectures for Implicit Deep Learning</a><a id="DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning-1"></a><a class="docs-heading-anchor-permalink" href="#DiffEqFlux:-High-Level-Pre-Built-Architectures-for-Implicit-Deep-Learning" title="Permalink"></a></h1><p>DiffEqFlux.jl is an implicit deep learning library built using the SciML ecosystem. It is a high-level interface that pulls together all the tools with heuristics and helper functions to make training such deep implicit layer models fast and easy.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>DiffEqFlux.jl is only for pre-built architectures and utility functions for deep implicit learning, mixing differential equations with machine learning. For details on automatic differentiation of equation solvers and adjoint techniques, and using these methods for doing things like calibrating models to data, nonlinear optimal control, and PDE-constrained optimization, see <a href="https://docs.sciml.ai/SciMLSensitivity/stable/">SciMLSensitivity.jl</a>.</p></div></div><h2 id="Pre-Built-Architectures"><a class="docs-heading-anchor" href="#Pre-Built-Architectures">Pre-Built Architectures</a><a id="Pre-Built-Architectures-1"></a><a class="docs-heading-anchor-permalink" href="#Pre-Built-Architectures" title="Permalink"></a></h2><p>The approach of this package is the easy and efficient training of <a href="https://arxiv.org/abs/1806.07366">Neural Ordinary Differential Equations</a> and its variants. DiffEqFlux.jl provides architectures which match the interfaces of machine learning libraries such as <a href="https://docs.sciml.ai/Flux/stable/">Flux.jl</a> and <a href="https://lux.csail.mit.edu/stable/">Lux.jl</a> to make it easy to build continuous-time machine learning layers into larger machine learning applications.</p><p>The following layer functions exist:</p><ul><li><a href="https://arxiv.org/abs/1806.07366">Neural Ordinary Differential Equations (Neural ODEs)</a></li><li><a href="https://www.degruyter.com/document/doi/10.1515/sagmb-2020-0025/html">Collocation-Based Neural ODEs (Neural ODEs without a solver, by far the fastest way!)</a></li><li><a href="https://arxiv.org/abs/2109.06786">Multiple Shooting Neural Ordinary Differential Equations</a></li><li><a href="https://arxiv.org/abs/1907.07587">Neural Stochastic Differential Equations (Neural SDEs)</a></li><li><a href="https://arxiv.org/abs/2001.04385">Neural Differential-Algebraic Equations (Neural DAEs)</a></li><li><a href="https://arxiv.org/abs/2001.04385">Neural Delay Differential Equations (Neural DDEs)</a></li><li><a href="https://arxiv.org/abs/1904.01681">Augmented Neural ODEs</a></li><li><a href="https://arxiv.org/abs/1906.01563">Hamiltonian Neural Networks (with specialized second order and symplectic integrators)</a></li><li><a href="https://arxiv.org/abs/1806.07366">Continuous Normalizing Flows (CNF)</a> and <a href="https://arxiv.org/abs/1810.01367">FFJORD</a></li></ul><p>Examples of how to build architectures from scratch, with tutorials on things like Graph Neural ODEs, can be found in the <a href="https://docs.sciml.ai/SciMLSensitivity/stable/">SciMLSensitivity.jl documentation</a>.</p><h2 id="Flux.jl-vs-Lux.jl"><a class="docs-heading-anchor" href="#Flux.jl-vs-Lux.jl">Flux.jl vs Lux.jl</a><a id="Flux.jl-vs-Lux.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Flux.jl-vs-Lux.jl" title="Permalink"></a></h2><p>Both Flux and Lux defined neural networks are supported by DiffEqFlux.jl. However, Lux.jl neural networks are greatly preferred for many correctness reasons. Particularly, a Flux <code>Chain</code> does not respect Julia&#39;s type promotion rules. This causes major problems in that the restructuring of a Flux neural network will not respect the chosen types from the solver. Demonstration:</p><pre><code class="language-julia hljs">using Flux, Tracker
 
 x = [0.8; 0.8]
 ann = Chain(Dense(2, 10, tanh), Dense(10, 1))
@@ -9,35 +9,35 @@ z = re(Float64.(p))</code></pre><p>While one may think this recreates the neural
   author={Rackauckas, Christopher and Ma, Yingbo and Martensen, Julius and Warner, Collin and Zubov, Kirill and Supekar, Rohit and Skinner, Dominic and Ramadhan, Ali},
   journal={arXiv preprint arXiv:2001.04385},
   year={2020}
-}</code></pre><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `/var/lib/buildkite-agent/builds/gpuci-5/julialang/diffeqflux-dot-jl/docs/Project.toml`
+}</code></pre><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `/var/lib/buildkite-agent/builds/gpuci-9/julialang/diffeqflux-dot-jl/docs/Project.toml`
   <span class="sgr90">[336ed68f] </span>CSV v0.10.14
-  <span class="sgr90">[052768ef] </span>CUDA v5.3.4
-  <span class="sgr90">[b0b7db55] </span>ComponentArrays v0.15.12
+  <span class="sgr90">[052768ef] </span>CUDA v5.4.2
+  <span class="sgr90">[b0b7db55] </span>ComponentArrays v0.15.13
   <span class="sgr90">[124859b0] </span>DataDeps v0.7.13
   <span class="sgr90">[a93c6f00] </span>DataFrames v1.6.1
-  <span class="sgr90">[aae7a2af] </span>DiffEqFlux v3.5.0 `/var/lib/buildkite-agent/builds/gpuci-5/julialang/diffeqflux-dot-jl`
+  <span class="sgr90">[aae7a2af] </span>DiffEqFlux v3.5.0 `/var/lib/buildkite-agent/builds/gpuci-9/julialang/diffeqflux-dot-jl`
   <span class="sgr90">[b4f34e82] </span>Distances v0.10.11
-  <span class="sgr90">[31c24e10] </span>Distributions v0.25.108
+  <span class="sgr90">[31c24e10] </span>Distributions v0.25.109
   <span class="sgr90">[e30172f5] </span>Documenter v1.4.1
   <span class="sgr90">[587475ba] </span>Flux v0.14.15
   <span class="sgr90">[f6369f11] </span>ForwardDiff v0.10.36
   <span class="sgr90">[c8e1da08] </span>IterTools v1.10.0
-  <span class="sgr90">[b2108857] </span>Lux v0.5.51
+  <span class="sgr90">[b2108857] </span>Lux v0.5.53
   <span class="sgr90">[d0bbae9a] </span>LuxCUDA v0.3.2
   <span class="sgr90">[cc2ba9b6] </span>MLDataUtils v0.5.4
   <span class="sgr90">[eb30cadb] </span>MLDatasets v0.7.14
   <span class="sgr90">[f1d291b0] </span>MLUtils v0.4.4
-  <span class="sgr90">[872c559c] </span>NNlib v0.9.16
+  <span class="sgr90">[872c559c] </span>NNlib v0.9.17
   <span class="sgr90">[3bd65402] </span>Optimisers v0.3.3
-  <span class="sgr90">[7f7a1694] </span>Optimization v3.25.0
-<span class="sgr33">⌅</span> <span class="sgr90">[36348300] </span>OptimizationOptimJL v0.2.3
+  <span class="sgr90">[7f7a1694] </span>Optimization v3.25.1
+  <span class="sgr90">[36348300] </span>OptimizationOptimJL v0.3.2
   <span class="sgr90">[42dfb2eb] </span>OptimizationOptimisers v0.2.1
-  <span class="sgr90">[500b13db] </span>OptimizationPolyalgorithms v0.2.0
-  <span class="sgr90">[1dea7af3] </span>OrdinaryDiffEq v6.77.1
+  <span class="sgr90">[500b13db] </span>OptimizationPolyalgorithms v0.2.1
+  <span class="sgr90">[1dea7af3] </span>OrdinaryDiffEq v6.83.1
   <span class="sgr90">[91a5bcdd] </span>Plots v1.40.4
   <span class="sgr90">[37e2e3b7] </span>ReverseDiff v1.15.3
-  <span class="sgr90">[0bca4576] </span>SciMLBase v2.38.0
-  <span class="sgr90">[1ed8b502] </span>SciMLSensitivity v7.58.0
+  <span class="sgr90">[0bca4576] </span>SciMLBase v2.41.3
+  <span class="sgr90">[1ed8b502] </span>SciMLSensitivity v7.61.1
   <span class="sgr90">[860ef19b] </span>StableRNGs v1.0.2
   <span class="sgr90">[789caeaf] </span>StochasticDiffEq v6.65.1
   <span class="sgr90">[e88e6eb3] </span>Zygote v0.6.70
@@ -45,9 +45,8 @@ z = re(Float64.(p))</code></pre><p>While one may think this recreates the neural
   <span class="sgr90">[de0858da] </span>Printf
   <span class="sgr90">[9a3f8284] </span>Random
   <span class="sgr90">[10745b16] </span>Statistics v1.10.0
-  <span class="sgr90">[8dfed614] </span>Test
-<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr33">⌅</span> have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.10.3
-Commit 0b4590a5507 (2024-04-30 10:59 UTC)
+  <span class="sgr90">[8dfed614] </span>Test</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.10.4
+Commit 48d4fd48430 (2024-06-04 10:41 UTC)
 Build Info:
   Official https://julialang.org/ release
 Platform Info:
@@ -61,8 +60,8 @@ Environment:
   JULIA_CPU_THREADS = 2
   JULIA_DEBUG = Documenter
   JULIA_DEPOT_PATH = /root/.cache/julia-buildkite-plugin/depots/64dbdc29-d6e3-4071-807c-a2eda6e09bd8
-  LD_LIBRARY_PATH = /usr/local/nvidia/lib:/usr/local/nvidia/lib64</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `/var/lib/buildkite-agent/builds/gpuci-5/julialang/diffeqflux-dot-jl/docs/Manifest.toml`
-  <span class="sgr90">[47edcb42] </span>ADTypes v1.2.1
+  LD_LIBRARY_PATH = /usr/local/nvidia/lib:/usr/local/nvidia/lib64</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `/var/lib/buildkite-agent/builds/gpuci-9/julialang/diffeqflux-dot-jl/docs/Manifest.toml`
+  <span class="sgr90">[47edcb42] </span>ADTypes v1.3.0
   <span class="sgr90">[a4c015fc] </span>ANSIColoredPrinters v0.0.1
   <span class="sgr90">[621f4979] </span>AbstractFFTs v1.5.0
   <span class="sgr90">[1520ce14] </span>AbstractTrees v0.4.5
@@ -71,8 +70,8 @@ Environment:
   <span class="sgr90">[66dad0bd] </span>AliasTables v1.1.3
   <span class="sgr90">[dce04be8] </span>ArgCheck v2.3.0
   <span class="sgr90">[ec485272] </span>ArnoldiMethod v0.4.0
-  <span class="sgr90">[4fba245c] </span>ArrayInterface v7.10.0
-  <span class="sgr90">[4c555306] </span>ArrayLayouts v1.9.2
+  <span class="sgr90">[4fba245c] </span>ArrayInterface v7.11.0
+  <span class="sgr90">[4c555306] </span>ArrayLayouts v1.9.4
   <span class="sgr90">[a9b6321e] </span>Atomix v0.1.0
   <span class="sgr90">[a963bdd2] </span>AtomsBase v0.3.5
   <span class="sgr90">[ab4f0b2a] </span>BFloat16s v0.5.0
@@ -84,12 +83,12 @@ Environment:
   <span class="sgr90">[fa961155] </span>CEnum v0.5.0
   <span class="sgr90">[2a0fbf3d] </span>CPUSummary v0.2.5
   <span class="sgr90">[336ed68f] </span>CSV v0.10.14
-  <span class="sgr90">[052768ef] </span>CUDA v5.3.4
-<span class="sgr33">⌅</span> <span class="sgr90">[1af6417a] </span>CUDA_Runtime_Discovery v0.2.4
+  <span class="sgr90">[052768ef] </span>CUDA v5.4.2
+  <span class="sgr90">[1af6417a] </span>CUDA_Runtime_Discovery v0.3.3
   <span class="sgr90">[49dc2e85] </span>Calculus v0.5.1
   <span class="sgr90">[7057c7e9] </span>Cassette v0.3.13
-  <span class="sgr90">[082447d4] </span>ChainRules v1.66.0
-  <span class="sgr90">[d360d2e6] </span>ChainRulesCore v1.23.0
+  <span class="sgr90">[082447d4] </span>ChainRules v1.69.0
+  <span class="sgr90">[d360d2e6] </span>ChainRulesCore v1.24.0
   <span class="sgr90">[46823bd8] </span>Chemfiles v0.10.41
   <span class="sgr90">[ae650224] </span>ChunkSplitters v2.4.2
   <span class="sgr90">[fb6a15b2] </span>CloseOpenIntervals v0.1.12
@@ -101,7 +100,7 @@ Environment:
   <span class="sgr90">[38540f10] </span>CommonSolve v0.2.4
   <span class="sgr90">[bbf7d656] </span>CommonSubexpressions v0.3.0
   <span class="sgr90">[34da2185] </span>Compat v4.15.0
-  <span class="sgr90">[b0b7db55] </span>ComponentArrays v0.15.12
+  <span class="sgr90">[b0b7db55] </span>ComponentArrays v0.15.13
   <span class="sgr90">[a33af91c] </span>CompositionsBase v0.1.2
   <span class="sgr90">[2569d6c7] </span>ConcreteStructs v0.2.3
   <span class="sgr90">[f0e56b4a] </span>ConcurrentUtilities v2.4.1
@@ -118,31 +117,32 @@ Environment:
   <span class="sgr90">[e2d170a0] </span>DataValueInterfaces v1.0.0
   <span class="sgr90">[244e2a9f] </span>DefineSingletons v0.1.2
   <span class="sgr90">[8bb1440f] </span>DelimitedFiles v1.9.1
-  <span class="sgr90">[2b5f629d] </span>DiffEqBase v6.151.0
+  <span class="sgr90">[2b5f629d] </span>DiffEqBase v6.151.3
   <span class="sgr90">[459566f4] </span>DiffEqCallbacks v3.6.2
-  <span class="sgr90">[aae7a2af] </span>DiffEqFlux v3.5.0 `/var/lib/buildkite-agent/builds/gpuci-5/julialang/diffeqflux-dot-jl`
+  <span class="sgr90">[aae7a2af] </span>DiffEqFlux v3.5.0 `/var/lib/buildkite-agent/builds/gpuci-9/julialang/diffeqflux-dot-jl`
   <span class="sgr90">[77a26b50] </span>DiffEqNoiseProcess v5.21.0
   <span class="sgr90">[163ba53b] </span>DiffResults v1.1.0
   <span class="sgr90">[b552c78f] </span>DiffRules v1.15.1
+  <span class="sgr90">[a0c0ee7d] </span>DifferentiationInterface v0.5.5
   <span class="sgr90">[b4f34e82] </span>Distances v0.10.11
-  <span class="sgr90">[31c24e10] </span>Distributions v0.25.108
+  <span class="sgr90">[31c24e10] </span>Distributions v0.25.109
   <span class="sgr90">[ced4e74d] </span>DistributionsAD v0.6.55
   <span class="sgr90">[ffbed154] </span>DocStringExtensions v0.9.3
   <span class="sgr90">[e30172f5] </span>Documenter v1.4.1
   <span class="sgr90">[fa6b7ba4] </span>DualNumbers v0.6.8
   <span class="sgr90">[da5c29d0] </span>EllipsisNotation v1.8.0
   <span class="sgr90">[4e289a0a] </span>EnumX v1.0.4
-  <span class="sgr90">[7da242da] </span>Enzyme v0.12.7
-  <span class="sgr90">[f151be2c] </span>EnzymeCore v0.7.2
+  <span class="sgr90">[7da242da] </span>Enzyme v0.12.13
+  <span class="sgr90">[f151be2c] </span>EnzymeCore v0.7.5
   <span class="sgr90">[460bff9d] </span>ExceptionUnwrapping v0.1.10
   <span class="sgr90">[d4d017d3] </span>ExponentialUtilities v1.26.1
   <span class="sgr90">[e2ba6199] </span>ExprTools v0.1.10
   <span class="sgr90">[c87230d0] </span>FFMPEG v0.4.1
   <span class="sgr90">[cc61a311] </span>FLoops v0.2.1
   <span class="sgr90">[b9860ae5] </span>FLoopsBase v0.1.1
-  <span class="sgr90">[7034ab61] </span>FastBroadcast v0.2.8
+<span class="sgr33">⌅</span> <span class="sgr90">[7034ab61] </span>FastBroadcast v0.2.8
   <span class="sgr90">[9aa1b823] </span>FastClosures v0.3.2
-  <span class="sgr90">[29a986be] </span>FastLapackInterface v2.0.3
+  <span class="sgr90">[29a986be] </span>FastLapackInterface v2.0.4
   <span class="sgr90">[5789e2e9] </span>FileIO v1.16.3
   <span class="sgr90">[48062228] </span>FilePathsBase v0.9.21
   <span class="sgr90">[1a297f60] </span>FillArrays v1.11.0
@@ -154,28 +154,28 @@ Environment:
   <span class="sgr90">[f62d2435] </span>FunctionProperties v0.1.2
   <span class="sgr90">[069b7b12] </span>FunctionWrappers v1.1.3
   <span class="sgr90">[77dc65aa] </span>FunctionWrappersWrappers v0.1.3
-  <span class="sgr90">[d9f16b24] </span>Functors v0.4.10
-  <span class="sgr90">[0c68f7d7] </span>GPUArrays v10.1.0
+  <span class="sgr90">[d9f16b24] </span>Functors v0.4.11
+  <span class="sgr90">[0c68f7d7] </span>GPUArrays v10.2.0
   <span class="sgr90">[46192b85] </span>GPUArraysCore v0.1.6
-  <span class="sgr90">[61eb1bfa] </span>GPUCompiler v0.26.4
+  <span class="sgr90">[61eb1bfa] </span>GPUCompiler v0.26.5
   <span class="sgr90">[28b8d3ca] </span>GR v0.73.5
   <span class="sgr90">[92fee26a] </span>GZip v0.6.2
   <span class="sgr90">[c145ed77] </span>GenericSchur v0.5.4
   <span class="sgr90">[d7ba0133] </span>Git v1.3.1
   <span class="sgr90">[c27321d9] </span>Glob v1.3.1
-  <span class="sgr90">[86223c79] </span>Graphs v1.11.0
+  <span class="sgr90">[86223c79] </span>Graphs v1.11.1
   <span class="sgr90">[42e2da0e] </span>Grisu v1.0.2
   <span class="sgr90">[f67ccb44] </span>HDF5 v0.17.2
   <span class="sgr90">[cd3eb016] </span>HTTP v1.10.8
   <span class="sgr90">[3e5b6fbb] </span>HostCPUFeatures v0.1.16
   <span class="sgr90">[34004b35] </span>HypergeometricFunctions v0.3.23
-  <span class="sgr90">[b5f81e59] </span>IOCapture v0.2.4
+  <span class="sgr90">[b5f81e59] </span>IOCapture v0.2.5
   <span class="sgr90">[7869d1d1] </span>IRTools v0.4.14
   <span class="sgr90">[615f187c] </span>IfElse v0.1.1
   <span class="sgr90">[c817782e] </span>ImageBase v0.1.7
   <span class="sgr90">[a09fc81d] </span>ImageCore v0.10.2
   <span class="sgr90">[4e3cecfd] </span>ImageShow v0.3.8
-  <span class="sgr90">[d25df0c9] </span>Inflate v0.1.4
+  <span class="sgr90">[d25df0c9] </span>Inflate v0.1.5
   <span class="sgr90">[22cec73e] </span>InitialValues v0.3.1
   <span class="sgr90">[842dd82b] </span>InlineStrings v1.4.0
   <span class="sgr90">[7d512f48] </span>InternedStrings v0.7.0
@@ -192,31 +192,31 @@ Environment:
   <span class="sgr90">[b14d175d] </span>JuliaVariables v0.2.4
   <span class="sgr90">[ccbc3e58] </span>JumpProcesses v9.11.1
   <span class="sgr90">[ef3ab10e] </span>KLU v0.6.0
-  <span class="sgr90">[63c18a36] </span>KernelAbstractions v0.9.19
+  <span class="sgr90">[63c18a36] </span>KernelAbstractions v0.9.20
   <span class="sgr90">[ba0b0d4f] </span>Krylov v0.9.6
   <span class="sgr90">[5be7bae1] </span>LBFGSB v0.4.1
-<span class="sgr33">⌅</span> <span class="sgr90">[929cbde3] </span>LLVM v6.6.3
+  <span class="sgr90">[929cbde3] </span>LLVM v7.2.1
   <span class="sgr90">[8b046642] </span>LLVMLoopInfo v1.0.0
   <span class="sgr90">[b964fa9f] </span>LaTeXStrings v1.3.1
   <span class="sgr90">[23fbe1c1] </span>Latexify v0.16.3
   <span class="sgr90">[10f19ff3] </span>LayoutPointers v0.1.15
   <span class="sgr90">[0e77f7df] </span>LazilyInitializedFields v1.2.2
-  <span class="sgr90">[5078a376] </span>LazyArrays v1.10.0
+<span class="sgr32">⌃</span> <span class="sgr90">[5078a376] </span>LazyArrays v1.10.0
   <span class="sgr90">[8cdb02fc] </span>LazyModules v0.3.1
 <span class="sgr33">⌅</span> <span class="sgr90">[7f8f8fb0] </span>LearnBase v0.3.0
   <span class="sgr90">[1d6d02ad] </span>LeftChildRightSiblingTrees v0.2.0
   <span class="sgr90">[2d8b4e74] </span>LevyArea v1.0.0
   <span class="sgr90">[d3d80556] </span>LineSearches v7.2.0
-  <span class="sgr90">[7ed4a6bd] </span>LinearSolve v2.30.0
-  <span class="sgr90">[2ab3a3ac] </span>LogExpFunctions v0.3.27
+  <span class="sgr90">[7ed4a6bd] </span>LinearSolve v2.30.1
+  <span class="sgr90">[2ab3a3ac] </span>LogExpFunctions v0.3.28
   <span class="sgr90">[e6f89c97] </span>LoggingExtras v1.0.3
   <span class="sgr90">[bdcacae8] </span>LoopVectorization v0.12.170
-  <span class="sgr90">[b2108857] </span>Lux v0.5.51
+  <span class="sgr90">[b2108857] </span>Lux v0.5.53
   <span class="sgr90">[d0bbae9a] </span>LuxCUDA v0.3.2
   <span class="sgr90">[bb33d45b] </span>LuxCore v0.1.15
-  <span class="sgr90">[34f89e08] </span>LuxDeviceUtils v0.1.20
-  <span class="sgr90">[82251201] </span>LuxLib v0.3.25
-  <span class="sgr90">[23992714] </span>MAT v0.10.6
+  <span class="sgr90">[34f89e08] </span>LuxDeviceUtils v0.1.22
+  <span class="sgr90">[82251201] </span>LuxLib v0.3.26
+  <span class="sgr90">[23992714] </span>MAT v0.10.7
 <span class="sgr32">⌃</span> <span class="sgr90">[9920b226] </span>MLDataPattern v0.5.4
   <span class="sgr90">[cc2ba9b6] </span>MLDataUtils v0.5.4
   <span class="sgr90">[eb30cadb] </span>MLDatasets v0.7.14
@@ -229,7 +229,7 @@ Environment:
   <span class="sgr90">[dbb5928d] </span>MappedArrays v0.4.2
   <span class="sgr90">[d0879d2d] </span>MarkdownAST v0.1.2
 <span class="sgr33">⌅</span> <span class="sgr90">[a3b82374] </span>MatrixFactorizations v2.2.0
-  <span class="sgr90">[bb5d69b7] </span>MaybeInplace v0.1.2
+  <span class="sgr90">[bb5d69b7] </span>MaybeInplace v0.1.3
   <span class="sgr90">[739be429] </span>MbedTLS v1.1.9
   <span class="sgr90">[442fdcdd] </span>Measures v0.3.2
 <span class="sgr33">⌅</span> <span class="sgr90">[128add7d] </span>MicroCollections v0.1.4
@@ -238,12 +238,12 @@ Environment:
   <span class="sgr90">[46d2c3a1] </span>MuladdMacro v0.2.4
   <span class="sgr90">[d41bc354] </span>NLSolversBase v7.8.3
   <span class="sgr90">[2774e3e8] </span>NLsolve v4.5.1
-  <span class="sgr90">[872c559c] </span>NNlib v0.9.16
+  <span class="sgr90">[872c559c] </span>NNlib v0.9.17
   <span class="sgr90">[15e1cf62] </span>NPZ v0.4.3
   <span class="sgr90">[5da4648a] </span>NVTX v0.3.4
   <span class="sgr90">[77ba4419] </span>NaNMath v1.0.2
   <span class="sgr90">[71a1bf82] </span>NameResolution v0.1.5
-  <span class="sgr90">[8913a72c] </span>NonlinearSolve v3.12.0
+  <span class="sgr90">[8913a72c] </span>NonlinearSolve v3.12.4
   <span class="sgr90">[d8793406] </span>ObjectFile v0.4.1
   <span class="sgr90">[6fe1bfb0] </span>OffsetArrays v1.14.0
   <span class="sgr90">[67456a42] </span>OhMyThreads v0.5.2
@@ -251,13 +251,13 @@ Environment:
   <span class="sgr90">[4d8831e6] </span>OpenSSL v1.4.3
   <span class="sgr90">[429524aa] </span>Optim v1.9.4
   <span class="sgr90">[3bd65402] </span>Optimisers v0.3.3
-  <span class="sgr90">[7f7a1694] </span>Optimization v3.25.0
-<span class="sgr33">⌅</span> <span class="sgr90">[bca83a33] </span>OptimizationBase v0.0.7
-<span class="sgr33">⌅</span> <span class="sgr90">[36348300] </span>OptimizationOptimJL v0.2.3
+  <span class="sgr90">[7f7a1694] </span>Optimization v3.25.1
+  <span class="sgr90">[bca83a33] </span>OptimizationBase v1.2.0
+  <span class="sgr90">[36348300] </span>OptimizationOptimJL v0.3.2
   <span class="sgr90">[42dfb2eb] </span>OptimizationOptimisers v0.2.1
-  <span class="sgr90">[500b13db] </span>OptimizationPolyalgorithms v0.2.0
+  <span class="sgr90">[500b13db] </span>OptimizationPolyalgorithms v0.2.1
   <span class="sgr90">[bac558e1] </span>OrderedCollections v1.6.3
-  <span class="sgr90">[1dea7af3] </span>OrdinaryDiffEq v6.77.1
+  <span class="sgr90">[1dea7af3] </span>OrdinaryDiffEq v6.83.1
   <span class="sgr90">[90014a1f] </span>PDMats v0.11.31
   <span class="sgr90">[65ce6f38] </span>PackageExtensionCompat v1.0.2
   <span class="sgr90">[5432bcbf] </span>PaddedViews v0.5.12
@@ -267,7 +267,7 @@ Environment:
   <span class="sgr90">[7b2266bf] </span>PeriodicTable v1.2.1
   <span class="sgr90">[fbb45041] </span>Pickle v0.3.5
   <span class="sgr90">[b98c9c47] </span>Pipe v1.3.0
-  <span class="sgr90">[ccf2f8ad] </span>PlotThemes v3.1.0
+  <span class="sgr90">[ccf2f8ad] </span>PlotThemes v3.2.0
   <span class="sgr90">[995b91a9] </span>PlotUtils v1.4.1
   <span class="sgr90">[91a5bcdd] </span>Plots v1.40.4
   <span class="sgr90">[e409e4f3] </span>PoissonRandom v0.4.4
@@ -275,21 +275,21 @@ Environment:
   <span class="sgr90">[1d0040c9] </span>PolyesterWeave v0.2.1
   <span class="sgr90">[2dfb63ee] </span>PooledArrays v1.4.3
   <span class="sgr90">[85a6dd25] </span>PositiveFactorizations v0.2.4
-  <span class="sgr90">[d236fae5] </span>PreallocationTools v0.4.21
+  <span class="sgr90">[d236fae5] </span>PreallocationTools v0.4.22
   <span class="sgr90">[aea7be01] </span>PrecompileTools v1.2.1
   <span class="sgr90">[21216c6a] </span>Preferences v1.4.3
   <span class="sgr90">[8162dcfd] </span>PrettyPrint v0.2.0
-  <span class="sgr90">[08abe8d2] </span>PrettyTables v2.3.1
+  <span class="sgr90">[08abe8d2] </span>PrettyTables v2.3.2
   <span class="sgr90">[33c8b6b6] </span>ProgressLogging v0.1.4
   <span class="sgr90">[92933f4c] </span>ProgressMeter v1.10.0
-  <span class="sgr90">[43287f4e] </span>PtrArrays v1.1.0
+  <span class="sgr90">[43287f4e] </span>PtrArrays v1.2.0
   <span class="sgr90">[1fd47b50] </span>QuadGK v2.9.4
   <span class="sgr90">[74087812] </span>Random123 v1.7.0
   <span class="sgr90">[e6cf234a] </span>RandomNumbers v1.5.3
   <span class="sgr90">[c1ae055f] </span>RealDot v0.1.0
   <span class="sgr90">[3cdcf5f2] </span>RecipesBase v1.3.4
   <span class="sgr90">[01d81517] </span>RecipesPipeline v0.6.12
-  <span class="sgr90">[731186ca] </span>RecursiveArrayTools v3.19.0
+  <span class="sgr90">[731186ca] </span>RecursiveArrayTools v3.24.0
   <span class="sgr90">[f2c3362d] </span>RecursiveFactorization v0.2.23
   <span class="sgr90">[189a3867] </span>Reexport v1.2.2
   <span class="sgr90">[2792f1a3] </span>RegistryInstances v0.1.0
@@ -301,22 +301,23 @@ Environment:
   <span class="sgr90">[7e49a35a] </span>RuntimeGeneratedFunctions v0.5.13
   <span class="sgr90">[94e857df] </span>SIMDTypes v0.1.0
   <span class="sgr90">[476501e8] </span>SLEEFPirates v0.6.42
-  <span class="sgr90">[0bca4576] </span>SciMLBase v2.38.0
+  <span class="sgr90">[0bca4576] </span>SciMLBase v2.41.3
   <span class="sgr90">[c0aeaf25] </span>SciMLOperators v0.3.8
-  <span class="sgr90">[1ed8b502] </span>SciMLSensitivity v7.58.0
-  <span class="sgr90">[53ae85a6] </span>SciMLStructures v1.2.0
+  <span class="sgr90">[1ed8b502] </span>SciMLSensitivity v7.61.1
+  <span class="sgr90">[53ae85a6] </span>SciMLStructures v1.3.0
   <span class="sgr90">[6c6a2e73] </span>Scratch v1.2.1
-  <span class="sgr90">[91c51154] </span>SentinelArrays v1.4.2
+  <span class="sgr90">[91c51154] </span>SentinelArrays v1.4.3
   <span class="sgr90">[efcf1570] </span>Setfield v1.1.1
   <span class="sgr90">[605ecd9f] </span>ShowCases v0.1.0
   <span class="sgr90">[992d4aef] </span>Showoff v1.0.3
   <span class="sgr90">[777ac1f9] </span>SimpleBufferStream v1.1.0
-  <span class="sgr90">[727e6d20] </span>SimpleNonlinearSolve v1.8.0
+  <span class="sgr90">[727e6d20] </span>SimpleNonlinearSolve v1.10.0
   <span class="sgr90">[699a6c99] </span>SimpleTraits v0.9.4
   <span class="sgr90">[ce78b400] </span>SimpleUnPack v1.1.0
   <span class="sgr90">[a2af1166] </span>SortingAlgorithms v1.2.1
   <span class="sgr90">[47a9eef4] </span>SparseDiffTools v2.19.0
   <span class="sgr90">[dc90abb0] </span>SparseInverseSubset v0.1.2
+  <span class="sgr90">[0a514795] </span>SparseMatrixColorings v0.3.3
   <span class="sgr90">[e56a9233] </span>Sparspak v0.3.9
   <span class="sgr90">[276daf66] </span>SpecialFunctions v2.4.0
   <span class="sgr90">[171d559e] </span>SplittablesBase v0.1.15
@@ -325,8 +326,8 @@ Environment:
   <span class="sgr90">[cae243ae] </span>StackViews v0.1.1
   <span class="sgr90">[aedffcd0] </span>Static v0.8.10
   <span class="sgr90">[0d7ed370] </span>StaticArrayInterface v1.5.0
-  <span class="sgr90">[90137ffa] </span>StaticArrays v1.9.4
-  <span class="sgr90">[1e83bf80] </span>StaticArraysCore v1.4.2
+  <span class="sgr90">[90137ffa] </span>StaticArrays v1.9.5
+  <span class="sgr90">[1e83bf80] </span>StaticArraysCore v1.4.3
   <span class="sgr90">[82ae8749] </span>StatsAPI v1.7.0
 <span class="sgr33">⌅</span> <span class="sgr90">[2913bbd2] </span>StatsBase v0.33.21
   <span class="sgr90">[4c63d2b9] </span>StatsFuns v1.3.1
@@ -338,7 +339,7 @@ Environment:
   <span class="sgr90">[09ab397b] </span>StructArrays v0.6.18
   <span class="sgr90">[53d494c1] </span>StructIO v0.3.0
   <span class="sgr90">[856f2bd8] </span>StructTypes v1.10.0
-  <span class="sgr90">[2efcf032] </span>SymbolicIndexingInterface v0.3.21
+  <span class="sgr90">[2efcf032] </span>SymbolicIndexingInterface v0.3.23
   <span class="sgr90">[3783bdb8] </span>TableTraits v1.0.1
   <span class="sgr90">[bd369af6] </span>Tables v1.11.1
   <span class="sgr90">[ed4db957] </span>TaskLocalValues v0.1.1
@@ -348,7 +349,7 @@ Environment:
   <span class="sgr90">[8290d209] </span>ThreadingUtilities v0.5.2
   <span class="sgr90">[a759f4b9] </span>TimerOutputs v0.5.24
   <span class="sgr90">[9f7883ad] </span>Tracker v0.2.34
-  <span class="sgr90">[3bb67fe8] </span>TranscodingStreams v0.10.8
+  <span class="sgr90">[3bb67fe8] </span>TranscodingStreams v0.10.9
 <span class="sgr32">⌃</span> <span class="sgr90">[28d57a85] </span>Transducers v0.4.80
   <span class="sgr90">[d5829a12] </span>TriangularSolve v0.2.0
   <span class="sgr90">[410a4b4d] </span>Tricks v0.1.8
@@ -360,9 +361,9 @@ Environment:
   <span class="sgr90">[a7773ee8] </span>UnitfulAtomic v1.0.0
   <span class="sgr90">[45397f5d] </span>UnitfulLatexify v1.6.3
   <span class="sgr90">[013be700] </span>UnsafeAtomics v0.2.1
-  <span class="sgr90">[d80eeb9a] </span>UnsafeAtomicsLLVM v0.1.3
+  <span class="sgr90">[d80eeb9a] </span>UnsafeAtomicsLLVM v0.1.4
   <span class="sgr90">[41fe7b60] </span>Unzip v0.2.0
-  <span class="sgr90">[3d5dd08c] </span>VectorizationBase v0.21.67
+  <span class="sgr90">[3d5dd08c] </span>VectorizationBase v0.21.68
   <span class="sgr90">[19fa3120] </span>VertexSafeGraphs v0.2.0
   <span class="sgr90">[ea10d353] </span>WeakRefStrings v1.4.2
   <span class="sgr90">[d49dbf32] </span>WeightInitializers v0.1.7
@@ -370,14 +371,14 @@ Environment:
   <span class="sgr90">[a5390f91] </span>ZipFile v0.10.1
   <span class="sgr90">[e88e6eb3] </span>Zygote v0.6.70
   <span class="sgr90">[700de1a5] </span>ZygoteRules v0.2.5
-  <span class="sgr90">[02a925ec] </span>cuDNN v1.3.1
+  <span class="sgr90">[02a925ec] </span>cuDNN v1.3.2
   <span class="sgr90">[6e34b625] </span>Bzip2_jll v1.0.8+1
-  <span class="sgr90">[4ee394cb] </span>CUDA_Driver_jll v0.8.1+0
-<span class="sgr33">⌅</span> <span class="sgr90">[76a88914] </span>CUDA_Runtime_jll v0.12.1+0
-  <span class="sgr90">[62b44479] </span>CUDNN_jll v9.0.0+1
+  <span class="sgr90">[4ee394cb] </span>CUDA_Driver_jll v0.9.0+0
+  <span class="sgr90">[76a88914] </span>CUDA_Runtime_jll v0.14.0+1
+<span class="sgr33">⌅</span> <span class="sgr90">[62b44479] </span>CUDNN_jll v9.0.0+1
   <span class="sgr90">[83423d85] </span>Cairo_jll v1.18.0+2
   <span class="sgr90">[78a364fa] </span>Chemfiles_jll v0.10.4+0
-  <span class="sgr90">[7cc45869] </span>Enzyme_jll v0.0.111+0
+<span class="sgr33">⌅</span> <span class="sgr90">[7cc45869] </span>Enzyme_jll v0.0.121+0
   <span class="sgr90">[2702e6a9] </span>EpollShim_jll v0.0.20230411+0
   <span class="sgr90">[2e619515] </span>Expat_jll v2.6.2+0
 <span class="sgr33">⌅</span> <span class="sgr90">[b22a6f82] </span>FFMPEG_jll v4.4.4+1
@@ -398,7 +399,7 @@ Environment:
   <span class="sgr90">[9c1d0b0a] </span>JuliaNVTXCallbacks_jll v0.2.1+0
   <span class="sgr90">[c1c5ebd0] </span>LAME_jll v3.100.2+0
 <span class="sgr33">⌅</span> <span class="sgr90">[88015f11] </span>LERC_jll v3.0.0+1
-  <span class="sgr90">[dad2f222] </span>LLVMExtra_jll v0.0.29+0
+<span class="sgr33">⌅</span> <span class="sgr90">[dad2f222] </span>LLVMExtra_jll v0.0.29+0
   <span class="sgr90">[1d63c593] </span>LLVMOpenMP_jll v15.0.7+0
   <span class="sgr90">[dd4b983a] </span>LZO_jll v2.10.2+0
   <span class="sgr90">[81d17ec3] </span>L_BFGS_B_jll v3.0.1+0
@@ -412,15 +413,14 @@ Environment:
   <span class="sgr90">[38a345b3] </span>Libuuid_jll v2.40.1+0
   <span class="sgr90">[856f044c] </span>MKL_jll v2024.1.0+0
   <span class="sgr90">[7cb0a576] </span>MPICH_jll v4.2.1+1
-  <span class="sgr90">[f1f71cc9] </span>MPItrampoline_jll v5.3.3+1
+  <span class="sgr90">[f1f71cc9] </span>MPItrampoline_jll v5.4.0+0
   <span class="sgr90">[9237b28f] </span>MicrosoftMPI_jll v10.1.4+2
   <span class="sgr90">[e98f9f5b] </span>NVTX_jll v3.1.0+2
   <span class="sgr90">[e7412a2a] </span>Ogg_jll v1.3.5+1
-  <span class="sgr90">[fe0851c0] </span>OpenMPI_jll v5.0.2+0
-  <span class="sgr90">[458c3c95] </span>OpenSSL_jll v3.0.13+1
+  <span class="sgr90">[fe0851c0] </span>OpenMPI_jll v5.0.3+0
+  <span class="sgr90">[458c3c95] </span>OpenSSL_jll v3.0.14+0
   <span class="sgr90">[efe28fd5] </span>OpenSpecFun_jll v0.5.5+0
   <span class="sgr90">[91d4177d] </span>Opus_jll v1.3.2+0
-  <span class="sgr90">[32165bc3] </span>PMIx_jll v4.2.9+0
   <span class="sgr90">[30392449] </span>Pixman_jll v0.43.4+0
 <span class="sgr33">⌅</span> <span class="sgr90">[c0090381] </span>Qt6Base_jll v6.5.3+1
   <span class="sgr90">[f50d1b31] </span>Rmath_jll v0.4.2+0
@@ -462,14 +462,12 @@ Environment:
   <span class="sgr90">[a4ae2306] </span>libaom_jll v3.9.0+0
   <span class="sgr90">[0ac62f75] </span>libass_jll v0.15.1+0
   <span class="sgr90">[2db6ffa8] </span>libevdev_jll v1.11.0+0
-  <span class="sgr90">[1080aeaf] </span>libevent_jll v2.1.13+1
   <span class="sgr90">[f638f0a6] </span>libfdk_aac_jll v2.0.2+0
   <span class="sgr90">[36db933b] </span>libinput_jll v1.18.0+0
   <span class="sgr90">[b53b4c65] </span>libpng_jll v1.6.43+1
   <span class="sgr90">[f27f6e37] </span>libvorbis_jll v1.3.7+1
   <span class="sgr90">[009596ad] </span>mtdev_jll v1.1.6+0
   <span class="sgr90">[1317d2d5] </span>oneTBB_jll v2021.12.0+0
-  <span class="sgr90">[eb928a42] </span>prrte_jll v3.0.2+0
   <span class="sgr90">[1270edf5] </span>x264_jll v2021.5.5+0
   <span class="sgr90">[dfaa095f] </span>x265_jll v3.5.0+0
   <span class="sgr90">[d8fb68d0] </span>xkbcommon_jll v1.4.1+1
@@ -521,4 +519,4 @@ Environment:
   <span class="sgr90">[8e850b90] </span>libblastrampoline_jll v5.8.0+1
   <span class="sgr90">[8e850ede] </span>nghttp2_jll v1.52.0+1
   <span class="sgr90">[3f19e933] </span>p7zip_jll v17.4.0+2
-<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr32">⌃</span> and <span class="sgr33">⌅</span> have new versions available. Those with <span class="sgr32">⌃</span> may be upgradable, but those with <span class="sgr33">⌅</span> are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v3.5.0/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v3.5.0/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="examples/neural_ode/">Neural Ordinary Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Monday 20 May 2024 10:25">Monday 20 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr32">⌃</span> and <span class="sgr33">⌅</span> have new versions available. Those with <span class="sgr32">⌃</span> may be upgradable, but those with <span class="sgr33">⌅</span> are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v3.5.0/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/DiffEqFlux.jl/tree/gh-pages/v3.5.0/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="examples/neural_ode/">Neural Ordinary Differential Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Friday 14 June 2024 23:12">Friday 14 June 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
