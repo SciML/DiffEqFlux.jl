@@ -9,7 +9,7 @@ zeros, then we have a constraint defined by the right-hand side. Using
 terms must add to one. An example of this is as follows:
 
 ```@example dae
-using SciMLSensitivity
+using DiffEqFlux
 using Lux, ComponentArrays, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Plots
 
 using Random
@@ -71,7 +71,7 @@ result_stiff = Optimization.solve(optprob, OptimizationOptimJL.BFGS(); maxiters 
 ### Load Packages
 
 ```@example dae2
-using SciMLSensitivity
+using DiffEqFlux
 using Lux, ComponentArrays, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Plots
 
 using Random
