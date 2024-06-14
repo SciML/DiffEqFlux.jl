@@ -53,9 +53,9 @@
     ##test 03: non-linear function, Quadratic Spline
     a, b, c = rand(3)
     layer = SplineLayer((0.0, 1.0), 0.1, QuadraticSpline)
-    @test_broken run_test(x -> a * sin(b * x + c), layer, 0.1)
+    @test run_test(x -> a * sin(b * x + c), layer, 0.1)
 
     ##test 04: non-linear function, Cubic Spline
     layer = SplineLayer((0.0, 1.0), 0.1, CubicSpline)
-    @test_broken run_test(x -> exp(x) * x^2, layer, 0.1)
+    @test run_test(x -> exp(x) * x^2, layer, 0.1)
 end
