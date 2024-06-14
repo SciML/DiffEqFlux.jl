@@ -14,7 +14,7 @@ pages = [
         "examples/tensor_layer.md",
         "examples/multiple_shooting.md",
         "examples/neural_ode_weather_forecast.md",
-        "exmaples/neural_gde.md",
+        "examples/neural_gde.md",
         "examples/physical_constraints.md",
     ],
     "Layer APIs" => Any[
