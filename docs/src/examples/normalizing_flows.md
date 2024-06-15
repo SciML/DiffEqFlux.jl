@@ -29,7 +29,7 @@ function loss(θ)
 end
 
 function cb(p, l)
-    @info "FFJORD Training" loss=loss(p)
+    @info "FFJORD Training" loss=l
     return false
 end
 
