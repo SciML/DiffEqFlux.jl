@@ -1,34 +1,30 @@
 module DiffEqFlux
 
-using PrecompileTools: @recompile_invalidations
-
-@recompile_invalidations begin
-    using ADTypes: ADTypes, AutoForwardDiff, AutoZygote
-    using ChainRulesCore: ChainRulesCore
-    using ConcreteStructs: @concrete
-    using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution,
-                         logpdf
-    using DistributionsAD: DistributionsAD
-    using ForwardDiff: ForwardDiff
-    using Functors: Functors, fmap
-    using LinearAlgebra: LinearAlgebra, Diagonal, det, tr, mul!
-    using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor, ⊠
-    using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer
-    using Random: Random, AbstractRNG, randn!
-    using Reexport: @reexport
-    using SciMLBase: SciMLBase, DAEProblem, DDEFunction, DDEProblem, EnsembleProblem,
-                     ODEFunction, ODEProblem, ODESolution, SDEFunction, SDEProblem, remake,
-                     solve
-    using SciMLSensitivity: SciMLSensitivity, AdjointLSS, BacksolveAdjoint, EnzymeVJP,
-                            ForwardDiffOverAdjoint, ForwardDiffSensitivity, ForwardLSS,
-                            ForwardSensitivity, GaussAdjoint, InterpolatingAdjoint, NILSAS,
-                            NILSS, QuadratureAdjoint, ReverseDiffAdjoint, ReverseDiffVJP,
-                            SteadyStateAdjoint, TrackerAdjoint, TrackerVJP, ZygoteAdjoint,
-                            ZygoteVJP
-    using Setfield: @set
-    using Tracker: Tracker
-    using Zygote: Zygote
-end
+using ADTypes: ADTypes, AutoForwardDiff, AutoZygote
+using ChainRulesCore: ChainRulesCore
+using ConcreteStructs: @concrete
+using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution,
+                     logpdf
+using DistributionsAD: DistributionsAD
+using ForwardDiff: ForwardDiff
+using Functors: Functors, fmap
+using LinearAlgebra: LinearAlgebra, Diagonal, det, tr, mul!
+using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor, ⊠
+using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer
+using Random: Random, AbstractRNG, randn!
+using Reexport: @reexport
+using SciMLBase: SciMLBase, DAEProblem, DDEFunction, DDEProblem, EnsembleProblem,
+                 ODEFunction, ODEProblem, ODESolution, SDEFunction, SDEProblem, remake,
+                 solve
+using SciMLSensitivity: SciMLSensitivity, AdjointLSS, BacksolveAdjoint, EnzymeVJP,
+                        ForwardDiffOverAdjoint, ForwardDiffSensitivity, ForwardLSS,
+                        ForwardSensitivity, GaussAdjoint, InterpolatingAdjoint, NILSAS,
+                        NILSS, QuadratureAdjoint, ReverseDiffAdjoint, ReverseDiffVJP,
+                        SteadyStateAdjoint, TrackerAdjoint, TrackerVJP, ZygoteAdjoint,
+                        ZygoteVJP
+using Setfield: @set
+using Tracker: Tracker
+using Zygote: Zygote
 
 const CRC = ChainRulesCore
 
