@@ -3,8 +3,7 @@ module DiffEqFlux
 using ADTypes: ADTypes, AutoForwardDiff, AutoZygote
 using ChainRulesCore: ChainRulesCore
 using ConcreteStructs: @concrete
-using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution,
-                     logpdf
+using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution, logpdf
 using DistributionsAD: DistributionsAD
 using ForwardDiff: ForwardDiff
 using Functors: Functors, fmap
