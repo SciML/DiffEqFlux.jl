@@ -1,0 +1,42 @@
+name: "Tests"
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != github.event.repository.default_branch || github.ref != 'refs/tags/v*' }}
+
+env:
+  RETESTITEMS_NWORKERS: 0
+  RETESTITEMS_TESTITEM_TIMEOUT: 3600
+
+jobs:
+  tests:
+    name: "Tests"
+    strategy:
+      fail-fast: false
+      matrix:
+        group:
+          - Layers
+          - BasicNeuralDE
+          - AdvancedNeuralDE
+          - Newton
+          - QA
+        version:
+          - '1'
+          - 'lts'
+    uses: "SciML/.github/.github/workflows/tests.yml@v1"
+    with:
+      group: "${{ matrix.group }}"
+      julia-version: "${{ matrix.version }}"
+    secrets: "inherit"
