@@ -39,7 +39,7 @@
         (x, p) -> loss_n_ode(x), Optimization.AutoZygote())
     optprob = Optimization.OptimizationProblem(optfunc, p)
     res = Optimization.solve(optprob, Adam(0.01f0); callback = callback, maxiters = 100)
-    l2 = loss_n_ode(res.minimizer)
+    l2 = loss_n_ode(res.u)
     @test l2 < l1
 
     function predict(p)
@@ -59,7 +59,7 @@
         (x, p) -> loss_n_ode(x), Optimization.AutoZygote())
     optprob = Optimization.OptimizationProblem(optfunc, p)
     res = Optimization.solve(optprob, Adam(0.01f0); callback = callback, maxiters = 100)
-    l2 = loss_n_ode(res.minimizer)
+    l2 = loss_n_ode(res.u)
     @test l2 < l1
 
     function predict(p)
@@ -79,6 +79,6 @@
         (x, p) -> loss_n_ode(x), Optimization.AutoZygote())
     optprob = Optimization.OptimizationProblem(optfunc, p)
     res = Optimization.solve(optprob, Adam(0.01f0); callback = callback, maxiters = 100)
-    l2 = loss_n_ode(res.minimizer)
+    l2 = loss_n_ode(res.u)
     @test l2 < l1
 end

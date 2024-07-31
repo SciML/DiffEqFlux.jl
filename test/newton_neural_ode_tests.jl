@@ -34,10 +34,10 @@
     optprob = Optimization.OptimizationProblem(optf, psd)
 
     res = Optimization.solve(optprob, NewtonTrustRegion(); maxiters = 100, callback = cb)
-    @test loss_function(res.minimizer) < l1
+    @test loss_function(res.u) < l1
     res = Optimization.solve(optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
         maxiters = 100, callback = cb)
-    @test loss_function(res.minimizer) < l1
+    @test loss_function(res.u) < l1
 
     @info "ROCK2"
     nODE = NeuralODE(NN, tspan, ROCK2(); reltol = 1.0f-4, saveat = [tspan[end]])
@@ -55,8 +55,8 @@
     optprob = Optimization.OptimizationProblem(optfunc, psd)
 
     res = Optimization.solve(optprob, NewtonTrustRegion(); maxiters = 100, callback = cb)
-    @test loss_function(res.minimizer) < l1
+    @test loss_function(res.u) < l1
     res = Optimization.solve(optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
         maxiters = 100, callback = cb)
-    @test loss_function(res.minimizer) < l1
+    @test loss_function(res.u) < l1
 end

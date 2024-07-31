@@ -26,9 +26,9 @@
         optprob = Optimization.OptimizationProblem(optfunc, ps)
         res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 100)
 
-        optprob = Optimization.OptimizationProblem(optfunc, res.minimizer)
+        optprob = Optimization.OptimizationProblem(optfunc, res.u)
         res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 100)
-        opt = res.minimizer
+        opt = res.u
 
         data_validate_vals = rand(100)
         data_validate_fn = f.(data_validate_vals)
