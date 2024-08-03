@@ -46,5 +46,5 @@
     optprob = Optimization.OptimizationProblem(optfunc, p)
     res = Optimization.solve(
         optprob, BFGS(; initial_stepnorm = 0.001); callback = cb, maxiters = 100)
-    @test res.minimum < l1
+    @test res.objective < l1
 end

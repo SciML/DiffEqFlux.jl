@@ -27,7 +27,7 @@
     # KrylovTrustRegion is hardcoded to use `Array`
     psd, psax = getdata(ps), getaxes(ps)
 
-    loss_function(θ) = sum(abs2, y .- stnODE(x, ComponentArray(θ, psax))[end])
+    loss_function(θ) = sum(abs2, y .- stnODE(x, ComponentArray(θ, psax)).u[end])
     l1 = loss_function(psd)
     optf = Optimization.OptimizationFunction(
         (x, p) -> loss_function(x), Optimization.AutoZygote())

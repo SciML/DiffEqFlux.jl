@@ -33,8 +33,9 @@ jobs:
           - Newton
           - QA
         version:
+          - 'min'
           - '1'
-          - 'lts'
+          - 'pre'
     uses: "SciML/.github/.github/workflows/tests.yml@v1"
     with:
       group: "${{ matrix.group }}"
