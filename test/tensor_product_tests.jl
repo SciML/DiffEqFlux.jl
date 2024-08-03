@@ -26,12 +26,12 @@
         optprob = Optimization.OptimizationProblem(optfunc, ps)
         res = Optimization.solve(
             optprob, OptimizationOptimisers.Adam(0.1); callback = cb, maxiters = 100)
-        optprob = Optimization.OptimizationProblem(optfunc, res.minimizer)
+        optprob = Optimization.OptimizationProblem(optfunc, res.u)
         res = Optimization.solve(
             optprob, OptimizationOptimisers.Adam(0.01); callback = cb, maxiters = 100)
-        optprob = Optimization.OptimizationProblem(optfunc, res.minimizer)
+        optprob = Optimization.OptimizationProblem(optfunc, res.u)
         res = Optimization.solve(optprob, BFGS(); callback = cb, maxiters = 200)
-        opt = res.minimizer
+        opt = res.u
 
         data_validate_vals = [rand(N) for k in 1:100]
         data_validate_fn = f.(data_validate_vals)
