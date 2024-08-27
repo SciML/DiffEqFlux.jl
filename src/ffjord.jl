@@ -90,13 +90,17 @@ function __ffjord(_model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = noth
             @assert !regularize "If `regularize = true`, then use `AutoZygote` instead."
             Je = Lux.jacobian_vector_product(model, AutoForwardDiff(), z, e)
             trace_jac = dropdims(
-                sum(reshape(e, 1, :, size(e, N)) ⊠ reshape(Je, :, 1, size(Je, N));
+                sum(
+                    batched_matmul(
+                        reshape(e, 1, :, size(e, N)), reshape(Je, :, 1, size(Je, N)));
                     dims = (1, 2));
                 dims = (1, 2))
         elseif ad isa AutoZygote
             eJ = Lux.vector_jacobian_product(model, AutoZygote(), z, e)
             trace_jac = dropdims(
-                sum(reshape(eJ, 1, :, size(eJ, N)) ⊠ reshape(e, :, 1, size(e, N));
+                sum(
+                    batched_matmul(
+                        reshape(eJ, 1, :, size(eJ, N)), reshape(e, :, 1, size(e, N)));
                     dims = (1, 2));
                 dims = (1, 2))
         else
@@ -109,7 +113,7 @@ function __ffjord(_model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = noth
             J = Lux.batched_jacobian(model, ad, z)
             trace_jac = reshape(__trace_batched(J), ntuple(i -> 1, N - 1)..., :)
             e = CRC.@ignore_derivatives randn!(similar(mz))
-            eJ = reshape(reshape(e, 1, :, size(e, N)) ⊠ J, size(z))
+            eJ = reshape(batched_matmul(reshape(e, 1, :, size(e, N)), J), size(z))
         else
             error("`ad` must be `nothing` or `AutoForwardDiff` or `AutoZygote`.")
         end

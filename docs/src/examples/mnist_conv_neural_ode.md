@@ -40,7 +40,7 @@ function loadmnist(batchsize = bs)
 end
 
 # Main
-const bs = 128
+const bs = 32
 x_train, y_train = loadmnist(bs)
 
 down = Chain(Conv((3, 3), 1 => 64, relu; stride = 1), GroupNorm(64, 64),

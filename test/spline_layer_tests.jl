@@ -1,5 +1,5 @@
 @testitem "SplineLayer" tags=[:basicneuralde] begin
-    using ComponentArrays, Zygote, DataInterpolations, Distributions, Optimization,
+    using ComponentArrays, Zygote, DataInterpolations, Optimization,
           OptimizationOptimisers, LinearAlgebra, Random
 
     function run_test(f, layer, atol)

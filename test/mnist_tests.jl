@@ -2,11 +2,10 @@
 
 using Reexport
 
-@reexport using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux,
+@reexport using DiffEqFlux, Zygote, NNlib, OrdinaryDiffEq, Test, Lux, LuxCUDA, OneHotArrays,
                 Statistics, ComponentArrays, Random, Optimization, OptimizationOptimisers,
-                LuxCUDA
+                MLUtils
 @reexport using MLDatasets: MNIST
-@reexport using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 
 CUDA.allowscalar(false)
 ENV["DATADEPS_ALWAYS_ACCEPT"] = true
@@ -17,21 +16,17 @@ const gdev = gpu_device()
 logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims = 1); dims = 1))
 
 function loadmnist(batchsize = bs)
-    # Use MLDataUtils LabelEnc for natural onehot conversion
-    function onehot(labels_raw)
-        convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
-    end
     # Load MNIST
-    mnist = MNIST(; split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
+    N = 2000
+    dataset = MNIST(; split=:train)
+    imgs = dataset.features[:, :, 1:N]
+    labels_raw = dataset.targets[1:N]
+
     # Process images into (H,W,C,BS) batches
-    x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
-              gdev
-    x_train = batchview(x_train[:, :, :, 1:(10 * batchsize)], batchsize)
-    # Onehot and batch the labels
-    y_train = onehot(labels_raw) |> gdev
-    y_train = batchview(y_train[:, 1:(10 * batchsize)], batchsize)
-    return x_train, y_train
+    x_data = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3)))
+    y_data = onehotbatch(labels_raw, 0:9)
+
+    return DataLoader(collect.((x_data, y_data)); batchsize, shuffle=true)
 end
 
 const bs = 128
@@ -65,7 +60,7 @@ export x_train, y_train, DiffEqArray_to_Array, gdev, cdev, classify, accuracy, l
 
 end
 
-@testitem "MNIST Neural ODE MLP" tags=[:cuda] skip=:(using CUDA; !CUDA.functional()) setup=[MNISTTestSetup] begin
+@testitem "MNIST Neural ODE MLP" tags=[:cuda] skip=:(using LuxCUDA; !LuxCUDA.functional()) setup=[MNISTTestSetup] begin
     down = Chain(FlattenLayer(), Dense(784, 20, tanh))
     nn = Chain(Dense(20, 10, tanh), Dense(10, 10, tanh), Dense(10, 20, tanh))
     fc = Dense(20, 10)
@@ -120,7 +115,7 @@ end
     @test accuracy(m, zip(x_train, y_train), res.u, st) > 0.7
 end
 
-@testitem "MNIST Neural ODE Conv" tags=[:cuda] skip=:(using CUDA; !CUDA.functional()) setup=[MNISTTestSetup] timeout=3600 begin
+@testitem "MNIST Neural ODE Conv" tags=[:cuda] skip=:(using LuxCUDA; !LuxCUDA.functional()) setup=[MNISTTestSetup] timeout=3600 begin
     down = Chain(Conv((3, 3), 1 => 64, relu; stride = 1), GroupNorm(64, 8),
         Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1),
         GroupNorm(64, 8), Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1))

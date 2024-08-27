@@ -3,13 +3,15 @@ module DiffEqFlux
 using ADTypes: ADTypes, AutoForwardDiff, AutoZygote
 using ChainRulesCore: ChainRulesCore
 using ConcreteStructs: @concrete
+using DataInterpolations: DataInterpolations
 using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution, logpdf
 using DistributionsAD: DistributionsAD
 using ForwardDiff: ForwardDiff
 using Functors: Functors, fmap
 using LinearAlgebra: LinearAlgebra, Diagonal, det, tr, mul!
-using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor, ⊠
+using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor
 using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer
+using LuxLib: batched_matmul
 using Random: Random, AbstractRNG, randn!
 using Reexport: @reexport
 using SciMLBase: SciMLBase, DAEProblem, DDEFunction, DDEProblem, EnsembleProblem,
@@ -22,7 +24,6 @@ using SciMLSensitivity: SciMLSensitivity, AdjointLSS, BacksolveAdjoint, EnzymeVJ
                         SteadyStateAdjoint, TrackerAdjoint, TrackerVJP, ZygoteAdjoint,
                         ZygoteVJP
 using Setfield: @set
-using Tracker: Tracker
 using Zygote: Zygote
 
 const CRC = ChainRulesCore
