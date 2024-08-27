@@ -1,15 +1,15 @@
 # [GPU-based MNIST Neural ODE Classifier](@id mnist)
 
-Training a classifier for **MNIST** using a neural ordinary differential equation **NeuralODE**
-on **GPUs** with **minibatching**.
+Training a classifier for **MNIST** using a neural ordinary differential equation
+**NeuralODE** on **GPUs** with **minibatching**.
 
 (Step-by-step description below)
 
 ```@example mnist
-using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
-      ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
+using DiffEqFlux, CUDA, Zygote, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
+      ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA,
+      MLUtils, OneHotArrays
 using MLDatasets: MNIST
-using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 
 CUDA.allowscalar(false)
 ENV["DATADEPS_ALWAYS_ACCEPT"] = true
@@ -20,26 +20,21 @@ const gdev = gpu_device()
 logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims = 1); dims = 1))
 
 function loadmnist(batchsize = bs)
-    # Use MLDataUtils LabelEnc for natural onehot conversion
-    function onehot(labels_raw)
-        convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
-    end
     # Load MNIST
-    mnist = MNIST(; split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
+    dataset = MNIST(; split = :train)
+    imgs = dataset.features
+    labels_raw = dataset.targets
+
     # Process images into (H,W,C,BS) batches
-    x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
-              gdev
-    x_train = batchview(x_train, batchsize)
-    # Onehot and batch the labels
-    y_train = onehot(labels_raw) |> gdev
-    y_train = batchview(y_train, batchsize)
-    return x_train, y_train
+    x_data = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3)))
+    y_data = onehotbatch(labels_raw, 0:9)
+
+    return DataLoader((x_data, y_data); batchsize, shuffle = true)
 end
 
 # Main
-const bs = 128
-x_train, y_train = loadmnist(bs)
+const bs = 32
+dataloader = loadmnist(bs)
 
 down = Lux.Chain(Lux.FlattenLayer(), Lux.Dense(784, 20, tanh))
 nn = Lux.Chain(Lux.Dense(20, 10, tanh), Lux.Dense(10, 10, tanh), Lux.Dense(10, 20, tanh))
@@ -48,30 +43,29 @@ fc = Lux.Dense(20, 10)
 nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     reltol = 1e-3, abstol = 1e-3, save_start = false)
 
-function DiffEqArray_to_Array(x)
-    xarr = gdev(x.u[1])
-    return xarr
-end
+DiffEqArray_to_Array(x) = x.u[end]
 
-#Build our over-all model topology
+# Build our over-all model topology
 m = Lux.Chain(; down, nn_ode, convert = Lux.WrappedFunction(DiffEqArray_to_Array), fc)
 ps, st = Lux.setup(Xoshiro(0), m)
 ps = ComponentArray(ps) |> gdev
 st = st |> gdev
 
-#We can also build the model topology without a NN-ODE
+# We can also build the model topology without a NN-ODE
 m_no_ode = Lux.Chain(; down, nn, fc)
 ps_no_ode, st_no_ode = Lux.setup(Xoshiro(0), m_no_ode)
 ps_no_ode = ComponentArray(ps_no_ode) |> gdev
 st_no_ode = st_no_ode |> gdev
 
-#To understand the intermediate NN-ODE layer, we can examine it's dimensionality
-x_d = first(down(x_train[1], ps.down, st.down))
+x_train1, y_train1 = first(dataloader)
+
+# To understand the intermediate NN-ODE layer, we can examine it's dimensionality
+x_d = first(down(x_train1, ps.down, st.down))
 
 # We can see that we can compute the forward pass through the NN topology featuring an NNODE layer.
-x_m = first(m(x_train[1], ps, st))
-#Or without the NN-ODE layer.
-x_m = first(m_no_ode(x_train[1], ps_no_ode, st_no_ode))
+x_m = first(m(x_train1, ps, st))
+# Or without the NN-ODE layer.
+x_m = first(m_no_ode(x_train1, ps_no_ode, st_no_ode))
 
 classify(x) = argmax.(eachcol(x))
 
@@ -87,16 +81,15 @@ function accuracy(model, data, ps, st; n_batches = 100)
     end
     return total_correct / total
 end
-#burn in accuracy
-accuracy(m, zip(x_train, y_train), ps, st)
+
+accuracy(m, ((x_train1, y_train1),), ps, st) # burn in accuracy
 
 function loss_function(ps, x, y)
     pred, st_ = m(x, ps, st)
     return logitcrossentropy(pred, y), pred
 end
 
-#burn in loss
-loss_function(ps, x_train[1], y_train[1])
+loss_function(ps, x_train1, y_train1) # burn in loss
 
 opt = OptimizationOptimisers.Adam(0.05)
 iter = 0
@@ -107,8 +100,8 @@ opt_prob = OptimizationProblem(opt_func, ps)
 
 function callback(ps, l, pred)
     global iter += 1
-    #Monitor that the weights do infact update
-    #Every 10 training iterations show accuracy
+    # Monitor that the weights do infact update
+    # Every 10 training iterations show accuracy
     if (iter % 10 == 0)
         @info "[MNIST GPU] Accuracy: $(accuracy(m, zip(x_train, y_train), ps, st))"
     end
@@ -125,10 +118,10 @@ res = Optimization.solve(opt_prob, opt, zip(x_train, y_train); callback)
 ### Load Packages
 
 ```@example mnist
-using DiffEqFlux, CUDA, Zygote, MLDataUtils, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
-      ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA
+using DiffEqFlux, CUDA, Zygote, NNlib, OrdinaryDiffEq, Test, Lux, Statistics,
+      ComponentArrays, Random, Optimization, OptimizationOptimisers, LuxCUDA,
+      MLUtils, OneHotArrays
 using MLDatasets: MNIST
-using MLDataUtils: LabelEnc, convertlabel, stratifiedobs
 ```
 
 ### GPU
@@ -163,21 +156,16 @@ meaning that every minibatch will contain 128 images with a single color channel
 logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims = 1); dims = 1))
 
 function loadmnist(batchsize = bs)
-    # Use MLDataUtils LabelEnc for natural onehot conversion
-    function onehot(labels_raw)
-        convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
-    end
     # Load MNIST
-    mnist = MNIST(; split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
+    dataset = MNIST(; split = :train)
+    imgs = dataset.features
+    labels_raw = dataset.targets
+
     # Process images into (H,W,C,BS) batches
-    x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
-              gdev
-    x_train = batchview(x_train, batchsize)
-    # Onehot and batch the labels
-    y_train = onehot(labels_raw) |> gdev
-    y_train = batchview(y_train, batchsize)
-    return x_train, y_train
+    x_data = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3)))
+    y_data = onehotbatch(labels_raw, 0:9)
+
+    return DataLoader((x_data, y_data); batchsize, shuffle = true)
 end
 ```
 
@@ -185,8 +173,8 @@ and then loaded from main:
 
 ```@example mnist
 # Main
-const bs = 128
-x_train, y_train = loadmnist(bs)
+const bs = 32
+dataloader = loadmnist(bs)
 ```
 
 ### Layers
@@ -222,10 +210,7 @@ a Matrix (CuArray), and reduces the matrix from 3 to 2 dimensions for use in the
 nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     reltol = 1e-3, abstol = 1e-3, save_start = false)
 
-function DiffEqArray_to_Array(x)
-    xarr = gdev(x.u[1])
-    return xarr
-end
+DiffEqArray_to_Array(x) = x.u[end]
 ```
 
 For CPU: If this function does not automatically fall back to CPU when no GPU is present, we can
@@ -269,7 +254,7 @@ function accuracy(model, data, ps, st; n_batches = 100)
     end
     return total_correct / total
 end
-#burn in accuracy
+
 accuracy(m, zip(x_train, y_train), ps, st)
 ```
 
@@ -290,8 +275,7 @@ function loss_function(ps, x, y)
     return logitcrossentropy(pred, y), pred
 end
 
-#burn in loss
-loss_function(ps, x_train[1], y_train[1])
+loss_function(ps, x_train1, y_train1)
 ```
 
 #### Optimizer
@@ -316,8 +300,8 @@ opt_prob = OptimizationProblem(opt_func, ps)
 
 function callback(ps, l, pred)
     global iter += 1
-    #Monitor that the weights do infact update
-    #Every 10 training iterations show accuracy
+    # Monitor that the weights do infact update
+    # Every 10 training iterations show accuracy
     if (iter % 10 == 0)
         @info "[MNIST GPU] Accuracy: $(accuracy(m, zip(x_train, y_train), ps, st))"
     end

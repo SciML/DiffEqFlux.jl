@@ -8,10 +8,9 @@ using Fully Connected Layers.
 
 ```@example mnist_cnn
 using DiffEqFlux, Statistics, ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq,
-      Printf, Test, LuxCUDA, Random
+      Printf, Test, LuxCUDA, Random, MLUtils, OneHotArrays
 using Optimization, OptimizationOptimisers
 using MLDatasets: MNIST
-using MLDataUtils: LabelEnc, convertlabel, stratifiedobs, batchview
 
 const cdev = cpu_device()
 const gdev = gpu_device()
@@ -22,26 +21,21 @@ ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ; dims = 1); dims = 1))
 
 function loadmnist(batchsize = bs)
-    # Use MLDataUtils LabelEnc for natural onehot conversion
-    function onehot(labels_raw)
-        convertlabel(LabelEnc.OneOfK, labels_raw, LabelEnc.NativeLabels(collect(0:9)))
-    end
     # Load MNIST
-    mnist = MNIST(; split = :train)
-    imgs, labels_raw = mnist.features, mnist.targets
+    dataset = MNIST(; split = :train)
+    imgs = dataset.features
+    labels_raw = dataset.targets
+
     # Process images into (H,W,C,BS) batches
-    x_train = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3))) |>
-              gdev
-    x_train = batchview(x_train, batchsize)
-    # Onehot and batch the labels
-    y_train = onehot(labels_raw) |> gdev
-    y_train = batchview(y_train, batchsize)
-    return x_train, y_train
+    x_data = Float32.(reshape(imgs, size(imgs, 1), size(imgs, 2), 1, size(imgs, 3)))
+    y_data = onehotbatch(labels_raw, 0:9)
+
+    return DataLoader((x_data, y_data); batchsize, shuffle = true)
 end
 
 # Main
 const bs = 32
-x_train, y_train = loadmnist(bs)
+dataloader = loadmnist(bs)
 
 down = Chain(Conv((3, 3), 1 => 64, relu; stride = 1), GroupNorm(64, 64),
     Conv((4, 4), 64 => 64, relu; stride = 2, pad = 1),
@@ -56,9 +50,7 @@ fc = Chain(GroupNorm(64, 64), x -> relu.(x), MeanPool((6, 6)),
 nn_ode = NeuralODE(dudt, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     reltol = 1e-3, abstol = 1e-3, save_start = false)
 
-function DiffEqArray_to_Array(x)
-    xarr = gdev(x.u[1])
-end
+DiffEqArray_to_Array(x) = x.u[end]
 
 # Build our over-all model topology
 m = Chain(down,                 # (28, 28, 1, BS) -> (6, 6, 64, BS)
@@ -70,8 +62,9 @@ ps = ComponentArray(ps) |> gdev
 st = st |> gdev
 
 # To understand the intermediate NN-ODE layer, we can examine it's dimensionality
-img = x_train[1][:, :, :, 1:1] |> gdev
-lab = y_train[1][:, 1:1] |> gdev
+x_train1, y_train1 = first(dataloader)
+img = x_train1[:, :, :, 1:1] |> gdev
+lab = y_train1[:, 1:1] |> gdev
 
 x_m, _ = m(img, ps, st)
 
@@ -91,7 +84,7 @@ function accuracy(model, data, ps, st; n_batches = 10)
 end
 
 # burn in accuracy
-accuracy(m, zip(x_train, y_train), ps, st)
+accuracy(m, ((x_train1, y_train1),), ps, st)
 
 function loss_function(ps, x, y)
     pred, st_ = m(x, ps, st)
@@ -99,7 +92,7 @@ function loss_function(ps, x, y)
 end
 
 #burn in loss
-loss_function(ps, x_train[1], y_train[1])
+loss_function(ps, x_train1, y_train1)
 
 opt = OptimizationOptimisers.Adam(0.05)
 iter = 0

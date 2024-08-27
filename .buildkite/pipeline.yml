@@ -1,5 +1,5 @@
 steps:
-  - label: "Julia 1"
+  - label: "Julia 1 (CUDA)"
     plugins:
       - JuliaCI/julia#v1:
           version: "1.10"
