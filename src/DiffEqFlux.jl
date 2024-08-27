@@ -23,7 +23,6 @@ using SciMLSensitivity: SciMLSensitivity, AdjointLSS, BacksolveAdjoint, EnzymeVJ
                         NILSS, QuadratureAdjoint, ReverseDiffAdjoint, ReverseDiffVJP,
                         SteadyStateAdjoint, TrackerAdjoint, TrackerVJP, ZygoteAdjoint,
                         ZygoteVJP
-using Setfield: @set
 using Zygote: Zygote
 
 const CRC = ChainRulesCore

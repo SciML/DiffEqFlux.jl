@@ -76,11 +76,11 @@ end
 
 @inline __norm_batched(x) = sqrt.(sum(abs2, x; dims = 1:(ndims(x) - 1)))
 
-function __ffjord(_model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing,
-        regularize::Bool = false, monte_carlo::Bool = true) where {T, N}
+function __ffjord(_model::StatefulLuxLayer{FST}, u::AbstractArray{T, N}, p, ad = nothing,
+        regularize::Bool = false, monte_carlo::Bool = true) where {T, N, FST}
     L = size(u, N - 1)
     z = selectdim(u, N - 1, 1:(L - ifelse(regularize, 3, 1)))
-    model = @set(_model.ps=p)
+    model = StatefulLuxLayer{FST}(_model.model, p, ifelse(FST, _model.st, _model.st_any))
     mz = model(z, p)
     @assert size(mz) == size(z)
     if monte_carlo
