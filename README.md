@@ -67,6 +67,7 @@ explore various ways to integrate the two methodologies:
 
   - `TensorLayer` has been removed, use `Boltz.Layers.TensorProductLayer` instead.
   - Basis functions in DiffEqFlux have been removed in favor of `Boltz.Basis` module.
+  - `SplineLayer` has been removed, use `Boltz.Layers.SplineLayer` instead.
 
 ### v3
 

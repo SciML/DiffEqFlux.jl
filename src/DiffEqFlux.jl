@@ -31,14 +31,15 @@ const CRC = ChainRulesCore
 
 include("ffjord.jl")
 include("neural_de.jl")
-include("spline_layer.jl")
-include("collocation.jl")
 include("hnn.jl")
+
+include("collocation.jl")
 include("multiple_shooting.jl")
+
 include("deprecated.jl")
 
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
-       NeuralODEMM, SplineLayer
+       NeuralODEMM
 export NeuralHamiltonianDE, HamiltonianNN
 export FFJORD, FFJORDDistribution
 export DimMover
