@@ -61,7 +61,14 @@ explore various ways to integrate the two methodologies:
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
 
-## Breaking Changes in v3
+## Breaking Changes
+
+### v4 (upcoming)
+
+  - `TensorLayer` has been removed, use `Boltz.Layers.TensorProductLayer` instead.
+  - Basis functions in DiffEqFlux have been removed in favor of `Boltz.Basis` module.
+
+### v3
 
   - Flux dependency is dropped. If a non Lux `AbstractExplicitLayer` is passed we try to automatically convert it to a Lux model with `FromFluxAdaptor()(model)`.
   - `Flux` is no longer re-exported from `DiffEqFlux`. Instead we reexport `Lux`.

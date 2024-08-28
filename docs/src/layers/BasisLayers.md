@@ -1,12 +1,7 @@
 # Classical Basis Layers
 
-The following basis are helper functions for easily building arrays of the form [f\_0(x), ..., f\_{n-1}(x)], where f is the corresponding function of the basis (e.g, Chebyshev Polynomials, Legendre Polynomials, etc.)
+!!! warning
 
-```@docs
-ChebyshevBasis
-SinBasis
-CosBasis
-FourierBasis
-LegendreBasis
-PolynomialBasis
-```
+    These are deprecated and will be removed in the next major release. Refer to
+    [Boltz.jl Basis Functions](https://luxdl.github.io/Boltz.jl/stable/api/basis/) for
+    the newer version.

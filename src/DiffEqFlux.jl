@@ -27,22 +27,20 @@ using Zygote: Zygote
 
 const CRC = ChainRulesCore
 
-@reexport using ADTypes, Lux
+@reexport using ADTypes, Lux, Boltz
 
 include("ffjord.jl")
 include("neural_de.jl")
 include("spline_layer.jl")
-include("tensor_product.jl")
 include("collocation.jl")
 include("hnn.jl")
 include("multiple_shooting.jl")
+include("deprecated.jl")
 
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
-       NeuralODEMM, TensorLayer, SplineLayer
+       NeuralODEMM, SplineLayer
 export NeuralHamiltonianDE, HamiltonianNN
 export FFJORD, FFJORDDistribution
-export TensorProductBasisFunction, ChebyshevBasis, SinBasis, CosBasis, FourierBasis,
-       LegendreBasis, PolynomialBasis
 export DimMover
 
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel, TriweightKernel,
