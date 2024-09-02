@@ -277,6 +277,7 @@ end
                     pd = ComponentArray(pd) |> gdev
                     st = st |> gdev
                     broken = hasfield(typeof(kwargs), :sensealg) &&
+                             ndims(u0) == 2 &&
                              kwargs.sensealg isa TrackerAdjoint
                     @test begin
                         grads = Zygote.gradient(sum ∘ last ∘ first ∘ node, u0, pd, st)
