@@ -7,7 +7,6 @@ using DataInterpolations: DataInterpolations
 using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution, logpdf
 using DistributionsAD: DistributionsAD
 using ForwardDiff: ForwardDiff
-using Functors: Functors, fmap
 using LinearAlgebra: LinearAlgebra, Diagonal, det, tr, mul!
 using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor
 using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer
