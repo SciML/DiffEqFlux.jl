@@ -29,9 +29,8 @@ References:
 [1] Greydanus, Samuel, Misko Dzamba, and Jason Yosinski. "Hamiltonian Neural Networks."
 Advances in Neural Information Processing Systems 32 (2019): 15379-15389.
 """
-@concrete struct HamiltonianNN{M <: AbstractExplicitLayer} <:
-                 AbstractExplicitContainerLayer{(:model,)}
-    model::M
+@concrete struct HamiltonianNN <: AbstractExplicitContainerLayer{(:model,)}
+    model <: AbstractExplicitLayer
     ad
 end
 
@@ -41,11 +40,11 @@ function HamiltonianNN(model; ad = AutoZygote())
     return HamiltonianNN(model, ad)
 end
 
-function __hamiltonian_forward(ad::AutoForwardDiff, model, x)
+function __hamiltonian_forward(::AutoForwardDiff, model, x)
     return ForwardDiff.gradient(sum ∘ model, x)
 end
 
-function __hamiltonian_forward(ad::AutoZygote, model::StatefulLuxLayer, x)
+function __hamiltonian_forward(::AutoZygote, model::StatefulLuxLayer, x)
     return only(Zygote.gradient(sum ∘ model, x))
 end
 
@@ -71,8 +70,8 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 """
-@concrete struct NeuralHamiltonianDE{M <: HamiltonianNN} <: NeuralDELayer
-    model::M
+@concrete struct NeuralHamiltonianDE <: NeuralDELayer
+    model <: HamiltonianNN
     tspan
     args
     kwargs

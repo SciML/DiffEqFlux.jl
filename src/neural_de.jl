@@ -32,8 +32,8 @@ References:
 
 [1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
 """
-@concrete struct NeuralODE{M <: AbstractExplicitLayer} <: NeuralDELayer
-    model::M
+@concrete struct NeuralODE <: NeuralDELayer
+    model <: AbstractExplicitLayer
     tspan
     args
     kwargs
@@ -77,10 +77,9 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 """
-@concrete struct NeuralDSDE{M1 <: AbstractExplicitLayer, M2 <: AbstractExplicitLayer} <:
-                 NeuralSDELayer
-    drift::M1
-    diffusion::M2
+@concrete struct NeuralDSDE <: NeuralSDELayer
+    drift <: AbstractExplicitLayer
+    diffusion <: AbstractExplicitLayer
     tspan
     args
     kwargs
@@ -126,10 +125,9 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 """
-@concrete struct NeuralSDE{M1 <: AbstractExplicitLayer, M2 <: AbstractExplicitLayer} <:
-                 NeuralSDELayer
-    drift::M1
-    diffusion::M2
+@concrete struct NeuralSDE <: NeuralSDELayer
+    drift <: AbstractExplicitLayer
+    diffusion <: AbstractExplicitLayer
     tspan
     nbrown::Int
     args
@@ -181,8 +179,8 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 """
-@concrete struct NeuralCDDE{M <: AbstractExplicitLayer} <: NeuralDELayer
-    model::M
+@concrete struct NeuralCDDE <: NeuralDELayer
+    model <: AbstractExplicitLayer
     tspan
     hist
     lags
@@ -232,8 +230,8 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 """
-@concrete struct NeuralDAE{M <: AbstractExplicitLayer} <: NeuralDELayer
-    model::M
+@concrete struct NeuralDAE <: NeuralDELayer
+    model <: AbstractExplicitLayer
     constraints_model
     tspan
     args
@@ -307,8 +305,8 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 """
-@concrete struct NeuralODEMM{M <: AbstractExplicitLayer} <: NeuralDELayer
-    model::M
+@concrete struct NeuralODEMM <: NeuralDELayer
+    model <: AbstractExplicitLayer
     constraints_model
     tspan
     mass_matrix

@@ -48,10 +48,9 @@ Information Processing Systems, pp. 6572-6583. 2018.
 "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv
 preprint arXiv:1810.01367 (2018).
 """
-@concrete struct FFJORD{M <: AbstractExplicitLayer, D <: Union{Nothing, Distribution}} <:
-                 CNFLayer
-    model::M
-    basedist::D
+@concrete struct FFJORD <: CNFLayer
+    model <: AbstractExplicitLayer
+    basedist <: Union{Nothing, Distribution}
     ad
     input_dims
     tspan
@@ -76,11 +75,11 @@ end
 
 @inline __norm_batched(x) = sqrt.(sum(abs2, x; dims = 1:(ndims(x) - 1)))
 
-function __ffjord(_model::StatefulLuxLayer{FST}, u::AbstractArray{T, N}, p, ad = nothing,
-        regularize::Bool = false, monte_carlo::Bool = true) where {T, N, FST}
+function __ffjord(model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing,
+        regularize::Bool = false, monte_carlo::Bool = true) where {T, N}
     L = size(u, N - 1)
     z = selectdim(u, N - 1, 1:(L - ifelse(regularize, 3, 1)))
-    model = StatefulLuxLayer{FST}(_model.model, p, ifelse(FST, _model.st, _model.st_any))
+    @set! model.ps = p
     mz = model(z, p)
     @assert size(mz) == size(z)
     if monte_carlo
@@ -209,24 +208,14 @@ Arguments:
   - `regularize`: Whether we use regularization (default: `false`).
   - `monte_carlo`: Whether we use monte carlo (default: `true`).
 """
-@concrete struct FFJORDDistribution{F <: FFJORD} <: ContinuousMultivariateDistribution
-    model::F
+@concrete struct FFJORDDistribution <: ContinuousMultivariateDistribution
+    model <: FFJORD
     ps
     st
 end
 
 Base.length(d::FFJORDDistribution) = prod(d.model.input_dims)
-Base.eltype(d::FFJORDDistribution) = __eltype(d.ps)
-
-__eltype(x::AbstractArray) = eltype(x)
-function __eltype(x)
-    T = Ref(Bool)
-    fmap(x) do x_
-        T[] = promote_type(T[], __eltype(x_))
-        return x_
-    end
-    return T[]
-end
+Base.eltype(d::FFJORDDistribution) = Lux.recursive_eltype(d.ps)
 
 function Distributions._logpdf(d::FFJORDDistribution, x::AbstractVector)
     return first(first(__forward_ffjord(d.model, reshape(x, :, 1), d.ps, d.st)))
