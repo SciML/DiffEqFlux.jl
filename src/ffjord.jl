@@ -48,10 +48,9 @@ Information Processing Systems, pp. 6572-6583. 2018.
 "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv
 preprint arXiv:1810.01367 (2018).
 """
-@concrete struct FFJORD{M <: AbstractExplicitLayer, D <: Union{Nothing, Distribution}} <:
-                 CNFLayer
-    model::M
-    basedist::D
+@concrete struct FFJORD <: CNFLayer
+    model <: AbstractExplicitLayer
+    basedist <: Union{Nothing, Distribution}
     ad
     input_dims
     tspan
@@ -76,11 +75,11 @@ end
 
 @inline __norm_batched(x) = sqrt.(sum(abs2, x; dims = 1:(ndims(x) - 1)))
 
-function __ffjord(_model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing,
+function __ffjord(model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing,
         regularize::Bool = false, monte_carlo::Bool = true) where {T, N}
     L = size(u, N - 1)
     z = selectdim(u, N - 1, 1:(L - ifelse(regularize, 3, 1)))
-    model = @set(_model.ps=p)
+    @set! model.ps = p
     mz = model(z, p)
     @assert size(mz) == size(z)
     if monte_carlo
@@ -90,13 +89,17 @@ function __ffjord(_model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = noth
             @assert !regularize "If `regularize = true`, then use `AutoZygote` instead."
             Je = Lux.jacobian_vector_product(model, AutoForwardDiff(), z, e)
             trace_jac = dropdims(
-                sum(reshape(e, 1, :, size(e, N)) ⊠ reshape(Je, :, 1, size(Je, N));
+                sum(
+                    batched_matmul(
+                        reshape(e, 1, :, size(e, N)), reshape(Je, :, 1, size(Je, N)));
                     dims = (1, 2));
                 dims = (1, 2))
         elseif ad isa AutoZygote
             eJ = Lux.vector_jacobian_product(model, AutoZygote(), z, e)
             trace_jac = dropdims(
-                sum(reshape(eJ, 1, :, size(eJ, N)) ⊠ reshape(e, :, 1, size(e, N));
+                sum(
+                    batched_matmul(
+                        reshape(eJ, 1, :, size(eJ, N)), reshape(e, :, 1, size(e, N)));
                     dims = (1, 2));
                 dims = (1, 2))
         else
@@ -109,7 +112,7 @@ function __ffjord(_model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = noth
             J = Lux.batched_jacobian(model, ad, z)
             trace_jac = reshape(__trace_batched(J), ntuple(i -> 1, N - 1)..., :)
             e = CRC.@ignore_derivatives randn!(similar(mz))
-            eJ = reshape(reshape(e, 1, :, size(e, N)) ⊠ J, size(z))
+            eJ = reshape(batched_matmul(reshape(e, 1, :, size(e, N)), J), size(z))
         else
             error("`ad` must be `nothing` or `AutoForwardDiff` or `AutoZygote`.")
         end
@@ -205,24 +208,14 @@ Arguments:
   - `regularize`: Whether we use regularization (default: `false`).
   - `monte_carlo`: Whether we use monte carlo (default: `true`).
 """
-@concrete struct FFJORDDistribution{F <: FFJORD} <: ContinuousMultivariateDistribution
-    model::F
+@concrete struct FFJORDDistribution <: ContinuousMultivariateDistribution
+    model <: FFJORD
     ps
     st
 end
 
 Base.length(d::FFJORDDistribution) = prod(d.model.input_dims)
-Base.eltype(d::FFJORDDistribution) = __eltype(d.ps)
-
-__eltype(x::AbstractArray) = eltype(x)
-function __eltype(x)
-    T = Ref(Bool)
-    fmap(x) do x_
-        T[] = promote_type(T[], __eltype(x_))
-        return x_
-    end
-    return T[]
-end
+Base.eltype(d::FFJORDDistribution) = Lux.recursive_eltype(d.ps)
 
 function Distributions._logpdf(d::FFJORDDistribution, x::AbstractVector)
     return first(first(__forward_ffjord(d.model, reshape(x, :, 1), d.ps, d.st)))

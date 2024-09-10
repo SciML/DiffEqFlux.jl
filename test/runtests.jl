@@ -1,16 +1,18 @@
-using ReTestItems
+using ReTestItems, InteractiveUtils, Hwloc
+using DiffEqFlux
 
-const GROUP = get(ENV, "GROUP", "All")
+@info sprint(versioninfo)
 
-if GROUP == "All"
-    ReTestItems.runtests(@__DIR__)
-else
-    tags = [Symbol(lowercase(GROUP))]
-    ReTestItems.runtests(@__DIR__; tags)
-end
+const GROUP = lowercase(get(ENV, "GROUP", "all"))
 
-#     if GROUP == "All" || GROUP == "AdvancedNeuralDE"
-#         @safetestset "CNF Layer Tests" begin
-#             include("cnf_test.jl")
-#         end
-#     end
+const RETESTITEMS_NWORKERS = parse(
+    Int, get(ENV, "RETESTITEMS_NWORKERS", string(min(Hwloc.num_physical_cores(), 16))))
+const RETESTITEMS_NWORKER_THREADS = parse(Int,
+    get(ENV, "RETESTITEMS_NWORKER_THREADS",
+        string(max(Hwloc.num_virtual_cores() ÷ RETESTITEMS_NWORKERS, 1))))
+
+@info "Running tests for group: $GROUP with $RETESTITEMS_NWORKERS workers"
+
+ReTestItems.runtests(DiffEqFlux; tags = (GROUP == "all" ? nothing : [Symbol(GROUP)]),
+    nworkers = RETESTITEMS_NWORKERS,
+    nworker_threads = RETESTITEMS_NWORKER_THREADS, testitem_timeout = 3600)

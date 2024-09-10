@@ -240,9 +240,8 @@ end
     @test first(layer(r, ps, st))[:, :, :, 1] == r[:, :, 1, :]
 end
 
-@testitem "Neural DE CUDA" tags=[:cuda] skip=:(using CUDA; !CUDA.functional()) begin
-    using LuxCUDA, CUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test, Random,
-          ComponentArrays
+@testitem "Neural DE CUDA" tags=[:cuda] skip=:(using LuxCUDA; !LuxCUDA.functional()) begin
+    using LuxCUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test, Random, ComponentArrays
     import Flux
 
     CUDA.allowscalar(false)

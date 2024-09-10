@@ -1,5 +1,5 @@
 @testitem "TensorProductLayer" tags=[:basicneuralde] begin
-    using Distributions, Zygote, Optimization, OptimizationOptimJL, OptimizationOptimisers,
+    using Zygote, Optimization, OptimizationOptimJL, OptimizationOptimisers,
           LinearAlgebra, Random, ComponentArrays
 
     function run_test(f, layer, atol, N)
