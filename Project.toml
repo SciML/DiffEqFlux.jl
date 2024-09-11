@@ -8,9 +8,7 @@ ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 Boltz = "4544d5e4-abc5-4dea-817f-29e4c205d9c8"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
-DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-DistributionsAD = "ced4e74d-a319-5a8a-b0ac-84af2272839c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
 LuxCore = "bb33d45b-7691-41d6-9220-0943567d0623"
@@ -20,6 +18,12 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 SciMLSensitivity = "1ed8b502-d754-442c-8d5d-10ac956f44a1"
 Setfield = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+
+[weakdeps]
+DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
+
+[extensions]
+DiffEqFluxDataInterpolationsExt = "DataInterpolations"
 
 [compat]
 ADTypes = "1.5"
@@ -35,7 +39,6 @@ DiffEqCallbacks = "3.6.2"
 Distances = "0.10.11"
 Distributed = "1.10"
 Distributions = "0.25"
-DistributionsAD = "0.6"
 ExplicitImports = "1.9"
 Flux = "0.14.15"
 ForwardDiff = "0.10"
@@ -71,6 +74,7 @@ julia = "1.10"
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 DelayDiffEq = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
 DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
@@ -99,4 +103,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "ExplicitImports", "ForwardDiff", "Flux", "Hwloc", "InteractiveUtils", "LuxCUDA", "MLDatasets", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "Printf", "Random", "ReTestItems", "Reexport", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
+test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "ExplicitImports", "ForwardDiff", "Flux", "Hwloc", "InteractiveUtils", "LuxCUDA", "MLDatasets", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "Printf", "Random", "ReTestItems", "Reexport", "Statistics", "StochasticDiffEq", "Test", "Zygote"]

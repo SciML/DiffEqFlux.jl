@@ -3,9 +3,7 @@ module DiffEqFlux
 using ADTypes: ADTypes, AutoForwardDiff, AutoZygote
 using ChainRulesCore: ChainRulesCore
 using ConcreteStructs: @concrete
-using DataInterpolations: DataInterpolations
 using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution, logpdf
-using DistributionsAD: DistributionsAD
 using LinearAlgebra: LinearAlgebra, Diagonal, det, tr, mul!
 using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor
 using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer

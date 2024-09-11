@@ -5,6 +5,9 @@ steps:
           version: "1.10"
       - JuliaCI/julia-test#v1:
           coverage: true
+          dirs:
+            - src
+            - ext
     agents:
       queue: "juliagpu"
       cuda: "*"
