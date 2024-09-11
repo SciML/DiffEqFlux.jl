@@ -20,7 +20,6 @@ pages = [
     "Layer APIs" => Any[
         "Continuous Normalizing Flows Layer" => "layers/CNFLayer.md",
         "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
-        "Hamiltonian Neural Network Layer" => "layers/HamiltonianNN.md"
     ],
     "Utility Function APIs" => Any[
         "Smoothed Collocation" => "utilities/Collocation.md",
