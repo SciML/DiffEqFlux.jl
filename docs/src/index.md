@@ -18,7 +18,7 @@ and helper functions to make training such deep implicit layer models fast and e
 The approach of this package is the easy and efficient training of
 [Neural Ordinary Differential Equations](https://arxiv.org/abs/1806.07366) and its variants.
 DiffEqFlux.jl provides architectures which match the interfaces of
-machine learning libraries such as [Flux.jl](https://docs.sciml.ai/Flux/stable/)
+machine learning libraries such as [Flux.jl](https://fluxml.ai/Flux.jl/stable/)
 and [Lux.jl](https://lux.csail.mit.edu/stable/)
 to make it easy to build continuous-time machine learning layers
 into larger machine learning applications.
