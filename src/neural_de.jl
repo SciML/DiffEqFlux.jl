@@ -45,7 +45,7 @@ function NeuralODE(model, tspan, args...; kwargs...)
 end
 
 function (n::NeuralODE)(x, p, st)
-    model = StatefulLuxLayer{true}(n.model, nothing, st)
+    model = StatefulLuxLayer{fixed_state_type(n.model)}(n.model, nothing, st)
 
     dudt(u, p, t) = model(u, p)
     ff = ODEFunction{false}(dudt; tgrad = basic_tgrad)
@@ -92,8 +92,9 @@ function NeuralDSDE(drift, diffusion, tspan, args...; kwargs...)
 end
 
 function (n::NeuralDSDE)(x, p, st)
-    drift = StatefulLuxLayer{true}(n.drift, nothing, st.drift)
-    diffusion = StatefulLuxLayer{true}(n.diffusion, nothing, st.diffusion)
+    drift = StatefulLuxLayer{fixed_state_type(n.drift)}(n.drift, nothing, st.drift)
+    diffusion = StatefulLuxLayer{fixed_state_type(n.diffusion)}(
+        n.diffusion, nothing, st.diffusion)
 
     dudt(u, p, t) = drift(u, p.drift)
     g(u, p, t) = diffusion(u, p.diffusion)
@@ -141,8 +142,9 @@ function NeuralSDE(drift, diffusion, tspan, nbrown, args...; kwargs...)
 end
 
 function (n::NeuralSDE)(x, p, st)
-    drift = StatefulLuxLayer{true}(n.drift, p.drift, st.drift)
-    diffusion = StatefulLuxLayer{true}(n.diffusion, p.diffusion, st.diffusion)
+    drift = StatefulLuxLayer{fixed_state_type(n.drift)}(n.drift, p.drift, st.drift)
+    diffusion = StatefulLuxLayer{fixed_state_type(n.diffusion)}(
+        n.diffusion, p.diffusion, st.diffusion)
 
     dudt(u, p, t) = drift(u, p.drift)
     g(u, p, t) = diffusion(u, p.diffusion)
@@ -194,7 +196,7 @@ function NeuralCDDE(model, tspan, hist, lags, args...; kwargs...)
 end
 
 function (n::NeuralCDDE)(x, ps, st)
-    model = StatefulLuxLayer{true}(n.model, nothing, st)
+    model = StatefulLuxLayer{fixed_state_type(n.model)}(n.model, nothing, st)
 
     function dudt(u, h, p, t)
         xs = mapfoldl(lag -> h(p, t - lag), vcat, n.lags)
@@ -247,7 +249,7 @@ end
 
 function (n::NeuralDAE)(u_du::Tuple, p, st)
     u0, du0 = u_du
-    model = StatefulLuxLayer{true}(n.model, nothing, st)
+    model = StatefulLuxLayer{fixed_state_type(n.model)}(n.model, nothing, st)
 
     function f(du, u, p, t)
         nn_out = model(vcat(u, du), p)
@@ -320,7 +322,7 @@ function NeuralODEMM(model, constraints_model, tspan, mass_matrix, args...; kwar
 end
 
 function (n::NeuralODEMM)(x, ps, st)
-    model = StatefulLuxLayer{true}(n.model, nothing, st)
+    model = StatefulLuxLayer{fixed_state_type(n.model)}(n.model, nothing, st)
 
     function f(u, p, t)
         nn_out = model(u, p)

@@ -16,7 +16,7 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 [Scientific Machine Learning](https://www.stochasticlifestyle.com/the-essential-tools-of-scientific-machine-learning-scientific-ml/), specifically neural differential equations to add physical information into traditional machine learning.
 
 > [!NOTE]
-> We maintain backwards compatibility with [Flux.jl](https://docs.sciml.ai/Flux/stable/) via [FromFluxAdaptor()](https://lux.csail.mit.edu/stable/api/Lux/interop#Lux.FromFluxAdaptor)
+> We maintain backwards compatibility with [Flux.jl](https://fluxml.ai/Flux.jl/stable/) via [FromFluxAdaptor()](https://lux.csail.mit.edu/stable/api/Lux/interop#Lux.FromFluxAdaptor)
 
 ## Tutorials and Documentation
 
@@ -61,7 +61,17 @@ explore various ways to integrate the two methodologies:
 
 ![Flux ODE Training Animation](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
 
-## Breaking Changes in v3
+## Breaking Changes
+
+### v4 (upcoming)
+
+  - `TensorLayer` has been removed, use `Boltz.Layers.TensorProductLayer` instead.
+  - Basis functions in DiffEqFlux have been removed in favor of `Boltz.Basis` module.
+  - `SplineLayer` has been removed, use `Boltz.Layers.SplineLayer` instead.
+  - `NeuralHamiltonianDE` has been removed, use `NeuralODE` with `Layers.HamiltonianNN` instead.
+  - `HamiltonianNN` has been removed in favor of `Layers.HamiltonianNN`.
+
+### v3
 
   - Flux dependency is dropped. If a non Lux `AbstractExplicitLayer` is passed we try to automatically convert it to a Lux model with `FromFluxAdaptor()(model)`.
   - `Flux` is no longer re-exported from `DiffEqFlux`. Instead we reexport `Lux`.

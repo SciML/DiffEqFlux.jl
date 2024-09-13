@@ -24,10 +24,12 @@
         optfunc = Optimization.OptimizationFunction(
             (x, p) -> loss_function(x), Optimization.AutoZygote())
         optprob = Optimization.OptimizationProblem(optfunc, ps)
-        res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 100)
+        res = Optimization.solve(
+            optprob, OptimizationOptimisers.Adam(0.1); callback, maxiters = 100)
 
         optprob = Optimization.OptimizationProblem(optfunc, res.minimizer)
-        res = Optimization.solve(optprob, Adam(0.1); callback = callback, maxiters = 100)
+        res = Optimization.solve(
+            optprob, OptimizationOptimisers.Adam(0.1); callback, maxiters = 100)
         opt = res.minimizer
 
         data_validate_vals = rand(100)

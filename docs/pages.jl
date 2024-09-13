@@ -18,12 +18,8 @@ pages = [
         "examples/physical_constraints.md",
     ],
     "Layer APIs" => Any[
-        "Classical Basis Layers" => "layers/BasisLayers.md",
-        "Tensor Product Layer" => "layers/TensorLayer.md",
         "Continuous Normalizing Flows Layer" => "layers/CNFLayer.md",
-        "Spline Layer" => "layers/SplineLayer.md",
         "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
-        "Hamiltonian Neural Network Layer" => "layers/HamiltonianNN.md"
     ],
     "Utility Function APIs" => Any[
         "Smoothed Collocation" => "utilities/Collocation.md",

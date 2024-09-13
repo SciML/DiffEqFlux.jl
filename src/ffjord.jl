@@ -132,7 +132,7 @@ function __forward_ffjord(n::FFJORD, x::AbstractArray{T, N}, ps, st) where {T, N
     (; regularize, monte_carlo) = st
     sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP())
 
-    model = StatefulLuxLayer{true}(n.model, nothing, st.model)
+    model = StatefulLuxLayer{fixed_state_type(n.model)}(n.model, nothing, st.model)
 
     ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 

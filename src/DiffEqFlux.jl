@@ -3,10 +3,7 @@ module DiffEqFlux
 using ADTypes: ADTypes, AutoForwardDiff, AutoZygote
 using ChainRulesCore: ChainRulesCore
 using ConcreteStructs: @concrete
-using DataInterpolations: DataInterpolations
 using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution, logpdf
-using DistributionsAD: DistributionsAD
-using ForwardDiff: ForwardDiff
 using LinearAlgebra: LinearAlgebra, Diagonal, det, tr, mul!
 using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor
 using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer
@@ -23,26 +20,25 @@ using SciMLSensitivity: SciMLSensitivity, AdjointLSS, BacksolveAdjoint, EnzymeVJ
                         SteadyStateAdjoint, TrackerAdjoint, TrackerVJP, ZygoteAdjoint,
                         ZygoteVJP
 using Setfield: @set!
-using Zygote: Zygote
 
 const CRC = ChainRulesCore
 
-@reexport using ADTypes, Lux
+@reexport using ADTypes, Lux, Boltz
+
+fixed_state_type(_) = true
+fixed_state_type(::Layers.HamiltonianNN{FST}) where {FST} = FST
 
 include("ffjord.jl")
 include("neural_de.jl")
-include("spline_layer.jl")
-include("tensor_product.jl")
+
 include("collocation.jl")
-include("hnn.jl")
 include("multiple_shooting.jl")
 
+include("deprecated.jl")
+
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
-       NeuralODEMM, TensorLayer, SplineLayer
-export NeuralHamiltonianDE, HamiltonianNN
+       NeuralODEMM
 export FFJORD, FFJORDDistribution
-export TensorProductBasisFunction, ChebyshevBasis, SinBasis, CosBasis, FourierBasis,
-       LegendreBasis, PolynomialBasis
 export DimMover
 
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel, TriweightKernel,

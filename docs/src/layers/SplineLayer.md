@@ -1,5 +1,0 @@
-# Spline Layer
-
-```@docs
-SplineLayer
-```
