@@ -20,14 +20,15 @@ using SciMLSensitivity: SciMLSensitivity, AdjointLSS, BacksolveAdjoint, EnzymeVJ
                         SteadyStateAdjoint, TrackerAdjoint, TrackerVJP, ZygoteAdjoint,
                         ZygoteVJP
 using Setfield: @set!
+using Static: True, False
 
 const CRC = ChainRulesCore
 
 @reexport using ADTypes, Lux, Boltz
 
 fixed_state_type(_) = true
-# TODO: Update the signature
-fixed_state_type(::Layers.HamiltonianNN{FST}) where {FST} = FST
+fixed_state_type(::Layers.HamiltonianNN{True}) = true
+fixed_state_type(::Layers.HamiltonianNN{False}) = false
 
 include("ffjord.jl")
 include("neural_de.jl")
