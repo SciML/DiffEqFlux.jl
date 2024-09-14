@@ -26,6 +26,7 @@ const CRC = ChainRulesCore
 @reexport using ADTypes, Lux, Boltz
 
 fixed_state_type(_) = true
+# TODO: Update the signature
 fixed_state_type(::Layers.HamiltonianNN{FST}) where {FST} = FST
 
 include("ffjord.jl")
@@ -33,8 +34,6 @@ include("neural_de.jl")
 
 include("collocation.jl")
 include("multiple_shooting.jl")
-
-include("deprecated.jl")
 
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
        NeuralODEMM

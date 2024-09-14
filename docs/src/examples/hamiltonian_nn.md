@@ -57,7 +57,7 @@ res = Optimization.solve(opt_prob, opt, dataloader; callback)
 
 ps_trained = res.u
 
-model = NeuralHamiltonianDE(
+model = NeuralODE(
     hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
@@ -127,10 +127,11 @@ ps_trained = res.u
 
 ### Solving the ODE using trained HNN
 
-In order to visualize the learned trajectories, we need to solve the ODE. We will use the `NeuralHamiltonianDE` layer, which is essentially a wrapper over `HamiltonianNN` layer, and solves the ODE.
+In order to visualize the learned trajectories, we need to solve the ODE. We will use the
+`NeuralODE` layer with `HamiltonianNN` layer, and solves the ODE.
 
 ```@example hamiltonian
-model = NeuralHamiltonianDE(
+model = NeuralODE(
     hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
