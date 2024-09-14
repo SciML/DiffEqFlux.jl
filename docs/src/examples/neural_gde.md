@@ -14,7 +14,7 @@ using GraphNeuralNetworks, DifferentialEquations
 using DiffEqFlux: NeuralODE
 using GraphNeuralNetworks.GNNGraphs: normalized_adjacency
 using Lux, NNlib, Optimisers, Zygote, Random, ComponentArrays
-using Lux: AbstractExplicitLayer, glorot_normal, zeros32
+using Lux: AbstractLuxLayer, glorot_normal, zeros32
 import Lux: initialparameters, initialstates
 using SciMLSensitivity
 using Statistics: mean
@@ -46,7 +46,7 @@ nout = length(classes)
 epochs = 20
 
 # Define the graph neural network
-struct ExplicitGCNConv{F1, F2, F3, F4} <: AbstractExplicitLayer
+struct ExplicitGCNConv{F1, F2, F3, F4} <: AbstractLuxLayer
     in_chs::Int
     out_chs::Int
     activation::F1
@@ -152,7 +152,7 @@ using GraphNeuralNetworks, DifferentialEquations
 using DiffEqFlux: NeuralODE
 using GraphNeuralNetworks.GNNGraphs: normalized_adjacency
 using Lux, NNlib, Optimisers, Zygote, Random, ComponentArrays
-using Lux: AbstractExplicitLayer, glorot_normal, zeros32
+using Lux: AbstractLuxLayer, glorot_normal, zeros32
 import Lux: initialparameters, initialstates
 using SciMLSensitivity
 using Statistics: mean
@@ -207,10 +207,10 @@ epochs = 20
 
 ## Define the Graph Neural Network
 
-Here, we define a type of graph neural networks called `GCNConv`. We use the name `ExplicitGCNConv` to avoid naming conflicts with `GraphNeuralNetworks`. For more information on defining a layer with `Lux`, please consult to the [doc](http://lux.csail.mit.edu/dev/introduction/overview/#AbstractExplicitLayer-API).
+Here, we define a type of graph neural networks called `GCNConv`. We use the name `ExplicitGCNConv` to avoid naming conflicts with `GraphNeuralNetworks`. For more information on defining a layer with `Lux`, please consult to the [doc](http://lux.csail.mit.edu/dev/introduction/overview/#AbstractLuxLayer-API).
 
 ```julia
-struct ExplicitGCNConv{F1, F2, F3} <: AbstractExplicitLayer
+struct ExplicitGCNConv{F1, F2, F3} <: AbstractLuxLayer
     Ã::AbstractMatrix  # nomalized_adjacency matrix
     in_chs::Int
     out_chs::Int

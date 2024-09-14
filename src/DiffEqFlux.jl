@@ -6,7 +6,7 @@ using ConcreteStructs: @concrete
 using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution, logpdf
 using LinearAlgebra: LinearAlgebra, Diagonal, det, tr, mul!
 using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor
-using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer
+using LuxCore: LuxCore, AbstractLuxLayer, AbstractLuxContainerLayer, AbstractLuxWrapperLayer
 using LuxLib: batched_matmul
 using Random: Random, AbstractRNG, randn!
 using Reexport: @reexport

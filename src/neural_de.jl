@@ -1,5 +1,5 @@
-abstract type NeuralDELayer <: AbstractExplicitContainerLayer{(:model,)} end
-abstract type NeuralSDELayer <: AbstractExplicitContainerLayer{(:drift, :diffusion)} end
+abstract type NeuralDELayer <: AbstractLuxWrapperLayer{:model} end
+abstract type NeuralSDELayer <: AbstractLuxContainerLayer{(:drift, :diffusion)} end
 
 basic_tgrad(u, p, t) = zero(u)
 basic_dde_tgrad(u, h, p, t) = zero(u)
@@ -15,7 +15,7 @@ derivatives of the loss backwards in time.
 
 Arguments:
 
-  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+  - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     ̇x.
   - `tspan`: The timespan to be solved on.
   - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
@@ -33,14 +33,14 @@ References:
 [1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
 """
 @concrete struct NeuralODE <: NeuralDELayer
-    model <: AbstractExplicitLayer
+    model <: AbstractLuxLayer
     tspan
     args
     kwargs
 end
 
 function NeuralODE(model, tspan, args...; kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
+    !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     return NeuralODE(model, tspan, args, kwargs)
 end
 
@@ -65,9 +65,9 @@ Constructs a neural stochastic differential equation (neural SDE) with diagonal 
 
 Arguments:
 
-  - `drift`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+  - `drift`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     drift function.
-  - `diffusion`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines
+  - `diffusion`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines
     the diffusion function. Should output a vector of the same size as the input.
   - `tspan`: The timespan to be solved on.
   - `alg`: The algorithm used to solve the ODE. Defaults to `nothing`, i.e. the
@@ -78,16 +78,16 @@ Arguments:
     documentation for more details.
 """
 @concrete struct NeuralDSDE <: NeuralSDELayer
-    drift <: AbstractExplicitLayer
-    diffusion <: AbstractExplicitLayer
+    drift <: AbstractLuxLayer
+    diffusion <: AbstractLuxLayer
     tspan
     args
     kwargs
 end
 
 function NeuralDSDE(drift, diffusion, tspan, args...; kwargs...)
-    !(drift isa AbstractExplicitLayer) && (drift = FromFluxAdaptor()(drift))
-    !(diffusion isa AbstractExplicitLayer) && (diffusion = FromFluxAdaptor()(diffusion))
+    !(drift isa AbstractLuxLayer) && (drift = FromFluxAdaptor()(drift))
+    !(diffusion isa AbstractLuxLayer) && (diffusion = FromFluxAdaptor()(diffusion))
     return NeuralDSDE(drift, diffusion, tspan, args, kwargs)
 end
 
@@ -113,9 +113,9 @@ Constructs a neural stochastic differential equation (neural SDE).
 
 Arguments:
 
-  - `drift`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+  - `drift`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     drift function.
-  - `diffusion`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines
+  - `diffusion`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines
     the diffusion function. Should output a matrix that is `nbrown x size(x, 1)`.
   - `tspan`: The timespan to be solved on.
   - `nbrown`: The number of Brownian processes.
@@ -127,8 +127,8 @@ Arguments:
     documentation for more details.
 """
 @concrete struct NeuralSDE <: NeuralSDELayer
-    drift <: AbstractExplicitLayer
-    diffusion <: AbstractExplicitLayer
+    drift <: AbstractLuxLayer
+    diffusion <: AbstractLuxLayer
     tspan
     nbrown::Int
     args
@@ -136,8 +136,8 @@ Arguments:
 end
 
 function NeuralSDE(drift, diffusion, tspan, nbrown, args...; kwargs...)
-    !(drift isa AbstractExplicitLayer) && (drift = FromFluxAdaptor()(drift))
-    !(diffusion isa AbstractExplicitLayer) && (diffusion = FromFluxAdaptor()(diffusion))
+    !(drift isa AbstractLuxLayer) && (drift = FromFluxAdaptor()(drift))
+    !(diffusion isa AbstractLuxLayer) && (diffusion = FromFluxAdaptor()(diffusion))
     return NeuralSDE(drift, diffusion, tspan, nbrown, args, kwargs)
 end
 
@@ -165,7 +165,7 @@ Constructs a neural delay differential equation (neural DDE) with constant delay
 
 Arguments:
 
-  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+  - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     derivative function. Should take an input of size `[x; x(t - lag_1); ...; x(t - lag_n)]`
     and produce and output shaped like `x`.
   - `tspan`: The timespan to be solved on.
@@ -182,7 +182,7 @@ Arguments:
     documentation for more details.
 """
 @concrete struct NeuralCDDE <: NeuralDELayer
-    model <: AbstractExplicitLayer
+    model <: AbstractLuxLayer
     tspan
     hist
     lags
@@ -191,7 +191,7 @@ Arguments:
 end
 
 function NeuralCDDE(model, tspan, hist, lags, args...; kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
+    !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     return NeuralCDDE(model, tspan, hist, lags, args, kwargs)
 end
 
@@ -218,7 +218,7 @@ Constructs a neural differential-algebraic equation (neural DAE).
 
 Arguments:
 
-  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+  - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     derivative function. Should take an input of size `x` and produce the residual of
     `f(dx,x,t)` for only the differential variables.
   - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed
@@ -233,7 +233,7 @@ Arguments:
     documentation for more details.
 """
 @concrete struct NeuralDAE <: NeuralDELayer
-    model <: AbstractExplicitLayer
+    model <: AbstractLuxLayer
     constraints_model
     tspan
     args
@@ -243,7 +243,7 @@ end
 
 function NeuralDAE(
         model, constraints_model, tspan, args...; differential_vars = nothing, kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
+    !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     return NeuralDAE(model, constraints_model, tspan, args, differential_vars, kwargs)
 end
 
@@ -288,7 +288,7 @@ constraint equations.
 
 Arguments:
 
-  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+  - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     ̇`f(u,p,t)`
   - `constraints_model`: A function `constraints_model(u,p,t)` for the fixed constraints to
     impose on the algebraic equations.
@@ -308,7 +308,7 @@ Arguments:
     documentation for more details.
 """
 @concrete struct NeuralODEMM <: NeuralDELayer
-    model <: AbstractExplicitLayer
+    model <: AbstractLuxLayer
     constraints_model
     tspan
     mass_matrix
@@ -317,7 +317,7 @@ Arguments:
 end
 
 function NeuralODEMM(model, constraints_model, tspan, mass_matrix, args...; kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
+    !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     return NeuralODEMM(model, constraints_model, tspan, mass_matrix, args, kwargs)
 end
 
@@ -376,10 +376,10 @@ end
 Constructs a Dimension Mover Layer.
 
 We can have Lux's conventional order `(data, channel, batch)` by using it as the last layer
-of `AbstractExplicitLayer` to swap the batch-index and the time-index of the Neural DE's
+of `AbstractLuxLayer` to swap the batch-index and the time-index of the Neural DE's
 output considering that each time point is a channel.
 """
-@concrete struct DimMover <: AbstractExplicitLayer
+@concrete struct DimMover <: AbstractLuxLayer
     from
     to
 end

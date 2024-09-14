@@ -1,4 +1,4 @@
-abstract type CNFLayer <: LuxCore.AbstractExplicitContainerLayer{(:model,)} end
+abstract type CNFLayer <: AbstractLuxWrapperLayer{:model} end
 
 """
     FFJORD(model, tspan, input_dims, args...; ad = nothing, basedist = nothing, kwargs...)
@@ -21,7 +21,7 @@ for new values of x.
 
 Arguments:
 
-  - `model`: A `Flux.Chain` or `Lux.AbstractExplicitLayer` neural network that defines the
+  - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     dynamics of the model.
   - `basedist`: Distribution of the base variable. Set to the unit normal by default.
   - `input_dims`: Input Dimensions of the model.
@@ -49,7 +49,7 @@ Information Processing Systems, pp. 6572-6583. 2018.
 preprint arXiv:1810.01367 (2018).
 """
 @concrete struct FFJORD <: CNFLayer
-    model <: AbstractExplicitLayer
+    model <: AbstractLuxLayer
     basedist <: Union{Nothing, Distribution}
     ad
     input_dims
@@ -65,7 +65,7 @@ end
 
 function FFJORD(
         model, tspan, input_dims, args...; ad = nothing, basedist = nothing, kwargs...)
-    !(model isa AbstractExplicitLayer) && (model = FromFluxAdaptor()(model))
+    !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     return FFJORD(model, basedist, ad, input_dims, tspan, args, kwargs)
 end
 
