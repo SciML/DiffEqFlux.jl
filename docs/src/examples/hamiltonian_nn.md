@@ -33,7 +33,7 @@ dataloader = ncycle(
     for i in 1:(size(data, 2) ÷ B)),
     NEPOCHS)
 
-hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
+hnn = Layers.HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
 
@@ -95,12 +95,12 @@ dataloader = ncycle(
     NEPOCHS)
 ```
 
-### Training the HamiltonianNN
+### Training the 
 
-We parameterize the HamiltonianNN with a small MultiLayered Perceptron. HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn't support nesting itself, so we will be using ForwardDiff in the training loop to compute the gradients of the HNN Layer for Optimization.
+We parameterize the  with a small MultiLayered Perceptron. HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn't support nesting itself, so we will be using ForwardDiff in the training loop to compute the gradients of the HNN Layer for Optimization.
 
 ```@example hamiltonian
-hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
+hnn = Layers.HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
 
