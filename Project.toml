@@ -51,7 +51,6 @@ Lux = "1"
 LuxCUDA = "0.3.2"
 LuxCore = "1"
 LuxLib = "1.2"
-MLDatasets = "0.7.14"
 NNlib = "0.9.22"
 OneHotArrays = "0.2.5"
 Optimisers = "0.3"
@@ -89,7 +88,6 @@ ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 Hwloc = "0e44f5e4-bd66-52a0-8798-143a42290a1d"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 LuxCUDA = "d0bbae9a-e099-4d5b-a835-1c6931763bda"
-MLDatasets = "eb30cadb-4394-5ae3-aed4-317e484a6458"
 NNlib = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"
 OneHotArrays = "0b1bfda6-eb8a-41d2-88d8-f5af5cad476f"
 Optimisers = "3bd65402-5787-11e9-1adc-39752487f4e2"
@@ -107,4 +105,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "DistributionsAD", "ExplicitImports", "ForwardDiff", "Flux", "Hwloc", "InteractiveUtils", "LuxCUDA", "MLDatasets", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "Printf", "Random", "ReTestItems", "Reexport", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
+test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "DistributionsAD", "ExplicitImports", "ForwardDiff", "Flux", "Hwloc", "InteractiveUtils", "LuxCUDA", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "Printf", "Random", "ReTestItems", "Reexport", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
