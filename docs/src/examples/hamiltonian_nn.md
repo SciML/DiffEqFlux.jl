@@ -33,7 +33,7 @@ dataloader = ncycle(
     for i in 1:(size(data, 2) ÷ B)),
     NEPOCHS)
 
-hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
+hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (64, 1)); autodiff = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
 
@@ -57,7 +57,7 @@ res = Optimization.solve(opt_prob, opt, dataloader; callback)
 
 ps_trained = res.u
 
-model = NeuralHamiltonianDE(
+model = NeuralODE(
     hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))
@@ -97,10 +97,10 @@ dataloader = ncycle(
 
 ### Training the HamiltonianNN
 
-We parameterize the HamiltonianNN with a small MultiLayered Perceptron. HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn't support nesting itself, so we will be using ForwardDiff in the training loop to compute the gradients of the HNN Layer for Optimization.
+We parameterize the  with a small MultiLayered Perceptron. HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn't support nesting itself, so we will be using ForwardDiff in the training loop to compute the gradients of the HNN Layer for Optimization.
 
 ```@example hamiltonian
-hnn = HamiltonianNN(Chain(Dense(2 => 64, relu), Dense(64 => 1)); ad = AutoZygote())
+hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (64, 1)); autodiff = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
 
@@ -127,10 +127,11 @@ ps_trained = res.u
 
 ### Solving the ODE using trained HNN
 
-In order to visualize the learned trajectories, we need to solve the ODE. We will use the `NeuralHamiltonianDE` layer, which is essentially a wrapper over `HamiltonianNN` layer, and solves the ODE.
+In order to visualize the learned trajectories, we need to solve the ODE. We will use the
+`NeuralODE` layer with `HamiltonianNN` layer, and solves the ODE.
 
 ```@example hamiltonian
-model = NeuralHamiltonianDE(
+model = NeuralODE(
     hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, save_start = true, saveat = t)
 
 pred = Array(first(model(data[:, 1], ps_trained, st)))

@@ -6,7 +6,7 @@ using ConcreteStructs: @concrete
 using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution, logpdf
 using LinearAlgebra: LinearAlgebra, Diagonal, det, tr, mul!
 using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor
-using LuxCore: LuxCore, AbstractExplicitLayer, AbstractExplicitContainerLayer
+using LuxCore: LuxCore, AbstractLuxLayer, AbstractLuxContainerLayer, AbstractLuxWrapperLayer
 using LuxLib: batched_matmul
 using Random: Random, AbstractRNG, randn!
 using Reexport: @reexport
@@ -20,21 +20,21 @@ using SciMLSensitivity: SciMLSensitivity, AdjointLSS, BacksolveAdjoint, EnzymeVJ
                         SteadyStateAdjoint, TrackerAdjoint, TrackerVJP, ZygoteAdjoint,
                         ZygoteVJP
 using Setfield: @set!
+using Static: True, False
 
 const CRC = ChainRulesCore
 
 @reexport using ADTypes, Lux, Boltz
 
 fixed_state_type(_) = true
-fixed_state_type(::Layers.HamiltonianNN{FST}) where {FST} = FST
+fixed_state_type(::Layers.HamiltonianNN{True}) = true
+fixed_state_type(::Layers.HamiltonianNN{False}) = false
 
 include("ffjord.jl")
 include("neural_de.jl")
 
 include("collocation.jl")
 include("multiple_shooting.jl")
-
-include("deprecated.jl")
 
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
        NeuralODEMM

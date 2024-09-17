@@ -33,8 +33,8 @@ Now, we create a TensorLayer that will be able to perform 10th order expansions 
 a Legendre Basis:
 
 ```@example tensor
-A = [LegendreBasis(10), LegendreBasis(10)]
-nn = TensorLayer(A, 1)
+A = [Basis.Legendre(10), Basis.Legendre(10)]
+nn = Layers.TensorProductLayer(A, 1)
 ps, st = Lux.setup(Xoshiro(0), nn)
 ps = ComponentArray(ps)
 nn = StatefulLuxLayer{true}(nn, nothing, st)
