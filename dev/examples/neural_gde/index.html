@@ -4,7 +4,7 @@ using GraphNeuralNetworks, DifferentialEquations
 using DiffEqFlux: NeuralODE
 using GraphNeuralNetworks.GNNGraphs: normalized_adjacency
 using Lux, NNlib, Optimisers, Zygote, Random, ComponentArrays
-using Lux: AbstractExplicitLayer, glorot_normal, zeros32
+using Lux: AbstractLuxLayer, glorot_normal, zeros32
 import Lux: initialparameters, initialstates
 using SciMLSensitivity
 using Statistics: mean
@@ -36,7 +36,7 @@ nout = length(classes)
 epochs = 20
 
 # Define the graph neural network
-struct ExplicitGCNConv{F1, F2, F3, F4} &lt;: AbstractExplicitLayer
+struct ExplicitGCNConv{F1, F2, F3, F4} &lt;: AbstractLuxLayer
     in_chs::Int
     out_chs::Int
     activation::F1
@@ -134,7 +134,7 @@ using GraphNeuralNetworks, DifferentialEquations
 using DiffEqFlux: NeuralODE
 using GraphNeuralNetworks.GNNGraphs: normalized_adjacency
 using Lux, NNlib, Optimisers, Zygote, Random, ComponentArrays
-using Lux: AbstractExplicitLayer, glorot_normal, zeros32
+using Lux: AbstractLuxLayer, glorot_normal, zeros32
 import Lux: initialparameters, initialstates
 using SciMLSensitivity
 using Statistics: mean
@@ -152,7 +152,7 @@ Ã = normalized_adjacency(g; add_self_loops = true) |&gt; device</code></pre><h
 ytrain = y[:, train_mask]</code></pre><h2 id="Model-and-Data-Configuration"><a class="docs-heading-anchor" href="#Model-and-Data-Configuration">Model and Data Configuration</a><a id="Model-and-Data-Configuration-1"></a><a class="docs-heading-anchor-permalink" href="#Model-and-Data-Configuration" title="Permalink"></a></h2><p>We shall use only 16 hidden state dimensions.</p><pre><code class="language-julia hljs">nin = size(X, 1)
 nhidden = 16
 nout = length(classes)
-epochs = 20</code></pre><h2 id="Define-the-Graph-Neural-Network"><a class="docs-heading-anchor" href="#Define-the-Graph-Neural-Network">Define the Graph Neural Network</a><a id="Define-the-Graph-Neural-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Define-the-Graph-Neural-Network" title="Permalink"></a></h2><p>Here, we define a type of graph neural networks called <code>GCNConv</code>. We use the name <code>ExplicitGCNConv</code> to avoid naming conflicts with <code>GraphNeuralNetworks</code>. For more information on defining a layer with <code>Lux</code>, please consult to the <a href="http://lux.csail.mit.edu/dev/introduction/overview/#AbstractExplicitLayer-API">doc</a>.</p><pre><code class="language-julia hljs">struct ExplicitGCNConv{F1, F2, F3} &lt;: AbstractExplicitLayer
+epochs = 20</code></pre><h2 id="Define-the-Graph-Neural-Network"><a class="docs-heading-anchor" href="#Define-the-Graph-Neural-Network">Define the Graph Neural Network</a><a id="Define-the-Graph-Neural-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Define-the-Graph-Neural-Network" title="Permalink"></a></h2><p>Here, we define a type of graph neural networks called <code>GCNConv</code>. We use the name <code>ExplicitGCNConv</code> to avoid naming conflicts with <code>GraphNeuralNetworks</code>. For more information on defining a layer with <code>Lux</code>, please consult to the <a href="http://lux.csail.mit.edu/dev/introduction/overview/#AbstractLuxLayer-API">doc</a>.</p><pre><code class="language-julia hljs">struct ExplicitGCNConv{F1, F2, F3} &lt;: AbstractLuxLayer
     Ã::AbstractMatrix  # nomalized_adjacency matrix
     in_chs::Int
     out_chs::Int
@@ -216,4 +216,4 @@ st_opt = Optimisers.setup(opt, ps)</code></pre><h2 id="Training-Loop"><a class="
     gs = back((one(l), nothing))[1]
     st_opt, ps = Optimisers.update(st_opt, ps, gs)
     @show eval_loss_accuracy(X, y, val_mask, model, ps, st)
-end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../neural_ode_weather_forecast/">« Weather forecasting with neural ODEs</a><a class="docs-footer-nextpage" href="../physical_constraints/">Enforcing Physical Constraints via Universal Differential-Algebraic Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Friday 13 September 2024 16:36">Friday 13 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../neural_ode_weather_forecast/">« Weather forecasting with neural ODEs</a><a class="docs-footer-nextpage" href="../physical_constraints/">Enforcing Physical Constraints via Universal Differential-Algebraic Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 18 September 2024 03:34">Wednesday 18 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
