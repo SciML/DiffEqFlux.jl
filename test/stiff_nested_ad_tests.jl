@@ -39,7 +39,7 @@
         optprob = Optimization.OptimizationProblem(optfunc, ps)
         res = Optimization.solve(
             optprob, Adam(0.1); callback = callback(solver), maxiters = 100)
-        loss2 = loss_n_ode(lux_model, res.minimizer)
+        loss2 = loss_n_ode(lux_model, res.u)
         @test loss2 < loss1
     end
 end
