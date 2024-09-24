@@ -81,9 +81,10 @@ end
 
 accuracy(m, ((x_train1, y_train1),), ps, st) # burn in accuracy
 
-function loss_function(ps, x, y)
+function loss_function(ps, data)
+    (x, y) = data
     pred, st_ = m(x, ps, st)
-    return logitcrossentropy(pred, y), pred
+    return logitcrossentropy(pred, y)
 end
 
 loss_function(ps, x_train1, y_train1) # burn in loss
@@ -91,19 +92,18 @@ loss_function(ps, x_train1, y_train1) # burn in loss
 opt = OptimizationOptimisers.Adam(0.05)
 iter = 0
 
-opt_func = OptimizationFunction(
-    (ps, _, x, y) -> loss_function(ps, x, y), Optimization.AutoZygote())
-opt_prob = OptimizationProblem(opt_func, ps)
+opt_func = OptimizationFunction(loss_function, Optimization.AutoZygote())
+opt_prob = OptimizationProblem(opt_func, ps, dataloader)
 
-function callback(ps, l, pred)
+function callback(state, l)
     global iter += 1
     iter % 10 == 0 &&
-        @info "[MNIST GPU] Accuracy: $(accuracy(m, dataloader, ps.u, st))"
+        @info "[MNIST GPU] Accuracy: $(accuracy(m, dataloader, state.u, st))"
     return false
 end
 
 # Train the NN-ODE and monitor the loss and weights.
-res = Optimization.solve(opt_prob, opt, dataloader; callback, maxiters = 5)
+res = Optimization.solve(opt_prob, opt; callback, maxiters = 5)
 accuracy(m, dataloader, res.u, st)
 ```
 
@@ -285,12 +285,13 @@ final output of our model. `logitcrossentropy` takes in the prediction from our
 model `model(x)` and compares it to actual output `y`:
 
 ```@example mnist
-function loss_function(ps, x, y)
+function loss_function(ps, data)
+    (x, y) = data
     pred, st_ = m(x, ps, st)
-    return logitcrossentropy(pred, y), pred
+    return logitcrossentropy(pred, y)
 end
 
-loss_function(ps, x_train1, y_train1) # burn in loss
+loss_function(ps, (x_train1, y_train1)) # burn in loss
 ```
 
 #### Optimizer
@@ -309,14 +310,13 @@ This callback function is used to print both the training and testing accuracy a
 ```@example mnist
 iter = 0
 
-opt_func = OptimizationFunction(
-    (ps, _, x, y) -> loss_function(ps, x, y), Optimization.AutoZygote())
-opt_prob = OptimizationProblem(opt_func, ps)
+opt_func = OptimizationFunction(loss_function, Optimization.AutoZygote())
+opt_prob = OptimizationProblem(opt_func, ps, dataloader)
 
-function callback(ps, l, pred)
+function callback(state, l)
     global iter += 1
     iter % 10 == 0 &&
-        @info "[MNIST GPU] Accuracy: $(accuracy(m, dataloader, ps.u, st))"
+        @info "[MNIST GPU] Accuracy: $(accuracy(m, dataloader, state.u, st))"
     return false
 end
 ```
@@ -329,6 +329,6 @@ for Neural ODE is given by `nn_ode.p`:
 
 ```@example mnist
 # Train the NN-ODE and monitor the loss and weights.
-res = Optimization.solve(opt_prob, opt, dataloader; callback, maxiters = 5)
+res = Optimization.solve(opt_prob, opt; callback, maxiters = 5)
 accuracy(m, dataloader, res.u, st)
 ```

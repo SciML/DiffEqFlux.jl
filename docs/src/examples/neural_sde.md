@@ -119,21 +119,28 @@ end
 function loss_neuralsde(p; n = 100)
     u = repeat(reshape(u0, :, 1), 1, n)
     samples = predict_neuralsde(p, u)
-    means = mean(samples; dims = 2)
-    vars = var(samples; dims = 2, mean = means)[:, 1, :]
-    means = means[:, 1, :]
+    currmeans = mean(samples; dims = 2)
+    currvars = var(samples; dims = 2, mean = means)[:, 1, :]
+    currmeans = currmeans[:, 1, :]
     loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
-    return loss, means, vars
+    global means = currmeans
+    global vars = currvars
+    return loss
 end
 ```
 
 ```@example nsde
 list_plots = []
 iter = 0
+u = repeat(reshape(u0, :, 1), 1, 100)
+samples = predict_neuralsde(ps, u)
+means = mean(samples; dims = 2)
+vars = var(samples; dims = 2, mean = means)[:, 1, :]
+means = means[:, 1, :]
 
 # Callback function to observe training
-callback = function (p, loss, means, vars; doplot = false)
-    global list_plots, iter
+callback = function (state, loss; doplot = false)
+    global list_plots, iter, means, vars
 
     if iter == 0
         list_plots = []
