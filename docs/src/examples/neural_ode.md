@@ -58,7 +58,7 @@ function callback(state, l; doplot = false)
 end
 
 pinit = ComponentArray(p)
-callback((;u = pinit), loss_neuralode(pinit); doplot = true)
+callback((; u = pinit), loss_neuralode(pinit); doplot = true)
 
 # use Optimization.jl to solve the problem
 adtype = Optimization.AutoZygote()
@@ -74,7 +74,7 @@ optprob2 = remake(optprob; u0 = result_neuralode.u)
 result_neuralode2 = Optimization.solve(
     optprob2, Optim.BFGS(; initial_stepnorm = 0.01); callback, allow_f_increases = false)
 
-callback((;u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)
+callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)
 ```
 
 ![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)

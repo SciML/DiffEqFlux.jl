@@ -86,7 +86,7 @@ group_size = 3
 continuity_term = 200
 
 l1, preds = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
-        Tsit5(), group_size; continuity_term)
+    Tsit5(), group_size; continuity_term)
 
 function loss_function(data, pred)
     return sum(abs2, data - pred)
