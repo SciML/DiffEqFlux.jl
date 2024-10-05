@@ -75,7 +75,7 @@ The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we 
 
 ```@example hamiltonian
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
-      ComponentArrays, Optimization, OptimizationOptimisers, IterTools
+      ComponentArrays, Optimization, OptimizationOptimisers, MLUtils
 
 t = range(0.0f0, 1.0f0; length = 1024)
 π_32 = Float32(π)
@@ -87,12 +87,8 @@ dpdt = -2π_32 .* q_t
 data = cat(q_t, p_t; dims = 1)
 target = cat(dqdt, dpdt; dims = 1)
 B = 256
-NEPOCHS = 100
-dataloader = ncycle(
-    ((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
-         selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
-    for i in 1:(size(data, 2) ÷ B)),
-    NEPOCHS)
+NEPOCHS = 1000
+dataloader = DataLoader((data, target); batchsize = B)
 ```
 
 ### Training the HamiltonianNN
@@ -103,24 +99,25 @@ We parameterize the  with a small MultiLayered Perceptron. HNNs are trained by o
 hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (64, 1)); autodiff = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
+hnn_stateful = StatefulLuxLayer{true}(hnn, ps_c, st)
 
 opt = OptimizationOptimisers.Adam(0.01f0)
 
-function loss_function(ps, data, target)
-    pred, st_ = hnn(data, ps, st)
+function loss_function(ps, databatch)
+    (data, target) = databatch
+    pred = hnn_stateful(data, ps)
     return mean(abs2, pred .- target), pred
 end
 
-function callback(ps, loss, pred)
+function callback(state, loss)
     println("[Hamiltonian NN] Loss: ", loss)
     return false
 end
 
-opt_func = OptimizationFunction(
-    (ps, _, data, target) -> loss_function(ps, data, target), Optimization.AutoZygote())
-opt_prob = OptimizationProblem(opt_func, ps_c)
+opt_func = OptimizationFunction(loss_function, Optimization.AutoZygote())
+opt_prob = OptimizationProblem(opt_func, ps_c, dataloader)
 
-res = solve(opt_prob, opt, dataloader; callback)
+res = solve(opt_prob, opt; callback, epochs = NEPOCHS)
 
 ps_trained = res.u
 ```

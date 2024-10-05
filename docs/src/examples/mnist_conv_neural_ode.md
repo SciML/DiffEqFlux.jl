@@ -89,20 +89,20 @@ end
 # burn in accuracy
 accuracy(m, ((img, lab),), ps, st)
 
-function loss_function(ps, x, y)
+function loss_function(ps, data)
+    (x, y) = data
     pred, _ = m(x, ps, st)
-    return logitcrossentropy(pred, y), pred
+    return logitcrossentropy(pred, y)
 end
 
 # burn in loss
-loss_function(ps, img, lab)
+loss_function(ps, (img, lab))
 
 opt = OptimizationOptimisers.Adam(0.005)
 iter = 0
 
-opt_func = OptimizationFunction(
-    (ps, _, x, y) -> loss_function(ps, x, y), Optimization.AutoZygote())
-opt_prob = OptimizationProblem(opt_func, ps);
+opt_func = OptimizationFunction(loss_function, Optimization.AutoZygote())
+opt_prob = OptimizationProblem(opt_func, ps, dataloader);
 
 function callback(ps, l, pred)
     global iter += 1
@@ -112,7 +112,7 @@ function callback(ps, l, pred)
 end
 
 # Train the NN-ODE and monitor the loss and weights.
-res = Optimization.solve(opt_prob, opt, dataloader; maxiters = 5, callback)
+res = Optimization.solve(opt_prob, opt; maxiters = 5, callback)
 acc = accuracy(m, dataloader, res.u, st)
 acc # hide
 ```

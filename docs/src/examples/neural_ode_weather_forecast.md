@@ -122,8 +122,8 @@ function train_one_round(node, p, state, y, opt, maxiters, rng, y0 = y[:, 1]; kw
 end
 
 function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; kwargs...)
-    log_results(ps, losses) = (p, loss) -> begin
-        push!(ps, copy(p.u))
+    log_results(ps, losses) = (state, loss) -> begin
+        push!(ps, copy(state.u))
         push!(losses, loss)
         false
     end

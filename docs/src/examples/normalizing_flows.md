@@ -28,7 +28,7 @@ function loss(θ)
     return -mean(logpx)
 end
 
-function cb(p, l)
+function cb(state, l)
     @info "FFJORD Training" loss=l
     return false
 end
@@ -95,7 +95,7 @@ function loss(θ)
     return -mean(logpx)
 end
 
-function cb(p, l)
+function cb(state, l)
     @info "FFJORD Training" loss=loss(p)
     return false
 end

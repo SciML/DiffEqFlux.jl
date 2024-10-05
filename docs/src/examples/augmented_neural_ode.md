@@ -69,13 +69,13 @@ function plot_contour(model, ps, st, npoints = 300)
     return contour(x, y, sol; fill = true, linewidth = 0.0)
 end
 
-loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)
+loss_node(model, data, ps, st) = mean((first(model(data[1], ps, st)) .- data[2]) .^ 2)
 
 dataloader = concentric_sphere(
     2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000; batch_size = 256)
 
 iter = 0
-cb = function (ps, l)
+cb = function (state, l)
     global iter
     iter += 1
     if iter % 10 == 0
@@ -87,15 +87,15 @@ end
 model, ps, st = construct_model(1, 2, 64, 0)
 opt = OptimizationOptimisers.Adam(0.005)
 
-loss_node(model, dataloader.data[1], dataloader.data[2], ps, st)
+loss_node(model, (dataloader.data[1], dataloader.data[2]), ps, st)
 
 println("Training Neural ODE")
 
 optfunc = OptimizationFunction(
-    (x, p, data, target) -> loss_node(model, data, target, x, st),
+    (x, data) -> loss_node(model, data, x, st),
     Optimization.AutoZygote())
-optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
-res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev, dataloader)
+res = solve(optprob, opt; callback = cb, epochs = 1000)
 
 plt_node = plot_contour(model, res.u, st)
 
@@ -106,10 +106,10 @@ println()
 println("Training Augmented Neural ODE")
 
 optfunc = OptimizationFunction(
-    (x, p, data, target) -> loss_node(model, data, target, x, st),
+    (x, data) -> loss_node(model, data, x, st),
     Optimization.AutoZygote())
-optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
-res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev, dataloader)
+res = solve(optprob, opt; callback = cb, epochs = 1000)
 
 plot_contour(model, res.u, st)
 ```
@@ -229,7 +229,7 @@ We use the L2 distance between the model prediction `model(x)` and the actual pr
 optimization objective.
 
 ```@example augneuralode
-loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)
+loss_node(model, data, ps, st) = mean((first(model(data[1], ps, st)) .- data[2]) .^ 2)
 ```
 
 #### Dataset
@@ -248,7 +248,7 @@ Additionally, we define a callback function which displays the total loss at spe
 
 ```@example augneuralode
 iter = 0
-cb = function (ps, l)
+cb = function (state, l)
     global iter
     iter += 1
     if iter % 10 == 0
@@ -276,10 +276,10 @@ for `20` epochs.
 model, ps, st = construct_model(1, 2, 64, 0)
 
 optfunc = OptimizationFunction(
-    (x, p, data, target) -> loss_node(model, data, target, x, st),
+    (x, data) -> loss_node(model, data, x, st),
     Optimization.AutoZygote())
-optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
-res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev, dataloader)
+res = solve(optprob, opt; callback = cb, epochs = 1000)
 
 plot_contour(model, res.u, st)
 ```
@@ -297,10 +297,10 @@ a function which can be expressed by the neural ode. For more details and proofs
 model, ps, st = construct_model(1, 2, 64, 1)
 
 optfunc = OptimizationFunction(
-    (x, p, data, target) -> loss_node(model, data, target, x, st),
+    (x, data) -> loss_node(model, data, x, st),
     Optimization.AutoZygote())
-optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev)
-res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev, dataloader)
+res = solve(optprob, opt; callback = cb, epochs = 1000)
 
 plot_contour(model, res.u, st)
 ```
