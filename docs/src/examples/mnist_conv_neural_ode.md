@@ -104,10 +104,10 @@ iter = 0
 opt_func = OptimizationFunction(loss_function, Optimization.AutoZygote())
 opt_prob = OptimizationProblem(opt_func, ps, dataloader);
 
-function callback(ps, l, pred)
+function callback(state, l)
     global iter += 1
     iter % 10 == 0 &&
-        @info "[MNIST Conv GPU] Accuracy: $(accuracy(m, dataloader, ps.u, st))"
+        @info "[MNIST Conv GPU] Accuracy: $(accuracy(m, dataloader, state.u, st))"
     return false
 end
 

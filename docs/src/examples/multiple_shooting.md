@@ -124,14 +124,16 @@ pd, pax = getdata(ps), getaxes(ps)
 
 function loss_single_shooting(p)
     ps = ComponentArray(p, pax)
-    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
+    loss, currpred = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
         Tsit5(), group_size; continuity_term)
+    global preds = currpred
+    return loss
 end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_single_shooting(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pd)
-res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback)
+res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback, maxiters = 5000)
 gif(anim, "single_shooting.gif"; fps = 15)
 ```
 
