@@ -202,6 +202,6 @@ And then we use the callback with `doplot=true` to see the final plot:
 ```@example neuralode
 callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)
 plt = scatter(tsteps, ode_data[1, :]; label = "data") # hide
-scatter!(plt, tsteps, predict(result_neuralode2.u)[1, :]; label = "prediction") # hide
+scatter!(plt, tsteps, predict_neuralode(result_neuralode2.u)[1, :]; label = "prediction") # hide
 plt # hide
 ```

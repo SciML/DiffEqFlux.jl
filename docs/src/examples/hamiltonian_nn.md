@@ -14,7 +14,7 @@ Before getting to the explanation, here's some code to start with. We will follo
 
 ```@example hamiltonian_cp
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
-      ComponentArrays, Optimization, OptimizationOptimisers, IterTools
+      ComponentArrays, Optimization, OptimizationOptimisers, MLUtils
 
 t = range(0.0f0, 1.0f0; length = 1024)
 π_32 = Float32(π)
@@ -23,15 +23,11 @@ p_t = reshape(cos.(2π_32 * t), 1, :)
 dqdt = 2π_32 .* p_t
 dpdt = -2π_32 .* q_t
 
-data = vcat(q_t, p_t)
-target = vcat(dqdt, dpdt)
+data = cat(q_t, p_t; dims = 1)
+target = cat(dqdt, dpdt; dims = 1)
 B = 256
 NEPOCHS = 100
-dataloader = ncycle(
-    ((selectdim(data, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))),
-         selectdim(target, 2, ((i - 1) * B + 1):(min(i * B, size(data, 2)))))
-    for i in 1:(size(data, 2) ÷ B)),
-    NEPOCHS)
+dataloader = DataLoader((data, target); batchsize = B)
 
 hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (64, 1)); autodiff = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
@@ -39,21 +35,21 @@ ps_c = ps |> ComponentArray
 
 opt = OptimizationOptimisers.Adam(0.01f0)
 
-function loss_function(ps, data, target)
+function loss_function(ps, databatch)
+    data, target = databatch
     pred, st_ = hnn(data, ps, st)
     return mean(abs2, pred .- target), pred
 end
 
-function callback(ps, loss, pred)
+function callback(st, loss)
     println("[Hamiltonian NN] Loss: ", loss)
     return false
 end
 
-opt_func = OptimizationFunction((ps, _, data, target) -> loss_function(ps, data, target),
-    Optimization.AutoForwardDiff())
-opt_prob = OptimizationProblem(opt_func, ps_c)
+opt_func = OptimizationFunction(loss_function, Optimization.AutoForwardDiff())
+opt_prob = OptimizationProblem(opt_func, ps_c, dataloader)
 
-res = Optimization.solve(opt_prob, opt, dataloader; callback)
+res = Optimization.solve(opt_prob, opt; callback)
 
 ps_trained = res.u
 

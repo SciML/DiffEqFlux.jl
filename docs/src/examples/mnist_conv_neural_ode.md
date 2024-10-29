@@ -112,7 +112,7 @@ function callback(state, l)
 end
 
 # Train the NN-ODE and monitor the loss and weights.
-res = Optimization.solve(opt_prob, opt; maxiters = 5, callback)
+res = Optimization.solve(opt_prob, opt; epochs = 5, callback)
 acc = accuracy(m, dataloader, res.u, st)
 acc # hide
 ```

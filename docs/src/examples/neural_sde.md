@@ -120,7 +120,7 @@ function loss_neuralsde(p; n = 100)
     u = repeat(reshape(u0, :, 1), 1, n)
     samples = predict_neuralsde(p, u)
     currmeans = mean(samples; dims = 2)
-    currvars = var(samples; dims = 2, mean = means)[:, 1, :]
+    currvars = var(samples; dims = 2, mean = currmeans)[:, 1, :]
     currmeans = currmeans[:, 1, :]
     loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
     global means = currmeans

@@ -87,7 +87,7 @@ function loss_function(ps, data)
     return logitcrossentropy(pred, y)
 end
 
-loss_function(ps, x_train1, y_train1) # burn in loss
+loss_function(ps, (x_train1, y_train1)) # burn in loss
 
 opt = OptimizationOptimisers.Adam(0.05)
 iter = 0
@@ -103,7 +103,7 @@ function callback(state, l)
 end
 
 # Train the NN-ODE and monitor the loss and weights.
-res = Optimization.solve(opt_prob, opt; callback, maxiters = 5)
+res = Optimization.solve(opt_prob, opt; callback, epochs = 5)
 accuracy(m, dataloader, res.u, st)
 ```
 
@@ -329,6 +329,6 @@ for Neural ODE is given by `nn_ode.p`:
 
 ```@example mnist
 # Train the NN-ODE and monitor the loss and weights.
-res = Optimization.solve(opt_prob, opt; callback, maxiters = 5)
+res = Optimization.solve(opt_prob, opt; callback, epochs = 5)
 accuracy(m, dataloader, res.u, st)
 ```

@@ -50,7 +50,7 @@ end
 function loss_stiff_ndae(p)
     pred = predict_stiff_ndae(p)
     loss = sum(abs2, Array(sol_stiff) .- pred)
-    return loss, pred
+    return loss
 end
 
 # callback = function (state, l, pred) #callback function to observe training
@@ -172,7 +172,7 @@ from these predictions. In this case, we use **least squares** as our loss.
 function loss_stiff_ndae(p)
     pred = predict_stiff_ndae(p)
     loss = sum(abs2, sol_stiff .- pred)
-    return loss, pred
+    return loss
 end
 
 l1 = first(loss_stiff_ndae(ComponentArray(pinit)))

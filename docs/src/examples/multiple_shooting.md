@@ -54,6 +54,26 @@ pd, pax = getdata(ps), getaxes(ps)
 neuralode = NeuralODE(nn, tspan, Tsit5(); saveat = tsteps)
 prob_node = ODEProblem((u, p, t) -> nn(u, p, st)[1], u0, tspan, ComponentArray(p_init))
 
+# Define parameters for Multiple Shooting
+group_size = 3
+continuity_term = 200
+
+function loss_function(data, pred)
+    return sum(abs2, data - pred)
+end
+
+l1, preds = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
+    Tsit5(), group_size; continuity_term)
+
+function loss_multiple_shooting(p)
+    ps = ComponentArray(p, pax)
+
+    loss, currpred = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
+        Tsit5(), group_size; continuity_term)
+    global preds = currpred
+    return loss
+end
+
 function plot_multiple_shoot(plt, preds, group_size)
     step = group_size - 1
     ranges = group_ranges(datasize, group_size)
@@ -73,32 +93,14 @@ function callback(state, l; doplot = true, prob_node = prob_node)
         # plot the original data
         plt = scatter(tsteps, ode_data[1, :]; label = "Data")
         # plot the different predictions for individual shoot
+        l1, preds = multiple_shoot(st.u, ode_data, tsteps, prob_node, loss_function,
+            Tsit5(), group_size; continuity_term)
         plot_multiple_shoot(plt, preds, group_size)
 
         frame(anim)
         display(plot(plt))
     end
     return false
-end
-
-# Define parameters for Multiple Shooting
-group_size = 3
-continuity_term = 200
-
-l1, preds = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
-    Tsit5(), group_size; continuity_term)
-
-function loss_function(data, pred)
-    return sum(abs2, data - pred)
-end
-
-function loss_multiple_shooting(p)
-    ps = ComponentArray(p, pax)
-
-    loss, currpred = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
-        Tsit5(), group_size; continuity_term)
-    global preds = currpred
-    return loss
 end
 
 adtype = Optimization.AutoZygote()
