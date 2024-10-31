@@ -26,7 +26,7 @@ dpdt = -2π_32 .* q_t
 data = cat(q_t, p_t; dims = 1)
 target = cat(dqdt, dpdt; dims = 1)
 B = 256
-NEPOCHS = 100
+NEPOCHS = 1000
 dataloader = DataLoader((data, target); batchsize = B)
 
 hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (64, 1)); autodiff = AutoZygote())
@@ -41,7 +41,7 @@ function loss_function(ps, databatch)
     return mean(abs2, pred .- target), pred
 end
 
-function callback(st, loss)
+function callback(state, loss)
     println("[Hamiltonian NN] Loss: ", loss)
     return false
 end
@@ -49,7 +49,7 @@ end
 opt_func = OptimizationFunction(loss_function, Optimization.AutoForwardDiff())
 opt_prob = OptimizationProblem(opt_func, ps_c, dataloader)
 
-res = Optimization.solve(opt_prob, opt; callback)
+res = Optimization.solve(opt_prob, opt; callback, epochs = NEPOCHS)
 
 ps_trained = res.u
 
