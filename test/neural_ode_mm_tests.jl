@@ -32,10 +32,10 @@
     function loss(p)
         pred = first(ndae(u₀, p, st))
         loss = sum(abs2, Array(sol) .- pred)
-        return loss, pred
+        return loss
     end
 
-    cb = function (p, l, pred)
+    cb = function (state, l)
         @info "[NeuralODEMM] Loss: $l"
         return false
     end
