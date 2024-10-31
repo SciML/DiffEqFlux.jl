@@ -38,7 +38,7 @@ opt = OptimizationOptimisers.Adam(0.01f0)
 function loss_function(ps, databatch)
     data, target = databatch
     pred, st_ = hnn(data, ps, st)
-    return mean(abs2, pred .- target), pred
+    return mean(abs2, pred .- target)
 end
 
 function callback(state, loss)
