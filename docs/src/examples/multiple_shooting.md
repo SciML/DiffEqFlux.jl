@@ -93,7 +93,7 @@ function callback(state, l; doplot = true, prob_node = prob_node)
         # plot the original data
         plt = scatter(tsteps, ode_data[1, :]; label = "Data")
         # plot the different predictions for individual shoot
-        l1, preds = multiple_shoot(st.u, ode_data, tsteps, prob_node, loss_function,
+        l1, preds = multiple_shoot(state.u, ode_data, tsteps, prob_node, loss_function,
             Tsit5(), group_size; continuity_term)
         plot_multiple_shoot(plt, preds, group_size)
 
