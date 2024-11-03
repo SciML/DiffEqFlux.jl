@@ -86,8 +86,8 @@ Let's see what that looks like:
 # Get the prediction using the correct initial condition
 prediction0 = neuralsde(u0, ps, st)[1]
 
-drift_model = StatefulLuxLayer{true}(drift_dudt, nothing, st.drift)
-diffusion_model = StatefulLuxLayer{true}(diffusion_dudt, nothing, st.diffusion)
+drift_model = StatefulLuxLayer{true}(drift_dudt, ps.drift, st.drift)
+diffusion_model = StatefulLuxLayer{true}(diffusion_dudt, ps.diffusion, st.diffusion)
 
 drift_(u, p, t) = drift_model(u, p.drift)
 diffusion_(u, p, t) = diffusion_model(u, p.diffusion)
@@ -110,7 +110,7 @@ mean and variance from `n` runs at each time point and uses the distance from
 the data values:
 
 ```@example nsde
-neuralsde_model = StatefulLuxLayer{true}(neuralsde, nothing, st)
+neuralsde_model = StatefulLuxLayer{true}(neuralsde, ps, st)
 
 function predict_neuralsde(p, u = u0)
     return Array(neuralsde_model(u, p))
@@ -122,7 +122,7 @@ function loss_neuralsde(p; n = 100)
     currmeans = mean(samples; dims = 2)
     currvars = var(samples; dims = 2, mean = currmeans)[:, 1, :]
     currmeans = currmeans[:, 1, :]
-    loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
+    loss = sum(abs2, sde_data - currmeans) + sum(abs2, sde_data_vars - currvars)
     global means = currmeans
     global vars = currvars
     return loss
@@ -181,15 +181,21 @@ We resume the training with a larger `n`. (WARNING - this step is a couple of
 orders of magnitude longer than the previous one).
 
 ```@example nsde
+opt = OptimizationOptimisers.Adam(0.001)
 optf2 = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 100), adtype)
 optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
-result2 = Optimization.solve(optprob2, opt; callback, maxiters = 20)
+result2 = Optimization.solve(optprob2, opt; callback, maxiters = 100)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
 ```@example nsde
-_, means, vars = loss_neuralsde(result2.u; n = 1000)
+n = 1000
+u = repeat(reshape(u0, :, 1), 1, n)
+samples = predict_neuralsde(result2.u)
+currmeans = mean(samples; dims = 2)
+currvars = var(samples; dims = 2, mean = currmeans)[:, 1, :]
+currmeans = currmeans[:, 1, :]
 
 plt2 = Plots.scatter(tsteps, sde_data'; yerror = sde_data_vars', label = "data",
     title = "Neural SDE: After Training", xlabel = "Time")

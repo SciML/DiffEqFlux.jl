@@ -26,10 +26,10 @@ dpdt = -2π_32 .* q_t
 data = cat(q_t, p_t; dims = 1)
 target = cat(dqdt, dpdt; dims = 1)
 B = 256
-NEPOCHS = 1000
+NEPOCHS = 500
 dataloader = DataLoader((data, target); batchsize = B)
 
-hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (64, 1)); autodiff = AutoZygote())
+hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (1028, 1)); autodiff = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
 
@@ -83,7 +83,7 @@ dpdt = -2π_32 .* q_t
 data = cat(q_t, p_t; dims = 1)
 target = cat(dqdt, dpdt; dims = 1)
 B = 256
-NEPOCHS = 1000
+NEPOCHS = 500
 dataloader = DataLoader((data, target); batchsize = B)
 ```
 
@@ -92,17 +92,17 @@ dataloader = DataLoader((data, target); batchsize = B)
 We parameterize the  with a small MultiLayered Perceptron. HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn't support nesting itself, so we will be using ForwardDiff in the training loop to compute the gradients of the HNN Layer for Optimization.
 
 ```@example hamiltonian
-hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (64, 1)); autodiff = AutoZygote())
+hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (1028, 1)); autodiff = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
 ps_c = ps |> ComponentArray
 hnn_stateful = StatefulLuxLayer{true}(hnn, ps_c, st)
 
-opt = OptimizationOptimisers.Adam(0.01f0)
+opt = OptimizationOptimisers.Adam(0.005f0)
 
 function loss_function(ps, databatch)
     (data, target) = databatch
     pred = hnn_stateful(data, ps)
-    return mean(abs2, pred .- target), pred
+    return mean(abs2, pred .- target)
 end
 
 function callback(state, loss)
@@ -113,7 +113,7 @@ end
 opt_func = OptimizationFunction(loss_function, Optimization.AutoZygote())
 opt_prob = OptimizationProblem(opt_func, ps_c, dataloader)
 
-res = solve(opt_prob, opt; callback, epochs = NEPOCHS)
+res = Optimization.solve(opt_prob, opt; callback, epochs = NEPOCHS)
 
 ps_trained = res.u
 ```
