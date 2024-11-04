@@ -95,7 +95,7 @@ optfunc = OptimizationFunction(
     (x, data) -> loss_node(model, data, x, st),
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev, dataloader)
-res = solve(optprob, opt; callback = cb, epochs = 1000)
+res = solve(optprob, opt; callback = cb, epochs = 100)
 
 plt_node = plot_contour(model, res.u, st)
 
@@ -109,7 +109,7 @@ optfunc = OptimizationFunction(
     (x, data) -> loss_node(model, data, x, st),
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev, dataloader)
-res = solve(optprob, opt; callback = cb, epochs = 1000)
+res = solve(optprob, opt; callback = cb, epochs = 100)
 
 plot_contour(model, res.u, st)
 ```
@@ -279,7 +279,7 @@ optfunc = OptimizationFunction(
     (x, data) -> loss_node(model, data, x, st),
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev, dataloader)
-res = solve(optprob, opt; callback = cb, epochs = 1000)
+res = solve(optprob, opt; callback = cb, epochs = 100)
 
 plot_contour(model, res.u, st)
 ```
@@ -300,7 +300,7 @@ optfunc = OptimizationFunction(
     (x, data) -> loss_node(model, data, x, st),
     Optimization.AutoZygote())
 optprob = OptimizationProblem(optfunc, ComponentArray(ps |> cdev) |> gdev, dataloader)
-res = solve(optprob, opt; callback = cb, epochs = 1000)
+res = solve(optprob, opt; callback = cb, epochs = 100)
 
 plot_contour(model, res.u, st)
 ```
