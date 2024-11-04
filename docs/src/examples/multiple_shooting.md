@@ -106,7 +106,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_multiple_shooting(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pd)
-res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback, maxiters = 5000)
+res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback, maxiters = 300)
 gif(anim, "multiple_shooting.gif"; fps = 15)
 ```
 
@@ -135,7 +135,7 @@ end
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss_single_shooting(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pd)
-res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback, maxiters = 5000)
+res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback, maxiters = 300)
 gif(anim, "single_shooting.gif"; fps = 15)
 ```
 
