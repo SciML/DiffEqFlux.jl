@@ -27,7 +27,7 @@ ensemble_prob = EnsembleProblem(prob_truesde; safetycopy = false)
 ensemble_sol = solve(ensemble_prob, SOSRI(); trajectories = 10000)
 ensemble_sum = EnsembleSummary(ensemble_sol)
 
-sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(Float32[2.0 1.9187809 … 0.056201212 0.1314373; 0.0 0.5319515 … -0.66745234 -0.6232025], Float32[0.0 0.077948295 … 1.3372178 1.3167325; 0.0 0.058158427 … 1.0040525 1.0339476])</code></pre><p>Now we build a neural SDE. For simplicity, we will use the <code>NeuralDSDE</code> neural SDE with diagonal noise layer function:</p><pre><code class="language-julia hljs">drift_dudt = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
+sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(Float32[2.0 1.9211974 … 0.0717261 0.14688496; 0.0 0.5341582 … -0.6835291 -0.63465774], Float32[0.0 0.07732278 … 1.354432 1.3275006; 0.0 0.05989004 … 0.9615597 0.9949107])</code></pre><p>Now we build a neural SDE. For simplicity, we will use the <code>NeuralDSDE</code> neural SDE with diagonal noise layer function:</p><pre><code class="language-julia hljs">drift_dudt = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 diffusion_dudt = Dense(2, 2)
 
 neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI();
@@ -36,8 +36,8 @@ ps, st = Lux.setup(Xoshiro(0), neuralsde)
 ps = ComponentArray(ps)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ComponentVector{Float32}(drift = (layer_1 = Float32[], layer_2 = (weight = Float32[-1.8019577 1.5097173; -0.18273845 -0.4676411; … ; 0.37099916 -0.27108315; -0.34856588 -0.6062841], bias = Float32[-0.522484, -0.6805993, -0.21060704, 0.50937545, 0.33639288, 0.22010256, -0.12450862, 0.3884359, 0.5799375, 0.39842856  …  0.1040132, 0.009969078, -0.460674, 0.21031016, 0.5280858, 0.7054404, 0.0009628869, 0.40567473, 0.30830613, 0.17590544]), layer_3 = (weight = Float32[0.22905384 -0.23547108 … 0.033212326 0.13550478; 0.22466984 -0.14894177 … -0.19668292 0.10960526], bias = Float32[-0.026947042, -0.0370021])), diffusion = (weight = Float32[-0.7320429 -1.0360838; -0.86161304 -0.6590253], bias = Float32[-0.22268295, 0.123328425]))</code></pre><p>Let&#39;s see what that looks like:</p><pre><code class="language-julia hljs"># Get the prediction using the correct initial condition
 prediction0 = neuralsde(u0, ps, st)[1]
 
-drift_model = StatefulLuxLayer{true}(drift_dudt, nothing, st.drift)
-diffusion_model = StatefulLuxLayer{true}(diffusion_dudt, nothing, st.diffusion)
+drift_model = StatefulLuxLayer{true}(drift_dudt, ps.drift, st.drift)
+diffusion_model = StatefulLuxLayer{true}(diffusion_dudt, ps.diffusion, st.diffusion)
 
 drift_(u, p, t) = drift_model(u, p.drift)
 diffusion_(u, p, t) = diffusion_model(u, p.diffusion)
@@ -52,7 +52,7 @@ plt1 = plot(ensemble_nsum; title = &quot;Neural SDE: Before Training&quot;)
 scatter!(plt1, tsteps, sde_data&#39;; lw = 3)
 
 scatter(tsteps, sde_data[1, :]; label = &quot;data&quot;)
-scatter!(tsteps, prediction0[1, :]; label = &quot;prediction&quot;)</code></pre><img src="cb9d8ea7.svg" alt="Example block output"/><p>Now just as with the neural ODE we define a loss function that calculates the mean and variance from <code>n</code> runs at each time point and uses the distance from the data values:</p><pre><code class="language-julia hljs">neuralsde_model = StatefulLuxLayer{true}(neuralsde, nothing, st)
+scatter!(tsteps, prediction0[1, :]; label = &quot;prediction&quot;)</code></pre><img src="59cd0e96.svg" alt="Example block output"/><p>Now just as with the neural ODE we define a loss function that calculates the mean and variance from <code>n</code> runs at each time point and uses the distance from the data values:</p><pre><code class="language-julia hljs">neuralsde_model = StatefulLuxLayer{true}(neuralsde, ps, st)
 
 function predict_neuralsde(p, u = u0)
     return Array(neuralsde_model(u, p))
@@ -61,17 +61,24 @@ end
 function loss_neuralsde(p; n = 100)
     u = repeat(reshape(u0, :, 1), 1, n)
     samples = predict_neuralsde(p, u)
-    means = mean(samples; dims = 2)
-    vars = var(samples; dims = 2, mean = means)[:, 1, :]
-    means = means[:, 1, :]
-    loss = sum(abs2, sde_data - means) + sum(abs2, sde_data_vars - vars)
-    return loss, means, vars
+    currmeans = mean(samples; dims = 2)
+    currvars = var(samples; dims = 2, mean = currmeans)[:, 1, :]
+    currmeans = currmeans[:, 1, :]
+    loss = sum(abs2, sde_data - currmeans) + sum(abs2, sde_data_vars - currvars)
+    global means = currmeans
+    global vars = currvars
+    return loss
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">loss_neuralsde (generic function with 1 method)</code></pre><pre><code class="language-julia hljs">list_plots = []
 iter = 0
+u = repeat(reshape(u0, :, 1), 1, 100)
+samples = predict_neuralsde(ps, u)
+means = mean(samples; dims = 2)
+vars = var(samples; dims = 2, mean = means)[:, 1, :]
+means = means[:, 1, :]
 
 # Callback function to observe training
-callback = function (p, loss, means, vars; doplot = false)
-    global list_plots, iter
+callback = function (state, loss; doplot = false)
+    global list_plots, iter, means, vars
 
     if iter == 0
         list_plots = []
@@ -98,13 +105,19 @@ adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralsde(x; n = 10), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 result1 = Optimization.solve(optprob, opt; callback, maxiters = 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Default
-u: ComponentVector{Float32}(drift = (layer_1 = Float32[], layer_2 = (weight = Float32[-1.6446131 1.6007568; -0.0966244 -0.51827824; … ; 0.25819892 -0.23495613; 0.60181785 -0.10917616], bias = Float32[-1.2960019, -0.46108964, 0.42416087, 1.0272082, 1.0170325, 0.59449685, -1.0067313, 1.1094779, 0.24006733, -0.17523518  …  -0.14220986, 0.19220923, -0.5270857, 0.01129747, 0.92144454, 0.87994426, -0.0027043747, -0.14701107, 0.5468525, 0.034891628]), layer_3 = (weight = Float32[0.44062573 -0.027597804 … -0.14393675 0.30089587; -0.019616434 -0.02075781 … -0.08853514 0.28916168], bias = Float32[-0.2550987, -0.10766735])), diffusion = (weight = Float32[-0.6079391 -0.92010605; -0.63658834 -0.43144602], bias = Float32[-0.055682886, 0.3212193]))</code></pre><p>We resume the training with a larger <code>n</code>. (WARNING - this step is a couple of orders of magnitude longer than the previous one).</p><pre><code class="language-julia hljs">optf2 = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralsde(x; n = 100), adtype)
+u: ComponentVector{Float32}(drift = (layer_1 = Float32[], layer_2 = (weight = Float32[-1.6338629 1.4529942; -0.016536323 -0.36951435; … ; 0.47111908 0.1227905; -0.45224825 -0.76937723], bias = Float32[-1.0085486, -0.46730632, 0.033979222, 0.8683914, 0.7761026, 0.2497927, -0.09062532, 0.5371448, 0.41403267, -0.00021739479  …  -0.13943823, 0.48118526, -0.6360439, -0.28354877, 0.7611367, 0.74700165, 0.10108863, -0.27013898, 0.31296703, 0.048697736]), layer_3 = (weight = Float32[0.4607429 -0.04660421 … -0.1802743 0.30924895; 0.24986714 -0.010175367 … -0.25216663 0.24136338], bias = Float32[-0.24566819, -0.107968085])), diffusion = (weight = Float32[-0.5712332 -0.8807978; -0.67985135 -0.43516356], bias = Float32[-0.05905415, 0.31573114]))</code></pre><p>We resume the training with a larger <code>n</code>. (WARNING - this step is a couple of orders of magnitude longer than the previous one).</p><pre><code class="language-julia hljs">opt = OptimizationOptimisers.Adam(0.001)
+optf2 = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralsde(x; n = 100), adtype)
 optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
-result2 = Optimization.solve(optprob2, opt; callback, maxiters = 20)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Default
-u: ComponentVector{Float32}(drift = (layer_1 = Float32[], layer_2 = (weight = Float32[-1.6446131 1.6007568; -0.0966244 -0.51827824; … ; 0.25819892 -0.23495613; 0.60181785 -0.10917616], bias = Float32[-1.2960019, -0.46108964, 0.42416087, 1.0272082, 1.0170325, 0.59449685, -1.0067313, 1.1094779, 0.24006733, -0.17523518  …  -0.14220986, 0.19220923, -0.5270857, 0.01129747, 0.92144454, 0.87994426, -0.0027043747, -0.14701107, 0.5468525, 0.034891628]), layer_3 = (weight = Float32[0.44062573 -0.027597804 … -0.14393675 0.30089587; -0.019616434 -0.02075781 … -0.08853514 0.28916168], bias = Float32[-0.2550987, -0.10766735])), diffusion = (weight = Float32[-0.6079391 -0.92010605; -0.63658834 -0.43144602], bias = Float32[-0.055682886, 0.3212193]))</code></pre><p>And now we plot the solution to an ensemble of the trained neural SDE:</p><pre><code class="language-julia hljs">_, means, vars = loss_neuralsde(result2.u; n = 1000)
+result2 = Optimization.solve(optprob2, opt; callback, maxiters = 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Default
+u: ComponentVector{Float32}(drift = (layer_1 = Float32[], layer_2 = (weight = Float32[-1.5304599 1.5591502; -0.13784672 -0.48166922; … ; 0.37636942 0.038007576; -0.3549132 -0.67805976], bias = Float32[-1.0910522, -0.39618003, 0.11403267, 0.9541975, 0.859714, 0.32845983, -0.16772659, 0.62010044, 0.33649495, -0.08603739  …  -0.22488639, 0.56890184, -0.7007048, -0.21478496, 0.82535964, 0.80172473, 0.1554562, -0.3539994, 0.38473323, -0.024199024]), layer_3 = (weight = Float32[0.5231017 -0.029631931 … -0.17150563 0.20138355; 0.22816718 -0.09852909 … -0.14643805 0.14089173], bias = Float32[-0.30402723, -0.13010778])), diffusion = (weight = Float32[-0.6761351 -0.98704886; -0.7742762 -0.50535095], bias = Float32[-0.106976375, 0.3733371]))</code></pre><p>And now we plot the solution to an ensemble of the trained neural SDE:</p><pre><code class="language-julia hljs">n = 1000
+u = repeat(reshape(u0, :, 1), 1, n)
+samples = predict_neuralsde(result2.u)
+currmeans = mean(samples; dims = 2)
+currvars = var(samples; dims = 2, mean = currmeans)[:, 1, :]
+currmeans = currmeans[:, 1, :]
 
 plt2 = Plots.scatter(tsteps, sde_data&#39;; yerror = sde_data_vars&#39;, label = &quot;data&quot;,
     title = &quot;Neural SDE: After Training&quot;, xlabel = &quot;Time&quot;)
 plot!(plt2, tsteps, means&#39;; lw = 8, ribbon = vars&#39;, label = &quot;prediction&quot;)
 
-plt = plot(plt1, plt2; layout = (2, 1))</code></pre><img src="73bc96d7.svg" alt="Example block output"/><p>Try this with GPUs as well!</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../augmented_neural_ode/">« Augmented Neural Ordinary Differential Equations</a><a class="docs-footer-nextpage" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 18 September 2024 03:34">Wednesday 18 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plt = plot(plt1, plt2; layout = (2, 1))</code></pre><img src="562fe3d1.svg" alt="Example block output"/><p>Try this with GPUs as well!</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../augmented_neural_ode/">« Augmented Neural Ordinary Differential Equations</a><a class="docs-footer-nextpage" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 5 November 2024 15:00">Tuesday 5 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

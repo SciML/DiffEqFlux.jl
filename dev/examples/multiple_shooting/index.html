@@ -24,8 +24,31 @@ ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))
 nn = Chain(x -&gt; x .^ 3, Dense(2, 16, tanh), Dense(16, 2))
 p_init, st = Lux.setup(rng, nn)
 
+ps = ComponentArray(p_init)
+pd, pax = getdata(ps), getaxes(ps)
+
 neuralode = NeuralODE(nn, tspan, Tsit5(); saveat = tsteps)
 prob_node = ODEProblem((u, p, t) -&gt; nn(u, p, st)[1], u0, tspan, ComponentArray(p_init))
+
+# Define parameters for Multiple Shooting
+group_size = 3
+continuity_term = 200
+
+function loss_function(data, pred)
+    return sum(abs2, data - pred)
+end
+
+l1, preds = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
+    Tsit5(), group_size; continuity_term)
+
+function loss_multiple_shooting(p)
+    ps = ComponentArray(p, pax)
+
+    loss, currpred = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
+        Tsit5(), group_size; continuity_term)
+    global preds = currpred
+    return loss
+end
 
 function plot_multiple_shoot(plt, preds, group_size)
     step = group_size - 1
@@ -38,15 +61,17 @@ end
 
 anim = Plots.Animation()
 iter = 0
-callback = function (p, l, preds; doplot = true)
+function callback(state, l; doplot = true, prob_node = prob_node)
     display(l)
     global iter
     iter += 1
     if doplot &amp;&amp; iter % 1 == 0
         # plot the original data
         plt = scatter(tsteps, ode_data[1, :]; label = &quot;Data&quot;)
-
         # plot the different predictions for individual shoot
+        l1, preds = multiple_shoot(
+            ComponentArray(state.u, pax), ode_data, tsteps, prob_node, loss_function,
+            Tsit5(), group_size; continuity_term)
         plot_multiple_shoot(plt, preds, group_size)
 
         frame(anim)
@@ -55,28 +80,11 @@ callback = function (p, l, preds; doplot = true)
     return false
 end
 
-# Define parameters for Multiple Shooting
-group_size = 3
-continuity_term = 200
-
-function loss_function(data, pred)
-    return sum(abs2, data - pred)
-end
-
-ps = ComponentArray(p_init)
-pd, pax = getdata(ps), getaxes(ps)
-
-function loss_multiple_shooting(p)
-    ps = ComponentArray(p, pax)
-    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
-        Tsit5(), group_size; continuity_term)
-end
-
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -&gt; loss_multiple_shooting(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pd)
-res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback)
-gif(anim, &quot;multiple_shooting.gif&quot;; fps = 15)</code></pre><img src="164a3da3.gif" alt="Example block output"/><p>The connected lines show the predictions of each group. Notice that there are overlapping points as well. These are the points we are trying to coincide.</p><p>Here is an output with <code>group_size = 30</code> (which is the same as solving on the whole interval without splitting also called single shooting).</p><pre><code class="language-julia hljs">anim = Plots.Animation()
+res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback, maxiters = 300)
+gif(anim, &quot;multiple_shooting.gif&quot;; fps = 15)</code></pre><img src="458049bb.gif" alt="Example block output"/><p>The connected lines show the predictions of each group. Notice that there are overlapping points as well. These are the points we are trying to coincide.</p><p>Here is an output with <code>group_size = 30</code> (which is the same as solving on the whole interval without splitting also called single shooting).</p><pre><code class="language-julia hljs">anim = Plots.Animation()
 iter = 0
 group_size = 30
 
@@ -85,12 +93,14 @@ pd, pax = getdata(ps), getaxes(ps)
 
 function loss_single_shooting(p)
     ps = ComponentArray(p, pax)
-    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
+    loss, currpred = multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function,
         Tsit5(), group_size; continuity_term)
+    global preds = currpred
+    return loss
 end
 
 adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -&gt; loss_single_shooting(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, pd)
-res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback)
-gif(anim, &quot;single_shooting.gif&quot;; fps = 15)</code></pre><img src="0b8b6514.gif" alt="Example block output"/><p>It is clear from the above picture, a single shoot doesn&#39;t perform very well with the ODE Problem we have and gets stuck in a local minimum.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tensor_layer/">« Physics-Informed Machine Learning (PIML) with TensorLayer</a><a class="docs-footer-nextpage" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 18 September 2024 03:34">Wednesday 18 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback, maxiters = 300)
+gif(anim, &quot;single_shooting.gif&quot;; fps = 15)</code></pre><img src="66bca879.gif" alt="Example block output"/><p>It is clear from the above picture, a single shoot doesn&#39;t perform very well with the ODE Problem we have and gets stuck in a local minimum.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tensor_layer/">« Physics-Informed Machine Learning (PIML) with TensorLayer</a><a class="docs-footer-nextpage" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 5 November 2024 15:00">Tuesday 5 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

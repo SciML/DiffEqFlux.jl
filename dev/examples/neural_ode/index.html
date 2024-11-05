@@ -27,15 +27,16 @@ end
 function loss_neuralode(p)
     pred = predict_neuralode(p)
     loss = sum(abs2, ode_data .- pred)
-    return loss, pred
+    return loss
 end
 
 # Do not plot by default for the documentation
 # Users should change doplot=true to see the plots callbacks
-callback = function (p, l, pred; doplot = false)
+function callback(state, l; doplot = false)
     println(l)
     # plot current prediction against data
     if doplot
+        pred = predict_neuralode(state.u)
         plt = scatter(tsteps, ode_data[1, :]; label = &quot;data&quot;)
         scatter!(plt, tsteps, pred[1, :]; label = &quot;prediction&quot;)
         display(plot(plt))
@@ -44,7 +45,7 @@ callback = function (p, l, pred; doplot = false)
 end
 
 pinit = ComponentArray(p)
-callback(pinit, loss_neuralode(pinit)...; doplot = true)
+callback((; u = pinit), loss_neuralode(pinit); doplot = true)
 
 # use Optimization.jl to solve the problem
 adtype = Optimization.AutoZygote()
@@ -60,7 +61,7 @@ optprob2 = remake(optprob; u0 = result_neuralode.u)
 result_neuralode2 = Optimization.solve(
     optprob2, Optim.BFGS(; initial_stepnorm = 0.01); callback, allow_f_increases = false)
 
-callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif" alt="Neural ODE"/></p><h2 id="Explanation"><a class="docs-heading-anchor" href="#Explanation">Explanation</a><a id="Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Explanation" title="Permalink"></a></h2><p>Let&#39;s get a time series array from a spiral ODE to train against.</p><pre><code class="language-julia hljs">using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
+callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><p><img src="https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif" alt="Neural ODE"/></p><h2 id="Explanation"><a class="docs-heading-anchor" href="#Explanation">Explanation</a><a id="Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Explanation" title="Permalink"></a></h2><p>Let&#39;s get a time series array from a spiral ODE to train against.</p><pre><code class="language-julia hljs">using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
       OptimizationOptimisers, Random, Plots
 
 rng = Xoshiro(0)
@@ -93,12 +94,13 @@ end
 function loss_neuralode(p)
     pred = predict_neuralode(p)
     loss = sum(abs2, ode_data .- pred)
-    return loss, pred
+    return loss
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">loss_neuralode (generic function with 1 method)</code></pre><p>We define a callback function. In this example, we set <code>doplot=false</code> because otherwise it would show every step and overflow the documentation, but for your use case set <code>doplot=true</code> to see a live animation of the training process!</p><pre><code class="language-julia hljs"># Callback function to observe training
-callback = function (p, l, pred; doplot = false)
+callback = function (state, l; doplot = false)
     println(l)
     # plot current prediction against data
     if doplot
+        pred = predict_neuralode(state.u)
         plt = scatter(tsteps, ode_data[1, :]; label = &quot;data&quot;)
         scatter!(plt, tsteps, pred[1, :]; label = &quot;prediction&quot;)
         display(plot(plt))
@@ -107,7 +109,7 @@ callback = function (p, l, pred; doplot = false)
 end
 
 pinit = ComponentArray(p)
-callback(pinit, loss_neuralode(pinit)...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><p>We then train the neural network to learn the ODE.</p><p>Here we showcase starting the optimization with <code>Adam</code> to more quickly find a minimum, and then honing in on the minimum by using <code>LBFGS</code>. By using the two together, we can fit the neural ODE in 9 seconds! (Note, the timing commented out the plotting). You can easily incorporate the procedure below to set up custom optimization problems. For more information on the usage of <a href="https://github.com/SciML/Optimization.jl">Optimization.jl</a>, please consult <a href="https://docs.sciml.ai/Optimization/stable/">this</a> documentation.</p><p>The <code>x</code> and <code>p</code> variables in the optimization function are different from <code>x</code> and <code>p</code> above. The optimization function runs over the space of parameters of the original problem, so <code>x_optimization</code> == <code>p_original</code>.</p><pre><code class="language-julia hljs"># Train using the Adam optimizer
+callback((; u = pinit), loss_neuralode(pinit))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><p>We then train the neural network to learn the ODE.</p><p>Here we showcase starting the optimization with <code>Adam</code> to more quickly find a minimum, and then honing in on the minimum by using <code>LBFGS</code>. By using the two together, we can fit the neural ODE in 9 seconds! (Note, the timing commented out the plotting). You can easily incorporate the procedure below to set up custom optimization problems. For more information on the usage of <a href="https://github.com/SciML/Optimization.jl">Optimization.jl</a>, please consult <a href="https://docs.sciml.ai/Optimization/stable/">this</a> documentation.</p><p>The <code>x</code> and <code>p</code> variables in the optimization function are different from <code>x</code> and <code>p</code> above. The optimization function runs over the space of parameters of the original problem, so <code>x_optimization</code> == <code>p_original</code>.</p><pre><code class="language-julia hljs"># Train using the Adam optimizer
 adtype = Optimization.AutoZygote()
 
 optf = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralode(x), adtype)
@@ -115,10 +117,9 @@ optprob = Optimization.OptimizationProblem(optf, pinit)
 
 result_neuralode = Optimization.solve(
     optprob, OptimizationOptimisers.Adam(0.05); callback = callback, maxiters = 300)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Default
-u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[-2.0319233 1.477405; -0.5069273 -0.22083858; … ; -0.20591025 -0.0014102709; 0.5544153 -0.86127925], bias = Float32[-0.62934816, -0.7987231, -0.4976903, 1.4189545, -0.39722523, 0.8302175, 0.83453536, 0.0076447176, 0.952567, 0.75425434  …  0.24217565, -0.95250326, -1.5745633, 0.5434106, -0.8726289, 0.69962114, -0.10283114, 0.82785165, 0.28596067, 0.41556162]), layer_3 = (weight = Float32[-0.25327778 0.75019336 … -0.06280791 0.6154139; -0.04056806 -0.057226546 … -0.12330114 -0.031469245], bias = Float32[-0.7622966, 0.18354413]))</code></pre><p>We then complete the training using a different optimizer, starting from where <code>Adam</code> stopped. We do <code>allow_f_increases=false</code> to make the optimization automatically halt when near the minimum.</p><pre><code class="language-julia hljs"># Retrain using the LBFGS optimizer
+u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[-1.9981827 1.5042648; -0.47814557 -0.26750085; … ; -0.20484874 0.0092039695; 0.5409973 -0.8555501], bias = Float32[-0.6268429, -0.7863819, -0.53833705, 1.4233569, -0.39971286, 0.84301114, 0.87310034, -0.017207908, 0.9675154, 0.76967454  …  0.23867717, -0.9978074, -1.4326319, 0.56866187, -0.82174367, 0.6927168, -0.09543529, 1.0298951, 0.25357136, 0.39737022]), layer_3 = (weight = Float32[-0.2606285 0.724504 … -0.05888391 0.6000611; -0.041376248 -0.060438063 … -0.12594466 -0.02731695], bias = Float32[-0.76189625, 0.18292136]))</code></pre><p>We then complete the training using a different optimizer, starting from where <code>Adam</code> stopped. We do <code>allow_f_increases=false</code> to make the optimization automatically halt when near the minimum.</p><pre><code class="language-julia hljs"># Retrain using the LBFGS optimizer
 optprob2 = remake(optprob; u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2, Optim.BFGS(; initial_stepnorm = 0.01);
     callback = callback, allow_f_increases = false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Success
-u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[-2.0289032 1.4811368; -0.5043553 -0.2720002; … ; -0.20395276 -0.005660336; 0.5328353 -0.8721375], bias = Float32[-0.63041574, -0.7953068, -0.50058615, 1.4263324, -0.40910125, 0.84746796, 0.8550873, 0.005974025, 0.9752969, 0.75691575  …  0.2586626, -0.96543187, -1.6024235, 0.5447964, -0.8933208, 0.6984873, -0.09490277, 0.8385555, 0.28947726, 0.4269342]), layer_3 = (weight = Float32[-0.2606119 0.76360923 … -0.07297528 0.6406259; -0.019881718 -0.038761433 … -0.16224873 -0.035531815], bias = Float32[-0.738873, 0.26422966]))</code></pre><p>And then we use the callback with <code>doplot=true</code> to see the final plot:</p><pre><code class="language-julia hljs">callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)
-scatter!(plt, tsteps, loss_neuralode(result_neuralode2.u)[2][1, :]; label = &quot;prediction&quot;) # hide</code></pre><img src="0d306e4d.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><a class="docs-footer-nextpage" href="../GPUs/">Neural ODEs on GPUs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 18 September 2024 03:34">Wednesday 18 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[-1.9958855 1.5070596; -0.4678777 -0.29446617; … ; -0.20228349 0.005587654; 0.528681 -0.8615436], bias = Float32[-0.62750757, -0.7860856, -0.5409617, 1.4296266, -0.4089522, 0.85364723, 0.8869047, -0.019000627, 0.9841091, 0.7714554  …  0.24628766, -1.008026, -1.4495976, 0.5685548, -0.834551, 0.6918348, -0.08915684, 1.0418909, 0.25492597, 0.40507272]), layer_3 = (weight = Float32[-0.26008996 0.73168904 … -0.0582718 0.6091132; -0.028427493 -0.055856064 … -0.15004611 -0.02754109], bias = Float32[-0.7443593, 0.23535171]))</code></pre><p>And then we use the callback with <code>doplot=true</code> to see the final plot:</p><pre><code class="language-julia hljs">callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)</code></pre><img src="3beb3eb9.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><a class="docs-footer-nextpage" href="../GPUs/">Neural ODEs on GPUs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 5 November 2024 15:00">Tuesday 5 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

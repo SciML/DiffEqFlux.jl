@@ -65,13 +65,13 @@ function plot_contour(model, ps, st, npoints = 300)
     return contour(x, y, sol; fill = true, linewidth = 0.0)
 end
 
-loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)
+loss_node(model, data, ps, st) = mean((first(model(data[1], ps, st)) .- data[2]) .^ 2)
 
 dataloader = concentric_sphere(
     2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000; batch_size = 256)
 
 iter = 0
-cb = function (ps, l)
+cb = function (state, l)
     global iter
     iter += 1
     if iter % 10 == 0
@@ -83,15 +83,15 @@ end
 model, ps, st = construct_model(1, 2, 64, 0)
 opt = OptimizationOptimisers.Adam(0.005)
 
-loss_node(model, dataloader.data[1], dataloader.data[2], ps, st)
+loss_node(model, (dataloader.data[1], dataloader.data[2]), ps, st)
 
 println(&quot;Training Neural ODE&quot;)
 
 optfunc = OptimizationFunction(
-    (x, p, data, target) -&gt; loss_node(model, data, target, x, st),
+    (x, data) -&gt; loss_node(model, data, x, st),
     Optimization.AutoZygote())
-optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev)
-res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev, dataloader)
+res = solve(optprob, opt; callback = cb, epochs = 100)
 
 plt_node = plot_contour(model, res.u, st)
 
@@ -102,12 +102,12 @@ println()
 println(&quot;Training Augmented Neural ODE&quot;)
 
 optfunc = OptimizationFunction(
-    (x, p, data, target) -&gt; loss_node(model, data, target, x, st),
+    (x, data) -&gt; loss_node(model, data, x, st),
     Optimization.AutoZygote())
-optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev)
-res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev, dataloader)
+res = solve(optprob, opt; callback = cb, epochs = 100)
 
-plot_contour(model, res.u, st)</code></pre><img src="627795c7.svg" alt="Example block output"/><h2 id="Step-by-Step-Explanation"><a class="docs-heading-anchor" href="#Step-by-Step-Explanation">Step-by-Step Explanation</a><a id="Step-by-Step-Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Explanation" title="Permalink"></a></h2><h3 id="Loading-required-packages"><a class="docs-heading-anchor" href="#Loading-required-packages">Loading required packages</a><a id="Loading-required-packages-1"></a><a class="docs-heading-anchor-permalink" href="#Loading-required-packages" title="Permalink"></a></h3><pre><code class="language-julia hljs">using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, LuxCUDA, Random
+plot_contour(model, res.u, st)</code></pre><img src="00795629.svg" alt="Example block output"/><h2 id="Step-by-Step-Explanation"><a class="docs-heading-anchor" href="#Step-by-Step-Explanation">Step-by-Step Explanation</a><a id="Step-by-Step-Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Explanation" title="Permalink"></a></h2><h3 id="Loading-required-packages"><a class="docs-heading-anchor" href="#Loading-required-packages">Loading required packages</a><a id="Loading-required-packages-1"></a><a class="docs-heading-anchor-permalink" href="#Loading-required-packages" title="Permalink"></a></h3><pre><code class="language-julia hljs">using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, LuxCUDA, Random
 using MLUtils, ComponentArrays
 using Optimization, OptimizationOptimisers, IterTools
 
@@ -163,11 +163,11 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     sol = reshape(model(grid_points |&gt; gdev, ps, st)[1], npoints, npoints) |&gt; cdev
 
     return contour(x, y, sol; fill = true, linewidth = 0.0)
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">plot_contour (generic function with 2 methods)</code></pre><h3 id="Training-Parameters"><a class="docs-heading-anchor" href="#Training-Parameters">Training Parameters</a><a id="Training-Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Training-Parameters" title="Permalink"></a></h3><h4 id="Loss-Functions"><a class="docs-heading-anchor" href="#Loss-Functions">Loss Functions</a><a id="Loss-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Loss-Functions" title="Permalink"></a></h4><p>We use the L2 distance between the model prediction <code>model(x)</code> and the actual prediction <code>y</code> as the optimization objective.</p><pre><code class="language-julia hljs">loss_node(model, x, y, ps, st) = mean((first(model(x, ps, st)) .- y) .^ 2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">loss_node (generic function with 1 method)</code></pre><h4 id="Dataset"><a class="docs-heading-anchor" href="#Dataset">Dataset</a><a id="Dataset-1"></a><a class="docs-heading-anchor-permalink" href="#Dataset" title="Permalink"></a></h4><p>Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is easy to visualize. We sample a total of <code>4000</code> data points.</p><pre><code class="language-julia hljs">dataloader = concentric_sphere(
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">plot_contour (generic function with 2 methods)</code></pre><h3 id="Training-Parameters"><a class="docs-heading-anchor" href="#Training-Parameters">Training Parameters</a><a id="Training-Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Training-Parameters" title="Permalink"></a></h3><h4 id="Loss-Functions"><a class="docs-heading-anchor" href="#Loss-Functions">Loss Functions</a><a id="Loss-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Loss-Functions" title="Permalink"></a></h4><p>We use the L2 distance between the model prediction <code>model(x)</code> and the actual prediction <code>y</code> as the optimization objective.</p><pre><code class="language-julia hljs">loss_node(model, data, ps, st) = mean((first(model(data[1], ps, st)) .- data[2]) .^ 2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">loss_node (generic function with 1 method)</code></pre><h4 id="Dataset"><a class="docs-heading-anchor" href="#Dataset">Dataset</a><a id="Dataset-1"></a><a class="docs-heading-anchor-permalink" href="#Dataset" title="Permalink"></a></h4><p>Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is easy to visualize. We sample a total of <code>4000</code> data points.</p><pre><code class="language-julia hljs">dataloader = concentric_sphere(
     2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000; batch_size = 256)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">15-element DataLoader(::Tuple{CUDA.CuArray{Float32, 2, CUDA.DeviceMemory}, CUDA.CuArray{Float32, 2, CUDA.DeviceMemory}}, shuffle=true, batchsize=256, partial=false)
   with first element:
   (2×256 CUDA.CuArray{Float32, 2, CUDA.DeviceMemory}, 1×256 CUDA.CuArray{Float32, 2, CUDA.DeviceMemory},)</code></pre><h4 id="Callback-Function"><a class="docs-heading-anchor" href="#Callback-Function">Callback Function</a><a id="Callback-Function-1"></a><a class="docs-heading-anchor-permalink" href="#Callback-Function" title="Permalink"></a></h4><p>Additionally, we define a callback function which displays the total loss at specific intervals.</p><pre><code class="language-julia hljs">iter = 0
-cb = function (ps, l)
+cb = function (state, l)
     global iter
     iter += 1
     if iter % 10 == 0
@@ -177,17 +177,17 @@ cb = function (ps, l)
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">#2 (generic function with 1 method)</code></pre><h4 id="Optimizer"><a class="docs-heading-anchor" href="#Optimizer">Optimizer</a><a id="Optimizer-1"></a><a class="docs-heading-anchor-permalink" href="#Optimizer" title="Permalink"></a></h4><p>We use Adam as the optimizer with a learning rate of 0.005</p><pre><code class="language-julia hljs">opt = OptimizationOptimisers.Adam(5.0f-3)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Adam(0.005, (0.9, 0.999), 1.0e-8)</code></pre><h3 id="Training-the-Neural-ODE"><a class="docs-heading-anchor" href="#Training-the-Neural-ODE">Training the Neural ODE</a><a id="Training-the-Neural-ODE-1"></a><a class="docs-heading-anchor-permalink" href="#Training-the-Neural-ODE" title="Permalink"></a></h3><p>To train our neural ode model, we need to pass the appropriate learnable parameters, <code>parameters</code> which are returned by the <code>construct_models</code> function. It is simply the <code>node.p</code> vector. We then train our model for <code>20</code> epochs.</p><pre><code class="language-julia hljs">model, ps, st = construct_model(1, 2, 64, 0)
 
 optfunc = OptimizationFunction(
-    (x, p, data, target) -&gt; loss_node(model, data, target, x, st),
+    (x, data) -&gt; loss_node(model, data, x, st),
     Optimization.AutoZygote())
-optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev)
-res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev, dataloader)
+res = solve(optprob, opt; callback = cb, epochs = 100)
 
-plot_contour(model, res.u, st)</code></pre><img src="7d266afd.svg" alt="Example block output"/><p>Here is what the contour plot should look for Neural ODE. Notice that the regression is not perfect due to the thin artifact which connects the circles.</p><h2 id="Training-the-Augmented-Neural-ODE"><a class="docs-heading-anchor" href="#Training-the-Augmented-Neural-ODE">Training the Augmented Neural ODE</a><a id="Training-the-Augmented-Neural-ODE-1"></a><a class="docs-heading-anchor-permalink" href="#Training-the-Augmented-Neural-ODE" title="Permalink"></a></h2><p>Our training configuration will be the same as that of Neural ODE. Only in this case, we have augmented the input with a single zero. This makes the problem 3-dimensional, and as such it is possible to find a function which can be expressed by the neural ode. For more details and proofs, please refer to [1].</p><pre><code class="language-julia hljs">model, ps, st = construct_model(1, 2, 64, 1)
+plot_contour(model, res.u, st)</code></pre><img src="989addf0.svg" alt="Example block output"/><p>Here is what the contour plot should look for Neural ODE. Notice that the regression is not perfect due to the thin artifact which connects the circles.</p><h2 id="Training-the-Augmented-Neural-ODE"><a class="docs-heading-anchor" href="#Training-the-Augmented-Neural-ODE">Training the Augmented Neural ODE</a><a id="Training-the-Augmented-Neural-ODE-1"></a><a class="docs-heading-anchor-permalink" href="#Training-the-Augmented-Neural-ODE" title="Permalink"></a></h2><p>Our training configuration will be the same as that of Neural ODE. Only in this case, we have augmented the input with a single zero. This makes the problem 3-dimensional, and as such it is possible to find a function which can be expressed by the neural ode. For more details and proofs, please refer to [1].</p><pre><code class="language-julia hljs">model, ps, st = construct_model(1, 2, 64, 1)
 
 optfunc = OptimizationFunction(
-    (x, p, data, target) -&gt; loss_node(model, data, target, x, st),
+    (x, data) -&gt; loss_node(model, data, x, st),
     Optimization.AutoZygote())
-optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev)
-res = solve(optprob, opt, IterTools.ncycle(dataloader, 5); callback = cb)
+optprob = OptimizationProblem(optfunc, ComponentArray(ps |&gt; cdev) |&gt; gdev, dataloader)
+res = solve(optprob, opt; callback = cb, epochs = 100)
 
-plot_contour(model, res.u, st)</code></pre><img src="9699cd3f.svg" alt="Example block output"/><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. &quot;Augmented neural ODEs.&quot; In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mnist_conv_neural_ode/">« Convolutional Neural ODE MNIST Classifier on GPU</a><a class="docs-footer-nextpage" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 18 September 2024 03:35">Wednesday 18 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot_contour(model, res.u, st)</code></pre><img src="719e701c.svg" alt="Example block output"/><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. &quot;Augmented neural ODEs.&quot; In Proceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 3140-3150. 2019.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../mnist_conv_neural_ode/">« Convolutional Neural ODE MNIST Classifier on GPU</a><a class="docs-footer-nextpage" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 5 November 2024 15:00">Tuesday 5 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
