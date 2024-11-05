@@ -40,15 +40,16 @@ end
 function loss_neuralode(p)
     pred = predict_neuralode(p)
     loss = sum(abs2, ode_data .- pred)
-    return loss, pred
+    return loss
 end
 
 # Do not plot by default for the documentation
 # Users should change doplot=true to see the plots callbacks
-callback = function (p, l, pred; doplot = false)
+function callback(state, l; doplot = false)
     println(l)
     # plot current prediction against data
     if doplot
+        pred = predict_neuralode(state.u)
         plt = scatter(tsteps, ode_data[1, :]; label = "data")
         scatter!(plt, tsteps, pred[1, :]; label = "prediction")
         display(plot(plt))
@@ -57,7 +58,7 @@ callback = function (p, l, pred; doplot = false)
 end
 
 pinit = ComponentArray(p)
-callback(pinit, loss_neuralode(pinit)...; doplot = true)
+callback((; u = pinit), loss_neuralode(pinit); doplot = true)
 
 # use Optimization.jl to solve the problem
 adtype = Optimization.AutoZygote()
@@ -73,7 +74,7 @@ optprob2 = remake(optprob; u0 = result_neuralode.u)
 result_neuralode2 = Optimization.solve(
     optprob2, Optim.BFGS(; initial_stepnorm = 0.01); callback, allow_f_increases = false)
 
-callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)
+callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)
 ```
 
 ![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
@@ -134,7 +135,7 @@ end
 function loss_neuralode(p)
     pred = predict_neuralode(p)
     loss = sum(abs2, ode_data .- pred)
-    return loss, pred
+    return loss
 end
 ```
 
@@ -143,10 +144,11 @@ it would show every step and overflow the documentation, but for your use case s
 
 ```@example neuralode
 # Callback function to observe training
-callback = function (p, l, pred; doplot = false)
+callback = function (state, l; doplot = false)
     println(l)
     # plot current prediction against data
     if doplot
+        pred = predict_neuralode(state.u)
         plt = scatter(tsteps, ode_data[1, :]; label = "data")
         scatter!(plt, tsteps, pred[1, :]; label = "prediction")
         display(plot(plt))
@@ -155,7 +157,7 @@ callback = function (p, l, pred; doplot = false)
 end
 
 pinit = ComponentArray(p)
-callback(pinit, loss_neuralode(pinit)...)
+callback((; u = pinit), loss_neuralode(pinit))
 ```
 
 We then train the neural network to learn the ODE.
@@ -198,8 +200,8 @@ result_neuralode2 = Optimization.solve(optprob2, Optim.BFGS(; initial_stepnorm =
 And then we use the callback with `doplot=true` to see the final plot:
 
 ```@example neuralode
-callback(result_neuralode2.u, loss_neuralode(result_neuralode2.u)...; doplot = true)
+callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)
 plt = scatter(tsteps, ode_data[1, :]; label = "data") # hide
-scatter!(plt, tsteps, loss_neuralode(result_neuralode2.u)[2][1, :]; label = "prediction") # hide 
+scatter!(plt, tsteps, predict_neuralode(result_neuralode2.u)[1, :]; label = "prediction") # hide
 plt # hide
 ```
