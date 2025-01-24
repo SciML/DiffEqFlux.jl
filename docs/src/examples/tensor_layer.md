@@ -9,6 +9,13 @@ Let's consider the anharmonic oscillator described by the ODE
 ẍ = - kx - αx³ - βẋ -γẋ³.
 ```
 
+We first transform this second order differential equation into a system of first order
+differential equations for use in `DiffEqFlux`: We let `ẋ = v` then 
+```math
+ẋ = v \\
+v̇ = - kx - αx³ - βv̇ -γv̇³.
+```
+
 To obtain the training data, we solve the equation of motion using one of the
 solvers in `DifferentialEquations`:
 
