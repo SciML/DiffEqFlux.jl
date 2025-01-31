@@ -25,7 +25,7 @@
 
     function loss_n_ode(p)
         pred = predict(p)
-        return sum(abs2, correct_pos .- pred[1:2, :]), pred
+        return sum(abs2, correct_pos .- pred[1:2, :])
     end
 
     l1 = loss_n_ode(p)
@@ -52,7 +52,7 @@
 
     function loss_n_ode(p)
         pred = predict(p)
-        return sum(abs2, correct_pos .- pred[1:2, :]), pred
+        return sum(abs2, correct_pos .- pred[1:2, :])
     end
 
     optfunc = Optimization.OptimizationFunction(
@@ -72,7 +72,7 @@
 
     function loss_n_ode(p)
         pred = predict(p)
-        return sum(abs2, correct_pos .- pred[1:2, :]), pred
+        return sum(abs2, correct_pos .- pred[1:2, :])
     end
 
     optfunc = Optimization.OptimizationFunction(
