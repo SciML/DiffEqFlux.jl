@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neural Stochastic Differential Equations With Method of Moments · DiffEqFlux.jl</title><meta name="title" content="Neural Stochastic Differential Equations With Method of Moments · DiffEqFlux.jl"/><meta property="og:title" content="Neural Stochastic Differential Equations With Method of Moments · DiffEqFlux.jl"/><meta property="twitter:title" content="Neural Stochastic Differential Equations With Method of Moments · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_sde/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_sde/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_sde/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li class="is-active"><a class="tocitem" href>Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li><li><a class="tocitem" href="../neural_gde/">Neural Graph Differential Equations</a></li><li><a class="tocitem" href="../physical_constraints/">Enforcing Physical Constraints via Universal Differential-Algebraic Equations</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Neural Stochastic Differential Equations With Method of Moments</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Neural Stochastic Differential Equations With Method of Moments</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/neural_sde.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Neural-Stochastic-Differential-Equations-With-Method-of-Moments"><a class="docs-heading-anchor" href="#Neural-Stochastic-Differential-Equations-With-Method-of-Moments">Neural Stochastic Differential Equations With Method of Moments</a><a id="Neural-Stochastic-Differential-Equations-With-Method-of-Moments-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-Stochastic-Differential-Equations-With-Method-of-Moments" title="Permalink"></a></h1><p>With neural stochastic differential equations, there is once again a helper form <code>neural_dmsde</code> which can be used for the multiplicative noise case (consult the layers API documentation, or <a href="https://github.com/MikeInnes/zygote-paper/blob/master/neural_sde/neural_sde.jl">this full example using the layer function</a>).</p><p>However, since there are far too many possible combinations for the API to support, often you will want to define neural differential equations for non-ODE systems from scratch. To get good performance for these systems, it is generally best to use <code>TrackerAdjoint</code> with non-mutating (out-of-place) forms. For example, the following defines a neural SDE with neural networks for both the drift and diffusion terms:</p><pre><code class="language-julia hljs">dudt(u, p, t) = model(u)
+g(u, p, t) = model2(u)
+prob = SDEProblem(dudt, g, x, tspan, nothing)</code></pre><p>where <code>model</code> and <code>model2</code> are different neural networks. The same can apply to a neural delay differential equation. Its out-of-place formulation is <code>f(u,h,p,t)</code>. Thus, for example, if we want to define a neural delay differential equation which uses the history value at <code>p.tau</code> in the past, we can define:</p><pre><code class="language-julia hljs">dudt!(u, h, p, t) = model([u; h(t - p.tau)])
+prob = DDEProblem(dudt_, u0, h, tspan, nothing)</code></pre><p>First, let&#39;s build training data from the same example as the neural ODE:</p><pre><code class="language-julia hljs">using Plots, Statistics, ComponentArrays, Optimization, OptimizationOptimisers, DiffEqFlux,
+      StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
+
+u0 = Float32[2.0; 0.0]
+datasize = 30
+tspan = (0.0f0, 1.0f0)
+tsteps = range(tspan[1], tspan[2]; length = datasize)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.0f0:0.03448276f0:1.0f0</code></pre><pre><code class="language-julia hljs">function trueSDEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u .^ 3)&#39;true_A)&#39;
+end
+
+mp = Float32[0.2, 0.2]
+function true_noise_func(du, u, p, t)
+    du .= mp .* u
+end
+
+prob_truesde = SDEProblem(trueSDEfunc, true_noise_func, u0, tspan)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr38_2" style="color:#56b6c2">SDEProblem</span> with uType <span class="sgr38_2" style="color:#56b6c2">Vector{Float32}</span> and tType <span class="sgr38_2" style="color:#56b6c2">Float32</span>. In-place: <span class="sgr38_2" style="color:#56b6c2">true</span>
+timespan: (0.0f0, 1.0f0)
+u0: 2-element Vector{Float32}:
+ 2.0
+ 0.0</code></pre><p>For our dataset, we will use DifferentialEquations.jl&#39;s <a href="https://docs.sciml.ai/DiffEqDocs/stable/features/ensemble/">parallel ensemble interface</a> to generate data from the average of 10,000 runs of the SDE:</p><pre><code class="language-julia hljs"># Take a typical sample from the mean
+ensemble_prob = EnsembleProblem(prob_truesde; safetycopy = false)
+ensemble_sol = solve(ensemble_prob, SOSRI(); trajectories = 10000)
+ensemble_sum = EnsembleSummary(ensemble_sol)
+
+sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(Float32[2.0 1.9145468 … 0.049236853 0.12587374; 0.0 0.5288335 … -0.6791047 -0.63565254], Float32[0.0 0.07738494 … 1.3360502 1.3076512; 0.0 0.05751823 … 0.9731261 1.0045673])</code></pre><p>Now we build a neural SDE. For simplicity, we will use the <code>NeuralDSDE</code> neural SDE with diagonal noise layer function:</p><pre><code class="language-julia hljs">drift_dudt = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
+diffusion_dudt = Dense(2, 2)
+
+neuralsde = NeuralDSDE(drift_dudt, diffusion_dudt, tspan, SOSRI();
+    saveat = tsteps, reltol = 1e-1, abstol = 1e-1)
+ps, st = Lux.setup(Xoshiro(0), neuralsde)
+ps = ComponentArray(ps)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ComponentVector{Float32}(drift = (layer_1 = Float32[], layer_2 = (weight = Float32[-1.8019577 1.5097173; -0.18273845 -0.4676411; … ; 0.37099916 -0.27108315; -0.34856588 -0.6062841], bias = Float32[-0.522484, -0.6805993, -0.21060704, 0.50937545, 0.33639288, 0.22010256, -0.12450862, 0.3884359, 0.5799375, 0.39842856  …  0.1040132, 0.009969078, -0.460674, 0.21031016, 0.5280858, 0.7054404, 0.0009628869, 0.40567473, 0.30830613, 0.17590544]), layer_3 = (weight = Float32[0.22905384 -0.23547108 … 0.033212326 0.13550478; 0.22466984 -0.14894177 … -0.19668292 0.10960526], bias = Float32[-0.026947042, -0.0370021])), diffusion = (weight = Float32[-0.7320429 -1.0360838; -0.86161304 -0.6590253], bias = Float32[-0.22268295, 0.123328425]))</code></pre><p>Let&#39;s see what that looks like:</p><pre><code class="language-julia hljs"># Get the prediction using the correct initial condition
+prediction0 = neuralsde(u0, ps, st)[1]
+
+drift_model = StatefulLuxLayer{true}(drift_dudt, ps.drift, st.drift)
+diffusion_model = StatefulLuxLayer{true}(diffusion_dudt, ps.diffusion, st.diffusion)
+
+drift_(u, p, t) = drift_model(u, p.drift)
+diffusion_(u, p, t) = diffusion_model(u, p.diffusion)
+
+prob_neuralsde = SDEProblem(drift_, diffusion_, u0, (0.0f0, 1.2f0), ps)
+
+ensemble_nprob = EnsembleProblem(prob_neuralsde; safetycopy = false)
+ensemble_nsol = solve(ensemble_nprob, SOSRI(); trajectories = 100, saveat = tsteps)
+ensemble_nsum = EnsembleSummary(ensemble_nsol)
+
+plt1 = plot(ensemble_nsum; title = &quot;Neural SDE: Before Training&quot;)
+scatter!(plt1, tsteps, sde_data&#39;; lw = 3)
+
+scatter(tsteps, sde_data[1, :]; label = &quot;data&quot;)
+scatter!(tsteps, prediction0[1, :]; label = &quot;prediction&quot;)</code></pre><img src="c2d067d1.svg" alt="Example block output"/><p>Now just as with the neural ODE we define a loss function that calculates the mean and variance from <code>n</code> runs at each time point and uses the distance from the data values:</p><pre><code class="language-julia hljs">neuralsde_model = StatefulLuxLayer{true}(neuralsde, ps, st)
+
+function predict_neuralsde(p, u = u0)
+    return Array(neuralsde_model(u, p))
+end
+
+function loss_neuralsde(p; n = 100)
+    u = repeat(reshape(u0, :, 1), 1, n)
+    samples = predict_neuralsde(p, u)
+    currmeans = mean(samples; dims = 2)
+    currvars = var(samples; dims = 2, mean = currmeans)[:, 1, :]
+    currmeans = currmeans[:, 1, :]
+    loss = sum(abs2, sde_data - currmeans) + sum(abs2, sde_data_vars - currvars)
+    global means = currmeans
+    global vars = currvars
+    return loss
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">loss_neuralsde (generic function with 1 method)</code></pre><pre><code class="language-julia hljs">list_plots = []
+iter = 0
+u = repeat(reshape(u0, :, 1), 1, 100)
+samples = predict_neuralsde(ps, u)
+means = mean(samples; dims = 2)
+vars = var(samples; dims = 2, mean = means)[:, 1, :]
+means = means[:, 1, :]
+
+# Callback function to observe training
+callback = function (state, loss; doplot = false)
+    global list_plots, iter, means, vars
+
+    if iter == 0
+        list_plots = []
+    end
+    iter += 1
+
+    # loss against current data
+    display(loss)
+
+    # plot current prediction against data
+    plt = Plots.scatter(tsteps, sde_data[1, :]; yerror = sde_data_vars[1, :],
+        ylim = (-4.0, 8.0), label = &quot;data&quot;)
+    Plots.scatter!(plt, tsteps, means[1, :]; ribbon = vars[1, :], label = &quot;prediction&quot;)
+    push!(list_plots, plt)
+
+    if doplot
+        display(plt)
+    end
+    return false
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">#4 (generic function with 1 method)</code></pre><p>Now we train using this loss function. We can pre-train a little bit using a smaller <code>n</code> and then decrease it after it has had some time to adjust towards the right mean behavior:</p><pre><code class="language-julia hljs">opt = OptimizationOptimisers.Adam(0.025)
+
+# First round of training with n = 10
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralsde(x; n = 10), adtype)
+optprob = Optimization.OptimizationProblem(optf, ps)
+result1 = Optimization.solve(optprob, opt; callback, maxiters = 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Default
+u: ComponentVector{Float32}(drift = (layer_1 = Float32[], layer_2 = (weight = Float32[-0.7508739 2.063374; -0.0011759393 -0.5358677; … ; -0.4454638 0.23614495; 0.48407182 -0.6455976], bias = Float32[-0.69061536, -0.608852, 0.17233467, 0.7626921, 0.6640757, 0.49251318, -0.2310961, 0.7868694, 0.58276844, 0.017256465  …  -0.23275416, 0.46609557, -0.37263393, -0.006619877, 0.91038734, 0.7840436, 0.45749193, 0.30860445, 0.026213882, 0.3777312]), layer_3 = (weight = Float32[0.44097418 -0.046783824 … -0.14876124 0.2796523; 0.3420322 -0.0019503711 … -0.34408483 0.29299852], bias = Float32[-0.24334988, -0.15441406])), diffusion = (weight = Float32[-0.5605263 -0.89509505; -0.7049678 -0.45869464], bias = Float32[-0.048158627, 0.2470886]))</code></pre><p>We resume the training with a larger <code>n</code>. (WARNING - this step is a couple of orders of magnitude longer than the previous one).</p><pre><code class="language-julia hljs">opt = OptimizationOptimisers.Adam(0.001)
+optf2 = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralsde(x; n = 100), adtype)
+optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
+result2 = Optimization.solve(optprob2, opt; callback, maxiters = 100)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Default
+u: ComponentVector{Float32}(drift = (layer_1 = Float32[], layer_2 = (weight = Float32[-0.7063478 2.1033878; -0.07562864 -0.5731421; … ; -0.517303 0.21496098; 0.53871304 -0.6108787], bias = Float32[-0.7465809, -0.57291055, 0.23118937, 0.8194657, 0.72595763, 0.5451233, -0.29257345, 0.842644, 0.56084055, -0.060076643  …  -0.2885303, 0.5234004, -0.43070406, 0.026730282, 0.9583944, 0.8196057, 0.51465386, 0.25065246, 0.05932348, 0.3305724]), layer_3 = (weight = Float32[0.5094033 -0.016091958 … -0.1647631 0.2207098; 0.32334763 -0.029299658 … -0.41734228 0.3349217], bias = Float32[-0.2996676, -0.1516479])), diffusion = (weight = Float32[-0.59615797 -0.935557; -0.7366194 -0.43953642], bias = Float32[-0.020698918, 0.19803937]))</code></pre><p>And now we plot the solution to an ensemble of the trained neural SDE:</p><pre><code class="language-julia hljs">n = 1000
+u = repeat(reshape(u0, :, 1), 1, n)
+samples = predict_neuralsde(result2.u)
+currmeans = mean(samples; dims = 2)
+currvars = var(samples; dims = 2, mean = currmeans)[:, 1, :]
+currmeans = currmeans[:, 1, :]
+
+plt2 = Plots.scatter(tsteps, sde_data&#39;; yerror = sde_data_vars&#39;, label = &quot;data&quot;,
+    title = &quot;Neural SDE: After Training&quot;, xlabel = &quot;Time&quot;)
+plot!(plt2, tsteps, means&#39;; lw = 8, ribbon = vars&#39;, label = &quot;prediction&quot;)
+
+plt = plot(plt1, plt2; layout = (2, 1))</code></pre><img src="cb688b6f.svg" alt="Example block output"/><p>Try this with GPUs as well!</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../augmented_neural_ode/">« Augmented Neural Ordinary Differential Equations</a><a class="docs-footer-nextpage" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Friday 31 January 2025 16:51">Friday 31 January 2025</span>. Using Julia version 1.10.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
