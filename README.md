@@ -18,7 +18,6 @@ by helping users put diffeq solvers into neural networks. This package utilizes
 > [!NOTE]
 > We maintain backwards compatibility with [Flux.jl](https://fluxml.ai/Flux.jl/stable/) via [FromFluxAdaptor()](https://lux.csail.mit.edu/stable/api/Lux/interop#Lux.FromFluxAdaptor)
 
-
 ## Tutorials and Documentation
 
 For information on using the package,
