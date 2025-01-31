@@ -43,7 +43,7 @@
     function loss_single_shooting(p)
         pred = predict_single_shooting(p)
         l = loss_function(ode_data, pred)
-        return l, pred
+        return l
     end
 
     adtype = Optimization.AutoZygote()
