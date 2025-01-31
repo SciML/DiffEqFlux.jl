@@ -106,13 +106,15 @@ predict_neuralode(p) = reduce(hcat, first(prob_neuralode(u0, p, st)).u)
 function loss_neuralode(p)
     pred = predict_neuralode(p)
     loss = sum(abs2, ode_data .- pred)
-    return loss, pred
+    return loss
 end
 # Callback function to observe training
 list_plots = []
 iter = 0
-callback = function (p, l, pred; doplot = false)
+callback = function (state, l; doplot = false)
+    p = state.u
     global list_plots, iter
+    pred = predict_neuralode(p)
     if iter == 0
         list_plots = []
     end
