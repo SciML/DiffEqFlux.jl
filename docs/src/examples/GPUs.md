@@ -111,7 +111,8 @@ end
 # Callback function to observe training
 list_plots = []
 iter = 0
-callback = function (p, l; doplot = false)
+callback = function (state, l; doplot = false)
+    p = state.u
     global list_plots, iter
     pred = predict_neuralode(p)
     if iter == 0
