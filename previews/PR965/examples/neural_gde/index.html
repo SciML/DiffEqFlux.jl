@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neural Graph Differential Equations · DiffEqFlux.jl</title><meta name="title" content="Neural Graph Differential Equations · DiffEqFlux.jl"/><meta property="og:title" content="Neural Graph Differential Equations · DiffEqFlux.jl"/><meta property="twitter:title" content="Neural Graph Differential Equations · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_gde/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_gde/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/neural_gde/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li><li class="is-active"><a class="tocitem" href>Neural Graph Differential Equations</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Step-by-Step-Explanation"><span>Step by Step Explanation</span></a></li><li><a class="tocitem" href="#Load-the-Required-Packages"><span>Load the Required Packages</span></a></li><li><a class="tocitem" href="#Load-the-Dataset"><span>Load the Dataset</span></a></li><li><a class="tocitem" href="#Preprocessing-the-Data"><span>Preprocessing the Data</span></a></li><li><a class="tocitem" href="#Model-and-Data-Configuration"><span>Model and Data Configuration</span></a></li><li><a class="tocitem" href="#Define-the-Graph-Neural-Network"><span>Define the Graph Neural Network</span></a></li><li><a class="tocitem" href="#Neural-Graph-Ordinary-Differential-Equations"><span>Neural Graph Ordinary Differential Equations</span></a></li><li><a class="tocitem" href="#Training-Configuration"><span>Training Configuration</span></a></li><li><a class="tocitem" href="#Training-Loop"><span>Training Loop</span></a></li></ul></li><li><a class="tocitem" href="../physical_constraints/">Enforcing Physical Constraints via Universal Differential-Algebraic Equations</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Neural Graph Differential Equations</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Neural Graph Differential Equations</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/neural_gde.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Neural-Graph-Differential-Equations"><a class="docs-heading-anchor" href="#Neural-Graph-Differential-Equations">Neural Graph Differential Equations</a><a id="Neural-Graph-Differential-Equations-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-Graph-Differential-Equations" title="Permalink"></a></h1><div class="admonition is-category-warn"><header class="admonition-header">Warn</header><div class="admonition-body"><p>This tutorial has not been ran or updated in awhile.</p></div></div><p>This tutorial has been adapted from <a href="https://github.com/CarloLucibello/GraphNeuralNetworks.jl/blob/master/GraphNeuralNetworks/examples/neural_ode_cora.jl">here</a>.</p><p>In this tutorial, we will use Graph Differential Equations (GDEs) to perform classification on the <a href="https://paperswithcode.com/dataset/cora">CORA Dataset</a>. We shall be using the Graph Neural Networks primitives from the package <a href="https://github.com/CarloLucibello/GraphNeuralNetworks.jl">GraphNeuralNetworks</a>.</p><pre><code class="language-julia hljs"># Load the packages
+using GraphNeuralNetworks, DifferentialEquations
+using DiffEqFlux: NeuralODE
+using GraphNeuralNetworks.GNNGraphs: normalized_adjacency
+using Lux, NNlib, Optimisers, Zygote, Random, ComponentArrays
+using Lux: AbstractLuxLayer, glorot_normal, zeros32
+import Lux: initialparameters, initialstates
+using SciMLSensitivity
+using Statistics: mean
+using MLDatasets: Cora
+using CUDA
+CUDA.allowscalar(false)
+device = CUDA.functional() ? gpu : cpu
+
+# Download the dataset
+dataset = Cora();
+
+# Preprocess the data and compute adjacency matrix
+classes = dataset.metadata[&quot;classes&quot;]
+g = mldataset2gnngraph(dataset) |&gt; device
+onehotbatch(data, labels) = device(labels) .== reshape(data, 1, size(data)...)
+onecold(y) = map(argmax, eachcol(y))
+X = g.ndata.features
+y = onehotbatch(g.ndata.targets, classes) # a dense matrix is not the optimal, but we don&#39;t want to use Flux here
+
+Ã = normalized_adjacency(g; add_self_loops = true) |&gt; device
+
+(; train_mask, val_mask, test_mask) = g.ndata
+ytrain = y[:, train_mask]
+
+# Model and Data Configuration
+nin = size(X, 1)
+nhidden = 16
+nout = length(classes)
+epochs = 20
+
+# Define the graph neural network
+struct ExplicitGCNConv{F1, F2, F3, F4} &lt;: AbstractLuxLayer
+    in_chs::Int
+    out_chs::Int
+    activation::F1
+    init_Ã::F2  # nomalized_adjacency matrix
+    init_weight::F3
+    init_bias::F4
+end
+
+function Base.show(io::IO, l::ExplicitGCNConv)
+    print(io, &quot;ExplicitGCNConv($(l.in_chs) =&gt; $(l.out_chs)&quot;)
+    (l.activation == identity) || print(io, &quot;, &quot;, l.activation)
+    print(io, &quot;)&quot;)
+end
+
+function initialparameters(rng::AbstractRNG, d::ExplicitGCNConv)
+    return (weight = d.init_weight(rng, d.out_chs, d.in_chs),
+        bias = d.init_bias(rng, d.out_chs, 1))
+end
+
+initialstates(rng::AbstractRNG, d::ExplicitGCNConv) = (Ã = d.init_Ã(),)
+
+function ExplicitGCNConv(Ã, ch::Pair{Int, Int}, activation = identity;
+        init_weight = glorot_normal, init_bias = zeros32)
+    init_Ã = () -&gt; copy(Ã)
+    return ExplicitGCNConv{
+        typeof(activation), typeof(init_Ã), typeof(init_weight), typeof(init_bias)}(
+        first(ch), last(ch), activation, init_Ã, init_weight, init_bias)
+end
+
+function (l::ExplicitGCNConv)(x::AbstractMatrix, ps, st::NamedTuple)
+    z = ps.weight * x * st.Ã
+    return l.activation.(z .+ ps.bias), st
+end
+
+# Define the Neural GDE
+function diffeqsol_to_array(x::ODESolution{T, N, &lt;:AbstractVector{&lt;:CuArray}}) where {T, N}
+    return dropdims(gpu(x); dims = 3)
+end
+diffeqsol_to_array(x::ODESolution) = dropdims(Array(x); dims = 3)
+
+# make NeuralODE work with Lux.Chain
+# remove this once https://github.com/SciML/DiffEqFlux.jl/issues/727 is fixed
+initialparameters(rng::AbstractRNG, node::NeuralODE) = initialparameters(rng, node.model)
+initialstates(rng::AbstractRNG, node::NeuralODE) = initialstates(rng, node.model)
+
+gnn = Chain(ExplicitGCNConv(Ã, nhidden =&gt; nhidden, relu),
+    ExplicitGCNConv(Ã, nhidden =&gt; nhidden, relu))
+
+node = NeuralODE(gnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+    reltol = 1e-3, abstol = 1e-3, save_start = false)
+
+model = Chain(ExplicitGCNConv(Ã, nin =&gt; nhidden, relu),
+    node, diffeqsol_to_array, Dense(nhidden, nout))
+
+# Loss
+logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ); dims = 1))
+
+function loss(x, y, mask, model, ps, st)
+    ŷ, st = model(x, ps, st)
+    return logitcrossentropy(ŷ[:, mask], y), st
+end
+
+function eval_loss_accuracy(X, y, mask, model, ps, st)
+    ŷ, _ = model(X, ps, st)
+    l = logitcrossentropy(ŷ[:, mask], y[:, mask])
+    acc = mean(onecold(ŷ[:, mask]) .== onecold(y[:, mask]))
+    return (loss = round(l; digits = 4), acc = round(acc * 100; digits = 2))
+end
+
+# Training
+function train()
+    ## Setup model
+    rng = Random.default_rng()
+    Random.seed!(rng, 0)
+
+    ps, st = Lux.setup(rng, model)
+    ps = ComponentArray(ps) |&gt; device
+    st = st |&gt; device
+
+    ## Optimizer
+    opt = Optimisers.Adam(0.01f0)
+    st_opt = Optimisers.setup(opt, ps)
+
+    ## Training Loop
+    for _ in 1:epochs
+        (l, st), back = pullback(p -&gt; loss(X, ytrain, train_mask, model, p, st), ps)
+        gs = back((one(l), nothing))[1]
+        st_opt, ps = Optimisers.update(st_opt, ps, gs)
+        @show eval_loss_accuracy(X, y, val_mask, model, ps, st)
+    end
+end
+
+train()</code></pre><h1 id="Step-by-Step-Explanation"><a class="docs-heading-anchor" href="#Step-by-Step-Explanation">Step by Step Explanation</a><a id="Step-by-Step-Explanation-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Explanation" title="Permalink"></a></h1><h2 id="Load-the-Required-Packages"><a class="docs-heading-anchor" href="#Load-the-Required-Packages">Load the Required Packages</a><a id="Load-the-Required-Packages-1"></a><a class="docs-heading-anchor-permalink" href="#Load-the-Required-Packages" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Load the packages
+using GraphNeuralNetworks, DifferentialEquations
+using DiffEqFlux: NeuralODE
+using GraphNeuralNetworks.GNNGraphs: normalized_adjacency
+using Lux, NNlib, Optimisers, Zygote, Random, ComponentArrays
+using Lux: AbstractLuxLayer, glorot_normal, zeros32
+import Lux: initialparameters, initialstates
+using SciMLSensitivity
+using Statistics: mean
+using MLDatasets: Cora
+using CUDA
+CUDA.allowscalar(false)
+device = CUDA.functional() ? gpu : cpu</code></pre><h2 id="Load-the-Dataset"><a class="docs-heading-anchor" href="#Load-the-Dataset">Load the Dataset</a><a id="Load-the-Dataset-1"></a><a class="docs-heading-anchor-permalink" href="#Load-the-Dataset" title="Permalink"></a></h2><p>The dataset is available in the desired format in the <code>MLDatasets</code> repository. We shall download the dataset from there.</p><pre><code class="language-julia hljs">dataset = Cora();</code></pre><h2 id="Preprocessing-the-Data"><a class="docs-heading-anchor" href="#Preprocessing-the-Data">Preprocessing the Data</a><a id="Preprocessing-the-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Preprocessing-the-Data" title="Permalink"></a></h2><p>Convert the data to <code>GNNGraph</code> and get the adjacency matrix from the graph <code>g</code>.</p><pre><code class="language-julia hljs">classes = dataset.metadata[&quot;classes&quot;]
+g = mldataset2gnngraph(dataset) |&gt; device
+onehotbatch(data, labels) = device(labels) .== reshape(data, 1, size(data)...)
+onecold(y) = map(argmax, eachcol(y))
+X = g.ndata.features
+y = onehotbatch(g.ndata.targets, classes) # a dense matrix is not the optimal, but we don&#39;t want to use Flux here
+
+Ã = normalized_adjacency(g; add_self_loops = true) |&gt; device</code></pre><h3 id="Training-Data"><a class="docs-heading-anchor" href="#Training-Data">Training Data</a><a id="Training-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Training-Data" title="Permalink"></a></h3><p>GNNs operate on an entire graph, so we can&#39;t do any sort of minibatching here. We predict the entire dataset, but train the model in a semi-supervised learning fashion.</p><pre><code class="language-julia hljs">(; train_mask, val_mask, test_mask) = g.ndata
+ytrain = y[:, train_mask]</code></pre><h2 id="Model-and-Data-Configuration"><a class="docs-heading-anchor" href="#Model-and-Data-Configuration">Model and Data Configuration</a><a id="Model-and-Data-Configuration-1"></a><a class="docs-heading-anchor-permalink" href="#Model-and-Data-Configuration" title="Permalink"></a></h2><p>We shall use only 16 hidden state dimensions.</p><pre><code class="language-julia hljs">nin = size(X, 1)
+nhidden = 16
+nout = length(classes)
+epochs = 20</code></pre><h2 id="Define-the-Graph-Neural-Network"><a class="docs-heading-anchor" href="#Define-the-Graph-Neural-Network">Define the Graph Neural Network</a><a id="Define-the-Graph-Neural-Network-1"></a><a class="docs-heading-anchor-permalink" href="#Define-the-Graph-Neural-Network" title="Permalink"></a></h2><p>Here, we define a type of graph neural networks called <code>GCNConv</code>. We use the name <code>ExplicitGCNConv</code> to avoid naming conflicts with <code>GraphNeuralNetworks</code>. For more information on defining a layer with <code>Lux</code>, please consult to the <a href="http://lux.csail.mit.edu/dev/introduction/overview/#AbstractLuxLayer-API">doc</a>.</p><pre><code class="language-julia hljs">struct ExplicitGCNConv{F1, F2, F3} &lt;: AbstractLuxLayer
+    Ã::AbstractMatrix  # nomalized_adjacency matrix
+    in_chs::Int
+    out_chs::Int
+    activation::F1
+    init_weight::F2
+    init_bias::F3
+end
+
+function Base.show(io::IO, l::ExplicitGCNConv)
+    print(io, &quot;ExplicitGCNConv($(l.in_chs) =&gt; $(l.out_chs)&quot;)
+    (l.activation == identity) || print(io, &quot;, &quot;, l.activation)
+    print(io, &quot;)&quot;)
+end
+
+function initialparameters(rng::AbstractRNG, d::ExplicitGCNConv)
+    return (weight = d.init_weight(rng, d.out_chs, d.in_chs),
+        bias = d.init_bias(rng, d.out_chs, 1))
+end
+
+function ExplicitGCNConv(Ã, ch::Pair{Int, Int}, activation = identity;
+        init_weight = glorot_normal, init_bias = zeros32)
+    return ExplicitGCNConv{typeof(activation), typeof(init_weight), typeof(init_bias)}(
+        Ã, first(ch), last(ch), activation, init_weight, init_bias)
+end
+
+function (l::ExplicitGCNConv)(x::AbstractMatrix, ps, st::NamedTuple)
+    z = ps.weight * x * l.Ã
+    return l.activation.(z .+ ps.bias), st
+end</code></pre><h2 id="Neural-Graph-Ordinary-Differential-Equations"><a class="docs-heading-anchor" href="#Neural-Graph-Ordinary-Differential-Equations">Neural Graph Ordinary Differential Equations</a><a id="Neural-Graph-Ordinary-Differential-Equations-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-Graph-Ordinary-Differential-Equations" title="Permalink"></a></h2><p>Let us now define the final model. We will use two GNN layers for approximating the gradients for the neural ODE. We use one additional <code>GCNConv</code> layer to project the data to a latent space and a <code>Dense</code> layer to project it from the latent space to the predictions. Finally, a softmax layer gives us the probability of the input belonging to each target category.</p><pre><code class="language-julia hljs">function diffeqsol_to_array(x::ODESolution{T, N, &lt;:AbstractVector{&lt;:CuArray}}) where {T, N}
+    return dropdims(gpu(x); dims = 3)
+end
+diffeqsol_to_array(x::ODESolution) = dropdims(Array(x); dims = 3)
+
+gnn = Chain(ExplicitGCNConv(Ã, nhidden =&gt; nhidden, relu),
+    ExplicitGCNConv(Ã, nhidden =&gt; nhidden, relu))
+
+node = NeuralODE(gnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
+    reltol = 1e-3, abstol = 1e-3, save_start = false)
+
+model = Chain(ExplicitGCNConv(Ã, nin =&gt; nhidden, relu),
+    node, diffeqsol_to_array, Dense(nhidden, nout))</code></pre><h2 id="Training-Configuration"><a class="docs-heading-anchor" href="#Training-Configuration">Training Configuration</a><a id="Training-Configuration-1"></a><a class="docs-heading-anchor-permalink" href="#Training-Configuration" title="Permalink"></a></h2><h3 id="Loss-Function-and-Accuracy"><a class="docs-heading-anchor" href="#Loss-Function-and-Accuracy">Loss Function and Accuracy</a><a id="Loss-Function-and-Accuracy-1"></a><a class="docs-heading-anchor-permalink" href="#Loss-Function-and-Accuracy" title="Permalink"></a></h3><p>We shall be using the standard categorical crossentropy loss function, which is used for multiclass classification tasks.</p><pre><code class="language-julia hljs">logitcrossentropy(ŷ, y) = mean(-sum(y .* logsoftmax(ŷ); dims = 1))
+
+function loss(x, y, mask, model, ps, st)
+    ŷ, st = model(x, ps, st)
+    return logitcrossentropy(ŷ[:, mask], y), st
+end
+
+function eval_loss_accuracy(X, y, mask, model, ps, st)
+    ŷ, _ = model(X, ps, st)
+    l = logitcrossentropy(ŷ[:, mask], y[:, mask])
+    acc = mean(onecold(ŷ[:, mask]) .== onecold(y[:, mask]))
+    return (loss = round(l; digits = 4), acc = round(acc * 100; digits = 2))
+end</code></pre><h3 id="Setup-Model"><a class="docs-heading-anchor" href="#Setup-Model">Setup Model</a><a id="Setup-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Setup-Model" title="Permalink"></a></h3><p>We need to manually set up our mode with <code>Lux</code>, and convert the parameters to <code>ComponentArray</code> so that they can work well with sensitivity algorithms.</p><pre><code class="language-julia hljs">rng = Random.default_rng()
+Random.seed!(rng, 0)
+
+ps, st = Lux.setup(rng, model)
+ps = ComponentArray(ps) |&gt; device
+st = st |&gt; device</code></pre><h3 id="Optimizer"><a class="docs-heading-anchor" href="#Optimizer">Optimizer</a><a id="Optimizer-1"></a><a class="docs-heading-anchor-permalink" href="#Optimizer" title="Permalink"></a></h3><p>For this task, we will be using the <code>Adam</code> optimizer with a learning rate of <code>0.01</code>.</p><pre><code class="language-julia hljs">opt = Optimisers.Adam(0.01f0)
+st_opt = Optimisers.setup(opt, ps)</code></pre><h2 id="Training-Loop"><a class="docs-heading-anchor" href="#Training-Loop">Training Loop</a><a id="Training-Loop-1"></a><a class="docs-heading-anchor-permalink" href="#Training-Loop" title="Permalink"></a></h2><p>Finally, we use the package <code>Optimisers</code> to learn the parameters <code>ps</code>. We run the training loop for <code>epochs</code> number of iterations.</p><pre><code class="language-julia hljs">for _ in 1:epochs
+    (l, st), back = pullback(p -&gt; loss(X, ytrain, train_mask, model, p, st), ps)
+    gs = back((one(l), nothing))[1]
+    st_opt, ps = Optimisers.update(st_opt, ps, gs)
+    @show eval_loss_accuracy(X, y, val_mask, model, ps, st)
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../neural_ode_weather_forecast/">« Weather forecasting with neural ODEs</a><a class="docs-footer-nextpage" href="../physical_constraints/">Enforcing Physical Constraints via Universal Differential-Algebraic Equations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Saturday 1 February 2025 14:05">Saturday 1 February 2025</span>. Using Julia version 1.10.8.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
