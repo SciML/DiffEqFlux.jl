@@ -116,7 +116,7 @@
     # Integration return codes `!= :Success` should return infinite loss.
     # In this case, we trigger `retcode = :MaxIters` by setting the solver option `maxiters=1`.
     loss_fail = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function,
-        Tsit5(), datasize; maxiters = 1, verbose = false)
+        Tsit5(), datasize; maxiters = 1, verbose = false)[1]
     @test loss_fail == Inf
 
     ## Test for DomainErrors
