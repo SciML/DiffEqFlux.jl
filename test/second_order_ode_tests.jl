@@ -30,7 +30,7 @@
 
     l1 = loss_n_ode(p)
 
-    function callback(p, l, pred)
+    function callback(p, l)
         @info "[SecondOrderODE] Loss: $l"
         return l < 0.01
     end
