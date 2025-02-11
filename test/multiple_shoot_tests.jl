@@ -92,7 +92,7 @@
     optprob = Optimization.OptimizationProblem(optf, p_init)
     res_ms_abs2 = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-    loss_ms_abs2, _ = loss_single_shooting(res_ms_abs2.minimizer)
+    loss_ms_abs2 = loss_single_shooting(res_ms_abs2.minimizer)
     println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
     @test loss_ms_abs2 < loss_ss
 
