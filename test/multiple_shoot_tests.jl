@@ -60,7 +60,7 @@
 
     function loss_multiple_shooting(p)
         return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
-            group_size; continuity_term, abstol = 1e-8, reltol = 1e-6) # test solver kwargs
+            group_size; continuity_term, abstol = 1e-8, reltol = 1e-6)[1] # test solver kwargs
     end
 
     adtype = Optimization.AutoZygote()
@@ -83,7 +83,7 @@
 
     function loss_multiple_shooting_abs2(p)
         return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function,
-            continuity_loss_abs2, Tsit5(), group_size; continuity_term)
+            continuity_loss_abs2, Tsit5(), group_size; continuity_term)[1]
     end
 
     adtype = Optimization.AutoZygote()
@@ -100,7 +100,7 @@
     function loss_multiple_shooting_fd(p)
         return multiple_shoot(
             p, ode_data, tsteps, prob_node, loss_function, continuity_loss_abs2,
-            Tsit5(), group_size; continuity_term, sensealg = ForwardDiffSensitivity())
+            Tsit5(), group_size; continuity_term, sensealg = ForwardDiffSensitivity())[1]
     end
 
     adtype = Optimization.AutoZygote()
@@ -142,7 +142,7 @@
     function loss_multiple_shooting_ens(p)
         return multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg,
             loss_function, Tsit5(), group_size; continuity_term,
-            trajectories, abstol = 1e-8, reltol = 1e-6) # test solver kwargs
+            trajectories, abstol = 1e-8, reltol = 1e-6)[1] # test solver kwargs
     end
 
     adtype = Optimization.AutoZygote()
