@@ -51,7 +51,7 @@
     optprob = Optimization.OptimizationProblem(optf, p_init)
     res_single_shooting = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-    loss_ss, _ = loss_single_shooting(res_single_shooting.minimizer)
+    loss_ss = loss_single_shooting(res_single_shooting.minimizer)
     @info "Single shooting loss: $(loss_ss)"
 
     ## Test Multiple Shooting
@@ -69,7 +69,7 @@
     res_ms = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
     # Calculate single shooting loss with parameter from multiple_shoot training
-    loss_ms, _ = loss_single_shooting(res_ms.minimizer)
+    loss_ms = loss_single_shooting(res_ms.minimizer)
     println("Multiple shooting loss: $(loss_ms)")
     @test loss_ms < 10loss_ss
 
@@ -109,13 +109,13 @@
     res_ms_fd = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
     # Calculate single shooting loss with parameter from multiple_shoot training
-    loss_ms_fd, _ = loss_single_shooting(res_ms_fd.minimizer)
+    loss_ms_fd = loss_single_shooting(res_ms_fd.minimizer)
     println("Multiple shooting loss with ForwardDiffSensitivity: $(loss_ms_fd)")
     @test loss_ms_fd < 10loss_ss
 
     # Integration return codes `!= :Success` should return infinite loss.
     # In this case, we trigger `retcode = :MaxIters` by setting the solver option `maxiters=1`.
-    loss_fail, _ = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function,
+    loss_fail = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function,
         Tsit5(), datasize; maxiters = 1, verbose = false)
     @test loss_fail == Inf
 
@@ -151,7 +151,7 @@
     optprob = Optimization.OptimizationProblem(optf, p_init)
     res_ms_ensembles = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-    loss_ms_ensembles, _ = loss_single_shooting(res_ms_ensembles.minimizer)
+    loss_ms_ensembles = loss_single_shooting(res_ms_ensembles.minimizer)
 
     println("Multiple shooting loss with EnsembleProblem: $(loss_ms_ensembles)")
 
