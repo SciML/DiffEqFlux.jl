@@ -614,9 +614,9 @@ version = "4.2.2"
 
 [[deps.DiffEqFlux]]
 deps = ["ADTypes", "Boltz", "ChainRulesCore", "ConcreteStructs", "Distributions", "LinearAlgebra", "Lux", "LuxCore", "LuxLib", "Random", "Reexport", "SciMLBase", "SciMLSensitivity", "Setfield", "Static"]
-path = "/var/lib/buildkite-agent/builds/gpuci-6/julialang/diffeqflux-dot-jl"
+path = "/var/lib/buildkite-agent/builds/gpuci-13/julialang/diffeqflux-dot-jl"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
-version = "4.2.0"
+version = "4.1.0"
 
     [deps.DiffEqFlux.extensions]
     DiffEqFluxDataInterpolationsExt = "DataInterpolations"
