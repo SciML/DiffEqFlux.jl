@@ -43,7 +43,7 @@
     function loss_single_shooting(p)
         pred = predict_single_shooting(p)
         l = loss_function(ode_data, pred)
-        return l, pred
+        return l
     end
 
     adtype = Optimization.AutoZygote()
@@ -51,7 +51,7 @@
     optprob = Optimization.OptimizationProblem(optf, p_init)
     res_single_shooting = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-    loss_ss, _ = loss_single_shooting(res_single_shooting.minimizer)
+    loss_ss = loss_single_shooting(res_single_shooting.minimizer)
     @info "Single shooting loss: $(loss_ss)"
 
     ## Test Multiple Shooting
@@ -60,7 +60,7 @@
 
     function loss_multiple_shooting(p)
         return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
-            group_size; continuity_term, abstol = 1e-8, reltol = 1e-6) # test solver kwargs
+            group_size; continuity_term, abstol = 1e-8, reltol = 1e-6)[1] # test solver kwargs
     end
 
     adtype = Optimization.AutoZygote()
@@ -69,7 +69,7 @@
     res_ms = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
     # Calculate single shooting loss with parameter from multiple_shoot training
-    loss_ms, _ = loss_single_shooting(res_ms.minimizer)
+    loss_ms = loss_single_shooting(res_ms.minimizer)
     println("Multiple shooting loss: $(loss_ms)")
     @test loss_ms < 10loss_ss
 
@@ -83,7 +83,7 @@
 
     function loss_multiple_shooting_abs2(p)
         return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function,
-            continuity_loss_abs2, Tsit5(), group_size; continuity_term)
+            continuity_loss_abs2, Tsit5(), group_size; continuity_term)[1]
     end
 
     adtype = Optimization.AutoZygote()
@@ -92,7 +92,7 @@
     optprob = Optimization.OptimizationProblem(optf, p_init)
     res_ms_abs2 = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-    loss_ms_abs2, _ = loss_single_shooting(res_ms_abs2.minimizer)
+    loss_ms_abs2 = loss_single_shooting(res_ms_abs2.minimizer)
     println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
     @test loss_ms_abs2 < loss_ss
 
@@ -100,7 +100,7 @@
     function loss_multiple_shooting_fd(p)
         return multiple_shoot(
             p, ode_data, tsteps, prob_node, loss_function, continuity_loss_abs2,
-            Tsit5(), group_size; continuity_term, sensealg = ForwardDiffSensitivity())
+            Tsit5(), group_size; continuity_term, sensealg = ForwardDiffSensitivity())[1]
     end
 
     adtype = Optimization.AutoZygote()
@@ -109,14 +109,14 @@
     res_ms_fd = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
     # Calculate single shooting loss with parameter from multiple_shoot training
-    loss_ms_fd, _ = loss_single_shooting(res_ms_fd.minimizer)
+    loss_ms_fd = loss_single_shooting(res_ms_fd.minimizer)
     println("Multiple shooting loss with ForwardDiffSensitivity: $(loss_ms_fd)")
     @test loss_ms_fd < 10loss_ss
 
     # Integration return codes `!= :Success` should return infinite loss.
     # In this case, we trigger `retcode = :MaxIters` by setting the solver option `maxiters=1`.
-    loss_fail, _ = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function,
-        Tsit5(), datasize; maxiters = 1, verbose = false)
+    loss_fail = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function,
+        Tsit5(), datasize; maxiters = 1, verbose = false)[1]
     @test loss_fail == Inf
 
     ## Test for DomainErrors
@@ -142,7 +142,7 @@
     function loss_multiple_shooting_ens(p)
         return multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg,
             loss_function, Tsit5(), group_size; continuity_term,
-            trajectories, abstol = 1e-8, reltol = 1e-6) # test solver kwargs
+            trajectories, abstol = 1e-8, reltol = 1e-6)[1] # test solver kwargs
     end
 
     adtype = Optimization.AutoZygote()
@@ -151,7 +151,7 @@
     optprob = Optimization.OptimizationProblem(optf, p_init)
     res_ms_ensembles = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-    loss_ms_ensembles, _ = loss_single_shooting(res_ms_ensembles.minimizer)
+    loss_ms_ensembles = loss_single_shooting(res_ms_ensembles.minimizer)
 
     println("Multiple shooting loss with EnsembleProblem: $(loss_ms_ensembles)")
 

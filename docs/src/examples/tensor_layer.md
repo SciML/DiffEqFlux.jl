@@ -10,7 +10,8 @@ ẍ = - kx - αx³ - βẋ -γẋ³.
 ```
 
 We first transform this second order differential equation into a system of first order
-differential equations for use in `DiffEqFlux`: We let `ẋ = v` then 
+differential equations for use in `DiffEqFlux`: We let `ẋ = v` then
+
 ```math
 ẋ = v \\
 v̇ = - kx - αx³ - βv̇ -γv̇³.
