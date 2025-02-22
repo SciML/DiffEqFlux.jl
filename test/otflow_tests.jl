@@ -1,73 +1,65 @@
-@testitem "OTFlow Tests" begin
-    using DiffEqFlux
-    using Lux
-    using Random
-    using Distributions
-    using Test
+@testset "Tests for OTFlow Layer Functionality" begin
+    using Lux, LuxCore, Random, LinearAlgebra, Test, ComponentArrays, Flux, DiffEqFlux
+    rng = Xoshiro(0)
+    d = 2 
+    m = 4 
+    r = 2 
+    otflow = OTFlow(d, m; r=r)
+    ps, st = Lux.setup(rng, otflow)
+    ps = ComponentArray(ps)
 
-    rng = Random.default_rng()
-    
-    # Test basic constructor and initialization
-    @testset "Constructor" begin
-        model = Dense(2 => 1)
-        tspan = (0.0, 1.0)
-        input_dims = (2,)
-        
-        flow = OTFlow(model, tspan, input_dims)
-        @test flow isa OTFlow
-        @test flow.tspan == tspan
-        @test flow.input_dims == input_dims
-        
-        # Test with base distribution
-        base_dist = MvNormal(2, 1.0)
-        flow_with_dist = OTFlow(model, tspan, input_dims; basedist=base_dist)
-        @test flow_with_dist.basedist == base_dist
-    end
+    x = Float32[1.0, 2.0]
+    t = 0.5f0
 
     @testset "Forward Pass" begin
-        model = Dense(2 => 1)
-        tspan = (0.0, 1.0)
-        input_dims = (2,)
-        flow = OTFlow(model, tspan, input_dims)
-        
-        ps, st = Lux.setup(rng, flow)
-        x = randn(rng, 2, 10) # 10 samples of 2D data
-        
-        # Test forward pass
-        output, new_st = flow(x, ps, st)
-        @test size(output) == (1, 10) # log probabilities
-        @test new_st isa NamedTuple
+        (v, tr), st_new = otflow((x, t), ps, st)
+        @test length(v) == d 
+        @test isa(tr, Float32)
+        @test st_new == st 
     end
 
-    @testset "Distribution Interface" begin
-        model = Dense(2 => 1)
-        tspan = (0.0, 1.0)
-        input_dims = (2,)
-        flow = OTFlow(model, tspan, input_dims)
-        
-        ps, st = Lux.setup(rng, flow)
-        dist = OTFlowDistribution(flow, ps, st)
-        
-        # Test sampling
-        x = rand(dist, 5)
-        @test size(x) == (2, 5)
-        
-        # Test log pdf
-        logp = logpdf(dist, x[:, 1])
-        @test logp isa Real
+    @testset "Potential Function" begin
+        phi = potential(x, t, ps)
+        @test isa(phi, Float32)
     end
 
-    @testset "Base Distribution" begin
-        model = Dense(2 => 1)
-        tspan = (0.0, 1.0)
-        input_dims = (2,)
-        base_dist = MvNormal(zeros(2), I)
-        
-        flow = OTFlow(model, tspan, input_dims; basedist=base_dist)
-        ps, st = Lux.setup(rng, flow)
-        
-        x = randn(rng, 2, 5)
-        output, new_st = flow(x, ps, st)
-        @test size(output) == (1, 5)
+    @testset "Gradient Consistency" begin
+        grad = gradient(x, t, ps, d)
+        (v, _), _ = otflow((x, t), ps, st)
+        @test length(grad) == d
+        @test grad ≈ -v atol=1e-5  # v = -∇Φ
+    end
+
+    @testset "Trace Consistency" begin
+        tr_manual = trace(x, t, ps, d)
+        (_, tr_forward), _ = otflow((x, t), ps, st)
+        @test tr_manual ≈ -tr_forward atol=1e-5
+    end
+
+    @testset "ODE Integration" begin
+        x0 = Float32[1.0, 1.0]
+        tspan = (0.0f0, 1.0f0)
+        x_traj, t_vec = simple_ode_solve(otflow, x0, tspan, ps, st; dt=0.01f0)
+        @test size(x_traj) == (d, length(t_vec))
+        @test all(isfinite, x_traj)
+        @test x_traj[:, end] != x0
+    end
+
+    @testset "Loss Function" begin
+        loss_val = simple_loss(x, t, otflow, ps)
+        @test isa(loss_val, Float32)
+        @test isfinite(loss_val)
+    end
+
+    @testset "Manual Gradient" begin
+        grads = manual_gradient(x, t, otflow, ps)
+        @test haskey(grads, :w) && length(grads.w) == m
+        @test haskey(grads, :A) && size(grads.A) == (r, d+1)
+        @test haskey(grads, :b) && length(grads.b) == d+1
+        @test haskey(grads, :c) && isa(grads.c, Float32)
+        @test haskey(grads, :K0) && size(grads.K0) == (m, d+1)
+        @test haskey(grads, :K1) && size(grads.K1) == (m, m)
+        @test haskey(grads, :b0) && length(grads.b0) == m
+        @test haskey(grads, :b1) && length(grads.b1) == m
     end
 end

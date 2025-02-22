@@ -1,152 +1,98 @@
-# Abstract type for CNF layers
-abstract type OTFlowLayer <: AbstractLuxWrapperLayer{:model} end
-
-"""
-	OTFlow(model, tspan, input_dims, args...; ad = nothing, basedist = nothing, kwargs...)
-
-Constructs a continuous-time neural network based on optimal transport (OT) theory, using
-a potential function to define the dynamics and exact trace computation for the Jacobian.
-This is a continuous normalizing flow (CNF) model specialized for density estimation.
-
-Arguments:
-  - `model`: A `Lux.AbstractLuxLayer` neural network that defines the potential function Φ.
-  - `basedist`: Distribution of the base variable. Set to the unit normal by default.
-  - `input_dims`: Input dimensions of the model.
-  - `tspan`: The timespan to be solved on.
-  - `args`: Additional arguments splatted to the ODE solver.
-  - `ad`: The automatic differentiation method to use for the internal Jacobian trace.
-  - `kwargs`: Additional arguments splatted to the ODE solver.
-"""
-@concrete struct OTFlow <: OTFlowLayer
-	model <: AbstractLuxLayer
-	basedist <: Union{Nothing, Distribution}
-	ad::Any
-	input_dims::Any
-	tspan::Any
-	args::Any
-	kwargs::Any
+struct OTFlow <: AbstractLuxLayer
+    d::Int          # Input dimension
+    m::Int          # Hidden dimension
+    r::Int          # Rank for low-rank approximation
 end
 
-function LuxCore.initialstates(rng::AbstractRNG, n::OTFlow)
-	# Initialize the model's state and other parameters
-	model_st = LuxCore.initialstates(rng, n.model)
-	return (; model = model_st, regularize = false)
+# Constructor with default rank
+OTFlow(d::Int, m::Int; r::Int=min(10,d)) = OTFlow(d, m, r)
+
+# Initialize parameters and states
+function Lux.initialparameters(rng::AbstractRNG, l::OTFlow)
+    w = randn(rng, Float64, l.m) .* 0.01
+    A = randn(rng, Float64, l.r, l.d + 1) .* 0.01
+    b = zeros(Float64, l.d + 1)
+    c = zero(Float64)
+    K0 = randn(rng, Float64, l.m, l.d + 1) .* 0.01
+    K1 = randn(rng, Float64, l.m, l.m) .* 0.01
+    b0 = zeros(Float64, l.m)
+    b1 = zeros(Float64, l.m)
+    
+    return (w=w, A=A, b=b, c=c, K0=K0, K1=K1, b0=b0, b1=b1)
 end
 
-function OTFlow(
-	model, tspan, input_dims, args...; ad = nothing, basedist = nothing, kwargs...,
-)
-	!(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
-	return OTFlow(model, basedist, ad, input_dims, tspan, args, kwargs)
+Lux.initialstates(::AbstractRNG, ::OTFlow) = NamedTuple()
+
+σ(x) = log(exp(x) + exp(-x))
+σ′(x) = tanh(x)
+σ′′(x) = 1 - tanh(x)^2
+
+function resnet_forward(x::AbstractVector, t::Real, ps)
+    s = vcat(x, t)
+    u0 = σ.(ps.K0 * s .+ ps.b0)
+    u1 = u0 .+ σ.(ps.K1 * u0 .+ ps.b1)  # h=1 as in paper
+    return u1
 end
 
-# Dynamics function for OTFlow
-function __otflow_dynamics(model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing) where {T, N}
-	L = size(u, N - 1)
-	z = selectdim(u, N - 1, 1:(L-1))  # Extract the state variables
-	@set! model.ps = p
-
-	# Compute the potential function Φ(z)
-	Φ = model(z, p)
-
-	# Compute the gradient of Φ(z) to get the dynamics v(z) = -∇Φ(z)
-	∇Φ = gradient(z -> sum(model(z, p)), z)[1]
-	v = -∇Φ
-
-	# Compute the trace of the Jacobian of the dynamics (∇v)
-	H = Zygote.hessian(z -> sum(model(z, p)), z)
-	trace_jac = tr(H)
-
-	# Return the dynamics and the trace term
-	return cat(v, -reshape(trace_jac, ntuple(i -> 1, N - 1)..., :); dims = Val(N - 1))
+function potential(x::AbstractVector, t::Real, ps)
+    s = vcat(x, t)
+    N = resnet_forward(x, t, ps)
+    quadratic_term = 0.5 * s' * (ps.A' * ps.A) * s
+    linear_term = ps.b' * s
+    return ps.w' * N + quadratic_term + linear_term + ps.c
 end
 
-# Forward pass for OTFlow
-function (n::OTFlow)(x, ps, st)
-	return __forward_otflow(n, x, ps, st)
+function gradient(x::AbstractVector, t::Real, ps, d::Int)
+    s = vcat(x, t)
+    u0 = σ.(ps.K0 * s .+ ps.b0)
+    z1 = ps.w .+ ps.K1' * (σ′.(ps.K1 * u0 .+ ps.b1) .* ps.w)
+    z0 = ps.K0' * (σ′.(ps.K0 * s .+ ps.b0) .* z1)
+    
+    grad = z0 + (ps.A' * ps.A) * s + ps.b
+    return grad[1:d] 
 end
 
-function __forward_otflow(n::OTFlow, x::AbstractArray{T, N}, ps, st) where {T, N}
-	S = size(x)
-	(; regularize) = st
-	sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP())
-
-	model = StatefulLuxLayer{fixed_state_type(n.model)}(n.model, nothing, st.model)
-
-	otflow_dynamics(u, p, t) = __otflow_dynamics(model, u, p, n.ad)
-
-	_z = ChainRulesCore.@ignore_derivatives fill!(
-		similar(x, S[1:(N-2)]..., 1, S[N]), zero(T))
-
-	prob = ODEProblem{false}(otflow_dynamics, cat(x, _z; dims = Val(N - 1)), n.tspan, ps)
-	sol = solve(prob, n.args...; sensealg, n.kwargs...,
-		save_everystep = false, save_start = false, save_end = true)
-	pred = __get_pred(sol)
-	L = size(pred, N - 1)
-
-	z = selectdim(pred, N - 1, 1:(L-1))
-	delta_logp = selectdim(pred, N - 1, L:L)
-
-	if n.basedist === nothing
-		logpz = -sum(abs2, z; dims = 1:(N-1)) / T(2) .-
-				T(prod(S[1:(N-1)]) / 2 * log(2π))
-	else
-		logpz = logpdf(n.basedist, z)
-	end
-	logpx = reshape(logpz, 1, S[N]) .- delta_logp
-	return (logpx,), (; model = model.st, regularize)
+function trace(x::AbstractVector, t::Real, ps, d::Int)
+    s = vcat(x, t)
+    u0 = σ.(ps.K0 * s .+ ps.b0)
+    z1 = ps.w .+ ps.K1' * (σ′.(ps.K1 * u0 .+ ps.b1) .* ps.w)
+    
+    K0_E = ps.K0[:, 1:d]
+    A_E = ps.A[:, 1:d]
+    
+    t0 = sum(σ′′.(ps.K0 * s .+ ps.b0) .* z1 .* (K0_E .^ 2))
+    J = Diagonal(σ′.(ps.K0 * s .+ ps.b0)) * K0_E
+    t1 = sum(σ′′.(ps.K1 * u0 .+ ps.b1) .* ps.w .* (ps.K1 * J) .^ 2)
+    trace_A = tr(A_E' * A_E)
+    
+    return t0 + t1 + trace_A
 end
 
-# Backward pass for OTFlow
-function __backward_otflow(::Type{T1}, n::OTFlow, n_samples::Int, ps, st, rng) where {T1}
-	px = n.basedist
-
-	if px === nothing
-		x = rng === nothing ? randn(T1, (n.input_dims..., n_samples)) :
-			randn(rng, T1, (n.input_dims..., n_samples))
-	else
-		x = rng === nothing ? rand(px, n_samples) : rand(rng, px, n_samples)
-	end
-
-	N, S, T = ndims(x), size(x), eltype(x)
-	(; regularize) = st
-	sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP())
-
-	model = StatefulLuxLayer{true}(n.model, nothing, st.model)
-
-	otflow_dynamics(u, p, t) = __otflow_dynamics(model, u, p, n.ad)
-
-	_z = ChainRulesCore.@ignore_derivatives fill!(
-		similar(x, S[1:(N-2)]..., 1, S[N]), zero(T))
-
-	prob = ODEProblem{false}(otflow_dynamics, cat(x, _z; dims = Val(N - 1)), reverse(n.tspan), ps)
-	sol = solve(prob, n.args...; sensealg, n.kwargs...,
-		save_everystep = false, save_start = false, save_end = true)
-	pred = __get_pred(sol)
-	L = size(pred, N - 1)
-
-	return selectdim(pred, N - 1, 1:(L-1))
+function (l::OTFlow)(xt::Tuple{AbstractVector, Real}, ps, st)
+    x, t = xt
+    v = -gradient(x, t, ps, l.d)  # v = -∇Φ
+    tr = -trace(x, t, ps, l.d)   # tr(∇v) = -tr(∇²Φ)
+    return (v, tr), st
 end
 
-# OTFlow can be used as a distribution
-@concrete struct OTFlowDistribution <: ContinuousMultivariateDistribution
-	model <: OTFlow
-	ps::Any
-	st::Any
+function simple_loss(x::AbstractVector, t::Real, l::OTFlow, ps)
+    (v, tr), _ = l((x, t), ps, nothing)
+    return sum(v.^2) / 2 - tr
 end
 
-Base.length(d::OTFlowDistribution) = prod(d.model.input_dims)
-Base.eltype(d::OTFlowDistribution) = Lux.recursive_eltype(d.ps)
-
-function Distributions._logpdf(d::OTFlowDistribution, x::AbstractVector)
-	return first(first(__forward_otflow(d.model, reshape(x, :, 1), d.ps, d.st)))
-end
-function Distributions._logpdf(d::OTFlowDistribution, x::AbstractArray)
-	return first(first(__forward_otflow(d.model, x, d.ps, d.st)))
-end
-function Distributions._rand!(
-	rng::AbstractRNG, d::OTFlowDistribution, x::AbstractArray{<:Real},
-)
-	copyto!(x, __backward_otflow(eltype(d), d.model, size(x, ndims(x)), d.ps, d.st, rng))
-	return x
+function manual_gradient(x::AbstractVector, t::Real, l::OTFlow, ps)
+    s = vcat(x, t)
+    u0 = σ.(ps.K0 * s .+ ps.b0)
+    u1 = u0 .+ σ.(ps.K1 * u0 .+ ps.b1)
+    
+    v = -gradient(x, t, ps, l.d)
+    tr = -trace(x, t, ps, l.d)
+    
+    # Simplified gradients (not full implementation)
+    grad_w = u1
+    grad_A = (ps.A * s) * s'
+    
+    return (w=grad_w, A=grad_A, b=similar(ps.b), c=0.0, 
+            K0=zeros(l.m, l.d+1), K1=zeros(l.m, l.m), 
+            b0=zeros(l.m), b1=zeros(l.m))
 end
