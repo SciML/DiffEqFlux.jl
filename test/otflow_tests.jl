@@ -1,4 +1,4 @@
-@testset "Tests for OTFlow Layer Functionality" begin
+@testitem "Tests for OTFlow Layer Functionality" begin
     using Lux, LuxCore, Random, LinearAlgebra, Test, ComponentArrays, Flux, DiffEqFlux
     rng = Xoshiro(0)
     d = 2 
