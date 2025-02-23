@@ -9,7 +9,7 @@
 
     @testset "Kernel Functions" begin
         ts = collect(-5.0:0.1:5.0)
-        @testitem "Kernels with support from -1 to 1" begin
+        @testset "Kernels with support from -1 to 1" begin
             minus_one_index = findfirst(x -> ==(x, -1.0), ts)
             plus_one_index = findfirst(x -> ==(x, 1.0), ts)
             @testset "$kernel" for (kernel, x0) in zip(bounded_support_kernels,
@@ -25,8 +25,8 @@
                 @test DiffEqFlux.calckernel(kernel, 0.0) == x0
             end
         end
-        @testitem "Kernels with unbounded support" begin
-            @testitem "$kernel" for (kernel, x0) in zip(unbounded_support_kernels,
+        @testset "Kernels with unbounded support" begin
+            @testset "$kernel" for (kernel, x0) in zip(unbounded_support_kernels,
                 [1 / (sqrt(2 * pi)), 0.25, 1 / pi, 1 / (2 * sqrt(2))])
                 # t = 0
                 @test DiffEqFlux.calckernel(kernel, 0.0) == x0
@@ -34,7 +34,7 @@
         end
     end
 
-    @testitem "Collocation of data" begin
+    @testset "Collocation of data" begin
         f(u, p, t) = p .* u
         rc = 2
         ps = repeat([-0.001], rc)
@@ -43,12 +43,12 @@
         t = collect(range(minimum(tspan); stop = maximum(tspan), length = 1000))
         prob = ODEProblem(f, u0, tspan, ps)
         data = Array(solve(prob, Tsit5(); saveat = t, abstol = 1e-12, reltol = 1e-12))
-        @testitem "$kernel" for kernel in [
+        @testset "$kernel" for kernel in [
             bounded_support_kernels..., unbounded_support_kernels...]
             u′, u = collocate_data(data, t, kernel, 0.003)
             @test sum(abs2, u - data) < 1e-8
         end
-        @testitem "$kernel" for kernel in [bounded_support_kernels...]
+        @testset "$kernel" for kernel in [bounded_support_kernels...]
             # Errors out as the bandwidth is too low
             @test_throws ErrorException collocate_data(data, t, kernel, 0.001)
         end

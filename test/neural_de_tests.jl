@@ -4,7 +4,7 @@
 
     rng = Xoshiro(0)
 
-    @testitem "$(nnlib)" for nnlib in ("Flux", "Lux")
+    @testset "$(nnlib)" for nnlib in ("Flux", "Lux")
         mp = Float32[0.1, 0.1]
         x = Float32[2.0; 0.0]
         xs = Float32.(hcat([0.0; 0.0], [1.0; 0.0], [2.0; 0.0]))
@@ -22,8 +22,8 @@
             Chain(Dense(4 => 50, tanh), Dense(50 => 4))
         end
 
-        @testitem "u0: $(typeof(u0))" for u0 in (x, xs)
-            @testitem "kwargs: $(kwargs))" for kwargs in (
+        @testset "u0: $(typeof(u0))" for u0 in (x, xs)
+            @testset "kwargs: $(kwargs))" for kwargs in (
                 (; save_everystep = false, save_start = false),
                 (; abstol = 1e-12, reltol = 1e-12,
                     save_everystep = false, save_start = false),
@@ -58,7 +58,7 @@ end
 
     rng = Xoshiro(0)
 
-    @testitem "$(nnlib)" for nnlib in ("Flux", "Lux")
+    @testset "$(nnlib)" for nnlib in ("Flux", "Lux")
         mp = Float32[0.1, 0.1]
         x = Float32[2.0; 0.0]
         xs = Float32.(hcat([0.0; 0.0], [1.0; 0.0], [2.0; 0.0]))
@@ -122,7 +122,7 @@ end
 
     rng = Xoshiro(0)
 
-    @testitem "$(nnlib)" for nnlib in ("Flux", "Lux")
+    @testset "$(nnlib)" for nnlib in ("Flux", "Lux")
         mp = Float32[0.1, 0.1]
         x = Float32[2.0; 0.0]
         xs = Float32.(hcat([0.0; 0.0], [1.0; 0.0], [2.0; 0.0]))
@@ -154,7 +154,7 @@ end
             Chain(Dense(4 => 50, tanh), Dense(50 => 16), x -> reshape(x, 4, 4))
         end
 
-        @testitem "u0: $(typeof(u0)), solver: $(solver)" for u0 in (x,),
+        @testset "u0: $(typeof(u0)), solver: $(solver)" for u0 in (x,),
             solver in (EulerHeun(), LambaEM())
 
             sode = NeuralSDE(dudt, diffusion_sde, tspan, 2, solver;
@@ -187,7 +187,7 @@ end
 
     rng = Xoshiro(0)
 
-    @testitem "$(nnlib)" for nnlib in ("Flux", "Lux")
+    @testset "$(nnlib)" for nnlib in ("Flux", "Lux")
         mp = Float32[0.1, 0.1]
         x = Float32[2.0; 0.0]
         xs = Float32.(hcat([0.0; 0.0], [1.0; 0.0], [2.0; 0.0]))
@@ -251,7 +251,7 @@ end
     const gdev = gpu_device()
     const cdev = cpu_device()
 
-    @testitem "Neural DE" begin
+    @testset "Neural DE" begin
         mp = Float32[0.1, 0.1] |> gdev
         x = Float32[2.0; 0.0] |> gdev
         xs = Float32.(hcat([0.0; 0.0], [1.0; 0.0], [2.0; 0.0])) |> gdev
@@ -260,9 +260,9 @@ end
         dudt = Chain(Dense(2 => 50, tanh), Dense(50 => 2))
         aug_dudt = Chain(Dense(4 => 50, tanh), Dense(50 => 4))
 
-        @testitem "Neural ODE" begin
-            @testitem "u0: $(typeof(u0))" for u0 in (x, xs)
-                @testitem "kwargs: $(kwargs))" for kwargs in (
+        @testset "Neural ODE" begin
+            @testset "u0: $(typeof(u0))" for u0 in (x, xs)
+                @testset "kwargs: $(kwargs))" for kwargs in (
                     (; save_everystep = false, save_start = false),
                     (; save_everystep = false, save_start = false,
                         sensealg = TrackerAdjoint()),
@@ -278,7 +278,7 @@ end
                     st = st |> gdev
                     broken = hasfield(typeof(kwargs), :sensealg) &&
                              ndims(u0) == 2 &&
-                             kwargs[:sensealg] isa TrackerAdjoint
+                             kwargs.sensealg isa TrackerAdjoint
                     @test begin
                         grads = Zygote.gradient(sum ∘ last ∘ first ∘ node, u0, pd, st)
                         CUDA.@allowscalar begin
@@ -305,7 +305,7 @@ end
         aug_diffusion = Chain(Dense(4 => 50, tanh), Dense(50 => 4))
 
         tspan = (0.0f0, 0.1f0)
-        @testitem "NeuralDSDE u0: $(typeof(u0)), solver: $(solver)" for u0 in (xs,),
+        @testset "NeuralDSDE u0: $(typeof(u0)), solver: $(solver)" for u0 in (xs,),
             solver in (SOSRI(),)
             # CuVector seems broken on CI but I can't reproduce the failure locally
 
