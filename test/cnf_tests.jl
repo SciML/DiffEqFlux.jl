@@ -34,7 +34,7 @@ end
         return -mean(logpx)
     end
 
-    @testset "ADType: $(adtype)" for adtype in (Optimization.AutoForwardDiff(),
+    @testitem "ADType: $(adtype)" for adtype in (Optimization.AutoForwardDiff(),
         Optimization.AutoReverseDiff(), Optimization.AutoTracker(),
         Optimization.AutoZygote(), Optimization.AutoFiniteDiff())
         @testset "regularize = $(regularize) & monte_carlo = $(monte_carlo)" for regularize in (

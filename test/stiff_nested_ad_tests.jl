@@ -27,7 +27,7 @@
         end
     end
 
-    @testset "Solver: $(nameof(typeof(solver)))" for solver in (
+    @testitem "Solver: $(nameof(typeof(solver)))" for solver in (
         KenCarp4(), Rodas5(), RadauIIA5())
         neuralde = NeuralODE(model, tspan, solver; saveat = t, reltol = 1e-7, abstol = 1e-9)
         ps, st = Lux.setup(Xoshiro(0), neuralde)

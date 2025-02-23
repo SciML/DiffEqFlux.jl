@@ -11,32 +11,32 @@
     x = Float32[1.0, 2.0]
     t = 0.5f0
 
-    @testset "Forward Pass" begin
+    @testitem "Forward Pass" begin
         (v, tr), st_new = otflow((x, t), ps, st)
         @test length(v) == d 
         @test isa(tr, Float32)
         @test st_new == st 
     end
 
-    @testset "Potential Function" begin
+    @testitem "Potential Function" begin
         phi = potential(x, t, ps)
         @test isa(phi, Float32)
     end
 
-    @testset "Gradient Consistency" begin
+    @testitem "Gradient Consistency" begin
         grad = gradient(x, t, ps, d)
         (v, _), _ = otflow((x, t), ps, st)
         @test length(grad) == d
         @test grad ≈ -v atol=1e-5  # v = -∇Φ
     end
 
-    @testset "Trace Consistency" begin
+    @testitem "Trace Consistency" begin
         tr_manual = trace(x, t, ps, d)
         (_, tr_forward), _ = otflow((x, t), ps, st)
         @test tr_manual ≈ -tr_forward atol=1e-5
     end
 
-    @testset "ODE Integration" begin
+    @testitem "ODE Integration" begin
         x0 = Float32[1.0, 1.0]
         tspan = (0.0f0, 1.0f0)
         x_traj, t_vec = simple_ode_solve(otflow, x0, tspan, ps, st; dt=0.01f0)
@@ -45,13 +45,13 @@
         @test x_traj[:, end] != x0
     end
 
-    @testset "Loss Function" begin
+    @testitem "Loss Function" begin
         loss_val = simple_loss(x, t, otflow, ps)
         @test isa(loss_val, Float32)
         @test isfinite(loss_val)
     end
 
-    @testset "Manual Gradient" begin
+    @testitem "Manual Gradient" begin
         grads = manual_gradient(x, t, otflow, ps)
         @test haskey(grads, :w) && length(grads.w) == m
         @test haskey(grads, :A) && size(grads.A) == (r, d+1)
