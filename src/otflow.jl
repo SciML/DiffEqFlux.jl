@@ -9,19 +9,19 @@ OTFlow(d::Int, m::Int; r::Int=min(10,d)) = OTFlow(d, m, r)
 
 # Initialize parameters and states
 function Lux.initialparameters(rng::AbstractRNG, l::OTFlow)
-    w = randn(rng, Float64, l.m) .* 0.01
-    A = randn(rng, Float64, l.r, l.d + 1) .* 0.01
-    b = zeros(Float64, l.d + 1)
-    c = zero(Float64)
-    K0 = randn(rng, Float64, l.m, l.d + 1) .* 0.01
-    K1 = randn(rng, Float64, l.m, l.m) .* 0.01
-    b0 = zeros(Float64, l.m)
-    b1 = zeros(Float64, l.m)
+    w = randn(rng, Float32, l.m) .* 0.01
+    A = randn(rng, Float32, l.r, l.d + 1) .* 0.01
+    b = zeros(Float32, l.d + 1)
+    c = zero(Float32)
+    K0 = randn(rng, Float32, l.m, l.d + 1) .* 0.01
+    K1 = randn(rng, Float32, l.m, l.m) .* 0.01
+    b0 = zeros(Float32, l.m)
+    b1 = zeros(Float32, l.m)
     
-    return (w=w, A=A, b=b, c=c, K0=K0, K1=K1, b0=b0, b1=b1)
+    ps = (w=w, A=A, b=b, c=c, K0=K0, K1=K1, b0=b0, b1=b1)
+    st = NamedTuple()
+    return ps, st
 end
-
-Lux.initialstates(::AbstractRNG, ::OTFlow) = NamedTuple()
 
 σ(x) = log(exp(x) + exp(-x))
 σ′(x) = tanh(x)
@@ -76,7 +76,7 @@ function (l::OTFlow)(xt::Tuple{AbstractVector, Real}, ps, st)
 end
 
 function simple_loss(x::AbstractVector, t::Real, l::OTFlow, ps)
-    (v, tr), _ = l((x, t), ps, nothing)
+    (v, tr), _ = l((x, t), ps, NamedTuple())
     return sum(v.^2) / 2 - tr
 end
 

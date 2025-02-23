@@ -7,7 +7,7 @@
     unbounded_support_kernels = [
         GaussianKernel(), LogisticKernel(), SigmoidKernel(), SilvermanKernel()]
 
-    @testitem "Kernel Functions" begin
+    @testset "Kernel Functions" begin
         ts = collect(-5.0:0.1:5.0)
         @testitem "Kernels with support from -1 to 1" begin
             minus_one_index = findfirst(x -> ==(x, -1.0), ts)
