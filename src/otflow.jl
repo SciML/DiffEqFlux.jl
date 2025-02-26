@@ -1,5 +1,3 @@
-using LinearAlgebra
-
 struct OTFlow <: AbstractLuxLayer
 	d::Int
 	m::Int
