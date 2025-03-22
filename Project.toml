@@ -69,7 +69,7 @@ Static = "1.1.1"
 Statistics = "1.10"
 StochasticDiffEq = "6.68.0"
 Test = "1.10"
-Zygote = "0.6"
+Zygote = "0.7"
 julia = "1.10"
 
 [extras]
