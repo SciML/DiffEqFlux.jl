@@ -75,6 +75,8 @@ same code works on CPUs and GPUs, dependent on `using LuxCUDA`.
 using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq, Plots, LuxCUDA,
       SciMLSensitivity, Random, ComponentArrays
 import DiffEqFlux: NeuralODE
+const cdev = cpu_device()
+const gdev = gpu_device()
 
 CUDA.allowscalar(false) # Makes sure no slow operations are occurring
 
