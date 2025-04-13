@@ -1,4 +1,4 @@
-# Neural Ordinary Differential Equations
+# [Neural Ordinary Differential Equations](@id neural_ode)
 
 A neural ODE is an ODE where a neural
 network defines its derivative function. For example, with the multilayer
