@@ -6,4 +6,4 @@ jobs:
   code-style:
     runs-on: ubuntu-latest
     steps:
-      - uses: julia-actions/julia-format@v3
+      - uses: julia-actions/julia-format@v4
