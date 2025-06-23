@@ -1,20 +1,6 @@
-"""
-ODE-LSTM: A Complete Julia Implementation for DiffEqFlux.jl
-
-This implementation converts the original PyTorch ODE-LSTM to Julia, providing:
-- Multiple solver support (Tsit5, Euler, Heun, RK4)
-- Dataset handling for Person, ET-MNIST, and XOR tasks
-- Training and evaluation functionality
-- Integration with the SciML ecosystem
-
-Original paper: https://arxiv.org/abs/2006.04418
-"""
-
-module ODELSTM
-
-using DifferentialEquations
-using Flux
-using DiffEqFlux
+using Lux
+using ComponentArrays
+using Optimisers
 using LinearAlgebra
 using Random
 using Statistics
@@ -27,64 +13,42 @@ export PersonData, ETSMnistData, XORData
 export train_model!, evaluate_model, load_dataset
 
 mutable struct ODELSTMCell{F,S}
-    lstm_cell::Flux.LSTMCell
+    lstm_cell::Lux.LSTMCell
     f_node::F
-    solver_type::Symbol
     solver::S
     input_size::Int
     hidden_size::Int
 end
 
-function ODELSTMCell(input_size::Int, hidden_size::Int, solver_type::Symbol=:dopri5)
-    lstm_cell = Flux.LSTMCell(input_size => hidden_size)
+function ODELSTMCell(input_size::Int, hidden_size::Int, solver)
+    lstm_cell = Lux.LSTMCell(input_size, hidden_size)
     f_node = Chain(
-        Dense(hidden_size => hidden_size, tanh),
-        Dense(hidden_size => hidden_size)
+        Dense(hidden_size, hidden_size, tanh),
+        Dense(hidden_size, hidden_size)
     )
-    solver = get_solver(solver_type)
-    return ODELSTMCell(lstm_cell, f_node, solver_type, solver, input_size, hidden_size)
+    return ODELSTMCell(lstm_cell, f_node, solver, input_size, hidden_size)
 end
 
-function get_solver(solver_type::Symbol)
-    solver_map = Dict(
-        :dopri5 => Tsit5(),
-        :tsit5 => Tsit5(),
-        :euler => Euler(),
-        :heun => Heun(),
-        :rk4 => RK4()
-    )
-    return get(solver_map, solver_type, Tsit5())
-end
-
-function (cell::ODELSTMCell)(x, state, ts)
+function (cell::ODELSTMCell)(x, state, ts, p, st)
     h, c = state
-    new_h, new_c = cell.lstm_cell(x, (h, c))
+    new_h, new_c, st = cell.lstm_cell(x, (h, c), p, st)
     
-    if cell.solver_type in [:euler, :heun, :rk4]
-        evolved_h = solve_fixed_step(cell, new_h, ts)
+    if !(cell.solver isa Union{Tsit5,DP5,BS3})
+        evolved_h, st = solve_fixed_step(cell, new_h, ts, p, st)
     else
-        evolved_h = solve_adaptive(cell, new_h, ts)
+        evolved_h, st = solve_adaptive(cell, new_h, ts, p, st)
     end
     
-    return evolved_h, (evolved_h, new_c)
+    return evolved_h, (evolved_h, new_c), st
 end
 
-function solve_fixed_step(cell::ODELSTMCell, h, ts)
-    dt = ts / 3.0
-    h_evolved = h
-    for i in 1:3
-        if cell.solver_type == :euler
-            h_evolved = euler_step(cell.f_node, h_evolved, dt)
-        elseif cell.solver_type == :heun
-            h_evolved = heun_step(cell.f_node, h_evolved, dt)
-        elseif cell.solver_type == :rk4
-            h_evolved = rk4_step(cell.f_node, h_evolved, dt)
-        end
-    end
-    return h_evolved
+function solve_fixed_step(cell::ODELSTMCell, h, ts, p, st)
+    prob = ODEProblem((u,p,t)->cell.f_node(u,p,st)[1], h, (0.0f0, Float32(ts)))
+    sol = solve(prob, cell.solver; adaptive=false)
+    return sol.u[end], st
 end
 
-function solve_adaptive(cell::ODELSTMCell, h, ts)
+function solve_adaptive(cell::ODELSTMCell, h, ts, p, st)
     if ndims(h) == 2
         batch_size = size(h, 2)
         results = similar(h)
@@ -92,47 +56,19 @@ function solve_adaptive(cell::ODELSTMCell, h, ts)
         for i in 1:batch_size
             h_i = h[:, i]
             ts_i = ts isa AbstractVector ? ts[i] : ts
-            t_span = (0.0f0, Float32(ts_i) + 1f-6 * i)
+            t_span = (0.0f0, Float32(ts_i))
             
-            function ode_func!(dh, h_state, p, t)
-                dh .= cell.f_node(h_state)
-            end
-            
-            prob = ODEProblem(ode_func!, h_i, t_span)
+            prob = ODEProblem((u,p,t)->cell.f_node(u,p,st)[1], h_i, t_span)
             sol = solve(prob, cell.solver, saveat=[t_span[2]], dense=false)
             results[:, i] = sol.u[end]
         end
-        return results
+        return results, st
     else
         t_span = (0.0f0, Float32(ts))
-        
-        function ode_func!(dh, h_state, p, t)
-            dh .= cell.f_node(h_state)
-        end
-        
-        prob = ODEProblem(ode_func!, h, t_span)
+        prob = ODEProblem((u,p,t)->cell.f_node(u,p,st)[1], h, t_span)
         sol = solve(prob, cell.solver, saveat=[t_span[2]], dense=false)
-        return sol.u[end]
+        return sol.u[end], st
     end
-end
-
-function euler_step(f, y, dt)
-    dy = f(y)
-    return y + dt * dy
-end
-
-function heun_step(f, y, dt)
-    k1 = f(y)
-    k2 = f(y + dt * k1)
-    return y + dt * 0.5f0 * (k1 + k2)
-end
-
-function rk4_step(f, y, dt)
-    k1 = f(y)
-    k2 = f(y + k1 * dt * 0.5f0)
-    k3 = f(y + k2 * dt * 0.5f0)
-    k4 = f(y + k3 * dt)
-    return y + dt * (k1 + 2*k2 + 2*k3 + k4) / 6.0f0
 end
 
 struct ODELSTMModel{C,O}
@@ -142,64 +78,32 @@ struct ODELSTMModel{C,O}
 end
 
 function ODELSTMModel(in_features::Int, hidden_size::Int, out_features::Int; 
-                      return_sequences::Bool=true, solver_type::Symbol=:dopri5)
-    rnn_cell = ODELSTMCell(in_features, hidden_size, solver_type)
-    output_layer = Dense(hidden_size => out_features)
+                      return_sequences::Bool=true, solver)
+    rnn_cell = ODELSTMCell(in_features, hidden_size, solver)
+    output_layer = Dense(hidden_size, out_features)
     return ODELSTMModel(rnn_cell, output_layer, return_sequences)
 end
 
-Flux.@functor ODELSTMModel
-
-function (model::ODELSTMModel)(x, timespans, mask=nothing)
-    batch_size, seq_len, input_size = size(x)
-    
-    h = zeros(Float32, model.rnn_cell.hidden_size, batch_size)
-    c = zeros(Float32, model.rnn_cell.hidden_size, batch_size)
-    
-    outputs = []
-    last_output = zeros(Float32, size(model.output_layer.weight, 1), batch_size)
-    
-    for t in 1:seq_len
-        inputs = x[:, t, :]'
-        ts = timespans[:, t]
-        
-        h, (h, c) = model.rnn_cell(inputs, (h, c), ts)
-        current_output = model.output_layer(h)
-        push!(outputs, current_output)
-        
-        if mask !== nothing
-            cur_mask = mask[:, t]'
-            last_output = cur_mask .* current_output + (1.0f0 .- cur_mask) .* last_output
-        else
-            last_output = current_output
-        end
-    end
-    
-    if model.return_sequences
-        return cat(outputs..., dims=3)
-    else
-        return last_output'
-    end
-end
-
-mutable struct IrregularSequenceLearner{M,O}
+mutable struct IrregularSequenceLearner{M,O,S}
     model::M
     optimizer::O
+    states::S
     train_losses::Vector{Float32}
     val_losses::Vector{Float32}
     train_accs::Vector{Float32}
     val_accs::Vector{Float32}
 end
 
-function IrregularSequenceLearner(model, lr=0.005f0)
-    optimizer = ADAM(lr)
+function IrregularSequenceLearner(model, lr=0.005f0; rng=Random.default_rng())
+    optimizer = Optimisers.Adam(lr)
+    ps, st = Lux.setup(rng, model)
     return IrregularSequenceLearner(
-        model, optimizer, 
+        model, optimizer, st,
         Float32[], Float32[], Float32[], Float32[]
     )
 end
 
-function train_step!(learner::IrregularSequenceLearner, batch)
+function train_step!(learner::IrregularSequenceLearner, batch, p)
     if length(batch) == 4
         x, t, y, mask = batch
     else
@@ -207,31 +111,21 @@ function train_step!(learner::IrregularSequenceLearner, batch)
         mask = nothing
     end
     
-    params = Flux.params(learner.model)
-    
-    loss, grads = Flux.withgradient(params) do
-        y_hat = learner.model(x, t, mask)
-        if ndims(y_hat) == 3
-            y_hat = reshape(y_hat, size(y_hat, 1), :)
-        end
-        y_flat = reshape(y, :)
-        Flux.crossentropy(y_hat, Flux.onehotbatch(y_flat, 0:maximum(y_flat)))
+    (loss, (y_hat, st)), grads = value_and_gradient(p) do p
+        y_hat, st = learner.model(x, t, mask, p, learner.states)
+        Lux.crossentropy(y_hat, Flux.onehotbatch(reshape(y, :), 0:maximum(y)))
     end
     
-    Flux.update!(learner.optimizer, params, grads)
+    learner.states = st
+    p = Optimisers.update(learner.optimizer, p, grads)
     
-    y_hat = learner.model(x, t, mask)
-    if ndims(y_hat) == 3
-        y_hat = reshape(y_hat, size(y_hat, 1), :)
-    end
-    y_flat = reshape(y, :)
     preds = Flux.onecold(y_hat) .- 1
-    acc = mean(preds .== y_flat)
+    acc = mean(preds .== reshape(y, :))
     
-    return loss, acc
+    return loss, acc, p
 end
 
-function validation_step(learner::IrregularSequenceLearner, batch)
+function validation_step(learner::IrregularSequenceLearner, batch, p)
     if length(batch) == 4
         x, t, y, mask = batch
     else
@@ -239,28 +133,24 @@ function validation_step(learner::IrregularSequenceLearner, batch)
         mask = nothing
     end
     
-    y_hat = learner.model(x, t, mask)
+    y_hat, st = learner.model(x, t, mask, p, learner.states)
     
-    if ndims(y_hat) == 3
-        y_hat = reshape(y_hat, size(y_hat, 1), :)
-    end
-    y_flat = reshape(y, :)
-    
-    loss = Flux.crossentropy(y_hat, Flux.onehotbatch(y_flat, 0:maximum(y_flat)))
+    loss = Lux.crossentropy(y_hat, Flux.onehotbatch(reshape(y, :), 0:maximum(y)))
     preds = Flux.onecold(y_hat) .- 1
-    acc = mean(preds .== y_flat)
+    acc = mean(preds .== reshape(y, :))
     
     return loss, acc
 end
 
 function train_model!(learner::IrregularSequenceLearner, train_loader, val_loader=nothing; epochs=100)
+    p = ComponentArray(Lux.initialparameters(Random.default_rng(), learner.model))
     for epoch in 1:epochs
         train_loss_epoch = 0.0f0
         train_acc_epoch = 0.0f0
         train_batches = 0
         
         for batch in train_loader
-            loss, acc = train_step!(learner, batch)
+            loss, acc, p = train_step!(learner, batch, p)
             train_loss_epoch += loss
             train_acc_epoch += acc
             train_batches += 1
@@ -278,7 +168,7 @@ function train_model!(learner::IrregularSequenceLearner, train_loader, val_loade
             val_batches = 0
             
             for batch in val_loader
-                loss, acc = validation_step(learner, batch)
+                loss, acc = validation_step(learner, batch, p)
                 val_loss_epoch += loss
                 val_acc_epoch += acc
                 val_batches += 1
@@ -303,26 +193,6 @@ function train_model!(learner::IrregularSequenceLearner, train_loader, val_loade
     end
 end
 
-function evaluate_model(learner::IrregularSequenceLearner, test_loader)
-    total_loss = 0.0f0
-    total_acc = 0.0f0
-    num_batches = 0
-    
-    for batch in test_loader
-        loss, acc = validation_step(learner, batch)
-        total_loss += loss
-        total_acc += acc
-        num_batches += 1
-    end
-    
-    avg_loss = total_loss / num_batches
-    avg_acc = total_acc / num_batches
-    
-    @printf("Test Results: Loss=%.4f, Accuracy=%.4f\n", avg_loss, avg_acc)
-    
-    return Dict("test_loss" => avg_loss, "val_acc" => avg_acc)
-end
-
 struct PersonData
     train_x::Array{Float32,3}
     train_y::Array{Int32,2}
@@ -335,8 +205,6 @@ struct PersonData
 end
 
 function PersonData(; seq_len::Int=32)
-    @warn "PersonData using synthetic data. Implement actual data loading for production use."
-    
     n_train, n_test = 1000, 200
     feature_size = 7
     num_classes = 7
@@ -612,30 +480,17 @@ function load_dataset(dataset_name::String; kwargs...)
     return train_data, test_data, in_features, num_classes, return_sequences
 end
 
-function main_training_loop(; dataset="person", solver=:dopri5, size=64, epochs=100, lr=0.01f0)
+function main_training_loop(; dataset="person", solver=Tsit5(), size=64, epochs=100, lr=0.01f0)
     train_loader, test_loader, in_features, num_classes, return_sequences = load_dataset(dataset)
     
-    println("Dataset: $dataset")
-    println("Input features: $in_features")
-    println("Number of classes: $num_classes")
-    println("Return sequences: $return_sequences")
-    println("Hidden size: $size")
-    println("Solver: $solver")
-    
     model = ODELSTMModel(in_features, size, num_classes; 
-                         return_sequences=return_sequences, solver_type=solver)
+                         return_sequences=return_sequences, solver=solver)
     
     learner = IrregularSequenceLearner(model, lr)
     
-    println("Starting training...")
     train_model!(learner, train_loader; epochs=epochs)
     
-    println("Evaluating model...")
     results = evaluate_model(learner, test_loader)
     
-    println("Final accuracy: $(results["val_acc"])")
-    
     return learner, results
-end
-
 end
