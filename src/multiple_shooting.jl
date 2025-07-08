@@ -36,7 +36,8 @@ Arguments:
 function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
         continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
         group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
-    datasize = size(ode_data, 2)
+    datasize = size(ode_data, ndims(ode_data))
+    griddims = ntuple(_ -> Colon(), ndims(ode_data) - 1)
 
     if group_size < 2 || group_size > datasize
         throw(DomainError(group_size, "group_size can't be < 2 or > number of data points"))
@@ -48,7 +49,7 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
     # Multiple shooting predictions
     sols = [solve(
                 remake(prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
-                    u0 = ode_data[:, first(rg)]),
+                    u0 = ode_data[griddims..., first(rg)]),
                 solver;
                 saveat = tsteps[rg],
                 kwargs...) for rg in ranges]
@@ -61,15 +62,15 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
     # Calculate multiple shooting loss
     loss = 0
     for (i, rg) in enumerate(ranges)
-        u = ode_data[:, rg]
-        û = group_predictions[i]
+        u = ode_data[griddims..., rg]
+        û = group_predictions[i][griddims..., :]
         loss += loss_function(u, û)
 
         if i > 1
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
             loss += continuity_term *
-                    continuity_loss(group_predictions[i - 1][:, end], u[:, 1])
+                    continuity_loss(group_predictions[i - 1][griddims..., end], u[griddims..., 1])
         end
     end
 
@@ -121,16 +122,18 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         ensemblealg::SciMLBase.BasicEnsembleAlgorithm, loss_function::F,
         continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
         group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
-    datasize = size(ode_data, 2)
+    ntraj = size(ode_data, ndims(ode_data))
+    datasize = size(ode_data, ndims(ode_data)-1)
+    griddims = ntuple(_ -> Colon(), ndims(ode_data) - 2)
     prob = ensembleprob.prob
 
     if group_size < 2 || group_size > datasize
         throw(DomainError(group_size, "group_size can't be < 2 or > number of data points"))
     end
 
-    @assert ndims(ode_data)==3 "ode_data must have three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
-    @assert size(ode_data, 2) == length(tsteps)
-    @assert size(ode_data, 3) == kwargs[:trajectories]
+    @assert ndims(ode_data)>=3 "ode_data must have at least three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
+    @assert datasize == length(tsteps)
+    @assert ntraj == kwargs[:trajectories]
 
     # Get ranges that partition data to groups of size group_size
     ranges = group_ranges(datasize, group_size)
@@ -140,7 +143,7 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         rg -> begin
             newprob = remake(prob; p = p, tspan = (tsteps[first(rg)], tsteps[last(rg)]))
             function prob_func(prob, i, repeat)
-                remake(prob; u0 = ode_data[:, first(rg), i])
+                remake(prob; u0 = ode_data[griddims..., first(rg), i])
             end
             newensembleprob = EnsembleProblem(
                 newprob, prob_func, ensembleprob.output_func, ensembleprob.reduction,
@@ -158,7 +161,7 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
     loss = 0
     for (i, rg) in enumerate(ranges)
         û = group_predictions[i]
-        u = ode_data[:, rg, :] # trajectories are at dims 3
+        u = ode_data[griddims..., rg, :] # trajectories are at dims 3
         # just summing up losses for all trajectories
         # but other alternatives might be considered
 
@@ -168,7 +171,7 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
             loss += continuity_term *
-                    continuity_loss(group_predictions[i - 1][:, end, :], u[:, 1, :])
+                    continuity_loss(group_predictions[i - 1][griddims..., end, :], u[griddims..., 1, :])
         end
     end
 
