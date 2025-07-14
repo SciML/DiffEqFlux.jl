@@ -32,13 +32,14 @@ fixed_state_type(::Layers.HamiltonianNN{False}) = false
 
 include("ffjord.jl")
 include("neural_de.jl")
-
+include("otflow.jl")
 include("collocation.jl")
 include("multiple_shooting.jl")
 
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
        NeuralODEMM
 export FFJORD, FFJORDDistribution
+export OTFlow, OTFlowDistribution
 export DimMover
 
 export EpanechnikovKernel, UniformKernel, TriangularKernel, QuarticKernel, TriweightKernel,
