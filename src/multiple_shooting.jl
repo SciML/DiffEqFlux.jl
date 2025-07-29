@@ -70,7 +70,8 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
             loss += continuity_term *
-                    continuity_loss(group_predictions[i - 1][griddims..., end], u[griddims..., 1])
+                    continuity_loss(
+                group_predictions[i - 1][griddims..., end], u[griddims..., 1])
         end
     end
 
@@ -123,7 +124,7 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
         group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
     ntraj = size(ode_data, ndims(ode_data))
-    datasize = size(ode_data, ndims(ode_data)-1)
+    datasize = size(ode_data, ndims(ode_data) - 1)
     griddims = ntuple(_ -> Colon(), ndims(ode_data) - 2)
     prob = ensembleprob.prob
 
@@ -171,7 +172,8 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
             loss += continuity_term *
-                    continuity_loss(group_predictions[i - 1][griddims..., end, :], u[griddims..., 1, :])
+                    continuity_loss(
+                group_predictions[i - 1][griddims..., end, :], u[griddims..., 1, :])
         end
     end
 

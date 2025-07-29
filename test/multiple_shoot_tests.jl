@@ -17,16 +17,18 @@
         (
             name = "Vector Test Config",
             u0 = Float32[2.0, 0.0],
-            ode_func = (du, u, p, t) -> (du .= ((u .^ 3)'*[-0.1 2.0; -2.0 -0.1])'),
+            ode_func = (du, u, p, t) -> (du .= ((u .^ 3)' * [-0.1 2.0; -2.0 -0.1])'),
             nn = Chain(x -> x .^ 3, Dense(2 => 16, tanh), Dense(16 => 2)),
             u0s_ensemble = [Float32[2.0, 0.0], Float32[3.0, 1.0]]
         ),
         (
             name = "Multi-D Test Config",
             u0 = Float32[2.0 0.0; 1.0 1.5; 0.5 -1.0],
-            ode_func = (du, u, p, t) -> (du .= ((u .^ 3).*[-0.01 0.02; -0.02 -0.01; 0.01 -0.05])),
+            ode_func = (du, u, p, t) -> (du .= ((u .^ 3) .*
+                                                [-0.01 0.02; -0.02 -0.01; 0.01 -0.05])),
             nn = Chain(x -> x .^ 3, Dense(3 => 3, tanh)),
-            u0s_ensemble = [Float32[2.0 0.0; 1.0 1.5; 0.5 -1.0], Float32[3.0 1.0; 2.0 0.5; 1.5 -0.5]]
+            u0s_ensemble = [
+                Float32[2.0 0.0; 1.0 1.5; 0.5 -1.0], Float32[3.0 1.0; 2.0 0.5; 1.5 -0.5]]
         )
     ]
 
@@ -82,7 +84,8 @@
         end
 
         adtype = Optimization.AutoZygote()
-        optf = Optimization.OptimizationFunction((p, _) -> loss_multiple_shooting(p), adtype)
+        optf = Optimization.OptimizationFunction(
+            (p, _) -> loss_multiple_shooting(p), adtype)
         optprob = Optimization.OptimizationProblem(optf, p_init)
         res_ms = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
@@ -122,7 +125,8 @@
         end
 
         adtype = Optimization.AutoZygote()
-        optf = Optimization.OptimizationFunction((p, _) -> loss_multiple_shooting_fd(p), adtype)
+        optf = Optimization.OptimizationFunction(
+            (p, _) -> loss_multiple_shooting_fd(p), adtype)
         optprob = Optimization.OptimizationProblem(optf, p_init)
         res_ms_fd = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
@@ -158,7 +162,8 @@
         group_size = 3
         continuity_term = 200
         function loss_multiple_shooting_ens(p)
-            return multiple_shoot(p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg,
+            return multiple_shoot(
+                p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg,
                 loss_function, Tsit5(), group_size; continuity_term,
                 trajectories, abstol = 1e-8, reltol = 1e-6)[1]
         end
