@@ -246,10 +246,10 @@ end
 
     CUDA.allowscalar(false)
 
-    rng = Xoshiro(0)
+    rng=Xoshiro(0)
 
-    const gdev = gpu_device()
-    const cdev = cpu_device()
+    const gdev=gpu_device()
+    const cdev=cpu_device()
 
     @testset "Neural DE" begin
         mp = Float32[0.1, 0.1] |> gdev

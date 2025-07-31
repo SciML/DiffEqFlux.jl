@@ -134,7 +134,8 @@ function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; 
         p === nothing && (p = p_new)
         state === nothing && (state = state_new)
 
-        p, state = train_one_round(node, p, state, y, OptimizationOptimisers.AdamW(lr),
+        p,
+        state = train_one_round(node, p, state, y, OptimizationOptimisers.AdamW(lr),
             maxiters, rng; callback = log_results(ps, losses), kwargs...)
     end
     ps, state, losses
