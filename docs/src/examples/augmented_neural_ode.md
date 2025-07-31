@@ -61,6 +61,7 @@ function plot_contour(model, ps, st, npoints = 300)
     x = range(-4.0f0, 4.0f0; length = npoints)
     y = range(-4.0f0, 4.0f0; length = npoints)
     for x1 in x, x2 in y
+
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
@@ -212,6 +213,7 @@ function plot_contour(model, ps, st, npoints = 300)
     x = range(-4.0f0, 4.0f0; length = npoints)
     y = range(-4.0f0, 4.0f0; length = npoints)
     for x1 in x, x2 in y
+
         grid_points[:, idx] .= [x1, x2]
         idx += 1
     end
