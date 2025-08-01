@@ -118,8 +118,7 @@ function __ffjord(model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothi
         end
     end
     if regularize
-        return cat(mz, -trace_jac, sum(abs2, mz; dims = 1:(N - 1)),
-            __norm_batched(eJ); dims = Val(N - 1))
+        return cat(mz, -trace_jac, sum(abs2, mz; dims = 1:(N - 1)), __norm_batched(eJ); dims = Val(N - 1))
     else
         return cat(mz, -trace_jac; dims = Val(N - 1))
     end
@@ -156,8 +155,7 @@ function __forward_ffjord(n::FFJORD, x::AbstractArray{T, N}, ps, st) where {T, N
     end
 
     if n.basedist === nothing
-        logpz = -sum(abs2, z; dims = 1:(N - 1)) / T(2) .-
-                T(prod(S[1:(N - 1)]) / 2 * log(2π))
+        logpz = -sum(abs2, z; dims = 1:(N - 1)) / T(2) .- T(prod(S[1:(N - 1)]) / 2 * log(2π))
     else
         logpz = logpdf(n.basedist, z)
     end

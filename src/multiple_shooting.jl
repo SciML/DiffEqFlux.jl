@@ -69,8 +69,7 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
         if i > 1
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
-            loss += continuity_term *
-                    continuity_loss(group_predictions[i - 1][griddims..., end], u[griddims..., 1])
+            loss += continuity_term * continuity_loss(group_predictions[i - 1][griddims..., end], u[griddims..., 1])
         end
     end
 
@@ -170,8 +169,7 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         if i > 1
             # Ensure continuity between last state in previous prediction
             # and current initial condition in ode_data
-            loss += continuity_term *
-                    continuity_loss(group_predictions[i - 1][griddims..., end, :], u[griddims..., 1, :])
+            loss += continuity_term * continuity_loss(group_predictions[i - 1][griddims..., end, :], u[griddims..., 1, :])
         end
     end
 
