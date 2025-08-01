@@ -11,8 +11,7 @@ const cdev = cpu_device()
 const gdev = gpu_device()
 
 function random_point_in_sphere(dim, min_radius, max_radius)
-    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+
-               min_radius
+    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+ min_radius
     direction = randn(Float32, dim)
     unit_direction = direction ./ norm(direction)
     return distance .* unit_direction
@@ -138,8 +137,7 @@ circle, and `-1` to any point which lies between the inner and outer circle. Our
 
 ```@example augneuralode
 function random_point_in_sphere(dim, min_radius, max_radius)
-    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+
-               min_radius
+    distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+ min_radius
     direction = randn(Float32, dim)
     unit_direction = direction ./ norm(direction)
     return distance .* unit_direction
