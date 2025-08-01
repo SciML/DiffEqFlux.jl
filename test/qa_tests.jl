@@ -11,4 +11,5 @@ end
     @test check_no_implicit_imports(
         DiffEqFlux; skip = (ADTypes, Lux, Base, Boltz, Core)) === nothing
     @test check_no_stale_explicit_imports(DiffEqFlux) === nothing
+    @test check_no_self_qualified_accesses(DiffEqFlux) === nothing
 end
