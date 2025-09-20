@@ -37,9 +37,7 @@ using Plots, Statistics
 # We disable the default plot saving and display them directly.
 default(show = true)
 
-# ---------------------------------------------------------------------------
-# ## 1. Problem Setup: Constants, Grid, and Initial Conditions
-# ---------------------------------------------------------------------------
+# 1. Problem Setup: Constants, Grid, and Initial Conditions
 
 # -- Simulation Parameters --
 const N = 16            # Grid size will be N x N
@@ -95,9 +93,8 @@ u0 = init_u0(xyd)
 To train our UDE, we need data to learn from. We generate this by solving the full Brusselator PDE with its known equations. This solution will serve as our "ground truth" that we will try to replicate with the UDE. The rhs_ref! function defines the complete dynamics, including both diffusion and reaction terms.
 
 ```@example stiff_bruss
-# ---------------------------------------------------------------------------
-# ## 2. Reference Solution (Ground Truth)
-# ---------------------------------------------------------------------------
+# 2. Reference Solution (Ground Truth)
+
 # Here, we solve the full PDE with the known reaction terms to generate
 # the data we will use to train our neural network.
 
@@ -158,9 +155,8 @@ println("Reference solution generated.")
 Next, we define the neural network architecture that will learn the unknown reaction term. The model is a simple multi-layer perceptron with a custom SigmaLayer that applies a learnable, exponentially decaying weight to its inputs. We also create helper functions (flatten_ps, to_ps) to convert the network's parameters between Lux's structured format and the flat vector format required by the optimizer.
 
 ```@example stiff_bruss
-# ---------------------------------------------------------------------------
-# ## 3. Neural Network (UDE Component)
-# ---------------------------------------------------------------------------
+# 3. Neural Network (UDE Component)
+
 # This section defines the neural network architecture that will learn the
 # unknown reaction term.
 
@@ -257,9 +253,8 @@ end
 Here is the core of the UDE. The rhs_ude! function defines the hybrid dynamics. It explicitly calculates the diffusion term (the known physics) and calls the neural network to approximate the reaction term (the unknown physics). This function is then used to create an ODEProblem that can be solved and differentiated.
 
 ```@example stiff_bruss
-# ---------------------------------------------------------------------------
-# ## 4. Universal Differential Equation (UDE)
-# ---------------------------------------------------------------------------
+# 4. Universal Differential Equation (UDE)
+
 # The UDE combines the known physics (diffusion) with the neural network.
 
 const COUT = 5.0f0 # Clamp NN output to prevent explosions during training
@@ -316,9 +311,7 @@ prob_ude = ODEProblem(rhs_ude!, u0, (0.0f0, TEND), θ0)
 With the UDE defined, we can now train it. The loss function solves the UDE with the current neural network parameters and computes the mean squared error against the reference data. We use Optimization.jl with the Adam optimizer to minimize this loss. SciMLSensitivity.jl provides the magic to efficiently compute gradients of the loss function with respect to the network parameters, even though the parameters are inside a differential equation solver.
 
 ```@example stiff_bruss
-# ---------------------------------------------------------------------------
-# ## 5. Training the UDE
-# ---------------------------------------------------------------------------
+# 5. Training the UDE
 
 println("\nStage 2/4: Setting up loss function and optimizer...")
 
@@ -381,9 +374,7 @@ A time-series plot showing the evolution of the mean concentration over the enti
 If the training was successful, the UDE's output should closely match the true simulation.
 
 ```@example stiff_bruss
-# ---------------------------------------------------------------------------
-# ## 6. Evaluation and Visualization
-# ---------------------------------------------------------------------------
+# 6. Evaluation and Visualization
 
 println("\nStage 4/4: Evaluating final model and generating plots...")
 
