@@ -31,8 +31,13 @@ using LinearSolve
 using SciMLSensitivity
 using Lux
 using Optimization, OptimizationOptimisers
+using StaticArrays
+using NNlib
 using Random, Zygote
 using Plots, Statistics
+using Base.Threads
+using ComponentArrays
+using ReverseDiff
 
 # We disable the default plot saving and display them directly.
 default(show = true)
@@ -40,10 +45,11 @@ default(show = true)
 # 1. Problem Setup: Constants, Grid, and Initial Conditions
 
 # -- Simulation Parameters --
-const N = 16            # Grid size will be N x N
-const TEND = 3.0f0      # End time of the simulation
-const MAXITERS = 50     # Number of training iterations for the optimizer
-const H = 16            # Hidden layer size for the neural network
+const N         = 32
+const TEND      = 11.5f0
+const MAXITERS  = 200
+const RTOL_REF  = 1f-6
+const ATOL_REF  = 1f-6
 
 # -- Grid and Discretization --
 const xyd = range(0.0f0, 1.0f0, length = N) # Spatial domain
@@ -63,10 +69,7 @@ If an index `a` goes past the boundary (1 or N), it wraps to the other side.
 A forcing term for the Brusselator equation, which is active in a circular
 region for t ≥ 1.1.
 """
-@inline function brusselator_f(x, y, t)
-    forcing = (((x - 0.3f0)^2 + (y - 0.6f0)^2) <= 0.1f0^2) && (t >= 1.1f0)
-    return forcing ? 5.0f0 : 0.0f0
-end
+@inline brusselator_f(x, y, t) = (((x - 0.3)^2 + (y - 0.6)^2) <= 0.1^2) * (t >= 1.1) * 5.0
 
 """
     init_u0(xyd)
@@ -77,8 +80,7 @@ function init_u0(xyd)
     N = length(xyd)
     u = zeros(Float32, N, N, 2)
     @inbounds for I in CartesianIndices((N, N))
-        x = xyd[I[1]]
-        y = xyd[I[2]]
+        x = Float32(xyd[I[1]]); y = Float32(xyd[I[2]])
         u[I, 1] = 22.0f0 * (y * (1.0f0 - y))^(3.0f0 / 2.0f0)
         u[I, 2] = 27.0f0 * (x * (1.0f0 - x))^(3.0f0 / 2.0f0)
     end
@@ -99,8 +101,6 @@ To train our UDE, we need data to learn from. We generate this by solving the fu
 # the data we will use to train our neural network.
 
 # -- Brusselator PDE Parameters --
-const A = 3.4f0
-const B = 1.0f0
 const α = 10.0f0
 const αdx2 = α / dx^2
 
@@ -110,45 +110,31 @@ const αdx2 = α / dx^2
 The right-hand side (RHS) function for the Brusselator PDE, including both the
 diffusion (Laplacian) and the known reaction terms. This defines the true dynamics.
 """
+println("Stage 1/4: Generating reference solution...")
 function rhs_ref!(du, u, p, t)
+    A, B, alpha_val = p
+    alpha_val = alpha_val / dx^2
     @inbounds for I in CartesianIndices((N, N))
         i, j = Tuple(I)
-        x, y = xyd[i], xyd[j]
-
-        # Neighbor indices with periodic boundaries
-        ip1 = limit(i + 1, N)
-        im1 = limit(i - 1, N)
-        jp1 = limit(j + 1, N)
-        jm1 = limit(j - 1, N)
-
-        u1 = u[i, j, 1]
-        v1 = u[i, j, 2]
-
-        # Discretized Laplacian for diffusion
-        lap_u = (u[im1, j, 1] + u[ip1, j, 1] + u[i, jm1, 1] + u[i, jp1, 1] - 4.0f0 * u1)
-        lap_v = (u[im1, j, 2] + u[ip1, j, 2] + u[i, jm1, 2] + u[i, jp1, 2] - 4.0f0 * v1)
-
-        # Known Brusselator reaction terms
-        reaction1 = B + u1 * u1 * v1 - (A + 1.0f0) * u1
-        reaction2 = A * u1 - u1 * u1 * v1
-
-        # Combine diffusion, reaction, and forcing term
-        du[i, j, 1] = αdx2 * lap_u + reaction1 + brusselator_f(x, y, t)
-        du[i, j, 2] = αdx2 * lap_v + reaction2
+        x, y = xyd[I[1]], xyd[I[2]]
+        ip1, im1, jp1, jm1 = limit(i + 1, N), limit(i - 1, N), limit(j + 1, N), limit(j - 1, N)
+        du[i, j, 1] = alpha_val * (u[im1, j, 1] + u[ip1, j, 1] + u[i, jp1, 1] + u[i, jm1, 1] - 4u[i, j, 1]) +
+                               B + u[i, j, 1]^2 * u[i, j, 2] - (A + 1) * u[i, j, 1] +
+                               brusselator_f(x, y, t)
+        du[i, j, 2] = alpha_val * (u[im1, j, 2] + u[ip1, j, 2] + u[i, jp1, 2] + u[i, jm1, 2] - 4u[i, j, 2]) +
+                               A * u[i, j, 1] - u[i, j, 1]^2 * u[i, j, 2]
     end
-    return nothing
 end
 
-println("Stage 1/4: Generating reference solution...")
-prob_ref = ODEProblem(rhs_ref!, u0, (0.0f0, TEND))
-sol_ref = solve(prob_ref, KenCarp47(linsolve = KrylovJL_GMRES());
-    saveat = 0.0f0:0.5f0:TEND, reltol = 1e-5, abstol = 1e-5,
-    save_everystep = false, progress = true)
+p_ref = (3.4, 1.0, 10.0)
+prob_ref = ODEProblem(rhs_ref!, u0, (0.0, TEND), p_ref)
+sol_ref  = solve(prob_ref, KenCarp47(linsolve=KrylovJL_GMRES());
+                 saveat=0.0:0.5:TEND, reltol=RTOL_REF, abstol=ATOL_REF, progress=true)
 
-# Store the reference solution and time points for training and comparison
-Yref = Array(sol_ref)
-ts = sol_ref.t
-println("Reference solution generated.")
+const Yref = Array(sol_ref)
+const ts = sol_ref.t
+const mean_true = [mean(Yref[:,:,1,i]) for i in 1:size(Yref, 4)]
+println("Ground truth generated. Size: ", size(Yref))
 ```
 
 ### 3. Defining the Neural Network
@@ -160,93 +146,89 @@ Next, we define the neural network architecture that will learn the unknown reac
 # This section defines the neural network architecture that will learn the
 # unknown reaction term.
 
+import LuxCore: initialparameters, initialstates
+using Random, Lux, ComponentArrays
+
+const H = 16
+
+# --- 1. Define the Custom Neural Network Layer ---
 """
-    SigmaLayer
+    SigmaLayerNN{M} <: Lux.AbstractLuxLayer
 
-A custom Lux layer that applies a learnable, exponentially decaying weight
-to the activations. The decay rate `p` is a learnable parameter.
+A custom Lux layer that contains an internal neural network (`net`). This
+internal net learns the stiffening values (`σ`) which are then applied to the layer's input.
 """
-struct SigmaLayer <: Lux.AbstractLuxLayer end
-
-# Initialize the layer's parameters and state
-Lux.initialparameters(rng::AbstractRNG, ::SigmaLayer) = (p = 2.0f0,)
-Lux.initialstates(rng::AbstractRNG, ::SigmaLayer) = NamedTuple()
-
-# Define the layer's forward pass
-function (ℓ::SigmaLayer)(z, ps, st)
-    H = size(z, 1) # Height (number of neurons)
-    Tz = eltype(z)
-    # Use softplus to ensure the decay rate `σ` is positive
-    σ = NNlib.softplus(Tz(ps.p))
-    decay = exp.(-σ .* (1:H))
-
-    # Apply decay, broadcasting over a batch if necessary
-    z = z .* reshape(decay, H, ntuple(Returns(1), ndims(z) - 1)...)
-    return z, st
+struct SigmaLayerNN{M} <: Lux.AbstractLuxLayer
+    net::M
 end
 
-# -- Define the full neural network model --
-# The model takes the concentrations of the two species `[u, v]` as input
-# and outputs the predicted reaction terms `[reaction1, reaction2]`.
-model = Chain(Dense(2 => H, tanh), SigmaLayer(), Dense(H => 2))
+"""
+    SigmaLayerNN(H::Int)
 
-# Initialize model parameters (ps) and state (st)
+Constructor for the `SigmaLayerNN`. It initializes the internal neural network.
+"""
+function SigmaLayerNN(H::Int)
+    net = Dense(H => H, tanh)
+    return SigmaLayerNN(net)
+end
+
+# --- 2. Define How Lux Interacts with the Custom Layer ---
+
+# Explicitly tell Lux how to get the parameters for the inner network.
+function initialparameters(rng::AbstractRNG, ℓ::SigmaLayerNN)
+    return (net = initialparameters(rng, ℓ.net),)
+end
+
+# Explicitly tell Lux how to get the state for the inner network.
+function initialstates(rng::AbstractRNG, ℓ::SigmaLayerNN)
+    return (net = initialstates(rng, ℓ.net),)
+end
+
+# --- 3. Define the Layer's Forward Pass ---
+
+"""
+    (ℓ::SigmaLayerNN)(z, ps, st)
+
+The forward pass for the `SigmaLayerNN`. It takes an input `z`, passes it
+through the internal net to get the stiffening values `σ`, and then applies
+those values to `z`.
+"""
+function (ℓ::SigmaLayerNN)(z, ps, st)
+    # Get the raw output from the internal network
+    σ_raw, st_net = ℓ.net(z, ps.net, st.net)
+
+    # Apply the sigmoid function to ensure stiffening values are positive
+    σ = 1.0f0 ./ (1.0f0 .+ exp.(-σ_raw))
+
+    # Apply the learned stiffening values, handling batch dimensions if present
+    if ndims(z) == 1
+        z = z .* σ
+    else
+        z = z .* reshape(σ, :, 1)
+    end
+
+    # Return the result and the updated state of the internal network
+    return z, (net = st_net,)
+end
+
+# --- 4. Build and Initialize the Full Model ---
+
+# Create the full model by chaining the layers together
+model = Chain(
+    Dense(2 => H, tanh),
+    SigmaLayerNN(H),
+    Dense(H => 2)
+)
+
+# Initialize the model's parameters (ps0) and state (st0)
 rng = Random.default_rng()
 ps0, st0 = Lux.setup(rng, model)
-const ST = st0 # State is constant during training
 
-"""
-    flatten_ps(ps)
+# Define the constant state for training
+const ST = st0
 
-Converts the nested Lux parameter structure `ps` into a flat `Vector{Float32}`.
-This is required by the `Optimization.jl` interface.
-"""
-function flatten_ps(ps)::Vector{Float32}
-    w1 = vec(ps.layer_1.weight)
-    b1 = ps.layer_1.bias
-    p = ps.layer_2.p
-    w3 = vec(ps.layer_3.weight)
-    b3 = ps.layer_3.bias
-    return vcat(w1, b1, p, w3, b3)
-end
-
-"""
-    to_ps(θ::AbstractVector)
-
-Reconstructs the Lux parameter structure `ps` from a flat vector `θ`.
-"""
-function to_ps(θ::AbstractVector)
-    # Calculate expected length to catch errors if model architecture changes
-    expected_len = (2 * H) + H + 1 + (H * 2) + 2 # W1 + b1 + p2 + W3 + b3
-    @assert length(θ) == expected_len "Incorrect parameter vector length."
-
-    T = eltype(θ)
-    i = 1
-    # Layer 1: Dense
-    w1_end = i + 2 * H - 1
-    w1 = reshape(θ[i:w1_end], H, 2)
-    i = w1_end + 1
-    # Layer 1: Bias
-    b1_end = i + H - 1
-    b1 = θ[i:b1_end]
-    i = b1_end + 1
-    # Layer 2: SigmaLayer
-    p2 = θ[i]
-    i += 1
-    # Layer 3: Dense
-    w3_end = i + 2 * H - 1
-    w3 = reshape(θ[i:w3_end], 2, H)
-    i = w3_end + 1
-    # Layer 3: Bias
-    b3 = θ[i:end]
-
-    return (layer_1 = (weight = T.(w1), bias = T.(b1)),
-        layer_2 = (p = T(p2),),
-        layer_3 = (weight = T.(w3), bias = T.(b3)))
-end
-
-# Get the initial flat parameter vector
-θ0 = flatten_ps(ps0)
+# Create the initial flat parameter vector using ComponentArrays
+θ0 = ComponentArray(ps0)
 ```
 
 ### 4. Constructing the Universal Differential Equation (UDE)
@@ -262,49 +244,34 @@ const COUT = 5.0f0 # Clamp NN output to prevent explosions during training
 """
     rhs_ude!(du, u, θ_vec, t)
 
-The RHS function for the UDE. It computes the diffusion term analytically and
-uses the neural network `model` (with parameters `θ_vec`) to approximate the
-reaction term.
+The right-hand side (RHS) function for the Universal Differential Equation (UDE).
+
+This function combines known physical laws (diffusion) with a neural network that learns
+the unknown reaction dynamics. It operates over a 2D grid in a single loop.
 """
 function rhs_ude!(du, u, θ_vec, t)
-    psθ = to_ps(θ_vec) # Reconstruct NN parameters for Lux
     Tz = eltype(u)
-
-    @inbounds for I in CartesianIndices((N, N))
-        i, j = Tuple(I)
-        x, y = xyd[i], xyd[j]
-
-        # Neighbor indices with periodic boundaries
-        ip1 = limit(i + 1, N)
-        im1 = limit(i - 1, N)
-        jp1 = limit(j + 1, N)
-        jm1 = limit(j - 1, N)
-
-        u1 = u[i, j, 1]
-        v1 = u[i, j, 2]
-
-        # Part 1: Known Physics (Diffusion)
-        lap_u = (u[im1, j, 1] + u[ip1, j, 1] + u[i, jm1, 1] + u[i, jp1, 1] - 4.0f0 * u1)
-        lap_v = (u[im1, j, 2] + u[ip1, j, 2] + u[i, jm1, 2] + u[i, jp1, 2] - 4.0f0 * v1)
-
-        # Part 2: Unknown Physics (Learned by NN)
-        # Input to the NN is the state [u1, v1] at a single grid point
-        nn_input = Tz[u1, v1]
-        reaction_pred, _ = model(nn_input, psθ, ST)
-
-        # Clamp the NN output for stability
-        y1 = clamp(reaction_pred[1], -COUT, COUT)
-        y2 = clamp(reaction_pred[2], -COUT, COUT)
-
-        # Combine known physics, learned reaction, and forcing term
-        du[i, j, 1] = αdx2 * lap_u + y1 + brusselator_f(x, y, t)
-        du[i, j, 2] = αdx2 * lap_v + y2
+    loop_body = I -> begin
+        i,j = Tuple(I)
+        x = Float32(xyd[i]); y = Float32(xyd[j])
+        u1 = u[i,j,1]; v1 = u[i,j,2]
+        lap_u = u[limit(i-1,N),j,1]+u[limit(i+1,N),j,1]+u[i,limit(j+1,N),1]+u[i,limit(j-1,N),1]-4f0*u1
+        lap_v = u[limit(i-1,N),j,2]+u[limit(i+1,N),j,2]+u[i,limit(j+1,N),2]+u[i,limit(j-1,N),2]-4f0*v1
+        x_in = Tz[u1, v1]
+        ŷ, _ = model(x_in, θ_vec, ST)
+        y1 = clamp(ŷ[1], -COUT, COUT)
+        y2 = clamp(ŷ[2], -COUT, COUT)
+        du[i,j,1] = αdx2*lap_u + y1 + brusselator_f(x,y,t)
+        du[i,j,2] = αdx2*lap_v + y2
     end
-    return nothing
+    @inbounds @threads for I in CartesianIndices((N,N))
+        loop_body(I)
+    end
+    nothing
 end
 
 # Define the ODE problem for the UDE, passing the NN parameters `θ0`
-prob_ude = ODEProblem(rhs_ude!, u0, (0.0f0, TEND), θ0)
+prob_ude = ODEProblem(rhs_ude!, u0, (0.0, TEND), θ0)
 ```
 
 ### 5. Training the UDE
@@ -325,23 +292,17 @@ Computes the mean squared error between the UDE solution (using parameters `θ_v
 and the ground truth solution `Yref`.
 """
 function loss(θ_vec)
-    # Solve the UDE with the current parameter vector
-    sol = solve(remake(prob_ude; p = θ_vec), KenCarp47(linsolve = KrylovJL_GMRES());
-        saveat = ts, reltol = 1e-4, abstol = 1e-4,
-        save_everystep = false, sensealg = sensealg)
-
-    # Return Inf if the solver failed to produce a solution of the correct size
-    if size(sol) != size(Yref)
+    sol = solve(remake(prob_ude; p=θ_vec), KenCarp47(linsolve=LinearSolve.KrylovJL_GMRES());
+                saveat=ts, reltol=1f-4, abstol=1f-4, save_everystep=false, sensealg=sensealg)
+    Y = Array(sol)
+    if size(Y) != size(Yref)
         return Inf32
     end
-
-    # Return the mean squared error
-    Y = Array(sol)
-    return sum(abs2, Y .- Yref) / length(Yref)
+    sum(abs2, Y .- Yref) / length(Yref)
 end
 
 # -- Setup the optimization problem --
-optf = OptimizationFunction((θ, _) -> loss(θ), AutoZygote())
+optf    = OptimizationFunction((θ, _)->loss(θ), AutoReverseDiff())
 optprob = OptimizationProblem(optf, θ0)
 
 # -- Define a callback to monitor training progress --
@@ -358,7 +319,7 @@ function cb(θ, f_val)
 end
 
 # -- Run the optimization --
-solopt = solve(optprob, Optimisers.Adam(1e-2); maxiters = MAXITERS, callback = cb)
+solopt   = solve(optprob, Optimisers.Adam(1e-2); maxiters=MAXITERS, callback=cb)
 θ★ = solopt.u # The optimal parameters
 
 println("Training finished.")
@@ -380,7 +341,7 @@ println("\nStage 4/4: Evaluating final model and generating plots...")
 
 # Solve the UDE one last time with the optimized parameters `θ★`
 sol_ude = solve(remake(prob_ude; p = θ★), KenCarp47(linsolve = KrylovJL_GMRES());
-    saveat = ts, reltol = 1e-5, abstol = 1e-5, save_everystep = false)
+    saveat = ts, reltol = 1e-6, abstol = 1e-6, save_everystep = false)
 
 # Calculate the final relative mean squared error
 final_loss = sum(abs2, Array(sol_ude) .- Yref) / sum(abs2, Yref)
@@ -389,22 +350,18 @@ println("Done. Final relative MSE = ", final_loss)
 # -- Create comparison plots --
 
 # 1. Heatmap comparison of the final state
-final_state_true = sol_ref.u[end][:, :, 1]
-final_state_ude = sol_ude.u[end][:, :, 1]
+final_state_true = Yref[:,:,1,end]
+final_state_ude = sol_ude_final.u[end][:, :, 1]
 
-p1 = heatmap(final_state_true, title = "True Simulation (t=$(TEND))")
-p2 = heatmap(final_state_ude, title = "Final UDE (it=$(k_iter))")
-comparison_plot = plot(p1, p2, layout = (1, 2), size = (900, 400))
+p1 = heatmap(final_state_true, title="True Simulation (t=$(TEND))")
+p2 = heatmap(final_state_ude, title="Final SNN-UDE (it=$(k_iter))")
+comparison_plot = plot(p1, p2, layout=(1, 2), size=(900, 400))
 display(comparison_plot)
 
 # 2. Time series comparison of the mean concentration
-mean_true = [mean(u[:, :, 1]) for u in sol_ref.u]
-mean_ude = [mean(u[:, :, 1]) for u in sol_ude.u]
-
-metric_plot = plot(ts, mean_true, label = "True Simulation", lw = 2,
-    xlabel = "Time (t)", ylabel = "Mean Concentration",
-    title = "Model Performance vs. Ground Truth")
-plot!(ts, mean_ude, label = "UDE Prediction", lw = 2, linestyle = :dash)
+mean_ude = [mean(u[:,:,1]) for u in sol_ude_final.u]
+metric_plot = plot(ts, mean_true, label="True Simulation", lw=2, xlabel="Time (t)", ylabel="Mean Concentration", title="Model Performance (Final)")
+plot!(ts, mean_ude, label="SNN-UDE Prediction", lw=2, linestyle=:dash)
 display(metric_plot)
 
 println("\nPlots are displayed.")
