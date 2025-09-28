@@ -23,14 +23,13 @@ steps:
   - label: "Documentation"
     plugins:
       - JuliaCI/julia#v1:
-          version: "1.10"
+          version: "1"
     command: |
       julia --project -e '
         println("--- :julia: Instantiating project")
         using Pkg
         Pkg.instantiate()
         Pkg.activate("docs")
-        Pkg.develop(PackageSpec(path=pwd()))
         Pkg.instantiate()
         push!(LOAD_PATH, @__DIR__)
         println("+++ :julia: Building documentation")
