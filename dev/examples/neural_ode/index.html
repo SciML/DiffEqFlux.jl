@@ -8,12 +8,12 @@ datasize = 30
 tspan = (0.0f0, 1.5f0)
 tsteps = range(tspan[1], tspan[2]; length = datasize)
 
-function trueODEfunc(du, u, p, t)
+function trueODEfunc!(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
     du .= ((u .^ 3)&#39;true_A)&#39;
 end
 
-prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+prob_trueode = ODEProblem(trueODEfunc!, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))
 
 dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
@@ -70,12 +70,12 @@ datasize = 30
 tspan = (0.0f0, 1.5f0)
 tsteps = range(tspan[1], tspan[2]; length = datasize)
 
-function trueODEfunc(du, u, p, t)
+function trueODEfunc!(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
     du .= ((u .^ 3)&#39;true_A)&#39;
 end
 
-prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+prob_trueode = ODEProblem(trueODEfunc!, u0, tspan)
 ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×30 Matrix{Float32}:
  2.0  1.9465    1.74178  1.23837  0.577127  …  1.40688   1.37023   1.29214
  0.0  0.798831  1.46473  1.80877  1.86465      0.451377  0.728699  0.972102</code></pre><p>Now let&#39;s define a neural network with a <code>NeuralODE</code> layer. First, we define the layer. Here we&#39;re going to use <code>Lux.Chain</code>, which is a suitable neural network structure for NeuralODEs with separate handling of state variables:</p><pre><code class="language-julia hljs">dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
@@ -122,4 +122,4 @@ optprob2 = remake(optprob; u0 = result_neuralode.u)
 
 result_neuralode2 = Optimization.solve(optprob2, Optim.BFGS(; initial_stepnorm = 0.01);
     callback = callback, allow_f_increases = false)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Success
-u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[-2.0076213 1.5020584; -0.4403626 -0.20246622; … ; -0.20567662 -0.005430145; 0.5255798 -0.8804035], bias = Float32[-0.63308847, -0.8465561, -0.54364973, 1.4543997, -0.46744365, 0.8715855, 0.9204028, -0.015666325, 1.0057, 0.77258223  …  0.2709023, -1.0262359, -1.5072056, 0.5633003, -0.92175364, 0.70238245, -0.085528135, 1.0772169, 0.26836768, 0.45886853]), layer_3 = (weight = Float32[-0.29747197 0.7610814 … -0.04687536 0.67563915; 0.054097652 -0.08242489 … -0.24008821 -0.07589145], bias = Float32[-0.74356854, 0.41904792]))</code></pre><p>And then we use the callback with <code>doplot=true</code> to see the final plot:</p><pre><code class="language-julia hljs">callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)</code></pre><img src="9cf461d7.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><a class="docs-footer-nextpage" href="../GPUs/">Neural ODEs on GPUs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Sunday 28 September 2025 12:14">Sunday 28 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+u: ComponentVector{Float32}(layer_1 = Float32[], layer_2 = (weight = Float32[-2.0076213 1.5020584; -0.4403626 -0.20246622; … ; -0.20567662 -0.005430145; 0.5255798 -0.8804035], bias = Float32[-0.63308847, -0.8465561, -0.54364973, 1.4543997, -0.46744365, 0.8715855, 0.9204028, -0.015666325, 1.0057, 0.77258223  …  0.2709023, -1.0262359, -1.5072056, 0.5633003, -0.92175364, 0.70238245, -0.085528135, 1.0772169, 0.26836768, 0.45886853]), layer_3 = (weight = Float32[-0.29747197 0.7610814 … -0.04687536 0.67563915; 0.054097652 -0.08242489 … -0.24008821 -0.07589145], bias = Float32[-0.74356854, 0.41904792]))</code></pre><p>And then we use the callback with <code>doplot=true</code> to see the final plot:</p><pre><code class="language-julia hljs">callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)</code></pre><img src="0df30b26.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a><a class="docs-footer-nextpage" href="../GPUs/">Neural ODEs on GPUs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Sunday 28 September 2025 22:57">Sunday 28 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
