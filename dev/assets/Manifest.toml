@@ -2,7 +2,7 @@
 
 julia_version = "1.11.7"
 manifest_format = "2.0"
-project_hash = "85fad683579a1ab1eee2266bc9b34df9a1b85eaa"
+project_hash = "e4cf533265c8be9742df8a63fce6ef06229b8d56"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "27cecae79e5cc9935255f90c53bb831cc3c870d7"
@@ -675,9 +675,9 @@ version = "1.15.1"
 
 [[deps.DifferentiationInterface]]
 deps = ["ADTypes", "LinearAlgebra"]
-git-tree-sha1 = "16946a4d305607c3a4af54ff35d56f0e9444ed0e"
+git-tree-sha1 = "cee1700673af54db57bd1c7fb834ad4ff31309a0"
 uuid = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
-version = "0.7.7"
+version = "0.7.8"
 
     [deps.DifferentiationInterface.extensions]
     DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
@@ -789,9 +789,9 @@ version = "1.0.5"
 
 [[deps.Enzyme]]
 deps = ["CEnum", "EnzymeCore", "Enzyme_jll", "GPUCompiler", "InteractiveUtils", "LLVM", "Libdl", "LinearAlgebra", "ObjectFile", "PrecompileTools", "Preferences", "Printf", "Random", "SparseArrays"]
-git-tree-sha1 = "3c3d50e6a8c5f579db860a5ed5ca85fbdf6deb27"
+git-tree-sha1 = "6deb3877e9122cbc93fb915d9591cd803353941f"
 uuid = "7da242da-08ed-463a-9acd-ee780be4f1d9"
-version = "0.13.81"
+version = "0.13.83"
 
     [deps.Enzyme.extensions]
     EnzymeBFloat16sExt = "BFloat16s"
@@ -1719,10 +1719,10 @@ uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 version = "1.1.0"
 
 [[deps.Lux]]
-deps = ["ADTypes", "Adapt", "ArgCheck", "ArrayInterface", "ChainRulesCore", "Compat", "ConcreteStructs", "DiffResults", "DispatchDoctor", "EnzymeCore", "FastClosures", "ForwardDiff", "Functors", "GPUArraysCore", "LinearAlgebra", "LuxCore", "LuxLib", "MLDataDevices", "MacroTools", "Markdown", "NNlib", "Optimisers", "PrecompileTools", "Preferences", "Random", "ReactantCore", "Reexport", "SIMDTypes", "Setfield", "Static", "StaticArraysCore", "Statistics", "WeightInitializers"]
-git-tree-sha1 = "17503e9059bb7a85bfbedb06f503157f05fecda9"
+deps = ["ADTypes", "Adapt", "ArgCheck", "ArrayInterface", "ChainRulesCore", "ConcreteStructs", "DiffResults", "DispatchDoctor", "EnzymeCore", "FastClosures", "ForwardDiff", "Functors", "GPUArraysCore", "LinearAlgebra", "LuxCore", "LuxLib", "MLDataDevices", "MacroTools", "Markdown", "NNlib", "Optimisers", "PrecompileTools", "Preferences", "Random", "ReactantCore", "Reexport", "SciMLPublic", "Setfield", "Static", "StaticArraysCore", "Statistics", "WeightInitializers"]
+git-tree-sha1 = "99c41439e528dadb7c7dd2ef2e7dc9fc659d6f25"
 uuid = "b2108857-7c20-44ae-9111-449ecde12c47"
-version = "1.22.0"
+version = "1.22.1"
 
     [deps.Lux.extensions]
     LuxComponentArraysExt = "ComponentArrays"
@@ -1763,10 +1763,10 @@ uuid = "d0bbae9a-e099-4d5b-a835-1c6931763bda"
 version = "0.3.4"
 
 [[deps.LuxCore]]
-deps = ["Compat", "DispatchDoctor", "Random"]
-git-tree-sha1 = "cf12c8eba464132e781d7e000bcc4090e2b6e115"
+deps = ["DispatchDoctor", "Random", "SciMLPublic"]
+git-tree-sha1 = "ee3794a2ca3022bc066b5fb87b135c1d5f3b1cb7"
 uuid = "bb33d45b-7691-41d6-9220-0943567d0623"
-version = "1.4.1"
+version = "1.4.2"
 
     [deps.LuxCore.extensions]
     LuxCoreArrayInterfaceReverseDiffExt = ["ArrayInterface", "ReverseDiff"]
@@ -1792,10 +1792,10 @@ version = "1.4.1"
     Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 
 [[deps.LuxLib]]
-deps = ["ArrayInterface", "CPUSummary", "ChainRulesCore", "Compat", "DispatchDoctor", "EnzymeCore", "FastClosures", "ForwardDiff", "Functors", "KernelAbstractions", "LinearAlgebra", "LuxCore", "MLDataDevices", "Markdown", "NNlib", "Preferences", "Random", "Reexport", "Static", "StaticArraysCore", "Statistics"]
-git-tree-sha1 = "a256a130d5313da2c659bf08909dcc6197621e2f"
+deps = ["ArrayInterface", "CPUSummary", "ChainRulesCore", "DispatchDoctor", "EnzymeCore", "FastClosures", "ForwardDiff", "Functors", "KernelAbstractions", "LinearAlgebra", "LuxCore", "MLDataDevices", "Markdown", "NNlib", "Preferences", "Random", "Reexport", "SciMLPublic", "Static", "StaticArraysCore", "Statistics"]
+git-tree-sha1 = "2f80ab5ff577e247b5dc2df1a726e11aff5e78a0"
 uuid = "82251201-b29d-42c6-8e01-566dec8acb11"
-version = "1.12.0"
+version = "1.12.1"
 
     [deps.LuxLib.extensions]
     LuxLibAppleAccelerateExt = "AppleAccelerate"
@@ -1848,10 +1848,10 @@ uuid = "c2834f40-e789-41da-a90e-33b280584a8c"
 version = "1.0.0"
 
 [[deps.MLDataDevices]]
-deps = ["Adapt", "Compat", "Functors", "Preferences", "Random"]
-git-tree-sha1 = "39bac90ff3e88e086426f05a3e97646f91088a7f"
+deps = ["Adapt", "Functors", "Preferences", "Random", "SciMLPublic"]
+git-tree-sha1 = "f5c0536d7bcd78610c5195398e37ce2ab8fd8789"
 uuid = "7e8f7934-dd98-4c1a-8fe8-92b47a384d40"
-version = "1.12.0"
+version = "1.13.0"
 
     [deps.MLDataDevices.extensions]
     MLDataDevicesAMDGPUExt = "AMDGPU"
