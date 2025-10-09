@@ -26,18 +26,19 @@ dpdt = -2π_32 .* q_t
 data = cat(q_t, p_t; dims = 1)
 target = cat(dqdt, dpdt; dims = 1)
 B = 256
-NEPOCHS = 500
+NEPOCHS = 125
 dataloader = DataLoader((data, target); batchsize = B)
 
-hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (1028, 1)); autodiff = AutoZygote())
+hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (32, 32, 1), gelu); autodiff = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
+model = StatefulLuxLayer(hnn, ps, st)
 ps_c = ps |> ComponentArray
 
-opt = OptimizationOptimisers.Adam(0.01f0)
+opt = OptimizationOptimisers.Adam(0.003f0)
 
 function loss_function(ps, databatch)
     data, target = databatch
-    pred, st_ = hnn(data, ps, st)
+    pred = model(data, ps)
     return mean(abs2, pred .- target)
 end
 
@@ -53,10 +54,10 @@ res = Optimization.solve(opt_prob, opt; callback, epochs = NEPOCHS)
 
 ps_trained = res.u
 
-model = NeuralODE(
+nhde = NeuralODE(
     hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, save_start = true, saveat = t)
 
-pred = Array(first(model(data[:, 1], ps_trained, st)))
+pred = Array(first(nhde(data[:, 1], ps_trained, st)))
 plot(data[1, :], data[2, :]; lw = 4, label = "Original")
 plot!(pred[1, :], pred[2, :]; lw = 4, label = "Predicted")
 xlabel!("Position (q)")
@@ -69,7 +70,7 @@ ylabel!("Momentum (p)")
 
 The HNN predicts the gradients ``(\dot q, \dot p)`` given ``(q, p)``. Hence, we generate the pairs ``(q, p)`` using the equations given at the top. Additionally, to supervise the training, we also generate the gradients. Next, we use Flux DataLoader for automatically batching our dataset.
 
-```@example hamiltonian
+```julia
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
       ComponentArrays, Optimization, OptimizationOptimisers, MLUtils
 
@@ -83,7 +84,7 @@ dpdt = -2π_32 .* q_t
 data = cat(q_t, p_t; dims = 1)
 target = cat(dqdt, dpdt; dims = 1)
 B = 256
-NEPOCHS = 500
+NEPOCHS = 125
 dataloader = DataLoader((data, target); batchsize = B)
 ```
 
@@ -91,17 +92,17 @@ dataloader = DataLoader((data, target); batchsize = B)
 
 We parameterize the  with a small MultiLayered Perceptron. HNNs are trained by optimizing the gradients of the Neural Network. Zygote currently doesn't support nesting itself, so we will be using ForwardDiff in the training loop to compute the gradients of the HNN Layer for Optimization.
 
-```@example hamiltonian
-hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (1028, 1)); autodiff = AutoZygote())
+```julia
+hnn = Layers.HamiltonianNN{true}(Layers.MLP(2, (32, 32, 1), gelu); autodiff = AutoZygote())
 ps, st = Lux.setup(Xoshiro(0), hnn)
+model = StatefulLuxLayer(hnn, ps, st)
 ps_c = ps |> ComponentArray
-hnn_stateful = StatefulLuxLayer{true}(hnn, ps_c, st)
 
-opt = OptimizationOptimisers.Adam(0.005f0)
+opt = OptimizationOptimisers.Adam(0.003f0)
 
 function loss_function(ps, databatch)
-    (data, target) = databatch
-    pred = hnn_stateful(data, ps)
+    data, target = databatch
+    pred = model(data, ps)
     return mean(abs2, pred .- target)
 end
 
@@ -110,7 +111,7 @@ function callback(state, loss)
     return false
 end
 
-opt_func = OptimizationFunction(loss_function, Optimization.AutoZygote())
+opt_func = OptimizationFunction(loss_function, Optimization.AutoForwardDiff())
 opt_prob = OptimizationProblem(opt_func, ps_c, dataloader)
 
 res = Optimization.solve(opt_prob, opt; callback, epochs = NEPOCHS)
@@ -123,11 +124,11 @@ ps_trained = res.u
 In order to visualize the learned trajectories, we need to solve the ODE. We will use the
 `NeuralODE` layer with `HamiltonianNN` layer, and solves the ODE.
 
-```@example hamiltonian
-model = NeuralODE(
+```julia
+nhde = NeuralODE(
     hnn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false, save_start = true, saveat = t)
 
-pred = Array(first(model(data[:, 1], ps_trained, st)))
+pred = Array(first(nhde(data[:, 1], ps_trained, st)))
 plot(data[1, :], data[2, :]; lw = 4, label = "Original")
 plot!(pred[1, :], pred[2, :]; lw = 4, label = "Predicted")
 xlabel!("Position (q)")

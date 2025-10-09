@@ -9,17 +9,18 @@ The data is a four-dimensional dataset of daily temperature, humidity, wind spee
 
 ```@example weather_forecast
 using Random, Dates, Optimization, ComponentArrays, Lux, OptimizationOptimisers, DiffEqFlux,
-      OrdinaryDiffEq, CSV, DataFrames, Dates, Statistics, Plots, DataDeps
+      OrdinaryDiffEq, CSV, DataFrames, Dates, Statistics, Plots
+using Downloads: download
 
 function download_data(
         data_url = "https://raw.githubusercontent.com/SebastianCallh/neural-ode-weather-forecast/master/data/",
         data_local_path = "./delhi")
     function load(file_name)
-        data_dep = DataDep("delhi/train", "", "$data_url/$file_name")
-        Base.download(data_dep, data_local_path; i_accept_the_terms_of_use = true)
-        CSV.read(joinpath(data_local_path, file_name), DataFrame)
+        download("$data_url/$file_name", joinpath(data_local_path, file_name))
+        return CSV.read(joinpath(data_local_path, file_name), DataFrame)
     end
 
+    mkpath(data_local_path)
     train_df = load("DailyDelhiClimateTrain.csv")
     test_df = load("DailyDelhiClimateTest.csv")
     return vcat(train_df, test_df)
@@ -102,7 +103,7 @@ We are now ready to construct and train our model! To avoid local minimas we wil
 function neural_ode(t, data_dim)
     f = Chain(Dense(data_dim => 64, swish), Dense(64 => 32, swish), Dense(32 => data_dim))
 
-    node = NeuralODE(f, extrema(t), Tsit5(); saveat = t, abstol = 1e-9, reltol = 1e-9)
+    node = NeuralODE(f, extrema(t), Tsit5(); saveat = t, abstol = 1e-6, reltol = 1e-3)
 
     rng = Xoshiro(0)
     p, state = Lux.setup(rng, f)
@@ -151,7 +152,7 @@ ps, state, losses = train(t_train, y_train, obs_grid, maxiters, lr, rng; progres
 We can now animate the training to get a better understanding of the fit.
 
 ```@example weather_forecast
-predict(y0, t, p, state) = begin
+function predict(y0, t, p, state)
     node, _, _ = neural_ode(t, length(y0))
     Array(node(y0, p, state)[1])
 end
