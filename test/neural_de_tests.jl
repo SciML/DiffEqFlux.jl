@@ -240,6 +240,66 @@ end
     @test first(layer(r, ps, st))[:, :, :, 1] == r[:, :, 1, :]
 end
 
+# Regression test for issue #422 - ODE-LSTM layer
+@testitem "ODERNN" tags=[:basicneuralde] begin
+    using ComponentArrays, Zygote, OrdinaryDiffEq, Random
+
+    rng = Xoshiro(0)
+
+    input_dim, hidden_dim, seq_len, batch_size = 2, 4, 10, 3
+
+    # Note: We only test with Lux models because Flux recurrent cells have semantic
+    # differences in bias handling and cannot be converted to Lux equivalents
+    @testset "cell: $(cell_type)" for cell_type in ("LSTM", "GRU", "RNN")
+        # ODE dynamics model (hidden_dim -> hidden_dim)
+        ode_model = Chain(Dense(hidden_dim => hidden_dim, tanh))
+
+        # Create appropriate RNN cell
+        cell = if cell_type == "LSTM"
+            LSTMCell(input_dim => hidden_dim)
+        elseif cell_type == "GRU"
+            GRUCell(input_dim => hidden_dim)
+        else
+            RNNCell(input_dim => hidden_dim)
+        end
+
+        @testset "return_sequence: $(return_seq)" for return_seq in (false, true)
+            odernn = ODERNN(ode_model, cell, Tsit5(); return_sequence = return_seq)
+            ps, st = Lux.setup(rng, odernn)
+            ps = ComponentArray(ps)
+
+            # Create input data and time points
+            x = randn(rng, Float32, input_dim, seq_len, batch_size)
+            ts = collect(Float32, range(0, 1, length = seq_len))
+
+            # Test forward pass
+            output, st2 = odernn((x, ts), ps, st)
+
+            if return_seq
+                @test length(output) == seq_len
+                @test all(o -> size(o) == (hidden_dim, batch_size), output)
+            else
+                @test size(output) == (hidden_dim, batch_size)
+            end
+
+            # Test gradients
+            function loss(ps)
+                out, _ = odernn((x, ts), ps, st)
+                if return_seq
+                    return sum(sum, out)
+                else
+                    return sum(out)
+                end
+            end
+
+            grads = Zygote.gradient(loss, ps)
+            @test !iszero(grads[1])
+            @test !iszero(grads[1].model)
+            @test !iszero(grads[1].cell)
+        end
+    end
+end
+
 @testitem "Neural DE CUDA" tags=[:cuda] skip=:(using LuxCUDA; !LuxCUDA.functional()) begin
     using LuxCUDA, Zygote, OrdinaryDiffEq, StochasticDiffEq, Test, Random, ComponentArrays
     import Flux

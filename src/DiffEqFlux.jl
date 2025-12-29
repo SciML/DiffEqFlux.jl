@@ -20,7 +20,7 @@ using SciMLSensitivity: SciMLSensitivity, AdjointLSS, BacksolveAdjoint, EnzymeVJ
                         SteadyStateAdjoint, TrackerAdjoint, TrackerVJP, ZygoteAdjoint,
                         ZygoteVJP
 using Setfield: @set!
-using Static: True, False
+using Static: True, False, static, known
 
 const CRC = ChainRulesCore
 
@@ -37,7 +37,7 @@ include("collocation.jl")
 include("multiple_shooting.jl")
 
 export NeuralODE, NeuralDSDE, NeuralSDE, NeuralCDDE, NeuralDAE, AugmentedNDELayer,
-       NeuralODEMM
+       NeuralODEMM, ODERNN
 export FFJORD, FFJORDDistribution
 export DimMover
 

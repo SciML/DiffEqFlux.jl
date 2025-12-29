@@ -340,6 +340,138 @@ function (n::NeuralODEMM)(x, ps, st)
 end
 
 """
+    ODERNN(model, cell, args...; ordering=BatchLastIndex(), return_sequence=false, kwargs...)
+
+Constructs an ODE-RNN layer that combines a Neural ODE for continuous hidden state dynamics
+with a recurrent neural network cell for processing sequential observations. This implements
+a variant of the ODE-RNN/ODE-LSTM architecture from [1, 2].
+
+The layer processes sequential data by:
+1. Initializing a hidden state from the first input using the RNN cell
+2. Solving a Neural ODE from the first to last time point to get continuous hidden dynamics
+3. At each time step, using the ODE-evolved hidden state with the RNN cell to process inputs
+
+Arguments:
+
+  - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the ODE
+    dynamics dh/dt = model(h). Should map hidden_size -> hidden_size.
+  - `cell`: A `Lux.AbstractRecurrentCell` (e.g., `LSTMCell`, `GRUCell`, `RNNCell`) that
+    processes inputs at each time step.
+  - `args`: Additional positional arguments passed to the ODE solver.
+  - `ordering`: The time series data batch ordering. Defaults to `BatchLastIndex()`.
+  - `return_sequence`: If `true`, returns outputs at all time steps. If `false`, returns
+    only the final output. Defaults to `false`.
+  - `sensealg`: The choice of differentiation algorithm used in the backpropagation.
+    Defaults to `InterpolatingAdjoint(; autojacvec = ZygoteVJP())`.
+  - `kwargs`: Additional keyword arguments splatted to the ODE solver.
+
+The forward pass takes a tuple `(x, ts)` where:
+  - `x`: Input array of shape `(input_dim, seq_len, batch)` with `BatchLastIndex()` ordering
+  - `ts`: Vector of time points corresponding to each element in the sequence
+
+Example:
+
+```julia
+using DiffEqFlux, Lux, Random
+
+rng = Random.default_rng()
+input_dim, hidden_dim, seq_len, batch_size = 2, 4, 10, 3
+
+# ODE dynamics model (hidden_dim -> hidden_dim)
+ode_model = Chain(Dense(hidden_dim => hidden_dim, tanh))
+
+# RNN cell (processes input_dim -> hidden_dim)
+cell = LSTMCell(input_dim => hidden_dim)
+
+# Create ODE-RNN layer
+odernn = ODERNN(ode_model, cell; return_sequence=true)
+
+# Setup
+ps, st = Lux.setup(rng, odernn)
+
+# Input data and time points
+x = randn(Float32, input_dim, seq_len, batch_size)
+ts = collect(Float32, range(0, 1, length=seq_len))
+
+# Forward pass
+outputs, st = odernn((x, ts), ps, st)
+```
+
+References:
+
+[1] Rubanova, Yulia, Ricky TQ Chen, and David Duvenaud. "Latent ordinary differential
+    equations for irregularly-sampled time series." Advances in neural information
+    processing systems 32 (2019).
+
+[2] Lechner, Mathias, and Ramin Hasani. "Learning long-term dependencies in irregularly-sampled
+    time series." arXiv preprint arXiv:2006.04418 (2020).
+"""
+@concrete struct ODERNN <: AbstractLuxContainerLayer{(:model, :cell)}
+    model <: AbstractLuxLayer
+    cell <: AbstractLuxLayer
+    return_sequence
+    ordering
+    args
+    kwargs
+end
+
+function ODERNN(model, cell, args...;
+        ordering = Lux.BatchLastIndex(),
+        return_sequence::Bool = false,
+        kwargs...)
+    !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
+    !(cell isa AbstractLuxLayer) && (cell = FromFluxAdaptor()(cell))
+    return ODERNN(model, cell, static(return_sequence), ordering, args, kwargs)
+end
+
+function (odernn::ODERNN)((x, ts)::Tuple{<:AbstractArray, <:AbstractVector}, ps, st)
+    xs = Lux.safe_eachslice(x, odernn.ordering)
+
+    # Initialize with first input to get initial hidden state
+    x0 = first(xs)
+    (_, init_carry), st_cell = odernn.cell(x0, ps.cell, st.cell)
+    h0 = first(init_carry)
+
+    # Solve Neural ODE once from first to last time point
+    model = StatefulLuxLayer{fixed_state_type(odernn.model)}(odernn.model, nothing, st.model)
+    dudt(u, p, t) = model(u, p)
+    ff = ODEFunction{false}(dudt; tgrad = basic_tgrad)
+    tspan = (first(ts), last(ts))
+    prob = ODEProblem{false}(ff, h0, tspan, ps.model)
+    sol = solve(prob, odernn.args...;
+        saveat = ts,
+        sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()),
+        odernn.kwargs...)
+
+    # Process sequence with RNN cell, using ODE solutions as hidden states
+    carry = init_carry
+    outputs = __odernn_loop(odernn, xs, sol, carry, ps, st_cell)
+
+    new_st = (; model = model.st, cell = st_cell)
+
+    if known(odernn.return_sequence)
+        return outputs, new_st
+    else
+        return last(outputs), new_st
+    end
+end
+
+function __odernn_loop(odernn, xs, sol, carry, ps, st_cell)
+    # Use foldl to accumulate outputs in a differentiable way
+    init = (carry, st_cell, ())
+    result = foldl(enumerate(xs); init = init) do (carry, st_cell, outputs), (i, x_i)
+        # Get ODE solution at this time point and update carry
+        ode_h = sol.u[i]
+        carry = (ode_h, Base.tail(carry)...)
+
+        # RNN cell processes input with ODE-evolved carry
+        (out, carry), st_cell = odernn.cell((x_i, carry), ps.cell, st_cell)
+        return (carry, st_cell, (outputs..., out))
+    end
+    return result[3]
+end
+
+"""
     AugmentedNDELayer(nde, adim::Int)
 
 Constructs an Augmented Neural Differential Equation Layer.
