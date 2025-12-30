@@ -1,7 +1,7 @@
 name = "DiffEqFlux"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
-authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
 version = "4.5.0"
+authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -13,6 +13,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
 LuxCore = "bb33d45b-7691-41d6-9220-0943567d0623"
 LuxLib = "82251201-b29d-42c6-8e01-566dec8acb11"
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
@@ -58,6 +59,7 @@ Optimization = "4"
 OptimizationOptimJL = "0.4"
 OptimizationOptimisers = "0.3"
 OrdinaryDiffEq = "6.76.0"
+PrecompileTools = "1"
 Printf = "1.10"
 Random = "1.10"
 ReTestItems = "1.25.1"

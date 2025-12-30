@@ -55,4 +55,6 @@ export BacksolveAdjoint, QuadratureAdjoint, GaussAdjoint, InterpolatingAdjoint,
        AdjointLSS, NILSS, NILSAS
 export TrackerVJP, ZygoteVJP, EnzymeVJP, ReverseDiffVJP
 
+include("precompilation.jl")
+
 end
