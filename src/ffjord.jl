@@ -59,12 +59,15 @@ preprint arXiv:1810.01367 (2018).
 end
 
 function LuxCore.initialstates(rng::AbstractRNG, n::FFJORD)
-    return (; model = LuxCore.initialstates(rng, n.model),
-        regularize = false, monte_carlo = true)
+    return (;
+        model = LuxCore.initialstates(rng, n.model),
+        regularize = false, monte_carlo = true,
+    )
 end
 
 function FFJORD(
-        model, tspan, input_dims, args...; ad = nothing, basedist = nothing, kwargs...)
+        model, tspan, input_dims, args...; ad = nothing, basedist = nothing, kwargs...
+    )
     !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     return FFJORD(model, basedist, ad, input_dims, tspan, args, kwargs)
 end
@@ -75,8 +78,10 @@ end
 
 @inline __norm_batched(x) = sqrt.(sum(abs2, x; dims = 1:(ndims(x) - 1)))
 
-function __ffjord(model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing,
-        regularize::Bool = false, monte_carlo::Bool = true) where {T, N}
+function __ffjord(
+        model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing,
+        regularize::Bool = false, monte_carlo::Bool = true
+    ) where {T, N}
     L = size(u, N - 1)
     z = selectdim(u, N - 1, 1:(L - ifelse(regularize, 3, 1)))
     @set! model.ps = p
@@ -91,17 +96,23 @@ function __ffjord(model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothi
             trace_jac = dropdims(
                 sum(
                     batched_matmul(
-                        reshape(e, 1, :, size(e, N)), reshape(Je, :, 1, size(Je, N)));
-                    dims = (1, 2));
-                dims = (1, 2))
+                        reshape(e, 1, :, size(e, N)), reshape(Je, :, 1, size(Je, N))
+                    );
+                    dims = (1, 2)
+                );
+                dims = (1, 2)
+            )
         elseif ad isa AutoZygote
             eJ = Lux.vector_jacobian_product(model, AutoZygote(), z, e)
             trace_jac = dropdims(
                 sum(
                     batched_matmul(
-                        reshape(eJ, 1, :, size(eJ, N)), reshape(e, :, 1, size(e, N)));
-                    dims = (1, 2));
-                dims = (1, 2))
+                        reshape(eJ, 1, :, size(eJ, N)), reshape(e, :, 1, size(e, N))
+                    );
+                    dims = (1, 2)
+                );
+                dims = (1, 2)
+            )
         else
             error("`ad` must be `nothing` or `AutoForwardDiff` or `AutoZygote`.")
         end
@@ -136,11 +147,14 @@ function __forward_ffjord(n::FFJORD, x::AbstractArray{T, N}, ps, st) where {T, N
     ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 
     _z = ChainRulesCore.@ignore_derivatives fill!(
-        similar(x, S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
+        similar(x, S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T)
+    )
 
     prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), n.tspan, ps)
-    sol = solve(prob, n.args...; sensealg, n.kwargs...,
-        save_everystep = false, save_start = false, save_end = true)
+    sol = solve(
+        prob, n.args...; sensealg, n.kwargs...,
+        save_everystep = false, save_start = false, save_end = true
+    )
     pred = __get_pred(sol)
     L = size(pred, N - 1)
 
@@ -185,11 +199,14 @@ function __backward_ffjord(::Type{T1}, n::FFJORD, n_samples::Int, ps, st, rng) w
     ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 
     _z = ChainRulesCore.@ignore_derivatives fill!(
-        similar(x, S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
+        similar(x, S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T)
+    )
 
     prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), reverse(n.tspan), ps)
-    sol = solve(prob, n.args...; sensealg, n.kwargs...,
-        save_everystep = false, save_start = false, save_end = true)
+    sol = solve(
+        prob, n.args...; sensealg, n.kwargs...,
+        save_everystep = false, save_start = false, save_end = true
+    )
     pred = __get_pred(sol)
     L = size(pred, N - 1)
 
@@ -222,7 +239,8 @@ function Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray)
     return first(first(__forward_ffjord(d.model, x, d.ps, d.st)))
 end
 function Distributions._rand!(
-        rng::AbstractRNG, d::FFJORDDistribution, x::AbstractArray{<:Real})
+        rng::AbstractRNG, d::FFJORDDistribution, x::AbstractArray{<:Real}
+    )
     copyto!(x, __backward_ffjord(eltype(d), d.model, size(x, ndims(x)), d.ps, d.st, rng))
     return x
 end

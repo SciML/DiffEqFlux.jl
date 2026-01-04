@@ -52,9 +52,12 @@ function (n::NeuralODE)(x, p, st)
     prob = ODEProblem{false}(ff, x, n.tspan, p)
 
     return (
-        solve(prob, n.args...;
-            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...),
-        model.st)
+        solve(
+            prob, n.args...;
+            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...
+        ),
+        model.st,
+    )
 end
 
 """
@@ -94,15 +97,18 @@ end
 function (n::NeuralDSDE)(x, p, st)
     drift = StatefulLuxLayer{fixed_state_type(n.drift)}(n.drift, nothing, st.drift)
     diffusion = StatefulLuxLayer{fixed_state_type(n.diffusion)}(
-        n.diffusion, nothing, st.diffusion)
+        n.diffusion, nothing, st.diffusion
+    )
 
     dudt(u, p, t) = drift(u, p.drift)
     g(u, p, t) = diffusion(u, p.diffusion)
 
     ff = SDEFunction{false}(dudt, g; tgrad = basic_tgrad)
     prob = SDEProblem{false}(ff, g, x, n.tspan, p)
-    return (solve(prob, n.args...; u0 = x, p, sensealg = TrackerAdjoint(), n.kwargs...),
-        (; drift = drift.st, diffusion = diffusion.st))
+    return (
+        solve(prob, n.args...; u0 = x, p, sensealg = TrackerAdjoint(), n.kwargs...),
+        (; drift = drift.st, diffusion = diffusion.st),
+    )
 end
 
 """
@@ -144,7 +150,8 @@ end
 function (n::NeuralSDE)(x, p, st)
     drift = StatefulLuxLayer{fixed_state_type(n.drift)}(n.drift, p.drift, st.drift)
     diffusion = StatefulLuxLayer{fixed_state_type(n.diffusion)}(
-        n.diffusion, p.diffusion, st.diffusion)
+        n.diffusion, p.diffusion, st.diffusion
+    )
 
     dudt(u, p, t) = drift(u, p.drift)
     g(u, p, t) = diffusion(u, p.diffusion)
@@ -153,8 +160,10 @@ function (n::NeuralSDE)(x, p, st)
 
     ff = SDEFunction{false}(dudt, g; tgrad = basic_tgrad)
     prob = SDEProblem{false}(ff, g, x, n.tspan, p; noise_rate_prototype)
-    return (solve(prob, n.args...; u0 = x, p, sensealg = TrackerAdjoint(), n.kwargs...),
-        (; drift = drift.st, diffusion = diffusion.st))
+    return (
+        solve(prob, n.args...; u0 = x, p, sensealg = TrackerAdjoint(), n.kwargs...),
+        (; drift = drift.st, diffusion = diffusion.st),
+    )
 end
 
 """
@@ -205,7 +214,8 @@ function (n::NeuralCDDE)(x, ps, st)
 
     ff = DDEFunction{false}(dudt; tgrad = basic_dde_tgrad)
     prob = DDEProblem{false}(
-        ff, x, (p, t) -> n.hist(x, p, t), n.tspan, ps; constant_lags = n.lags)
+        ff, x, (p, t) -> n.hist(x, p, t), n.tspan, ps; constant_lags = n.lags
+    )
 
     return (solve(prob, n.args...; sensealg = TrackerAdjoint(), n.kwargs...), model.st)
 end
@@ -242,7 +252,8 @@ Arguments:
 end
 
 function NeuralDAE(
-        model, constraints_model, tspan, args...; differential_vars = nothing, kwargs...)
+        model, constraints_model, tspan, args...; differential_vars = nothing, kwargs...
+    )
     !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     return NeuralDAE(model, constraints_model, tspan, args, differential_vars, kwargs)
 end
@@ -334,9 +345,12 @@ function (n::NeuralODEMM)(x, ps, st)
     prob = ODEProblem{false}(dudt, x, n.tspan, ps)
 
     return (
-        solve(prob, n.args...;
-            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...),
-        model.st)
+        solve(
+            prob, n.args...;
+            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()), n.kwargs...
+        ),
+        model.st,
+    )
 end
 
 """
@@ -366,7 +380,8 @@ end
 
 function __augment(x::AbstractArray, augment_dim::Int)
     y = CRC.@ignore_derivatives fill!(
-        similar(x, size(x)[1:(ndims(x) - 2)]..., augment_dim, size(x, ndims(x))), 0)
+        similar(x, size(x)[1:(ndims(x) - 2)]..., augment_dim, size(x, ndims(x))), 0
+    )
     return cat(x, y; dims = Val(ndims(x) - 1))
 end
 

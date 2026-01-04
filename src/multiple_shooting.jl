@@ -33,9 +33,11 @@ Arguments:
     The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
     whenever the last point of any group doesn't coincide with the first point of next group.
 """
-function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
+function multiple_shoot(
+        p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
         continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
-        group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
+        group_size::Integer; continuity_term::Real = 100, kwargs...
+    ) where {F, C}
     datasize = size(ode_data, ndims(ode_data))
     griddims = ntuple(_ -> Colon(), ndims(ode_data) - 1)
 
@@ -47,12 +49,17 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
     ranges = group_ranges(datasize, group_size)
 
     # Multiple shooting predictions
-    sols = [solve(
-                remake(prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
-                    u0 = ode_data[griddims..., first(rg)]),
+    sols = [
+        solve(
+                remake(
+                    prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
+                    u0 = ode_data[griddims..., first(rg)]
+                ),
                 solver;
                 saveat = tsteps[rg],
-                kwargs...) for rg in ranges]
+                kwargs...
+            ) for rg in ranges
+    ]
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations failed
@@ -76,10 +83,14 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
     return loss, group_predictions
 end
 
-function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
-        solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer; kwargs...) where {F}
-    return multiple_shoot(p, ode_data, tsteps, prob, loss_function,
-        _default_continuity_loss, solver, group_size; kwargs...)
+function multiple_shoot(
+        p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
+        solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer; kwargs...
+    ) where {F}
+    return multiple_shoot(
+        p, ode_data, tsteps, prob, loss_function,
+        _default_continuity_loss, solver, group_size; kwargs...
+    )
 end
 
 """
@@ -117,12 +128,14 @@ Arguments:
     The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
     whenever the last point of any group doesn't coincide with the first point of next group.
 """
-function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
+function multiple_shoot(
+        p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         ensemblealg::SciMLBase.BasicEnsembleAlgorithm, loss_function::F,
         continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
-        group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
+        group_size::Integer; continuity_term::Real = 100, kwargs...
+    ) where {F, C}
     ntraj = size(ode_data, ndims(ode_data))
-    datasize = size(ode_data, ndims(ode_data)-1)
+    datasize = size(ode_data, ndims(ode_data) - 1)
     griddims = ntuple(_ -> Colon(), ndims(ode_data) - 2)
     prob = ensembleprob.prob
 
@@ -130,7 +143,7 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         throw(DomainError(group_size, "group_size can't be < 2 or > number of data points"))
     end
 
-    @assert ndims(ode_data)>=3 "ode_data must have at least three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
+    @assert ndims(ode_data) >= 3 "ode_data must have at least three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
     @assert datasize == length(tsteps)
     @assert ntraj == kwargs[:trajectories]
 
@@ -142,14 +155,16 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         rg -> begin
             newprob = remake(prob; p = p, tspan = (tsteps[first(rg)], tsteps[last(rg)]))
             function prob_func(prob, i, repeat)
-                remake(prob; u0 = ode_data[griddims..., first(rg), i])
+                return remake(prob; u0 = ode_data[griddims..., first(rg), i])
             end
             newensembleprob = EnsembleProblem(
                 newprob, prob_func, ensembleprob.output_func, ensembleprob.reduction,
-                ensembleprob.u_init, ensembleprob.safetycopy)
+                ensembleprob.u_init, ensembleprob.safetycopy
+            )
             solve(newensembleprob, solver, ensemblealg; saveat = tsteps[rg], kwargs...)
         end,
-        ranges)
+        ranges
+    )
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations did not converge?
@@ -176,12 +191,16 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
     return loss, group_predictions
 end
 
-function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
+function multiple_shoot(
+        p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         ensemblealg::SciMLBase.BasicEnsembleAlgorithm, loss_function::F,
         solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer;
-        continuity_term::Real = 100, kwargs...) where {F}
-    return multiple_shoot(p, ode_data, tsteps, ensembleprob, ensemblealg, loss_function,
-        _default_continuity_loss, solver, group_size; continuity_term, kwargs...)
+        continuity_term::Real = 100, kwargs...
+    ) where {F}
+    return multiple_shoot(
+        p, ode_data, tsteps, ensembleprob, ensemblealg, loss_function,
+        _default_continuity_loss, solver, group_size; continuity_term, kwargs...
+    )
 end
 
 """
@@ -207,8 +226,12 @@ julia> group_ranges(10, 5)
 ```
 """
 function group_ranges(datasize::Integer, groupsize::Integer)
-    2 ≤ groupsize ≤ datasize || throw(DomainError(groupsize,
-        "datasize must be positive and groupsize must to be within [2, datasize]"))
+    2 ≤ groupsize ≤ datasize || throw(
+        DomainError(
+            groupsize,
+            "datasize must be positive and groupsize must to be within [2, datasize]"
+        )
+    )
     return [i:min(datasize, i + groupsize - 1) for i in 1:(groupsize - 1):(datasize - 1)]
 end
 
