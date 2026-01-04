@@ -1,6 +1,6 @@
-@testitem "Stiff Nested AD" tags=[:layers] begin
+@testitem "Stiff Nested AD" tags = [:layers] begin
     using ComponentArrays, Zygote, OrdinaryDiffEq, Optimization, OptimizationOptimisers,
-          Random
+        Random
 
     u0 = [2.0; 0.0]
     datasize = 30
@@ -28,17 +28,20 @@
     end
 
     @testset "Solver: $(nameof(typeof(solver)))" for solver in (
-        KenCarp4(), Rodas5(), RadauIIA5())
-        neuralde = NeuralODE(model, tspan, solver; saveat = t, reltol = 1e-7, abstol = 1e-9)
+            KenCarp4(), Rodas5(), RadauIIA5(),
+        )
+        neuralde = NeuralODE(model, tspan, solver; saveat = t, reltol = 1.0e-7, abstol = 1.0e-9)
         ps, st = Lux.setup(Xoshiro(0), neuralde)
         ps = ComponentArray(ps)
         lux_model = StatefulLuxLayer{true}(neuralde, ps, st)
         loss1 = loss_n_ode(lux_model, ps)
         optfunc = Optimization.OptimizationFunction(
-            (x, p) -> loss_n_ode(lux_model, x), Optimization.AutoZygote())
+            (x, p) -> loss_n_ode(lux_model, x), Optimization.AutoZygote()
+        )
         optprob = Optimization.OptimizationProblem(optfunc, ps)
         res = Optimization.solve(
-            optprob, Adam(0.1); callback = callback(solver), maxiters = 100)
+            optprob, Adam(0.1); callback = callback(solver), maxiters = 100
+        )
         loss2 = loss_n_ode(lux_model, res.minimizer)
         @test loss2 < loss1
     end

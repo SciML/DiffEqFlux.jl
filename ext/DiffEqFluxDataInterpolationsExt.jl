@@ -5,7 +5,8 @@ using DiffEqFlux: DiffEqFlux
 
 @views function DiffEqFlux.collocate_data(
         data::AbstractMatrix{T}, tpoints::AbstractVector{T},
-        tpoints_sample::AbstractVector{T}, interp, args...) where {T}
+        tpoints_sample::AbstractVector{T}, interp, args...
+    ) where {T}
     u = zeros(T, size(data, 1), length(tpoints_sample))
     du = zeros(T, size(data, 1), length(tpoints_sample))
     for d1 in axes(data, 1)

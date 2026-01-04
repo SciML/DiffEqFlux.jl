@@ -1,4 +1,4 @@
-@testitem "Newton Neural ODE" tags=[:newton] begin
+@testitem "Newton Neural ODE" tags = [:newton] begin
     using ComponentArrays, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random
 
     Random.seed!(100)
@@ -30,13 +30,16 @@
     loss_function(θ) = sum(abs2, y .- stnODE(x, ComponentArray(θ, psax))[end])
     l1 = loss_function(psd)
     optf = Optimization.OptimizationFunction(
-        (x, p) -> loss_function(x), Optimization.AutoZygote())
+        (x, p) -> loss_function(x), Optimization.AutoZygote()
+    )
     optprob = Optimization.OptimizationProblem(optf, psd)
 
     res = Optimization.solve(optprob, NewtonTrustRegion(); maxiters = 100, callback = cb)
     @test loss_function(res.minimizer) < l1
-    res = Optimization.solve(optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
-        maxiters = 100, callback = cb)
+    res = Optimization.solve(
+        optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
+        maxiters = 100, callback = cb
+    )
     @test loss_function(res.minimizer) < l1
 
     @info "ROCK2"
@@ -51,12 +54,15 @@
     loss_function(θ) = sum(abs2, y .- stnODE(x, ComponentArray(θ, psax))[end])
     l1 = loss_function(psd)
     optfunc = Optimization.OptimizationFunction(
-        (x, p) -> loss_function(x), Optimization.AutoZygote())
+        (x, p) -> loss_function(x), Optimization.AutoZygote()
+    )
     optprob = Optimization.OptimizationProblem(optfunc, psd)
 
     res = Optimization.solve(optprob, NewtonTrustRegion(); maxiters = 100, callback = cb)
     @test loss_function(res.minimizer) < l1
-    res = Optimization.solve(optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
-        maxiters = 100, callback = cb)
+    res = Optimization.solve(
+        optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
+        maxiters = 100, callback = cb
+    )
     @test loss_function(res.minimizer) < l1
 end
