@@ -1,4 +1,4 @@
-@testitem "Neural ODE Mass Matrix" tags=[:basicneuralde] begin
+@testitem "Neural ODE Mass Matrix" tags = [:basicneuralde] begin
     using ComponentArrays, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq
 
     rng = Xoshiro(0)
@@ -13,11 +13,13 @@
         nothing
     end
     u₀ = [1.0, 0, 0]
-    M = [1.0 0 0
-         0 1.0 0
-         0 0 0]
+    M = [
+        1.0 0 0
+        0 1.0 0
+        0 0 0
+    ]
     tspan = (0.0, 1.0)
-    p = [0.04, 3e7, 1e4]
+    p = [0.04, 3.0e7, 1.0e4]
     func = ODEFunction(f; mass_matrix = M)
     prob = ODEProblem(func, u₀, tspan, p)
     sol = solve(prob, Rodas5(); saveat = 0.1)
@@ -25,8 +27,10 @@
     dudt2 = Chain(Dense(3 => 64, tanh), Dense(64 => 2))
     p, st = Lux.setup(rng, dudt2)
     p = ComponentArray{Float64}(p)
-    ndae = NeuralODEMM(dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
-        tspan, M, Rodas5(; autodiff = false); saveat = 0.1)
+    ndae = NeuralODEMM(
+        dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
+        tspan, M, Rodas5(; autodiff = false); saveat = 0.1
+    )
     ndae(u₀, p, st)
 
     function loss(p)
@@ -42,9 +46,11 @@
 
     l1 = first(loss(p))
     optfunc = Optimization.OptimizationFunction(
-        (x, p) -> loss(x), Optimization.AutoZygote())
+        (x, p) -> loss(x), Optimization.AutoZygote()
+    )
     optprob = Optimization.OptimizationProblem(optfunc, p)
     res = Optimization.solve(
-        optprob, BFGS(; initial_stepnorm = 0.001); callback = cb, maxiters = 100)
+        optprob, BFGS(; initial_stepnorm = 0.001); callback = cb, maxiters = 100
+    )
     @test res.minimum < l1
 end

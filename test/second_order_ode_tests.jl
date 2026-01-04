@@ -1,6 +1,6 @@
-@testitem "Second Order Neural ODE" tags=[:advancedneuralde] begin
+@testitem "Second Order Neural ODE" tags = [:advancedneuralde] begin
     using ComponentArrays, Zygote, Random, Optimization, OptimizationOptimisers,
-          OrdinaryDiffEq
+        OrdinaryDiffEq
 
     rng = Xoshiro(0)
 
@@ -16,12 +16,21 @@
     prob = SecondOrderODEProblem{false}(ff, du0, u0, tspan, p)
 
     function predict(p)
-        return Array(solve(prob, Tsit5(); p, saveat = t,
-            sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP())))
+        return Array(
+            solve(
+                prob, Tsit5(); p, saveat = t,
+                sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP())
+            )
+        )
     end
 
-    correct_pos = Float32.(transpose(hcat(
-        collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end])))
+    correct_pos = Float32.(
+        transpose(
+            hcat(
+                collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end]
+            )
+        )
+    )
 
     function loss_n_ode(p)
         pred = predict(p)
@@ -36,19 +45,29 @@
     end
 
     optfunc = Optimization.OptimizationFunction(
-        (x, p) -> loss_n_ode(x), Optimization.AutoZygote())
+        (x, p) -> loss_n_ode(x), Optimization.AutoZygote()
+    )
     optprob = Optimization.OptimizationProblem(optfunc, p)
     res = Optimization.solve(optprob, Adam(0.01f0); callback = callback, maxiters = 100)
     l2 = loss_n_ode(res.minimizer)
     @test l2 < l1
 
     function predict(p)
-        return Array(solve(prob, Tsit5(); p, saveat = t,
-            sensealg = QuadratureAdjoint(; autojacvec = ZygoteVJP())))
+        return Array(
+            solve(
+                prob, Tsit5(); p, saveat = t,
+                sensealg = QuadratureAdjoint(; autojacvec = ZygoteVJP())
+            )
+        )
     end
 
-    correct_pos = Float32.(transpose(hcat(
-        collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end])))
+    correct_pos = Float32.(
+        transpose(
+            hcat(
+                collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end]
+            )
+        )
+    )
 
     function loss_n_ode(p)
         pred = predict(p)
@@ -56,19 +75,29 @@
     end
 
     optfunc = Optimization.OptimizationFunction(
-        (x, p) -> loss_n_ode(x), Optimization.AutoZygote())
+        (x, p) -> loss_n_ode(x), Optimization.AutoZygote()
+    )
     optprob = Optimization.OptimizationProblem(optfunc, p)
     res = Optimization.solve(optprob, Adam(0.01f0); callback = callback, maxiters = 100)
     l2 = loss_n_ode(res.minimizer)
     @test l2 < l1
 
     function predict(p)
-        return Array(solve(prob, Tsit5(); p, saveat = t,
-            sensealg = BacksolveAdjoint(; autojacvec = ZygoteVJP())))
+        return Array(
+            solve(
+                prob, Tsit5(); p, saveat = t,
+                sensealg = BacksolveAdjoint(; autojacvec = ZygoteVJP())
+            )
+        )
     end
 
-    correct_pos = Float32.(transpose(hcat(
-        collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end])))
+    correct_pos = Float32.(
+        transpose(
+            hcat(
+                collect(0:0.05:1)[2:end], collect(2:-0.05:1)[2:end]
+            )
+        )
+    )
 
     function loss_n_ode(p)
         pred = predict(p)
@@ -76,7 +105,8 @@
     end
 
     optfunc = Optimization.OptimizationFunction(
-        (x, p) -> loss_n_ode(x), Optimization.AutoZygote())
+        (x, p) -> loss_n_ode(x), Optimization.AutoZygote()
+    )
     optprob = Optimization.OptimizationProblem(optfunc, p)
     res = Optimization.solve(optprob, Adam(0.01f0); callback = callback, maxiters = 100)
     l2 = loss_n_ode(res.minimizer)

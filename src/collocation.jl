@@ -76,7 +76,7 @@ function collocate_data(data, tpoints, kernel = TriangularKernel(), bandwidth = 
     e2 = [_zero; _one; _zero]
     n = length(tpoints)
     bandwidth = bandwidth === nothing ?
-                (n^(-1 / 5)) * (n^(-3 / 35)) * ((log(n))^(-1 / 16)) : bandwidth
+        (n^(-1 / 5)) * (n^(-3 / 35)) * ((log(n))^(-1 / 16)) : bandwidth
 
     Wd = similar(data, n, size(data, 1))
     WT1 = similar(data, n, 2)
@@ -101,8 +101,10 @@ function collocate_data(data, tpoints, kernel = TriangularKernel(), bandwidth = 
     return estimated_derivative, estimated_solution
 end
 
-@views function collocate_data(data::AbstractVector, tpoints::AbstractVector,
-        tpoints_sample::AbstractVector, interp, args...)
+@views function collocate_data(
+        data::AbstractVector, tpoints::AbstractVector,
+        tpoints_sample::AbstractVector, interp, args...
+    )
     du, u = collocate_data(reshape(data, 1, :), tpoints, tpoints_sample, interp, args...)
     return du[1, :], u[1, :]
 end

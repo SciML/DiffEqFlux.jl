@@ -1,6 +1,6 @@
-@testitem "Multiple Shooting" tags=[:basicneuralde] begin
+@testitem "Multiple Shooting" tags = [:basicneuralde] begin
     using ComponentArrays, Zygote, Optimization, OptimizationOptimisers, OrdinaryDiffEq,
-          Test, Random
+        Test, Random
     using DiffEqFlux: group_ranges
 
     rng = Xoshiro(0)
@@ -17,19 +17,21 @@
         (
             name = "Vector Test Config",
             u0 = Float32[2.0, 0.0],
-            ode_func = (du, u, p, t) -> (du .= ((u .^ 3)'*[-0.1 2.0; -2.0 -0.1])'),
+            ode_func = (du, u, p, t) -> (du .= ((u .^ 3)' * [-0.1 2.0; -2.0 -0.1])'),
             nn = Chain(x -> x .^ 3, Dense(2 => 16, tanh), Dense(16 => 2)),
-            u0s_ensemble = [Float32[2.0, 0.0], Float32[3.0, 1.0]]
+            u0s_ensemble = [Float32[2.0, 0.0], Float32[3.0, 1.0]],
         ),
         (
             name = "Multi-D Test Config",
             u0 = Float32[2.0 0.0; 1.0 1.5; 0.5 -1.0],
             ode_func = (
-                du, u, p, t) -> (du .= ((u .^ 3) .* [-0.01 0.02; -0.02 -0.01; 0.01 -0.05])),
+                du, u, p, t,
+            ) -> (du .= ((u .^ 3) .* [-0.01 0.02; -0.02 -0.01; 0.01 -0.05])),
             nn = Chain(x -> x .^ 3, Dense(3 => 3, tanh)),
             u0s_ensemble = [
-                Float32[2.0 0.0; 1.0 1.5; 0.5 -1.0], Float32[3.0 1.0; 2.0 0.5; 1.5 -0.5]]
-        )
+                Float32[2.0 0.0; 1.0 1.5; 0.5 -1.0], Float32[3.0 1.0; 2.0 0.5; 1.5 -0.5],
+            ],
+        ),
     ]
 
     for config in test_configs
@@ -79,8 +81,10 @@
         continuity_term = 200
 
         function loss_multiple_shooting(p)
-            return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
-                group_size; continuity_term, abstol = 1e-8, reltol = 1e-6)[1] # test solver kwargs
+            return multiple_shoot(
+                p, ode_data, tsteps, prob_node, loss_function, Tsit5(),
+                group_size; continuity_term, abstol = 1.0e-8, reltol = 1.0e-6
+            )[1] # test solver kwargs
         end
 
         adtype = Optimization.AutoZygote()
@@ -102,13 +106,16 @@
         end
 
         function loss_multiple_shooting_abs2(p)
-            return multiple_shoot(p, ode_data, tsteps, prob_node, loss_function,
-                continuity_loss_abs2, Tsit5(), group_size; continuity_term)[1]
+            return multiple_shoot(
+                p, ode_data, tsteps, prob_node, loss_function,
+                continuity_loss_abs2, Tsit5(), group_size; continuity_term
+            )[1]
         end
 
         adtype = Optimization.AutoZygote()
         optf = Optimization.OptimizationFunction(
-            (p, _) -> loss_multiple_shooting_abs2(p), adtype)
+            (p, _) -> loss_multiple_shooting_abs2(p), adtype
+        )
         optprob = Optimization.OptimizationProblem(optf, p_init)
         res_ms_abs2 = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
@@ -120,7 +127,8 @@
         function loss_multiple_shooting_fd(p)
             return multiple_shoot(
                 p, ode_data, tsteps, prob_node, loss_function, continuity_loss_abs2,
-                Tsit5(), group_size; continuity_term, sensealg = ForwardDiffSensitivity())[1]
+                Tsit5(), group_size; continuity_term, sensealg = ForwardDiffSensitivity()
+            )[1]
         end
 
         adtype = Optimization.AutoZygote()
@@ -135,15 +143,19 @@
 
         # Integration return codes `!= :Success` should return infinite loss.
         # In this case, we trigger `retcode = :MaxIters` by setting the solver option `maxiters=1`.
-        loss_fail = multiple_shoot(p_init, ode_data, tsteps, prob_node, loss_function,
-            Tsit5(), datasize; maxiters = 1, verbose = false)[1]
+        loss_fail = multiple_shoot(
+            p_init, ode_data, tsteps, prob_node, loss_function,
+            Tsit5(), datasize; maxiters = 1, verbose = false
+        )[1]
         @test loss_fail == Inf
 
         ## Test for DomainErrors
         @test_throws DomainError multiple_shoot(
-            p_init, ode_data, tsteps, prob_node, loss_function, Tsit5(), 1)
+            p_init, ode_data, tsteps, prob_node, loss_function, Tsit5(), 1
+        )
         @test_throws DomainError multiple_shoot(
-            p_init, ode_data, tsteps, prob_node, loss_function, Tsit5(), datasize + 1)
+            p_init, ode_data, tsteps, prob_node, loss_function, Tsit5(), datasize + 1
+        )
 
         ## Ensembles
         u0s = config.u0s_ensemble
@@ -154,8 +166,11 @@
         ensemble_prob_trueODE = EnsembleProblem(prob_trueode; prob_func = prob_func)
         ensemble_alg = EnsembleThreads()
         trajectories = 2
-        ode_data_ensemble = Array(solve(
-            ensemble_prob_trueODE, Tsit5(), ensemble_alg; trajectories, saveat = tsteps))
+        ode_data_ensemble = Array(
+            solve(
+                ensemble_prob_trueODE, Tsit5(), ensemble_alg; trajectories, saveat = tsteps
+            )
+        )
 
         group_size = 3
         continuity_term = 200
@@ -163,12 +178,14 @@
             return multiple_shoot(
                 p, ode_data_ensemble, tsteps, ensemble_prob, ensemble_alg,
                 loss_function, Tsit5(), group_size; continuity_term,
-                trajectories, abstol = 1e-8, reltol = 1e-6)[1]
+                trajectories, abstol = 1.0e-8, reltol = 1.0e-6
+            )[1]
         end
 
         adtype = Optimization.AutoZygote()
         optf = Optimization.OptimizationFunction(
-            (p, _) -> loss_multiple_shooting_ens(p), adtype)
+            (p, _) -> loss_multiple_shooting_ens(p), adtype
+        )
         optprob = Optimization.OptimizationProblem(optf, p_init)
         res_ms_ensembles = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
