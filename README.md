@@ -79,3 +79,5 @@ explore various ways to integrate the two methodologies:
   - `NeuralDAE` now allows an optional `du0` as input.
   - `TensorLayer` is now a Lux Neural Network.
   - APIs for quite a few layer constructions have changed. Please refer to the updated documentation for more details.
+
+
