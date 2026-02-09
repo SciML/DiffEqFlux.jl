@@ -73,7 +73,7 @@
         optprob = Optimization.OptimizationProblem(optf, p_init)
         res_single_shooting = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-        loss_ss = loss_single_shooting(res_single_shooting.minimizer)
+        loss_ss = loss_single_shooting(res_single_shooting.u)
         @info "Single shooting loss: $(loss_ss)"
 
         ## Test Multiple Shooting
@@ -93,7 +93,7 @@
         res_ms = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
         # Calculate single shooting loss with parameter from multiple_shoot training
-        loss_ms = loss_single_shooting(res_ms.minimizer)
+        loss_ms = loss_single_shooting(res_ms.u)
         println("Multiple shooting loss: $(loss_ms)")
         @test loss_ms < 10loss_ss
 
@@ -119,7 +119,7 @@
         optprob = Optimization.OptimizationProblem(optf, p_init)
         res_ms_abs2 = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-        loss_ms_abs2 = loss_single_shooting(res_ms_abs2.minimizer)
+        loss_ms_abs2 = loss_single_shooting(res_ms_abs2.u)
         println("Multiple shooting loss with abs2: $(loss_ms_abs2)")
         @test loss_ms_abs2 < loss_ss
 
@@ -137,7 +137,7 @@
         res_ms_fd = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
         # Calculate single shooting loss with parameter from multiple_shoot training
-        loss_ms_fd = loss_single_shooting(res_ms_fd.minimizer)
+        loss_ms_fd = loss_single_shooting(res_ms_fd.u)
         println("Multiple shooting loss with ForwardDiffSensitivity: $(loss_ms_fd)")
         @test loss_ms_fd < 10loss_ss
 
@@ -189,7 +189,7 @@
         optprob = Optimization.OptimizationProblem(optf, p_init)
         res_ms_ensembles = Optimization.solve(optprob, Adam(0.05); maxiters = 300)
 
-        loss_ms_ensembles = loss_single_shooting(res_ms_ensembles.minimizer)
+        loss_ms_ensembles = loss_single_shooting(res_ms_ensembles.u)
 
         println("Multiple shooting loss with EnsembleProblem: $(loss_ms_ensembles)")
 
