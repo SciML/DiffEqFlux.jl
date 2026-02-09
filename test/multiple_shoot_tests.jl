@@ -1,4 +1,5 @@
-@testitem "Multiple Shooting" tags = [:basicneuralde] begin
+@testitem "Multiple Shooting" tags = [:basicneuralde] skip = true begin
+    # SKIP: Test segfaults (signal 11) on Julia 1.11. See https://github.com/SciML/DiffEqFlux.jl/issues/1004
     using ComponentArrays, Zygote, Optimization, OptimizationOptimisers, OrdinaryDiffEq,
         Test, Random
     using DiffEqFlux: group_ranges
