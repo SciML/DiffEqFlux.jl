@@ -1,5 +1,6 @@
 @testitem "Neural ODE Mass Matrix" tags = [:basicneuralde] begin
-    using ComponentArrays, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq
+    using ComponentArrays, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq,
+        ADTypes
 
     rng = Xoshiro(0)
 
@@ -29,7 +30,7 @@
     p = ComponentArray{Float64}(p)
     ndae = NeuralODEMM(
         dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
-        tspan, M, Rodas5(; autodiff = false); saveat = 0.1
+        tspan, M, Rodas5(; autodiff = AutoFiniteDiff()); saveat = 0.1
     )
     ndae(u₀, p, st)
 
@@ -52,5 +53,5 @@
     res = Optimization.solve(
         optprob, BFGS(; initial_stepnorm = 0.001); callback = cb, maxiters = 100
     )
-    @test res.minimum < l1
+    @test res.objective < l1
 end
