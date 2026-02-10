@@ -24,6 +24,10 @@ const GROUP = get(ENV, "GROUP", "All")
         @time @safetestset "Stiff Nested AD" include("stiff_nested_ad_tests.jl")
     end
     if GROUP == "All" || GROUP == "CUDA"
-        @time @safetestset "CUDA" include("cuda/cuda_tests.jl")
+        import Pkg
+        Pkg.activate(joinpath(@__DIR__, "cuda"))
+        Pkg.develop(Pkg.PackageSpec(; path = joinpath(@__DIR__, "..")))
+        Pkg.instantiate()
+        @time include("cuda/cuda_tests.jl")
     end
 end
