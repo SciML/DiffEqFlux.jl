@@ -1,7 +1,7 @@
-@testitem "Second Order Neural ODE" tags = [:advancedneuralde] begin
-    using ComponentArrays, Zygote, Random, Optimization, OptimizationOptimisers,
-        OrdinaryDiffEq
+using DiffEqFlux, Lux, ComponentArrays, Zygote, Random, Optimization,
+    OptimizationOptimisers, OrdinaryDiffEq, Test
 
+@testset "Second Order Neural ODE" begin
     rng = Xoshiro(0)
 
     u0 = Float32[0.0; 2.0]

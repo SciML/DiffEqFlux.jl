@@ -1,7 +1,7 @@
-@testitem "Stiff Nested AD" tags = [:layers] begin
-    using ComponentArrays, Zygote, OrdinaryDiffEq, Optimization, OptimizationOptimisers,
-        Random
+using DiffEqFlux, Lux, ComponentArrays, Zygote, OrdinaryDiffEq, Optimization,
+    OptimizationOptimisers, Random, Test
 
+@testset "Stiff Nested AD" begin
     u0 = [2.0; 0.0]
     datasize = 30
     tspan = (0.0f0, 1.5f0)
