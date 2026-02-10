@@ -7,7 +7,7 @@ Random.seed!(1999)
 function callback(adtype)
     return function (p, l)
         @info "[FFJORD $(nameof(typeof(adtype)))] Loss: $(l)"
-        false
+        return false
     end
 end
 
