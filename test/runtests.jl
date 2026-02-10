@@ -24,6 +24,6 @@ const GROUP = get(ENV, "GROUP", "All")
         @time @safetestset "Stiff Nested AD" include("stiff_nested_ad_tests.jl")
     end
     if GROUP == "All" || GROUP == "CUDA"
-        @time @safetestset "CUDA" include("cuda_tests.jl")
+        @time @safetestset "CUDA" include("cuda/cuda_tests.jl")
     end
 end
