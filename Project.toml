@@ -56,6 +56,7 @@ Optimization = "4"
 OptimizationOptimJL = "0.4"
 OptimizationOptimisers = "0.3"
 OrdinaryDiffEq = "6.76.0"
+Pkg = "1.10"
 PrecompileTools = "1"
 Printf = "1.10"
 Random = "1.10"
@@ -91,6 +92,7 @@ Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 OptimizationOptimJL = "36348300-93cb-4f02-beb5-3c3902f8871e"
 OptimizationOptimisers = "42dfb2eb-d2b4-4451-abcd-913932933ac1"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -101,4 +103,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "DistributionsAD", "ExplicitImports", "ForwardDiff", "Flux", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "Printf", "Random", "Reexport", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
+test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "DistributionsAD", "ExplicitImports", "ForwardDiff", "Flux", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "Pkg", "Printf", "Random", "Reexport", "SafeTestsets", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
