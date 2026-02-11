@@ -3,7 +3,7 @@ using SafeTestsets, Test
 const GROUP = get(ENV, "GROUP", "All")
 
 @time begin
-    if GROUP == "All" || GROUP == "QA"
+    if GROUP == "QA"
         @time @safetestset "QA" include("qa_tests.jl")
     end
     if GROUP == "All" || GROUP == "BasicNeuralDE"
@@ -23,7 +23,7 @@ const GROUP = get(ENV, "GROUP", "All")
         @time @safetestset "Collocation" include("collocation_tests.jl")
         @time @safetestset "Stiff Nested AD" include("stiff_nested_ad_tests.jl")
     end
-    if GROUP == "All" || GROUP == "CUDA"
+    if GROUP == "CUDA"
         import Pkg
         Pkg.activate(joinpath(@__DIR__, "cuda"))
         Pkg.develop(Pkg.PackageSpec(; path = joinpath(@__DIR__, "..")))
