@@ -1,6 +1,7 @@
-@testitem "Neural DAE" tags = [:basicneuralde] begin
-    using ComponentArrays, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random
+using DiffEqFlux, Lux, ComponentArrays, Zygote, Optimization, OptimizationOptimJL,
+    OrdinaryDiffEq, Random, Test
 
+@testset "Neural DAE" begin
     # A desired MWE for now, not a test yet.
 
     function rober(du, u, p, t)

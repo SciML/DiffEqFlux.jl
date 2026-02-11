@@ -1,6 +1,6 @@
-@testitem "Collocation" tags = [:layers] begin
-    using OrdinaryDiffEq
+using DiffEqFlux, OrdinaryDiffEq, Test
 
+@testset "Collocation" begin
     bounded_support_kernels = [
         EpanechnikovKernel(), UniformKernel(), TriangularKernel(),
         QuarticKernel(), TriweightKernel(), TricubeKernel(), CosineKernel(),

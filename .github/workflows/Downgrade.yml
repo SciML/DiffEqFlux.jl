@@ -12,6 +12,7 @@ on:
       - 'docs/**'
 jobs:
   test:
+    if: false # Disabled: StatsBase unsatisfiable requirements on downgrade
     runs-on: ubuntu-latest
     strategy:
       matrix:

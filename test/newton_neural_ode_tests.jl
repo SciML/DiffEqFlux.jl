@@ -1,6 +1,7 @@
-@testitem "Newton Neural ODE" tags = [:newton] begin
-    using ComponentArrays, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random
+using DiffEqFlux, Lux, ComponentArrays, Zygote, Optimization, OptimizationOptimJL,
+    OrdinaryDiffEq, Random, Test
 
+@testset "Newton Neural ODE" begin
     Random.seed!(100)
 
     n = 1 # number of ODEs

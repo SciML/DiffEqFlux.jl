@@ -1,7 +1,7 @@
-@testitem "Neural ODE Mass Matrix" tags = [:basicneuralde] begin
-    using ComponentArrays, Zygote, Random, Optimization, OptimizationOptimJL, OrdinaryDiffEq,
-        ADTypes
+using DiffEqFlux, Lux, ComponentArrays, Zygote, Random, Optimization, OptimizationOptimJL,
+    OrdinaryDiffEq, ADTypes, Test
 
+@testset "Neural ODE Mass Matrix" begin
     rng = Xoshiro(0)
 
     #A desired MWE for now, not a test yet.
@@ -36,8 +36,7 @@
 
     function loss(p)
         pred = first(ndae(u₀, p, st))
-        loss = sum(abs2, Array(sol) .- pred)
-        return loss
+        return sum(abs2, Array(sol) .- pred)
     end
 
     cb = function (state, l)
