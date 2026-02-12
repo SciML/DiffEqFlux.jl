@@ -181,10 +181,10 @@ We resume the training with a larger `n`. (WARNING - this step is a couple of
 orders of magnitude longer than the previous one).
 
 ```@example nsde
-opt = OptimizationOptimisers.Adam(0.001)
+opt = OptimizationOptimisers.Adam(0.01)
 optf2 = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 100), adtype)
 optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
-result2 = Optimization.solve(optprob2, opt; callback, maxiters = 100)
+result2 = Optimization.solve(optprob2, opt; callback, maxiters = 200)
 ```
 
 And now we plot the solution to an ensemble of the trained neural SDE:
@@ -192,14 +192,13 @@ And now we plot the solution to an ensemble of the trained neural SDE:
 ```@example nsde
 n = 1000
 u = repeat(reshape(u0, :, 1), 1, n)
-samples = predict_neuralsde(result2.u)
-currmeans = mean(samples; dims = 2)
-currvars = var(samples; dims = 2, mean = currmeans)[:, 1, :]
-currmeans = currmeans[:, 1, :]
+samples = predict_neuralsde(result2.u, u)
+currmeans = mean(samples; dims = 2)[:, 1, :]
+currvars = var(samples; dims = 2)[:, 1, :]
 
 plt2 = Plots.scatter(tsteps, sde_data'; yerror = sde_data_vars', label = "data",
     title = "Neural SDE: After Training", xlabel = "Time")
-plot!(plt2, tsteps, means'; lw = 8, ribbon = vars', label = "prediction")
+plot!(plt2, tsteps, currmeans'; lw = 8, ribbon = currvars', label = "prediction")
 
 plt = plot(plt1, plt2; layout = (2, 1))
 ```
