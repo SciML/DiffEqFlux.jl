@@ -1,5 +1,7 @@
 [deps]
 ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+CUDA_Driver_jll = "4ee394cb-3365-5eb0-8335-949819d2adfc"
+CUDA_Runtime_jll = "76a88914-d11a-5bdc-97e0-2f5a05c973a2"
 DiffEqFlux = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
