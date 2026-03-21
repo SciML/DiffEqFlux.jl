@@ -62,7 +62,7 @@ new_data = rand(ffjord_dist, 100)
 
 We can use DiffEqFlux.jl to define, train and output the densities computed by CNF layers. In the same way as a neural ODE, the layer takes a neural network that defines its derivative function (see [1] for a reference). A possible way to define a CNF layer, would be:
 
-```@example cnf2
+```@example cnf
 using ComponentArrays, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimisers,
       OptimizationOptimJL, Distributions, Random
 
@@ -83,14 +83,14 @@ where we also pass as an input the desired timespan for which the differential e
 First, let's get an array from a normal distribution as the training data. Note that we want the data in Float32
 values to match how we have set up the neural network weights and the state space of the ODE.
 
-```@example cnf2
+```@example cnf
 data_dist = Normal(6.0f0, 0.7f0)
 train_data = Float32.(rand(data_dist, 1, 100))
 ```
 
 Now we define a loss function that we wish to minimize and a callback function to track loss improvements
 
-```@example cnf2
+```@example cnf
 function loss(θ)
     logpx, λ₁, λ₂ = model(train_data, θ)
     return -mean(logpx)
@@ -108,7 +108,7 @@ We then train the neural network to learn the distribution of `x`.
 
 Here we showcase starting the optimization with `Adam` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
-```@example cnf2
+```@example cnf
 adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
@@ -119,7 +119,7 @@ res1 = Optimization.solve(
 
 We then complete the training using a different optimizer, starting from where `Adam` stopped.
 
-```@example cnf2
+```@example cnf
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(
     optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 100, callback = cb)
@@ -130,7 +130,7 @@ res2 = Optimization.solve(
 For evaluating the result, we can use `totalvariation` function from `Distances.jl`. First, we compute densities using actual distribution and FFJORD model.
 Then we use a distance function between these distributions.
 
-```@example cnf2
+```@example cnf
 using Distances
 
 st_ = (; st..., monte_carlo = false)
@@ -144,7 +144,7 @@ train_dis = totalvariation(learned_pdf, actual_pdf) / size(train_data, 2)
 
 What's more, we can generate new data by using FFJORD as a distribution in `rand`.
 
-```@example cnf2
+```@example cnf
 ffjord_dist = FFJORDDistribution(ffjord_mdl, ps, st)
 new_data = rand(ffjord_dist, 100)
 ```
