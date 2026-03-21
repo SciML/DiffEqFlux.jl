@@ -15,7 +15,7 @@ makedocs(;
     clean = true,
     doctest = false,
     # linkcheck = true,
-    warnonly = [:docs_block, :example_block, :missing_docs, :linkcheck],
+    warnonly = [:docs_block, :missing_docs, :linkcheck],
     modules = [DiffEqFlux],
     format = Documenter.HTML(;
         assets = ["assets/favicon.ico"],
