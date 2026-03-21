@@ -42,7 +42,7 @@ res1 = Optimization.solve(
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(
-    optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 100, callback = cb)
+    optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 20, callback = cb)
 
 # Evaluation
 using Distances
@@ -122,7 +122,7 @@ We then complete the training using a different optimizer, starting from where `
 ```@example cnf
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(
-    optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 100, callback = cb)
+    optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 20, callback = cb)
 ```
 
 ### Evaluation
