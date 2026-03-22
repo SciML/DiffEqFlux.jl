@@ -43,7 +43,7 @@ jobs:
 
   gpu-docs:
     name: "Documentation"
-    runs-on: [self-hosted, gpu-t4]
+    runs-on: [self-hosted, gpu-v100]
     timeout-minutes: 360
     if: github.event_name == 'push' || !github.event.pull_request.draft
     steps:

@@ -3,7 +3,7 @@
 ## Copy-Pasteable Code
 
 ```@example augneuralode_cp
-using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, LuxCUDA, Random
+using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, CUDA, Random
 using MLUtils, ComponentArrays
 using Optimization, OptimizationOptimisers, IterTools
 
@@ -119,7 +119,7 @@ plot_contour(model, res.u, st)
 ### Loading required packages
 
 ```@example augneuralode
-using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, LuxCUDA, Random
+using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, CUDA, Random
 using MLUtils, ComponentArrays
 using Optimization, OptimizationOptimisers, IterTools
 

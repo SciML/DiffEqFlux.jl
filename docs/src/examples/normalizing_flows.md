@@ -33,7 +33,7 @@ function cb(state, l)
     return false
 end
 
-adtype = Optimization.AutoZygote()
+adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
@@ -109,7 +109,7 @@ We then train the neural network to learn the distribution of `x`.
 Here we showcase starting the optimization with `Adam` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
 ```@example cnf
-adtype = Optimization.AutoZygote()
+adtype = Optimization.AutoForwardDiff()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 

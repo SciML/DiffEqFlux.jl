@@ -8,7 +8,7 @@ For a detailed discussion on how GPUs need to be setup refer to
 [Lux Docs](https://lux.csail.mit.edu/stable/manual/gpu_management).
 
 ```@example gpu
-using OrdinaryDiffEq, Lux, LuxCUDA, SciMLSensitivity, ComponentArrays, Random
+using OrdinaryDiffEq, Lux, CUDA, SciMLSensitivity, ComponentArrays, Random
 rng = Xoshiro(0)
 
 const cdev = cpu_device()
@@ -69,10 +69,10 @@ prob_neuralode_gpu(u0, p, st)
 ## Neural ODE Example
 
 Here is the full neural ODE example. Note that we use the `gpu_device` function so that the
-same code works on CPUs and GPUs, dependent on `using LuxCUDA`.
+same code works on CPUs and GPUs, dependent on `using CUDA`.
 
 ```@example gpu
-using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq, Plots, LuxCUDA,
+using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq, Plots, CUDA,
       SciMLSensitivity, Random, ComponentArrays
 import DiffEqFlux: NeuralODE
 const cdev = cpu_device()
