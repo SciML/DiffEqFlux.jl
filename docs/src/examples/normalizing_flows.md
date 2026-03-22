@@ -33,7 +33,7 @@ function cb(state, l)
     return false
 end
 
-adtype = Optimization.AutoForwardDiff()
+adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
@@ -42,7 +42,7 @@ res1 = Optimization.solve(
 
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(
-    optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 20, callback = cb)
+    optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 100, callback = cb)
 
 # Evaluation
 using Distances
@@ -109,7 +109,7 @@ We then train the neural network to learn the distribution of `x`.
 Here we showcase starting the optimization with `Adam` to more quickly find a minimum, and then honing in on the minimum by using `LBFGS`.
 
 ```@example cnf
-adtype = Optimization.AutoForwardDiff()
+adtype = Optimization.AutoZygote()
 optf = Optimization.OptimizationFunction((x, p) -> loss(x), adtype)
 optprob = Optimization.OptimizationProblem(optf, ps)
 
@@ -122,7 +122,7 @@ We then complete the training using a different optimizer, starting from where `
 ```@example cnf
 optprob2 = Optimization.OptimizationProblem(optf, res1.u)
 res2 = Optimization.solve(
-    optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 20, callback = cb)
+    optprob2, Optim.LBFGS(); allow_f_increases = false, maxiters = 100, callback = cb)
 ```
 
 ### Evaluation

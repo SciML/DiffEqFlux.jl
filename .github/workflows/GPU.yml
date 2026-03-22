@@ -44,7 +44,7 @@ jobs:
   gpu-docs:
     name: "Documentation"
     runs-on: [self-hosted, gpu-t4]
-    timeout-minutes: 480
+    timeout-minutes: 360
     if: github.event_name == 'push' || !github.event.pull_request.draft
     steps:
       - uses: actions/checkout@v6
