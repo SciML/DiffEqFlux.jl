@@ -7,7 +7,7 @@ Training a classifier for **MNIST** using a neural ordinary differential equatio
 
 ```@example mnist_full
 using DiffEqFlux, CUDA, Zygote, NNlib, OrdinaryDiffEq, Lux, Statistics, ComponentArrays,
-      Random, Optimization, OptimizationOptimisers, LuxCUDA, MLUtils, OneHotArrays
+      Random, Optimization, OptimizationOptimisers, MLUtils, OneHotArrays
 using MLDatasets: MNIST
 
 CUDA.allowscalar(false)
@@ -113,7 +113,7 @@ accuracy(m, dataloader, res.u, st)
 
 ```@example mnist
 using DiffEqFlux, CUDA, Zygote, NNlib, OrdinaryDiffEq, Lux, Statistics, ComponentArrays,
-      Random, Optimization, OptimizationOptimisers, LuxCUDA, MLUtils, OneHotArrays
+      Random, Optimization, OptimizationOptimisers, MLUtils, OneHotArrays
 using MLDatasets: MNIST
 ```
 
