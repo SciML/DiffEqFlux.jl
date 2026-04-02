@@ -39,9 +39,13 @@ References:
     kwargs
 end
 
-function NeuralODE(model, tspan, args...; kwargs...)
+function NeuralODE(
+        model, tspan, args...;
+        regularize = nothing,
+        kwargs...
+    )
     !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
-    return NeuralODE(model, tspan, args, kwargs)
+    return __construct_neural_ode(model, tspan, args, regularize, kwargs)
 end
 
 function (n::NeuralODE)(x, p, st)
