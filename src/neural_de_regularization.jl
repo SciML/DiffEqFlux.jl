@@ -25,12 +25,13 @@ end
     cat_dim = max(ndims(T) - 1, 1)
     x_symbols = vcat([:x], [gensym("x") for _ in 1:N])
     st_symbols = [gensym("st") for _ in 1:N]
+    size_expr = Expr(
+        :tuple,
+        [i == cat_dim ? 1 : :(size(x, $i)) for i in 1:ndims(T)]...,
+    )
     calls = [
         :(
-            _t = fill!(
-                similar(x, eltype(x), ntuple(i -> i == $cat_dim ? 1 : size(x, i), ndims(x))),
-                convert(eltype(x), t),
-            )
+            _t = zero.(similar(x, eltype(x), $size_expr)) .+ convert(eltype(x), t)
         ),
     ]
 
@@ -262,15 +263,19 @@ end
 
 (n::RegularizedNeuralODE)(x, p, st) = n(x, p, st, st.training)
 
-(n::RegularizedNeuralODE)(x, p, st, ::Val{false}) = vanilla_node(
-    n, x, p, st
-)
-
 (n::RegularizedNeuralODE{:none})(x, p, st, ::Val) = vanilla_node(
     n, x, p, st
 )
 
+(n::RegularizedNeuralODE{:unbiased})(x, p, st, ::Val{false}) = vanilla_node(
+    n, x, p, st
+)
+
 (n::RegularizedNeuralODE{:unbiased})(x, p, st, ::Val{true}) = unbiased_node(
+    n, x, p, st
+)
+
+(n::RegularizedNeuralODE{:biased})(x, p, st, ::Val{false}) = vanilla_node(
     n, x, p, st
 )
 
