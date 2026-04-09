@@ -1,7 +1,7 @@
 name = "DiffEqFlux"
 uuid = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
 authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>"]
-version = "4.6.0"
+version = "4.7.0"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -62,7 +62,7 @@ Printf = "1.10"
 Random = "1.10"
 Reexport = "0.2, 1"
 SafeTestsets = "0.1"
-SciMLBase = "2"
+SciMLBase = "2, 3"
 SciMLSensitivity = "7"
 Setfield = "1.1.1"
 Static = "1.1.1"
