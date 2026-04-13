@@ -154,12 +154,15 @@ function multiple_shoot(
     sols = map(
         rg -> begin
             newprob = remake(prob; p = p, tspan = (tsteps[first(rg)], tsteps[last(rg)]))
-            function prob_func(prob, i, repeat)
-                return remake(prob; u0 = ode_data[griddims..., first(rg), i])
+            function prob_func(prob, ctx)
+                return remake(prob; u0 = ode_data[griddims..., first(rg), ctx.sim_id])
             end
             newensembleprob = EnsembleProblem(
-                newprob, prob_func, ensembleprob.output_func, ensembleprob.reduction,
-                ensembleprob.u_init, ensembleprob.safetycopy
+                newprob; prob_func,
+                output_func = ensembleprob.output_func,
+                reduction = ensembleprob.reduction,
+                u_init = ensembleprob.u_init,
+                safetycopy = ensembleprob.safetycopy
             )
             solve(newensembleprob, solver, ensemblealg; saveat = tsteps[rg], kwargs...)
         end,
