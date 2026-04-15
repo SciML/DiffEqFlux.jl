@@ -39,17 +39,29 @@ References:
     kwargs
 end
 
-function NeuralODE(model, tspan, args...; kwargs...)
+function NeuralODE(
+        model, tspan, args...;
+        regularize = nothing,
+        kwargs...
+    )
     !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
-    return NeuralODE(model, tspan, args, kwargs)
+    regularize === nothing && return NeuralODE(model, tspan, args, kwargs)
+    if regularize isa Bool
+        regularize = regularize ? :unbiased : :none
+    end
+    return RegularizedNeuralODE{regularize}(model, tspan, args, values(kwargs))
 end
 
 function (n::NeuralODE)(x, p, st)
     model = StatefulLuxLayer{fixed_state_type(n.model)}(n.model, nothing, st)
 
     dudt(u, p, t) = model(u, p)
-    ff = ODEFunction{false}(dudt; tgrad = basic_tgrad)
-    prob = ODEProblem{false}(ff, x, n.tspan, p)
+    function dudt!(du, u, p, t)
+        copyto!(du, dudt(u, p, t))
+        return nothing
+    end
+    ff = ODEFunction{true}(dudt!)
+    prob = ODEProblem{true}(ff, x, n.tspan, p)
 
     return (
         solve(
@@ -410,3 +422,4 @@ function (dm::DimMover)(x, ps, st)
 
     return cat(eachslice(x; dims = from)...; dims = to), st
 end
+
