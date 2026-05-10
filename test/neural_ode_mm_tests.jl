@@ -1,5 +1,6 @@
 using DiffEqFlux, Lux, ComponentArrays, Zygote, Random, Optimization, OptimizationOptimJL,
     OrdinaryDiffEq, ADTypes, Test
+using OrdinaryDiffEqRosenbrock: Rodas5
 
 @testset "Neural ODE Mass Matrix" begin
     rng = Xoshiro(0)

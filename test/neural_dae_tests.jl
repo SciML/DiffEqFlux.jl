@@ -1,5 +1,6 @@
 using DiffEqFlux, Lux, ComponentArrays, Zygote, Optimization, OptimizationOptimJL,
     OrdinaryDiffEq, Random, Test
+using OrdinaryDiffEqRosenbrock: Rodas5
 
 @testset "Neural DAE" begin
     # A desired MWE for now, not a test yet.
