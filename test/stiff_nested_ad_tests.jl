@@ -1,5 +1,8 @@
 using DiffEqFlux, Lux, ComponentArrays, Zygote, OrdinaryDiffEq, Optimization,
     OptimizationOptimisers, Random, Test
+using OrdinaryDiffEqSDIRK: KenCarp4
+using OrdinaryDiffEqRosenbrock: Rodas5
+using OrdinaryDiffEqFIRK: RadauIIA5
 
 @testset "Stiff Nested AD" begin
     u0 = [2.0; 0.0]
