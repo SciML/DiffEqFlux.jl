@@ -1,5 +1,4 @@
 name: format-check
-
 on:
   push:
     branches:
@@ -8,15 +7,11 @@ on:
       - 'release-'
     tags: '*'
   pull_request:
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
 jobs:
   runic:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: julia-actions/setup-julia@v3
-        with:
-          version: '1'
-      - uses: fredrikekre/runic-action@v1
-        with:
-          version: '1'
+    name: Runic formatting
+    uses: "SciML/.github/.github/workflows/runic.yml@v1"
+    secrets: "inherit"
