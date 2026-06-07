@@ -29,5 +29,4 @@ jobs:
     with:
       group: "${{ matrix.group }}"
       julia-version: "1.10"
-      allow-reresolve: true
     secrets: "inherit"
