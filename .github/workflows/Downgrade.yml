@@ -28,5 +28,5 @@ jobs:
     uses: "SciML/.github/.github/workflows/downgrade.yml@v1"
     with:
       group: "${{ matrix.group }}"
-      julia-version: "1.10"
+      julia-version: "lts"
     secrets: "inherit"
