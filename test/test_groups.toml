@@ -1,0 +1,14 @@
+[Layers]
+versions = ["lts", "1"]
+
+[BasicNeuralDE]
+versions = ["lts", "1"]
+
+[AdvancedNeuralDE]
+versions = ["lts", "1"]
+
+[Newton]
+versions = ["lts", "1"]
+
+[QA]
+versions = ["lts", "1"]
