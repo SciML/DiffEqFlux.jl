@@ -32,6 +32,7 @@ fixed_state_type(::Layers.HamiltonianNN{False}) = false
 
 include("ffjord.jl")
 include("neural_de.jl")
+include("neural_de_regularization.jl")
 
 include("collocation.jl")
 include("multiple_shooting.jl")
@@ -59,3 +60,4 @@ export TrackerVJP, ZygoteVJP, EnzymeVJP, ReverseDiffVJP
 include("precompilation.jl")
 
 end
+
