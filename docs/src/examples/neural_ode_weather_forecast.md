@@ -119,7 +119,7 @@ function train_one_round(node, p, state, y, opt, maxiters, rng, y0 = y[:, 1]; kw
     optf = OptimizationFunction((p, _) -> loss(p), adtype)
     optprob = OptimizationProblem(optf, p)
     res = solve(optprob, opt; maxiters = maxiters, kwargs...)
-    res.minimizer, state
+    res.u, state
 end
 
 function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; kwargs...)
