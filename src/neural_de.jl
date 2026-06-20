@@ -7,7 +7,7 @@ basic_dde_tgrad(u, h, p, t) = zero(u)
 """
     NeuralODE(model, tspan, alg = nothing, args...; kwargs...)
 
-Constructs a continuous-time recurrant neural network, also known as a neural
+Constructs a continuous-time recurrent neural network, also known as a neural
 ordinary differential equation (neural ODE), with a fast gradient calculation
 via adjoints [1]. At a high level this corresponds to solving the forward
 differential equation, using a second differential equation that propagates the
@@ -286,7 +286,7 @@ end
     NeuralODEMM(model, constraints_model, tspan, mass_matrix, alg = nothing, args...;
         sensealg = InterpolatingAdjoint(autojacvec = ZygoteVJP()), kwargs...)
 
-Constructs a physically-constrained continuous-time recurrant neural network, also known as
+Constructs a physically-constrained continuous-time recurrent neural network, also known as
 a neural differential-algebraic equation (neural DAE), with a mass matrix and a fast
 gradient calculation via adjoints [1]. The mass matrix formulation is:
 
