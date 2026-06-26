@@ -22,7 +22,7 @@ jobs:
     runs-on: [self-hosted, gpu-v100]
     timeout-minutes: 360
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
           version: "1"
@@ -47,7 +47,7 @@ jobs:
     timeout-minutes: 360
     if: github.event_name == 'push' || !github.event.pull_request.draft
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
         with:
           version: "1"
