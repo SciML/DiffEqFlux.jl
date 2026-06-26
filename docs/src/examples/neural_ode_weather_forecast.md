@@ -49,7 +49,7 @@ plot_data(df)
 ```
 
 The data show clear annual behaviour (it is difficult to see for pressure due to wild measurement errors but the pattern is there).
-It is concievable that this system can be described with an ODE, but which? Let us use an network to learn the dynamics from the dataset.
+It is conceivable that this system can be described with an ODE, but which? Let us use an network to learn the dynamics from the dataset.
 Training neural networks is easier with standardised data so we will compute standardised features before training. Finally, we take the first 20 days for training and the rest for testing.
 
 ```@example weather_forecast
@@ -119,7 +119,7 @@ function train_one_round(node, p, state, y, opt, maxiters, rng, y0 = y[:, 1]; kw
     optf = OptimizationFunction((p, _) -> loss(p), adtype)
     optprob = OptimizationProblem(optf, p)
     res = solve(optprob, opt; maxiters = maxiters, kwargs...)
-    res.minimizer, state
+    res.u, state
 end
 
 function train(t, y, obs_grid, maxiters, lr, rng, p = nothing, state = nothing; kwargs...)

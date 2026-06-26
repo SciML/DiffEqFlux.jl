@@ -11,6 +11,7 @@ terms must add to one. An example of this is as follows:
 ```@example dae
 using DiffEqFlux
 using Lux, ComponentArrays, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Plots
+using OrdinaryDiffEqRosenbrock: Rodas5
 
 using Random
 rng = Random.default_rng()
@@ -41,7 +42,7 @@ nn_dudt2 = Lux.Chain(Lux.Dense(3, 64, tanh), Lux.Dense(64, 2))
 pinit, st = Lux.setup(rng, nn_dudt2)
 
 model_stiff_ndae = NeuralODEMM(nn_dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
-    tspan, M, Rodas5(; autodiff = false); saveat = 0.1)
+    tspan, M, Rodas5(; autodiff = AutoFiniteDiff()); saveat = 0.1)
 
 function predict_stiff_ndae(p)
     return model_stiff_ndae(u₀, p, st)[1]
@@ -73,6 +74,7 @@ result_stiff = Optimization.solve(optprob, OptimizationOptimJL.BFGS(); maxiters 
 ```@example dae2
 using DiffEqFlux
 using Lux, ComponentArrays, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Plots
+using OrdinaryDiffEqRosenbrock: Rodas5
 
 using Random
 rng = Random.default_rng()
@@ -140,7 +142,7 @@ nn_dudt2 = Lux.Chain(Lux.Dense(3, 64, tanh), Lux.Dense(64, 2))
 pinit, st = Lux.setup(rng, nn_dudt2)
 
 model_stiff_ndae = NeuralODEMM(nn_dudt2, (u, p, t) -> [u[1] + u[2] + u[3] - 1],
-    tspan, M, Rodas5(; autodiff = false); saveat = 0.1)
+    tspan, M, Rodas5(; autodiff = AutoFiniteDiff()); saveat = 0.1)
 model_stiff_ndae(u₀, ComponentArray(pinit), st)
 ```
 

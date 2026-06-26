@@ -50,7 +50,7 @@ struct ExplicitGCNConv{F1, F2, F3, F4} <: AbstractLuxLayer
     in_chs::Int
     out_chs::Int
     activation::F1
-    init_Ã::F2  # nomalized_adjacency matrix
+    init_Ã::F2  # normalized_adjacency matrix
     init_weight::F3
     init_bias::F4
 end
@@ -211,7 +211,7 @@ Here, we define a type of graph neural networks called `GCNConv`. We use the nam
 
 ```julia
 struct ExplicitGCNConv{F1, F2, F3} <: AbstractLuxLayer
-    Ã::AbstractMatrix  # nomalized_adjacency matrix
+    Ã::AbstractMatrix  # normalized_adjacency matrix
     in_chs::Int
     out_chs::Int
     activation::F1

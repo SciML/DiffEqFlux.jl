@@ -10,3 +10,5 @@ ispcs = "ispcs"
 eqs = "eqs"
 rhs = "rhs"
 MTK = "MTK"
+# StochasticDiffEq.jl solver name (LambaEM, LambaEulerHeun)
+Lamba = "Lamba"
