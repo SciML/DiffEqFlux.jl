@@ -8,16 +8,15 @@ run_qa(
     # Lux/SciMLSensitivity stack and is not DiffEqFlux's responsibility).
     aqua_kwargs = (; ambiguities = (; recursive = false)),
     ei_kwargs = (
-        # Reexported module names: DiffEqFlux deliberately
-        # `@reexport using ADTypes, Lux, Boltz`, so `Boltz`/`Layers` (Boltz) and
-        # `LuxLib` (Lux) are pulled in via those reexports, not bare implicit imports.
-        no_implicit_imports = (; skip = (Base, Core, ADTypes, Lux, Boltz)),
-        # FFJORDDistribution overrides Distributions' internal `_logpdf`/`_rand!`
-        # extension points; these remain non-public in Distributions (0.25.126).
+        # `FFJORDDistribution` implements Distributions' documented extension points
+        # `_logpdf`/`_rand!` (a custom `ContinuousMultivariateDistribution` must define
+        # these; see `Distributions.common`: "Instead of `logpdf` one should implement
+        # `_logpdf(d, x)`"). They are deliberately underscore-prefixed and not public,
+        # so the access can be neither migrated to a public owner nor made public.
         all_qualified_accesses_are_public = (;
             ignore = (
-                :_logpdf,  # Distributions (extension point)
-                :_rand!,   # Distributions (extension point)
+                :_logpdf,  # Distributions extension point (non-public by convention)
+                :_rand!,   # Distributions extension point (non-public by convention)
             ),
         ),
     ),
