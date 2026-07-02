@@ -26,7 +26,7 @@ using PrecompileTools: @compile_workload, @setup_workload
         node = NeuralODE(model, tspan)
 
         # Setup parameters and state - this is called often and benefits from precompilation
-        ps, st = Lux.setup(rng, node)
+        ps, st = LuxCore.setup(rng, node)
 
         # Precompile StatefulLuxLayer creation (used in forward pass)
         stateful = StatefulLuxLayer{true}(node.model, nothing, st)
