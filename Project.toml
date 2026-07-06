@@ -23,9 +23,11 @@ Static = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
 
 [weakdeps]
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
+OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 
 [extensions]
 DiffEqFluxDataInterpolationsExt = "DataInterpolations"
+DiffEqFluxOrdinaryDiffEqTsit5Ext = "OrdinaryDiffEqTsit5"
 
 [compat]
 ADTypes = "1.21"
@@ -60,6 +62,7 @@ OrdinaryDiffEqFIRK = "2"
 OrdinaryDiffEqRosenbrock = "2"
 OrdinaryDiffEqSDIRK = "2"
 OrdinaryDiffEqStabilizedRK = "2"
+OrdinaryDiffEqTsit5 = "2"
 PrecompileTools = "1.2.1"
 Printf = "1.10"
 Random = "1.10"
@@ -100,6 +103,7 @@ OrdinaryDiffEqFIRK = "5960d6e9-dd7a-4743-88e7-cf307b64f125"
 OrdinaryDiffEqRosenbrock = "43230ef6-c299-4910-a778-202eb28ce4ce"
 OrdinaryDiffEqSDIRK = "2d112036-d095-4a1e-ab9a-08536f3ecdbf"
 OrdinaryDiffEqStabilizedRK = "358294b1-0aab-51c3-aafe-ad5ab194a2ad"
+OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -111,4 +115,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "DistributionsAD", "ForwardDiff", "Flux", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "OrdinaryDiffEqBDF", "OrdinaryDiffEqFIRK", "OrdinaryDiffEqRosenbrock", "OrdinaryDiffEqSDIRK", "OrdinaryDiffEqStabilizedRK", "Printf", "Random", "Reexport", "SafeTestsets", "SciMLTesting", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
+test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "DistributionsAD", "ForwardDiff", "Flux", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "OrdinaryDiffEqBDF", "OrdinaryDiffEqFIRK", "OrdinaryDiffEqRosenbrock", "OrdinaryDiffEqSDIRK", "OrdinaryDiffEqStabilizedRK", "OrdinaryDiffEqTsit5", "Printf", "Random", "Reexport", "SafeTestsets", "SciMLTesting", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
