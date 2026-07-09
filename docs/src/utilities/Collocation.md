@@ -16,6 +16,18 @@ accumulate through time, is not as exact as other methods.
     methods, see [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/manual/collocation/).
 
 ```@docs
+DiffEqFlux.CollocationKernel
+EpanechnikovKernel
+UniformKernel
+TriangularKernel
+QuarticKernel
+TriweightKernel
+TricubeKernel
+GaussianKernel
+CosineKernel
+LogisticKernel
+SigmoidKernel
+SilvermanKernel
 collocate_data
 ```
 
