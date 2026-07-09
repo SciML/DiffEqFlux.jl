@@ -1,3 +1,30 @@
+"""
+    CNFLayer
+
+Abstract interface for continuous normalizing flow layers implemented by DiffEqFlux.
+
+# Interface
+
+Concrete subtypes are Lux wrapper layers and are callable as:
+
+```julia
+(logpx, λ₁, λ₂), new_state = layer(x, ps, st)
+```
+
+where `x` is a batch of samples, `ps` are Lux parameters, and `st` is Lux state. The
+first returned value contains the log density estimate and regularization terms used
+by continuous normalizing flows.
+
+# Rules
+
+  - The wrapped Lux model must be stored in a field named `model`.
+  - The state must contain `regularize` and `monte_carlo` flags.
+  - Solver keyword arguments supplied to the constructor are forwarded to `solve`.
+
+# Implementations
+
+[`FFJORD`](@ref) is the public implementation of this interface.
+"""
 abstract type CNFLayer <: AbstractLuxWrapperLayer{:model} end
 
 """
@@ -19,7 +46,7 @@ high level this corresponds to the following steps:
 After these steps one may use the NN model and the learned θ to predict the density p\\_x
 for new values of x.
 
-Arguments:
+# Arguments
 
   - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     dynamics of the model.
@@ -36,7 +63,35 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 
-References:
+# Fields
+
+  - `model`: Lux layer used for the CNF dynamics.
+  - `basedist`: Optional base distribution. If `nothing`, a standard normal base
+    density is used.
+  - `ad`: ADTypes.jl automatic differentiation backend for the Jacobian trace estimate.
+  - `input_dims`: Dimensions of one sample, excluding the batch dimension.
+  - `tspan`: Integration time span.
+  - `args`: Positional solver arguments, usually including the ODE algorithm.
+  - `kwargs`: Keyword solver arguments forwarded to `solve`.
+
+# Returns
+
+A [`CNFLayer`](@ref). Calling the layer as `ffjord(x, ps, st)` returns
+`((logpx, λ₁, λ₂), new_state)`.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux, Random
+
+rng = Random.default_rng()
+model = Lux.Chain(Lux.Dense(2 => 8, tanh), Lux.Dense(8 => 2))
+ffjord = FFJORD(model, (0.0f0, 1.0f0), (2,))
+ps, st = Lux.setup(rng, ffjord)
+(logpx, λ₁, λ₂), st = ffjord(rand(Float32, 2, 4), ps, st)
+```
+
+# References
 
 [1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
 
@@ -214,14 +269,39 @@ function __backward_ffjord(::Type{T1}, n::FFJORD, n_samples::Int, ps, st, rng) w
 end
 
 """
-FFJORD can be used as a distribution to generate new samples by `rand` or estimate densities
-by `pdf` or `logpdf` (from `Distributions.jl`).
+    FFJORDDistribution(model, ps, st)
 
-Arguments:
+Wrap an [`FFJORD`](@ref) layer as a `Distributions.jl`
+`ContinuousMultivariateDistribution`.
 
-  - `model`: A FFJORD instance.
-  - `regularize`: Whether we use regularization (default: `false`).
-  - `monte_carlo`: Whether we use monte carlo (default: `true`).
+# Arguments
+
+  - `model`: The [`FFJORD`](@ref) layer used for density evaluation and sampling.
+  - `ps`: Lux parameters for `model`.
+  - `st`: Lux state for `model`, including `regularize` and `monte_carlo`.
+
+# Fields
+
+  - `model`: Stored FFJORD layer.
+  - `ps`: Stored Lux parameters.
+  - `st`: Stored Lux state.
+
+# Returns
+
+A distribution that supports `length`, `eltype`, `logpdf`, `pdf`, and `rand`.
+
+# Examples
+
+```julia
+using DiffEqFlux, Distributions, Lux, Random
+
+rng = Random.default_rng()
+model = Lux.Chain(Lux.Dense(2 => 8, tanh), Lux.Dense(8 => 2))
+ffjord = FFJORD(model, (0.0f0, 1.0f0), (2,))
+ps, st = Lux.setup(rng, ffjord)
+d = FFJORDDistribution(ffjord, ps, st)
+logp = logpdf(d, rand(Float32, 2))
+```
 """
 @concrete struct FFJORDDistribution <: ContinuousMultivariateDistribution
     model <: FFJORD

@@ -1,4 +1,65 @@
+"""
+    NeuralDELayer
+
+Abstract interface for DiffEqFlux neural differential equation layers with a single
+Lux model field.
+
+# Interface
+
+Concrete subtypes are Lux layers and are callable as:
+
+```julia
+solution, new_state = layer(x, ps, st)
+```
+
+where `x` is the initial condition or layer input, `ps` are Lux parameters, and `st`
+is Lux state. Implementations must return the SciML solution produced by `solve` and
+the updated Lux state. The wrapped model is stored in a field named `model`, matching
+the `AbstractLuxWrapperLayer{:model}` interface.
+
+# Rules
+
+  - The call must not mutate `ps`.
+  - Solver keyword arguments supplied to the constructor are forwarded to `solve`.
+  - State updates from the wrapped Lux model must be returned as the second tuple value.
+
+# Implementations
+
+[`NeuralODE`](@ref), [`NeuralCDDE`](@ref), [`NeuralDAE`](@ref), and
+[`NeuralODEMM`](@ref) implement this interface.
+"""
 abstract type NeuralDELayer <: AbstractLuxWrapperLayer{:model} end
+
+"""
+    NeuralSDELayer
+
+Abstract interface for DiffEqFlux neural stochastic differential equation layers with
+separate drift and diffusion Lux models.
+
+# Interface
+
+Concrete subtypes are Lux container layers and are callable as:
+
+```julia
+solution, new_state = layer(x, ps, st)
+```
+
+where `ps` and `st` contain `drift` and `diffusion` fields. Implementations build an
+`SDEProblem`, call `solve`, and return the solution plus updated drift and diffusion
+states.
+
+# Rules
+
+  - `drift(x, ps.drift)` must return the deterministic drift vector.
+  - `diffusion(x, ps.diffusion)` must return the noise-rate object required by the
+    concrete layer.
+  - Solver keyword arguments supplied to the constructor are forwarded to `solve`.
+
+# Implementations
+
+[`NeuralDSDE`](@ref) implements diagonal noise. [`NeuralSDE`](@ref) implements a
+general noise-rate matrix with a fixed number of Brownian processes.
+"""
 abstract type NeuralSDELayer <: AbstractLuxContainerLayer{(:drift, :diffusion)} end
 
 basic_tgrad(u, p, t) = zero(u)
@@ -13,7 +74,7 @@ via adjoints [1]. At a high level this corresponds to solving the forward
 differential equation, using a second differential equation that propagates the
 derivatives of the loss backwards in time.
 
-Arguments:
+# Arguments
 
   - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     ̇x.
@@ -28,7 +89,31 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 
-References:
+# Fields
+
+  - `model`: Lux layer used as the ODE right-hand side.
+  - `tspan`: Integration time span.
+  - `args`: Positional solver arguments, usually including the ODE algorithm.
+  - `kwargs`: Keyword solver arguments forwarded to `solve`.
+
+# Returns
+
+A [`NeuralDELayer`](@ref). Calling the layer as `node(x, ps, st)` returns
+`(sol, new_state)`, where `sol` is the SciML ODE solution.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux, Random
+
+rng = Random.default_rng()
+model = Lux.Chain(Lux.Dense(2 => 8, tanh), Lux.Dense(8 => 2))
+node = NeuralODE(model, (0.0f0, 1.0f0); saveat = 0.1f0)
+ps, st = Lux.setup(rng, node)
+sol, st = node(Float32[1, 0], ps, st)
+```
+
+# References
 
 [1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
 """
@@ -66,7 +151,7 @@ end
 
 Constructs a neural stochastic differential equation (neural SDE) with diagonal noise.
 
-Arguments:
+# Arguments
 
   - `drift`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     drift function.
@@ -79,6 +164,32 @@ Arguments:
   - `kwargs`: Additional arguments splatted to the ODE solver. See the
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
+
+# Fields
+
+  - `drift`: Lux layer used as the SDE drift function.
+  - `diffusion`: Lux layer used as the diagonal diffusion function.
+  - `tspan`: Integration time span.
+  - `args`: Positional solver arguments, usually including the SDE algorithm.
+  - `kwargs`: Keyword solver arguments forwarded to `solve`.
+
+# Returns
+
+A [`NeuralSDELayer`](@ref). Calling the layer as `nsde(x, ps, st)` returns
+`(sol, new_state)`, where `sol` is the SciML SDE solution.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux, Random
+
+rng = Random.default_rng()
+drift = Lux.Dense(2 => 2)
+diffusion = Lux.Dense(2 => 2)
+layer = NeuralDSDE(drift, diffusion, (0.0f0, 1.0f0))
+ps, st = Lux.setup(rng, layer)
+sol, st = layer(Float32[1, 0], ps, st)
+```
 """
 @concrete struct NeuralDSDE <: NeuralSDELayer
     drift <: AbstractLuxLayer
@@ -117,7 +228,7 @@ end
 
 Constructs a neural stochastic differential equation (neural SDE).
 
-Arguments:
+# Arguments
 
   - `drift`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     drift function.
@@ -131,6 +242,33 @@ Arguments:
   - `kwargs`: Additional arguments splatted to the ODE solver. See the
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
+
+# Fields
+
+  - `drift`: Lux layer used as the SDE drift function.
+  - `diffusion`: Lux layer used as the full noise-rate function.
+  - `tspan`: Integration time span.
+  - `nbrown`: Number of Brownian processes.
+  - `args`: Positional solver arguments, usually including the SDE algorithm.
+  - `kwargs`: Keyword solver arguments forwarded to `solve`.
+
+# Returns
+
+A [`NeuralSDELayer`](@ref). Calling the layer as `nsde(x, ps, st)` returns
+`(sol, new_state)`, where `sol` is the SciML SDE solution.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux, Random
+
+rng = Random.default_rng()
+drift = Lux.Dense(2 => 2)
+diffusion = Lux.Dense(2 => 4)
+layer = NeuralSDE(drift, diffusion, (0.0f0, 1.0f0), 2)
+ps, st = Lux.setup(rng, layer)
+sol, st = layer(Float32[1, 0], ps, st)
+```
 """
 @concrete struct NeuralSDE <: NeuralSDELayer
     drift <: AbstractLuxLayer
@@ -172,7 +310,7 @@ end
 
 Constructs a neural delay differential equation (neural DDE) with constant delays.
 
-Arguments:
+# Arguments
 
   - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     derivative function. Should take an input of size `[x; x(t - lag_1); ...; x(t - lag_n)]`
@@ -189,6 +327,33 @@ Arguments:
   - `kwargs`: Additional arguments splatted to the ODE solver. See the
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
+
+# Fields
+
+  - `model`: Lux layer used as the delayed derivative model.
+  - `tspan`: Integration time span.
+  - `hist`: History function for times before the start of the integration.
+  - `lags`: Constant delays used by the DDE.
+  - `args`: Positional solver arguments, usually including the DDE algorithm.
+  - `kwargs`: Keyword solver arguments forwarded to `solve`.
+
+# Returns
+
+A [`NeuralDELayer`](@ref). Calling the layer as `ndde(x, ps, st)` returns
+`(sol, new_state)`, where `sol` is the SciML DDE solution.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux, Random
+
+rng = Random.default_rng()
+model = Lux.Dense(4 => 2)
+hist(u, p, t) = u
+layer = NeuralCDDE(model, (0.0f0, 1.0f0), hist, [0.1f0])
+ps, st = Lux.setup(rng, layer)
+sol, st = layer(Float32[1, 0], ps, st)
+```
 """
 @concrete struct NeuralCDDE <: NeuralDELayer
     model <: AbstractLuxLayer
@@ -226,7 +391,7 @@ end
 
 Constructs a neural differential-algebraic equation (neural DAE).
 
-Arguments:
+# Arguments
 
   - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     derivative function. Should take an input of size `x` and produce the residual of
@@ -241,6 +406,34 @@ Arguments:
   - `kwargs`: Additional arguments splatted to the ODE solver. See the
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
+
+# Fields
+
+  - `model`: Lux layer used for differential-variable residuals.
+  - `constraints_model`: Function returning residuals for algebraic constraints.
+  - `tspan`: Integration time span.
+  - `args`: Positional solver arguments, usually including the DAE algorithm.
+  - `differential_vars`: Boolean mask marking differential variables.
+  - `kwargs`: Keyword solver arguments forwarded to `solve`.
+
+# Returns
+
+A [`NeuralDELayer`](@ref). Calling the layer as `ndae((u0, du0), ps, st)` returns
+`(sol, new_state)`, where `sol` is the SciML DAE solution.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux, Random
+
+rng = Random.default_rng()
+model = Lux.Dense(4 => 1)
+constraints(u, p, t) = [sum(u) - 1]
+layer = NeuralDAE(model, constraints, (0.0f0, 1.0f0);
+    differential_vars = [true, false])
+ps, st = Lux.setup(rng, layer)
+sol, st = layer((Float32[1, 0], Float32[0, 0]), ps, st)
+```
 """
 @concrete struct NeuralDAE <: NeuralDELayer
     model <: AbstractLuxLayer
@@ -297,7 +490,7 @@ Mu' = f(u,p,t)
 where `M` is semi-explicit, i.e. singular with zeros for rows corresponding to the
 constraint equations.
 
-Arguments:
+# Arguments
 
   - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     ̇`f(u,p,t)`
@@ -317,6 +510,35 @@ Arguments:
   - `kwargs`: Additional arguments splatted to the ODE solver. See the
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
+
+# Fields
+
+  - `model`: Lux layer used for the differential rows of `f(u, p, t)`.
+  - `constraints_model`: Function returning algebraic constraint rows.
+  - `tspan`: Integration time span.
+  - `mass_matrix`: Mass matrix passed to `ODEFunction`.
+  - `args`: Positional solver arguments, usually including the implicit ODE algorithm.
+  - `kwargs`: Keyword solver arguments forwarded to `solve`.
+
+# Returns
+
+A [`NeuralDELayer`](@ref). Calling the layer as `node(x, ps, st)` returns
+`(sol, new_state)`, where `sol` is the SciML ODE solution for the mass-matrix
+formulation.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux, Random, LinearAlgebra
+
+rng = Random.default_rng()
+model = Lux.Dense(2 => 1)
+constraints(u, p, t) = [sum(u) - 1]
+mass_matrix = Diagonal([1.0f0, 0.0f0])
+layer = NeuralODEMM(model, constraints, (0.0f0, 1.0f0), mass_matrix)
+ps, st = Lux.setup(rng, layer)
+sol, st = layer(Float32[1, 0], ps, st)
+```
 """
 @concrete struct NeuralODEMM <: NeuralDELayer
     model <: AbstractLuxLayer
@@ -358,12 +580,26 @@ end
 
 Constructs an Augmented Neural Differential Equation Layer.
 
-Arguments:
+# Arguments
 
   - `nde`: Any Neural Differential Equation Layer.
   - `adim`: The number of dimensions the initial conditions should be lifted.
 
-References:
+# Returns
+
+A `Lux.Chain` that first augments the input with `adim` zero-valued dimensions and
+then calls `nde`.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux
+
+nde = NeuralODE(Lux.Dense(3 => 3), (0.0f0, 1.0f0))
+augmented = AugmentedNDELayer(nde, 1)
+```
+
+# References
 
 [1] Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented neural ODEs." In
 Proceedings of the 33rd International Conference on Neural Information Processing
@@ -393,6 +629,30 @@ Constructs a Dimension Mover Layer.
 We can have Lux's conventional order `(data, channel, batch)` by using it as the last layer
 of `AbstractLuxLayer` to swap the batch-index and the time-index of the Neural DE's
 output considering that each time point is a channel.
+
+# Keywords
+
+  - `from`: Source dimension. Negative values are counted from the end, so `-2`
+    refers to the second-to-last dimension.
+  - `to`: Destination dimension. Negative values are counted from the end.
+
+# Fields
+
+  - `from`: Stored source dimension.
+  - `to`: Stored destination dimension.
+
+# Returns
+
+A Lux layer. Calling `DimMover(; from, to)(x, ps, st)` returns `(moved_x, st)`.
+
+# Examples
+
+```julia
+using DiffEqFlux
+
+layer = DimMover(; from = -2, to = -1)
+y, st = layer(rand(2, 3, 4), nothing, NamedTuple())
+```
 """
 @concrete struct DimMover <: AbstractLuxLayer
     from

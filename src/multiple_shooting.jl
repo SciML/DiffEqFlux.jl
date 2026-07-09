@@ -9,7 +9,7 @@ Neural Network divides the interval into smaller intervals and solves for them s
 The default continuity term is 100, implying any losses arising from the non-continuity
 of 2 different groups will be scaled by 100.
 
-Arguments:
+# Arguments
 
   - `p`: The parameters of the Neural Network to be trained.
   - `ode_data`: Original Data to be modelled.
@@ -27,6 +27,27 @@ Arguments:
     [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/) and
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
+
+# Returns
+
+  - `loss`: Total data-fitting and continuity-penalty loss. Returns `Inf` if any
+    group solve does not have a successful retcode.
+  - `group_predictions`: Array of predictions, one entry per shooting group.
+
+# Examples
+
+```julia
+using DiffEqFlux, OrdinaryDiffEq, SciMLBase
+
+f(u, p, t) = p .* u
+prob = ODEProblem(f, [1.0], (0.0, 1.0), [1.0])
+tsteps = range(0, 1; length = 6)
+ode_data = reduce(hcat, ([exp(t)] for t in tsteps))
+loss_function(u, û) = sum(abs2, u .- û)
+
+loss, predictions = multiple_shoot(
+    [1.0], ode_data, tsteps, prob, loss_function, Tsit5(), 3; abstol = 1e-8)
+```
 
 !!! note
 
@@ -104,7 +125,7 @@ Neural Network divides the interval into smaller intervals and solves for them s
 The default continuity term is 100, implying any losses arising from the non-continuity
 of 2 different groups will be scaled by 100.
 
-Arguments:
+# Arguments
 
   - `p`: The parameters of the Neural Network to be trained.
   - `ode_data`: Original Data to be modelled.
@@ -122,6 +143,29 @@ Arguments:
   - `kwargs`: Additional arguments splatted to the ODE solver. Refer to the
     [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/) and
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/) documentation for more details.
+
+# Returns
+
+  - `loss`: Total data-fitting and continuity-penalty loss. Returns `Inf` if any
+    ensemble group solve reports non-convergence.
+  - `group_predictions`: Array of ensemble predictions, one entry per shooting group.
+
+# Examples
+
+```julia
+using DiffEqFlux, OrdinaryDiffEq, SciMLBase
+
+f(u, p, t) = p .* u
+prob = ODEProblem(f, [1.0], (0.0, 1.0), [1.0])
+ensembleprob = EnsembleProblem(prob)
+tsteps = range(0, 1; length = 6)
+ode_data = reshape([exp(t) for t in tsteps], 1, :, 1)
+loss_function(u, û) = sum(abs2, u .- û)
+
+loss, predictions = multiple_shoot(
+    [1.0], ode_data, tsteps, ensembleprob, EnsembleSerial(),
+    loss_function, Tsit5(), 3; trajectories = 1, abstol = 1e-8)
+```
 
 !!! note
 
@@ -213,12 +257,17 @@ Get ranges that partition data of length `datasize` in groups of `groupsize` obs
 If the data isn't perfectly dividable by `groupsize`, the last group contains
 the reminding observations.
 
-Arguments:
+# Arguments
 
   - `datasize`: amount of data points to be partitioned.
   - `groupsize`: maximum amount of observations in each group.
 
-Example:
+# Returns
+
+A vector of overlapping `UnitRange{Int}` values. Adjacent ranges share one index so
+the last prediction from group `k` can be compared to the first point in group `k + 1`.
+
+# Examples
 
 ```julia-repl
 julia> group_ranges(10, 5)

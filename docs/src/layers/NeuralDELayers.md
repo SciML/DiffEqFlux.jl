@@ -7,6 +7,8 @@ just work over `solve`, but these cover common use cases and choose
 what's known to be the optimal mode of AD for the respective equation type.
 
 ```@docs
+DiffEqFlux.NeuralDELayer
+DiffEqFlux.NeuralSDELayer
 NeuralODE
 NeuralDSDE
 NeuralSDE
