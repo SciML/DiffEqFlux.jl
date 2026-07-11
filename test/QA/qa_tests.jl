@@ -7,6 +7,7 @@ run_qa(
     # historically; keep ambiguities on but non-recursive (recursive hits the deep
     # Lux/SciMLSensitivity stack and is not DiffEqFlux's responsibility).
     aqua_kwargs = (; ambiguities = (; recursive = false)),
+    api_docs = false,
     ei_kwargs = (
         # `FFJORDDistribution` implements Distributions' documented extension points
         # `_logpdf`/`_rand!` (a custom `ContinuousMultivariateDistribution` must define
