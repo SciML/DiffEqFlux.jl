@@ -33,9 +33,6 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
-[sources.DiffEqFlux]
-path = ".."
-
 [compat]
 CSV = "0.10"
 CUDA = "5, 6.0"
