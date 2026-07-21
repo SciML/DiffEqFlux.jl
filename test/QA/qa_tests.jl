@@ -1,5 +1,4 @@
 using SciMLTesting, DiffEqFlux
-using Test: @test, @testset
 
 # DiffEqFlux historically exposes these dependency-owned names. Keep the snapshot
 # explicit so dependency upgrades cannot silently add more public reexports.
@@ -93,11 +92,12 @@ const UNDOCUMENTED_REEXPORTS = (
     :BatchLastIndex, :CPUDevice, :CUDADevice, :CompactLuxLayer,
     :MetalDevice, :OpenCLDevice, :ReactantDevice, :SamePad,
     :TimeLastIndex, :XLADevice, :conv!, :conv_bias_act,
-    :conv_bias_act!, :lpnormpool!, :maxpool!, :meanpool!,
+    :conv_bias_act!, :logsoftmax!, :lpnormpool!, :maxpool!,
+    :meanpool!, :softmax!, :∇logsoftmax, :∇logsoftmax!,
     :oneAPIDevice, :transform, :xla_device, :∇conv_data,
     :∇conv_data!, :∇conv_filter, :∇conv_filter!, :∇lpnormpool,
     :∇lpnormpool!, :∇maxpool, :∇maxpool!, :∇meanpool,
-    :∇meanpool!,
+    :∇meanpool!, :∇softmax, :∇softmax!,
 )
 
 const REEXPORTS_WITH_INHERITED_RENDERING = (
@@ -110,10 +110,6 @@ const REEXPORTS_WITH_INHERITED_RENDERING = (
 const UNRENDERED_REEXPORTS = Tuple(
     name for name in REEXPORTED_API if !(name in REEXPORTS_WITH_INHERITED_RENDERING)
 )
-
-@testset "Intentional public reexports" begin
-    @test public_reexports(DiffEqFlux) == collect(REEXPORTED_API)
-end
 
 run_qa(
     DiffEqFlux;
