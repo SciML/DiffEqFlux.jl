@@ -124,9 +124,14 @@ sol, st = node(Float32[1, 0], ps, st)
     kwargs
 end
 
-function NeuralODE(model, tspan, args...; kwargs...)
+function NeuralODE(
+        model, tspan, args...;
+        regularize = nothing,
+        kwargs...
+    )
     !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
-    return NeuralODE(model, tspan, args, kwargs)
+    regularize === nothing && return NeuralODE(model, tspan, args, kwargs)
+    return regularized_neuralode(model, tspan, regularize, args, values(kwargs))
 end
 
 function (n::NeuralODE)(x, p, st)
