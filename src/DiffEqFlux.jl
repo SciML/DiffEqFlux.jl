@@ -10,7 +10,6 @@ using Lux: Lux, Chain, Dense, StatefulLuxLayer, FromFluxAdaptor
 using LuxCore: LuxCore, AbstractLuxLayer, AbstractLuxContainerLayer, AbstractLuxWrapperLayer
 using LuxLib: LuxLib, batched_matmul
 using Random: Random, AbstractRNG, randn!
-using Reexport: @reexport
 using SciMLBase: SciMLBase, DAEProblem, DDEFunction, DDEProblem, EnsembleProblem,
     ODEFunction, ODEProblem, ODESolution, SDEFunction, SDEProblem, remake,
     solve
@@ -25,7 +24,7 @@ using Static: True, False
 
 const CRC = ChainRulesCore
 
-@reexport using ADTypes, Lux, Boltz
+using ADTypes, Lux, Boltz
 
 fixed_state_type(_) = true
 fixed_state_type(::Layers.HamiltonianNN{True}) = true
