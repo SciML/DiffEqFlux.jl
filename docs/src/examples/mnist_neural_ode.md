@@ -5,7 +5,7 @@ Training a classifier for **MNIST** using a neural ordinary differential equatio
 
 (Step-by-step description below)
 
-```@example mnist_full
+```julia
 using DiffEqFlux, CUDA, Zygote, NNlib, OrdinaryDiffEq, Lux, Statistics, ComponentArrays,
       Random, Optimization, OptimizationOptimisers, MLUtils, OneHotArrays
 using MLDatasets: MNIST
@@ -111,7 +111,7 @@ accuracy(m, dataloader, res.u, st)
 
 ### Load Packages
 
-```@example mnist
+```julia
 using DiffEqFlux, CUDA, Zygote, NNlib, OrdinaryDiffEq, Lux, Statistics, ComponentArrays,
       Random, Optimization, OptimizationOptimisers, MLUtils, OneHotArrays
 using MLDatasets: MNIST
@@ -121,7 +121,7 @@ using MLDatasets: MNIST
 
 A good trick used here:
 
-```@example mnist
+```julia
 CUDA.allowscalar(false)
 ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 
@@ -146,7 +146,7 @@ Features and labels are then passed to MLUtils's `DataLoader`. This automaticall
 minibatches both the images and labels using the specified `batchsize`, meaning that every
 minibatch will contain 128 images with a single color channel of 28x28 pixels.
 
-```@example mnist
+```julia
 logitcrossentropy = CrossEntropyLoss(; logits = Val(true))
 
 function loadmnist(batchsize)
@@ -165,7 +165,7 @@ end
 
 and then loaded from main:
 
-```@example mnist
+```julia
 dataloader = loadmnist(128)
 ```
 
@@ -175,7 +175,7 @@ The Neural Network requires passing inputs sequentially through multiple layers.
 `Chain` which allows inputs to functions to come from the previous layer and sends the outputs
 to the next. Four different sets of layers are used here:
 
-```@example mnist
+```julia
 down = Chain(FlattenLayer(), Dense(784, 20, tanh))
 nn = Chain(Dense(20, 10, tanh), Dense(10, 10, tanh), Dense(10, 20, tanh))
 fc = Dense(20, 10)
@@ -198,7 +198,7 @@ the feature vector of belonging to a particular class
 When using `NeuralODE`, this function converts the ODESolution's `DiffEqArray` to
 a Matrix (CuArray), and reduces the matrix from 3 to 2 dimensions for use in the next layer.
 
-```@example mnist
+```julia
 nn_ode = NeuralODE(nn, (0.0f0, 1.0f0), Tsit5(); save_everystep = false,
     reltol = 1e-3, abstol = 1e-3, save_start = false)
 
@@ -212,7 +212,7 @@ change `gdev(x)` to `Array(x)`.
 
 Next, we connect all layers together in a single chain:
 
-```@example mnist
+```julia
 # Build our over-all model topology
 m = Chain(; down, nn_ode, convert = WrappedFunction(solution_to_array), fc)
 ps, st = Lux.setup(Xoshiro(0), m);
@@ -220,7 +220,7 @@ ps = ComponentArray(ps) |> gdev;
 st = st |> gdev;
 ```
 
-```@example mnist
+```julia
 # We can also build the model topology without a NN-ODE
 m_no_ode = Chain(; down, nn, fc)
 ps_no_ode, st_no_ode = Lux.setup(Xoshiro(0), m_no_ode);
@@ -248,7 +248,7 @@ nothing # hide
 To convert the classification back into readable numbers, we use `classify` which returns the
 prediction by taking the arg max of the output for each column of the minibatch:
 
-```@example mnist
+```julia
 classify(x) = argmax.(eachcol(x))
 ```
 
@@ -256,7 +256,7 @@ classify(x) = argmax.(eachcol(x))
 
 We then evaluate the accuracy on `n_batches` at a time through the entire network:
 
-```@example mnist
+```julia
 function accuracy(model, data, ps, st; n_batches = 100)
     total_correct = 0
     total = 0
@@ -284,7 +284,7 @@ This function requires **Loss**, **Optimizer** and **Callback** functions.
 final output of our model. `logitcrossentropy` takes in the prediction from our
 model `model(x)` and compares it to actual output `y`:
 
-```@example mnist
+```julia
 function loss_function(ps, data)
     (x, y) = data
     pred, st_ = m(x, ps, st)
@@ -298,7 +298,7 @@ loss_function(ps, (x_train1, y_train1)) # burn in loss
 
 `Adam` is specified here as our optimizer with a **learning rate of 0.05**:
 
-```@example mnist
+```julia
 opt = OptimizationOptimisers.Adam(0.05)
 ```
 
@@ -307,7 +307,7 @@ opt = OptimizationOptimisers.Adam(0.05)
 This callback function is used to print both the training and testing accuracy after
 10 training iterations:
 
-```@example mnist
+```julia
 iter = 0
 
 opt_func = OptimizationFunction(loss_function, Optimization.AutoZygote())
@@ -327,7 +327,7 @@ To train our model, we select the appropriate trainable parameters of our networ
 In our case, backpropagation is required for `down`, `nn_ode` and `fc`. Notice that the parameters
 for Neural ODE is given by `nn_ode.p`:
 
-```@example mnist
+```julia
 # Train the NN-ODE and monitor the loss and weights.
 res = Optimization.solve(opt_prob, opt; callback, epochs = 5)
 accuracy(m, dataloader, res.u, st)

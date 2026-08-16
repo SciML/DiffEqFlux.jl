@@ -30,7 +30,7 @@ prob = DDEProblem(dudt_, u0, h, tspan, nothing)
 
 First, let's build training data from the same example as the neural ODE:
 
-```@example nsde
+```julia
 using Plots, Statistics, ComponentArrays, Optimization, OptimizationOptimisers, DiffEqFlux,
       StochasticDiffEq, SciMLBase.EnsembleAnalysis, Random
 
@@ -40,7 +40,7 @@ tspan = (0.0f0, 1.0f0)
 tsteps = range(tspan[1], tspan[2]; length = datasize)
 ```
 
-```@example nsde
+```julia
 function trueSDEfunc(du, u, p, t)
     true_A = [-0.1 2.0; -2.0 -0.1]
     du .= ((u .^ 3)'true_A)'
@@ -58,7 +58,7 @@ For our dataset, we will use DifferentialEquations.jl's [parallel ensemble
 interface](https://docs.sciml.ai/DiffEqDocs/stable/features/ensemble/) to generate
 data from the average of 10,000 runs of the SDE:
 
-```@example nsde
+```julia
 # Take a typical sample from the mean
 ensemble_prob = EnsembleProblem(prob_truesde; safetycopy = false)
 ensemble_sol = solve(ensemble_prob, SOSRI(); trajectories = 10000)
@@ -70,7 +70,7 @@ sde_data, sde_data_vars = Array.(timeseries_point_meanvar(ensemble_sol, tsteps))
 Now we build a neural SDE. For simplicity, we will use the `NeuralDSDE`
 neural SDE with diagonal noise layer function:
 
-```@example nsde
+```julia
 drift_dudt = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 diffusion_dudt = Dense(2, 2)
 
@@ -82,7 +82,7 @@ ps = ComponentArray(ps)
 
 Let's see what that looks like:
 
-```@example nsde
+```julia
 # Get the prediction using the correct initial condition
 prediction0 = neuralsde(u0, ps, st)[1]
 
@@ -109,7 +109,7 @@ Now just as with the neural ODE we define a loss function that calculates the
 mean and variance from `n` runs at each time point and uses the distance from
 the data values:
 
-```@example nsde
+```julia
 neuralsde_model = StatefulLuxLayer{true}(neuralsde, ps, st)
 
 function predict_neuralsde(p, u = u0)
@@ -129,7 +129,7 @@ function loss_neuralsde(p; n = 100)
 end
 ```
 
-```@example nsde
+```julia
 list_plots = []
 iter = 0
 u = repeat(reshape(u0, :, 1), 1, 100)
@@ -167,7 +167,7 @@ Now we train using this loss function. We can pre-train a little bit using a
 smaller `n` and then decrease it after it has had some time to adjust towards
 the right mean behavior:
 
-```@example nsde
+```julia
 opt = OptimizationOptimisers.Adam(0.025)
 
 # First round of training with n = 10
@@ -180,7 +180,7 @@ result1 = Optimization.solve(optprob, opt; callback, maxiters = 100)
 We resume the training with a larger `n`. (WARNING - this step is a couple of
 orders of magnitude longer than the previous one).
 
-```@example nsde
+```julia
 opt = OptimizationOptimisers.Adam(0.01)
 optf2 = Optimization.OptimizationFunction((x, p) -> loss_neuralsde(x; n = 100), adtype)
 optprob2 = Optimization.OptimizationProblem(optf2, result1.u)
@@ -189,7 +189,7 @@ result2 = Optimization.solve(optprob2, opt; callback, maxiters = 200)
 
 And now we plot the solution to an ensemble of the trained neural SDE:
 
-```@example nsde
+```julia
 n = 1000
 u = repeat(reshape(u0, :, 1), 1, n)
 samples = predict_neuralsde(result2.u, u)

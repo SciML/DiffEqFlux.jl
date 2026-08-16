@@ -13,9 +13,10 @@ makedocs(;
     sitename = "DiffEqFlux.jl",
     authors = "Chris Rackauckas et al.",
     clean = true,
-    doctest = false,
+    doctest = true,
+    checkdocs = :exports,
+    repo = "github.com/SciML/DiffEqFlux.jl",
     # linkcheck = true,
-    warnonly = [:docs_block, :missing_docs, :linkcheck],
     modules = [DiffEqFlux],
     format = Documenter.HTML(;
         assets = ["assets/favicon.ico"],

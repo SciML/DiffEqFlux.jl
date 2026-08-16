@@ -576,13 +576,13 @@ function (n::NeuralODEMM)(x, ps, st)
 end
 
 """
-    AugmentedNDELayer(nde, adim::Int)
+    AugmentedNDELayer(model, adim::Int)
 
 Constructs an Augmented Neural Differential Equation Layer.
 
 # Arguments
 
-  - `nde`: Any Neural Differential Equation Layer.
+  - `model`: Any Neural Differential Equation Layer.
   - `adim`: The number of dimensions the initial conditions should be lifted.
 
 # Returns
@@ -622,7 +622,7 @@ function __augment(x::AbstractArray, augment_dim::Int)
 end
 
 """
-    DimMover(from, to)
+    DimMover(; from = -2, to = -1)
 
 Constructs a Dimension Mover Layer.
 
