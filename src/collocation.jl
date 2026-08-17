@@ -44,7 +44,7 @@ An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, EpanechnikovKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), EpanechnikovKernel())
 ```
 """
 struct EpanechnikovKernel <: CollocationKernel end
@@ -61,7 +61,7 @@ An immutable [`CollocationKernel`](@ref) with constant weight on `[-1, 1]`.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, UniformKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), UniformKernel())
 ```
 """
 struct UniformKernel <: CollocationKernel end
@@ -78,7 +78,7 @@ An immutable [`CollocationKernel`](@ref) with linearly decaying weight on `[-1, 
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, TriangularKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), TriangularKernel())
 ```
 """
 struct TriangularKernel <: CollocationKernel end
@@ -95,7 +95,7 @@ An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, QuarticKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), QuarticKernel())
 ```
 """
 struct QuarticKernel <: CollocationKernel end
@@ -112,7 +112,7 @@ An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, TriweightKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), TriweightKernel())
 ```
 """
 struct TriweightKernel <: CollocationKernel end
@@ -129,7 +129,7 @@ An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, TricubeKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), TricubeKernel())
 ```
 """
 struct TricubeKernel <: CollocationKernel end
@@ -146,7 +146,7 @@ An immutable [`CollocationKernel`](@ref) with non-compact Gaussian support.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, GaussianKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), GaussianKernel())
 ```
 """
 struct GaussianKernel <: CollocationKernel end
@@ -163,7 +163,7 @@ An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, CosineKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), CosineKernel())
 ```
 """
 struct CosineKernel <: CollocationKernel end
@@ -180,7 +180,7 @@ An immutable [`CollocationKernel`](@ref) with non-compact logistic support.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, LogisticKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), LogisticKernel())
 ```
 """
 struct LogisticKernel <: CollocationKernel end
@@ -197,7 +197,7 @@ An immutable [`CollocationKernel`](@ref) with non-compact sigmoid support.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, SigmoidKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), SigmoidKernel())
 ```
 """
 struct SigmoidKernel <: CollocationKernel end
@@ -214,11 +214,26 @@ An immutable [`CollocationKernel`](@ref) with non-compact Silverman support.
 # Examples
 
 ```julia
-du, u = collocate_data(data, tpoints, SilvermanKernel())
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), SilvermanKernel())
 ```
 """
 struct SilvermanKernel <: CollocationKernel end
 
+"""
+    DiffEqFlux.calckernel(kernel, t)
+
+Evaluate a collocation kernel at the normalized offset `t`. This is the developer
+extension point for custom [`CollocationKernel`](@ref) implementations.
+
+# Rules
+
+  - Implement either the two-argument method for a kernel with non-compact support,
+    or the three-argument method `calckernel(kernel, t, abs_t)` for a kernel supported
+    on `[-1, 1]`.
+  - Return a scalar with a numeric type compatible with `t`.
+  - The generic two-argument method applies the compact-support check before calling
+    the three-argument method.
+"""
 function calckernel(kernel, t::T) where {T}
     abst = abs(t)
     return ifelse(abst > 1, T(0), calckernel(kernel, t, abst))

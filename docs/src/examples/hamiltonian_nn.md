@@ -12,9 +12,10 @@ Now we make some simplifying assumptions, and assign ``m = 1`` and ``k = 1``. An
 
 Before getting to the explanation, here's some code to start with. We will follow a full explanation of the definition and training process:
 
-```@example hamiltonian_cp
+```julia
 using Lux, DiffEqFlux, OrdinaryDiffEq, Statistics, Plots, Zygote, ForwardDiff, Random,
       ComponentArrays, Optimization, OptimizationOptimisers, MLUtils
+using Boltz: Layers
 
 t = range(0.0f0, 1.0f0; length = 1024)
 π_32 = Float32(π)

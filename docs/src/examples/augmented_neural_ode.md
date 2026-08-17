@@ -2,8 +2,8 @@
 
 ## Copy-Pasteable Code
 
-```@example augneuralode_cp
-using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, CUDA, Random
+```julia
+using DiffEqFlux, Lux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, CUDA, Random
 using MLUtils, ComponentArrays
 using Optimization, OptimizationOptimisers, IterTools
 
@@ -118,8 +118,8 @@ plot_contour(model, res.u, st)
 
 ### Loading required packages
 
-```@example augneuralode
-using DiffEqFlux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, CUDA, Random
+```julia
+using DiffEqFlux, Lux, OrdinaryDiffEq, Statistics, LinearAlgebra, Plots, CUDA, Random
 using MLUtils, ComponentArrays
 using Optimization, OptimizationOptimisers, IterTools
 
@@ -135,7 +135,7 @@ circle, and `-1` to any point which lies between the inner and outer circle. Our
 `random_point_in_sphere` samples points uniformly between 2 concentric circles/spheres of radii
 `min_radius` and `max_radius` respectively.
 
-```@example augneuralode
+```julia
 function random_point_in_sphere(dim, min_radius, max_radius)
     distance = (max_radius - min_radius) .* (rand(Float32, 1) .^ (1.0f0 / dim)) .+ min_radius
     direction = randn(Float32, dim)
@@ -147,7 +147,7 @@ end
 Next, we will construct a dataset of these points and use Flux's DataLoader to automatically minibatch
 and shuffle the data.
 
-```@example augneuralode
+```julia
 function concentric_sphere(dim, inner_radius_range, outer_radius_range,
         num_samples_inner, num_samples_outer; batch_size = 64)
     data = []
@@ -179,7 +179,7 @@ and construct that layer accordingly.
 In order to run the models on Flux.gpu, we need to manually transfer the models to Flux.gpu. First one is the network
 predicting the derivatives inside the Neural ODE and the other one is the last layer in the Chain.
 
-```@example augneuralode
+```julia
 diffeqarray_to_array(x) = gdev(x.u[1])
 
 function construct_model(out_dim, input_dim, hidden_dim, augment_dim)
@@ -204,7 +204,7 @@ end
 
 Here, we define a utility to plot our model regression results as a heatmap.
 
-```@example augneuralode
+```julia
 function plot_contour(model, ps, st, npoints = 300)
     grid_points = zeros(Float32, 2, npoints^2)
     idx = 1
@@ -228,7 +228,7 @@ end
 We use the L2 distance between the model prediction `model(x)` and the actual prediction `y` as the
 optimization objective.
 
-```@example augneuralode
+```julia
 loss_node(model, data, ps, st) = mean((first(model(data[1], ps, st)) .- data[2]) .^ 2)
 ```
 
@@ -237,7 +237,7 @@ loss_node(model, data, ps, st) = mean((first(model(data[1], ps, st)) .- data[2])
 Next, we generate the dataset. We restrict ourselves to 2 dimensions as it is easy to visualize.
 We sample a total of `4000` data points.
 
-```@example augneuralode
+```julia
 dataloader = concentric_sphere(
     2, (0.0f0, 2.0f0), (3.0f0, 4.0f0), 2000, 2000; batch_size = 256)
 ```
@@ -246,7 +246,7 @@ dataloader = concentric_sphere(
 
 Additionally, we define a callback function which displays the total loss at specific intervals.
 
-```@example augneuralode
+```julia
 iter = 0
 cb = function (state, l)
     global iter
@@ -262,7 +262,7 @@ end
 
 We use Adam as the optimizer with a learning rate of 0.005
 
-```@example augneuralode
+```julia
 opt = OptimizationOptimisers.Adam(5.0f-3)
 ```
 
@@ -272,7 +272,7 @@ To train our neural ode model, we need to pass the appropriate learnable paramet
 returned by the `construct_models` function. It is simply the `node.p` vector. We then train our model
 for `20` epochs.
 
-```@example augneuralode
+```julia
 model, ps, st = construct_model(1, 2, 64, 0)
 
 optfunc = OptimizationFunction(
@@ -293,7 +293,7 @@ Our training configuration will be the same as that of Neural ODE. Only in this 
 input with a single zero. This makes the problem 3-dimensional, and as such it is possible to find
 a function which can be expressed by the neural ode. For more details and proofs, please refer to [1].
 
-```@example augneuralode
+```julia
 model, ps, st = construct_model(1, 2, 64, 1)
 
 optfunc = OptimizationFunction(

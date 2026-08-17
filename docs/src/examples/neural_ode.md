@@ -11,7 +11,7 @@ by the `NeuralODE` struct. Let's take a look at an example.
 Before getting to the explanation, here's some code to start with. We will
 follow a full explanation of the definition and training process:
 
-```@example neuralode_cp
+```julia
 using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
       OptimizationOptimisers, Random, Plots
 
@@ -75,6 +75,9 @@ result_neuralode2 = Optimization.solve(
     optprob2, Optim.BFGS(; initial_stepnorm = 0.01); callback, allow_f_increases = false)
 
 callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)
+plt = scatter(tsteps, ode_data[1, :]; label = "data") # hide
+scatter!(plt, tsteps, predict_neuralode(result_neuralode2.u)[1, :]; label = "prediction") # hide
+plt # hide
 ```
 
 ![Neural ODE](https://user-images.githubusercontent.com/1814174/88589293-e8207f80-d026-11ea-86e2-8a3feb8252ca.gif)
@@ -83,7 +86,7 @@ callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplo
 
 Let's get a time series array from a spiral ODE to train against.
 
-```@example neuralode
+```julia
 using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, Optimization, OptimizationOptimJL,
       OptimizationOptimisers, Random, Plots
 
@@ -106,7 +109,7 @@ Now let's define a neural network with a `NeuralODE` layer. First, we define
 the layer. Here we're going to use `Lux.Chain`, which is a suitable neural network
 structure for NeuralODEs with separate handling of state variables:
 
-```@example neuralode
+```julia
 dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 p, st = Lux.setup(rng, dudt2)
 prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
@@ -127,7 +130,7 @@ second argument for new parameters, which we will use to change the
 neural network iteratively in our training loop. We will use the L2 loss of the network's
 output against the time series data:
 
-```@example neuralode
+```julia
 function predict_neuralode(p)
     Array(prob_neuralode(u0, p, st)[1])
 end
@@ -142,7 +145,7 @@ end
 We define a callback function. In this example, we set `doplot=false` because otherwise
 it would show every step and overflow the documentation, but for your use case set `doplot=true` to see a live animation of the training process!
 
-```@example neuralode
+```julia
 # Callback function to observe training
 callback = function (state, l; doplot = false)
     println(l)
@@ -174,7 +177,7 @@ The `x` and `p` variables in the optimization function are different from
 `x` and `p` above. The optimization function runs over the space of parameters of
 the original problem, so `x_optimization` == `p_original`.
 
-```@example neuralode
+```julia
 # Train using the Adam optimizer
 adtype = Optimization.AutoZygote()
 
@@ -189,7 +192,7 @@ We then complete the training using a different optimizer, starting from where
 `Adam` stopped. We do `allow_f_increases=false` to make the optimization automatically
 halt when near the minimum.
 
-```@example neuralode
+```julia
 # Retrain using the LBFGS optimizer
 optprob2 = remake(optprob; u0 = result_neuralode.u)
 
@@ -199,7 +202,7 @@ result_neuralode2 = Optimization.solve(optprob2, Optim.BFGS(; initial_stepnorm =
 
 And then we use the callback with `doplot=true` to see the final plot:
 
-```@example neuralode
+```julia
 callback((; u = result_neuralode2.u), loss_neuralode(result_neuralode2.u); doplot = true)
 plt = scatter(tsteps, ode_data[1, :]; label = "data") # hide
 scatter!(plt, tsteps, predict_neuralode(result_neuralode2.u)[1, :]; label = "prediction") # hide

@@ -31,6 +31,16 @@ SilvermanKernel
 collocate_data
 ```
 
+## Developer Interface
+
+Custom kernels extend the following internal developer interface. It is intended for
+packages implementing additional [`CollocationKernel`](@ref DiffEqFlux.CollocationKernel) types, not for ordinary
+collocation calls.
+
+```@docs
+DiffEqFlux.calckernel
+```
+
 ## Kernel Choice
 
 Note that the kernel choices of DataInterpolations.jl, such as `CubicSpline()`,

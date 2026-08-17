@@ -21,6 +21,9 @@ run_tests(;
             @safetestset "Collocation" include("Layers/collocation_tests.jl")
             return @safetestset "Stiff Nested AD" include("Layers/stiff_nested_ad_tests.jl")
         end,
+        "PublicInterface" => function ()
+            return @safetestset "Public interfaces" include("public_interface.jl")
+        end,
         "CUDA" => (;
             env = joinpath(@__DIR__, "CUDA"),
             body = joinpath(@__DIR__, "CUDA", "cuda_tests.jl"),
@@ -29,5 +32,5 @@ run_tests(;
     qa = function ()
         return @safetestset "QA" include("QA/qa_tests.jl")
     end,
-    all = ["BasicNeuralDE", "AdvancedNeuralDE", "Newton", "Layers"],
+    all = ["BasicNeuralDE", "AdvancedNeuralDE", "Newton", "Layers", "PublicInterface"],
 )

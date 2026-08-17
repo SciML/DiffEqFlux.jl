@@ -14,7 +14,7 @@ data. First the example and then an explanation.
 
 Before getting to the explanation, here's some code to start with. We will follow a full explanation of the definition and training process:
 
-```@example collocation_cp
+```julia
 using ComponentArrays, Lux, DiffEqFlux, OrdinaryDiffEq, SciMLSensitivity, Optimization,
       OptimizationOptimisers, Plots
 
@@ -100,7 +100,7 @@ plot!(nn_sol; lw = 5)
 The smoothed collocation is a spline fit of the data points which allows
 us to get an estimate of the approximate noiseless dynamics:
 
-```@example collocation
+```julia
 using ComponentArrays, Lux, DiffEqFlux, Optimization, OptimizationOptimisers,
       OrdinaryDiffEq, Plots
 
@@ -129,7 +129,7 @@ plot!(tsteps, u'; lw = 5)
 We can then differentiate the smoothed function to get estimates of the
 derivative at each data point:
 
-```@example collocation
+```julia
 plot(tsteps, du')
 ```
 
@@ -137,7 +137,7 @@ Because we have `(u',u)` pairs, we can write a loss function that
 calculates the squared difference between `f(u,p,t)` and `u'` at each
 point, and find the parameters which minimize this difference:
 
-```@example collocation
+```julia
 dudt2 = Chain(x -> x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
 
 function loss(p)
@@ -174,7 +174,7 @@ full solution all throughout the timeseries, but it does have a drift.
 We can continue to optimize like this, or we can use this as the
 initial condition to the next phase of our fitting:
 
-```@example collocation
+```julia
 function predict_neuralode(p)
     Array(prob_neuralode(u0, p, st)[1])
 end
