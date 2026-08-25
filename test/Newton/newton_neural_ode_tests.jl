@@ -1,5 +1,6 @@
 using DiffEqFlux, Lux, ComponentArrays, Zygote, Optimization, OptimizationOptimJL,
     OrdinaryDiffEq, Random, Test
+using Optim: NewtonTrustRegion
 using OrdinaryDiffEqStabilizedRK: ROCK2, ROCK4
 
 @testset "Newton Neural ODE" begin

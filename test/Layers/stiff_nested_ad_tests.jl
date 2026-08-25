@@ -1,5 +1,6 @@
 using DiffEqFlux, Lux, ComponentArrays, Zygote, OrdinaryDiffEq, Optimization,
     OptimizationOptimisers, Random, Test
+using Optimisers: Adam
 using OrdinaryDiffEqSDIRK: KenCarp4
 using OrdinaryDiffEqRosenbrock: Rodas5
 using OrdinaryDiffEqFIRK: RadauIIA5
