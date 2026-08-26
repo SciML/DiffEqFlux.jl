@@ -1,6 +1,7 @@
 using DiffEqFlux, Lux, Zygote, Distances, Distributions, DistributionsAD, Optimization,
     LinearAlgebra, OrdinaryDiffEq, Random, Test, OptimizationOptimisers,
     Statistics, ComponentArrays
+using Optimisers: Adam
 
 Random.seed!(1999)
 

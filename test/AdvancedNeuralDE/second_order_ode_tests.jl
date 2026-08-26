@@ -1,5 +1,6 @@
 using DiffEqFlux, Lux, ComponentArrays, Zygote, Random, Optimization,
     OptimizationOptimisers, OrdinaryDiffEq, Test
+using Optimisers: Adam
 
 @testset "Second Order Neural ODE" begin
     rng = Xoshiro(0)
