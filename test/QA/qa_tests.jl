@@ -33,9 +33,6 @@ const REEXPORTS = (
 run_qa(
     DiffEqFlux;
     reexports_allow = REEXPORTS,
-    # `SamePad` is exported by Lux without a docstring (LuxDL/Lux.jl); drop the ignore
-    # once Lux documents it.
-    api_docs_kwargs = (; ignore = (:SamePad,)),
     # `ambiguities = false` in test_all + a separate non-recursive ambiguity check
     # historically; keep ambiguities on but non-recursive (recursive hits the deep
     # Lux/SciMLSensitivity stack and is not DiffEqFlux's responsibility).
