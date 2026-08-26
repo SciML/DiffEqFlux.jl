@@ -1,5 +1,6 @@
 using DiffEqFlux, Lux, ComponentArrays, Zygote, Optimization, OptimizationOptimJL,
     OrdinaryDiffEq, Random, Test
+using Optim: BFGS
 using OrdinaryDiffEqRosenbrock: Rodas5
 using OrdinaryDiffEqBDF: DFBDF, DImplicitEuler
 
