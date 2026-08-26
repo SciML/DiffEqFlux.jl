@@ -1,7 +1,7 @@
 module DiffEqFlux
 
 using ADTypes: ADTypes, AutoForwardDiff, AutoZygote
-using Boltz: Boltz, Layers
+using Boltz: Boltz, Basis, Layers
 using ChainRulesCore: ChainRulesCore
 using ConcreteStructs: @concrete
 using Distributions: Distributions, ContinuousMultivariateDistribution, Distribution, logpdf
@@ -24,7 +24,24 @@ using Static: True, False
 
 const CRC = ChainRulesCore
 
-using ADTypes, Lux, Boltz
+# The neural-network construction surface that DiffEqFlux reexports (see the `export`
+# blocks at the bottom of this file), so that `using DiffEqFlux` on its own is enough to
+# build the network a `NeuralODE`/`NeuralDSDE`/`FFJORD` wraps and to pick an AD backend
+# for it. Every name stays owned and documented upstream:
+#
+#   * layers and the Flux adaptor from Lux,
+#   * the layer contract (`setup`, `apply`, ...) from LuxCore,
+#   * the `Auto*` differentiation selectors from ADTypes,
+#   * the `Layers`/`Basis` model zoo modules from Boltz.
+using Lux: Conv, FlattenLayer, GroupNorm, MaxPool, MeanPool, SamePad, Training,
+    WrappedFunction, f32, f64
+using LuxCore: apply, initialparameters, initialstates, parameterlength, setup,
+    statelength, testmode, trainmode
+using ADTypes: AbstractADType, AutoChainRules, AutoDiffractor, AutoEnzyme,
+    AutoFastDifferentiation, AutoFiniteDiff, AutoFiniteDifferences, AutoGTPSA,
+    AutoHyperHessians, AutoModelingToolkit, AutoMooncake, AutoMooncakeForward,
+    AutoPolyesterForwardDiff, AutoReactant, AutoReverseDiff, AutoSparse, AutoSymbolics,
+    AutoTaylorDiff, AutoTracker
 
 fixed_state_type(_) = true
 fixed_state_type(::Layers.HamiltonianNN{True}) = true
@@ -54,6 +71,20 @@ export BacksolveAdjoint, QuadratureAdjoint, GaussAdjoint, InterpolatingAdjoint,
     ForwardDiffSensitivity, ForwardDiffOverAdjoint, SteadyStateAdjoint, ForwardLSS,
     AdjointLSS, NILSS, NILSAS
 export TrackerVJP, ZygoteVJP, EnzymeVJP, ReverseDiffVJP
+
+# Reexported neural-network construction surface; approved via `reexports_allow` in
+# test/QA/qa_tests.jl and documented in docs/src/reexports.md.
+export Lux, Chain, Dense, Conv, MaxPool, MeanPool, FlattenLayer, GroupNorm, SamePad,
+    WrappedFunction, StatefulLuxLayer, FromFluxAdaptor, Training, f32, f64
+export LuxCore, AbstractLuxLayer, AbstractLuxContainerLayer, AbstractLuxWrapperLayer,
+    setup, apply, initialparameters, initialstates, parameterlength, statelength,
+    testmode, trainmode
+export ADTypes, AbstractADType, AutoChainRules, AutoDiffractor, AutoEnzyme,
+    AutoFastDifferentiation, AutoFiniteDiff, AutoFiniteDifferences, AutoForwardDiff,
+    AutoGTPSA, AutoHyperHessians, AutoModelingToolkit, AutoMooncake, AutoMooncakeForward,
+    AutoPolyesterForwardDiff, AutoReactant, AutoReverseDiff, AutoSparse, AutoSymbolics,
+    AutoTaylorDiff, AutoTracker, AutoZygote
+export Boltz, Basis, Layers
 
 # Precompilation workload - must be at the end
 include("precompilation.jl")
