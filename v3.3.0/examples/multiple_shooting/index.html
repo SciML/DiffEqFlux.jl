@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Multiple Shooting · DiffEqFlux.jl</title><meta name="title" content="Multiple Shooting · DiffEqFlux.jl"/><meta property="og:title" content="Multiple Shooting · DiffEqFlux.jl"/><meta property="twitter:title" content="Multiple Shooting · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/multiple_shooting/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/multiple_shooting/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/multiple_shooting/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../GPUs/">Neural ODEs on GPUs</a></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li class="is-active"><a class="tocitem" href>Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Multiple Shooting</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Multiple Shooting</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/multiple_shooting.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Multiple-Shooting"><a class="docs-heading-anchor" href="#Multiple-Shooting">Multiple Shooting</a><a id="Multiple-Shooting-1"></a><a class="docs-heading-anchor-permalink" href="#Multiple-Shooting" title="Permalink"></a></h1><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The form of multiple shooting found here is a specialized form for implicit layer deep learning (known as data shooting) which assumes full observability of the underlying dynamics and lack of noise. For a more general implementation of multiple shooting, see <a href="https://help.juliahub.com/jsmo/stable/">JuliaSimModelOptimizer</a>. For an implementation more directly tied to parameter estimation against data, see <a href="https://docs.sciml.ai/DiffEqParamEstim/stable/">DiffEqParamEstim.jl</a>.</p></div></div><p>In Multiple Shooting, the training data is split into overlapping intervals. The solver is then trained on individual intervals. If the end conditions of any interval coincide with the initial conditions of the next immediate interval, then the joined/combined solution is the same as solving on the whole dataset (without splitting).</p><p>To ensure that the overlapping part of two consecutive intervals coincide, we add a penalizing term:</p><p><code>continuity_term * absolute_value_of(prediction of last point of group i - prediction of first point of group i+1)</code></p><p>to the loss.</p><p>Note that the <code>continuity_term</code> should have a large positive value to add high penalties in case the solver predicts discontinuous values.</p><p>The following is a working demo, using Multiple Shooting:</p><pre><code class="language-julia hljs">using ComponentArrays,
+    Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms, OrdinaryDiffEq, Plots
+using DiffEqFlux: group_ranges
+
+using Random
+rng = Random.default_rng()
+
+# Define initial conditions and time steps
+datasize = 30
+u0 = Float32[2.0, 0.0]
+tspan = (0.0f0, 5.0f0)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
+
+# Get the data
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u .^ 3)&#39;true_A)&#39;
+end
+prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+ode_data = Array(solve(prob_trueode, Tsit5(); saveat = tsteps))
+
+# Define the Neural Network
+nn = Chain(x -&gt; x .^ 3, Dense(2, 16, tanh), Dense(16, 2))
+p_init, st = Lux.setup(rng, nn)
+
+neuralode = NeuralODE(nn, tspan, Tsit5(); saveat = tsteps)
+prob_node = ODEProblem((u, p, t) -&gt; nn(u, p, st)[1], u0, tspan, ComponentArray(p_init))
+
+function plot_multiple_shoot(plt, preds, group_size)
+    step = group_size - 1
+    ranges = group_ranges(datasize, group_size)
+
+    for (i, rg) in enumerate(ranges)
+        plot!(plt, tsteps[rg], preds[i][1, :]; markershape = :circle, label = &quot;Group $(i)&quot;)
+    end
+end
+
+anim = Plots.Animation()
+iter = 0
+callback = function (p, l, preds; doplot = true)
+    display(l)
+    global iter
+    iter += 1
+    if doplot &amp;&amp; iter % 1 == 0
+        # plot the original data
+        plt = scatter(tsteps, ode_data[1, :]; label = &quot;Data&quot;)
+
+        # plot the different predictions for individual shoot
+        plot_multiple_shoot(plt, preds, group_size)
+
+        frame(anim)
+        display(plot(plt))
+    end
+    return false
+end
+
+# Define parameters for Multiple Shooting
+group_size = 3
+continuity_term = 200
+
+function loss_function(data, pred)
+    return sum(abs2, data - pred)
+end
+
+ps = ComponentArray(p_init)
+pd, pax = getdata(ps), getaxes(ps)
+
+function loss_multiple_shooting(p)
+    ps = ComponentArray(p, pax)
+    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function, Tsit5(),
+        group_size; continuity_term)
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss_multiple_shooting(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, pd)
+res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback)
+gif(anim, &quot;multiple_shooting.gif&quot;; fps = 15)</code></pre><img src="fd51cecb.gif" alt="Example block output"/><p>The connected lines show the predictions of each group. Notice that there are overlapping points as well. These are the points we are trying to coincide.</p><p>Here is an output with <code>group_size = 30</code> (which is the same as solving on the whole interval without splitting also called single shooting).</p><pre><code class="language-julia hljs">anim = Plots.Animation()
+iter = 0
+group_size = 30
+
+ps = ComponentArray(p_init)
+pd, pax = getdata(ps), getaxes(ps)
+
+function loss_single_shooting(p)
+    ps = ComponentArray(p, pax)
+    return multiple_shoot(ps, ode_data, tsteps, prob_node, loss_function, Tsit5(),
+        group_size; continuity_term)
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss_single_shooting(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, pd)
+res_ms = Optimization.solve(optprob, PolyOpt(); callback = callback)
+gif(anim, &quot;single_shooting.gif&quot;; fps = 15)</code></pre><img src="cce3da68.gif" alt="Example block output"/><p>It is clear from the above picture, a single shoot doesn&#39;t perform very well with the ODE Problem we have and gets stuck in a local minimum.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tensor_layer/">« Physics-Informed Machine Learning (PIML) with TensorLayer</a><a class="docs-footer-nextpage" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Monday 25 December 2023 16:27">Monday 25 December 2023</span>. Using Julia version 1.10.0-rc3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

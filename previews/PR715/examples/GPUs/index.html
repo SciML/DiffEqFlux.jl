@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neural ODEs on GPUs · DiffEqFlux.jl</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-90474609-3"></script><script>  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-90474609-3', {'page_path': location.pathname + location.search + location.hash});
+</script><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://diffeqflux.sciml.ai/stable/examples/GPUs/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.044/juliamono.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li class="is-active"><a class="tocitem" href>Neural ODEs on GPUs</a><ul class="internal"><li><a class="tocitem" href="#Neural-ODE-Example"><span>Neural ODE Example</span></a></li></ul></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Neural ODEs on GPUs</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Neural ODEs on GPUs</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/GPUs.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Neural-ODEs-on-GPUs"><a class="docs-heading-anchor" href="#Neural-ODEs-on-GPUs">Neural ODEs on GPUs</a><a id="Neural-ODEs-on-GPUs-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-ODEs-on-GPUs" title="Permalink"></a></h1><p>Note that the differential equation solvers will run on the GPU if the initial condition is a GPU array. Thus, for example, we can define a neural ODE by hand that runs on the GPU (if no GPU is available, the calculation defaults back to the CPU):</p><pre><code class="language-julia hljs">using DifferentialEquations, Flux, DiffEqFlux, SciMLSensitivity
+
+using Random
+rng = Random.default_rng()
+
+model_gpu = Chain(Dense(2, 50, tanh), Dense(50, 2)) |&gt; gpu
+p, re = Flux.destructure(model_gpu)
+dudt!(u, p, t) = re(p)(u)
+
+# Simulation interval and intermediary points
+tspan = (0f0, 10f0)
+tsteps = 0f0:1f-1:10f0
+
+u0 = Float32[2.0; 0.0] |&gt; gpu
+prob_gpu = ODEProblem(dudt!, u0, tspan, p)
+
+# Runs on a GPU
+sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)</code></pre><p>Or we could directly use the neural ODE layer function, like:</p><pre><code class="language-julia hljs">prob_neuralode_gpu = NeuralODE(gpu(model_gpu), tspan, Tsit5(), saveat = tsteps)</code></pre><p>If one is using <code>Lux.Chain</code>, then the computation takes place on the GPU with <code>f(x,p,st)</code> if <code>x</code>, <code>p</code> and <code>st</code> are on the GPU. This commonly looks like:</p><pre><code class="language-julia hljs">import Lux
+
+dudt2 = Lux.Chain(x -&gt; x.^3,
+            Lux.Dense(2,50,tanh),
+            Lux.Dense(50,2))
+
+u0 = Float32[2.; 0.] |&gt; gpu
+p, st = Lux.setup(rng, dudt2) .|&gt; gpu
+
+dudt2_(u, p, t) = dudt2(u,p,st)[1]
+
+# Simulation interval and intermediary points
+tspan = (0f0, 10f0)
+tsteps = 0f0:1f-1:10f0
+
+prob_gpu = ODEProblem(dudt2_, u0, tspan, p)
+
+# Runs on a GPU
+sol_gpu = solve(prob_gpu, Tsit5(), saveat = tsteps)</code></pre><p>or via the NeuralODE struct:</p><pre><code class="language-julia hljs">prob_neuralode_gpu = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
+prob_neuralode_gpu(u0,p,st)</code></pre><h2 id="Neural-ODE-Example"><a class="docs-heading-anchor" href="#Neural-ODE-Example">Neural ODE Example</a><a id="Neural-ODE-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-ODE-Example" title="Permalink"></a></h2><p>Here is the full neural ODE example. Note that we use the <code>gpu</code> function so that the same code works on CPUs and GPUs, dependent on <code>using CUDA</code>.</p><pre><code class="language-julia hljs">using Flux, DiffEqFlux, Optimization, OptimizationFlux, Zygote, 
+      OrdinaryDiffEq, Plots, CUDA, SciMLSensitivity, Random, ComponentArrays
+CUDA.allowscalar(false) # Makes sure no slow operations are occuring
+
+#rng for Lux.setup
+rng = Random.default_rng()
+# Generate Data
+u0 = Float32[2.0; 0.0]
+datasize = 30
+tspan = (0.0f0, 1.5f0)
+tsteps = range(tspan[1], tspan[2], length = datasize)
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u.^3)&#39;true_A)&#39;
+end
+prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+# Make the data into a GPU-based array if the user has a GPU
+ode_data = gpu(solve(prob_trueode, Tsit5(), saveat = tsteps))
+
+
+dudt2 = Chain(x -&gt; x.^3, Dense(2, 50, tanh), Dense(50, 2)) |&gt; gpu
+u0 = Float32[2.0; 0.0] |&gt; gpu
+prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(), saveat = tsteps)
+
+function predict_neuralode(p)
+  gpu(prob_neuralode(u0,p))
+end
+function loss_neuralode(p)
+    pred = predict_neuralode(p)
+    loss = sum(abs2, ode_data .- pred)
+    return loss, pred
+end
+# Callback function to observe training
+list_plots = []
+iter = 0
+callback = function (p, l, pred; doplot = false)
+  global list_plots, iter
+  if iter == 0
+    list_plots = []
+  end
+  iter += 1
+  display(l)
+  # plot current prediction against data
+  plt = scatter(tsteps, Array(ode_data[1,:]), label = &quot;data&quot;)
+  scatter!(plt, tsteps, Array(pred[1,:]), label = &quot;prediction&quot;)
+  push!(list_plots, plt)
+  if doplot
+    display(plot(plt))
+  end
+  return false
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x,p)-&gt;loss_neuralode(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, prob_neuralode.p)
+result_neuralode = Optimization.solve(optprob,ADAM(0.05),callback = callback,maxiters = 300)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../neural_ode/">« Neural Ordinary Differential Equations</a><a class="docs-footer-nextpage" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.19 on <span class="colophon-date" title="Wednesday 29 June 2022 18:55">Wednesday 29 June 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

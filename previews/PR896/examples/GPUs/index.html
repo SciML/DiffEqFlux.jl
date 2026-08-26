@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neural ODEs on GPUs · DiffEqFlux.jl</title><meta name="title" content="Neural ODEs on GPUs · DiffEqFlux.jl"/><meta property="og:title" content="Neural ODEs on GPUs · DiffEqFlux.jl"/><meta property="twitter:title" content="Neural ODEs on GPUs · DiffEqFlux.jl"/><meta name="description" content="Documentation for DiffEqFlux.jl."/><meta property="og:description" content="Documentation for DiffEqFlux.jl."/><meta property="twitter:description" content="Documentation for DiffEqFlux.jl."/><meta property="og:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/GPUs/"/><meta property="twitter:url" content="https://docs.sciml.ai/DiffEqFlux/stable/examples/GPUs/"/><link rel="canonical" href="https://docs.sciml.ai/DiffEqFlux/stable/examples/GPUs/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="DiffEqFlux.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">DiffEqFlux.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">DiffEqFlux.jl: High Level Scientific Machine Learning (SciML) Pre-Built Architectures</a></li><li><span class="tocitem">Differential Equation Machine Learning Tutorials</span><ul><li><a class="tocitem" href="../neural_ode/">Neural Ordinary Differential Equations</a></li><li class="is-active"><a class="tocitem" href>Neural ODEs on GPUs</a><ul class="internal"><li><a class="tocitem" href="#Neural-ODE-Example"><span>Neural ODE Example</span></a></li></ul></li><li><a class="tocitem" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier</a></li><li><a class="tocitem" href="../mnist_conv_neural_ode/">Convolutional Neural ODE MNIST Classifier on GPU</a></li><li><a class="tocitem" href="../augmented_neural_ode/">Augmented Neural Ordinary Differential Equations</a></li><li><a class="tocitem" href="../neural_sde/">Neural Stochastic Differential Equations With Method of Moments</a></li><li><a class="tocitem" href="../collocation/">Smoothed Collocation for Fast Two-Stage Training</a></li><li><a class="tocitem" href="../normalizing_flows/">Continuous Normalizing Flows</a></li><li><a class="tocitem" href="../hamiltonian_nn/">Hamiltonian Neural Network</a></li><li><a class="tocitem" href="../tensor_layer/">Physics-Informed Machine Learning (PIML) with TensorLayer</a></li><li><a class="tocitem" href="../multiple_shooting/">Multiple Shooting</a></li><li><a class="tocitem" href="../neural_ode_weather_forecast/">Weather forecasting with neural ODEs</a></li></ul></li><li><span class="tocitem">Layer APIs</span><ul><li><a class="tocitem" href="../../layers/BasisLayers/">Classical Basis Layers</a></li><li><a class="tocitem" href="../../layers/TensorLayer/">Tensor Product Layer</a></li><li><a class="tocitem" href="../../layers/CNFLayer/">Continuous Normalizing Flows Layer</a></li><li><a class="tocitem" href="../../layers/SplineLayer/">Spline Layer</a></li><li><a class="tocitem" href="../../layers/NeuralDELayers/">Neural Differential Equation Layers</a></li><li><a class="tocitem" href="../../layers/HamiltonianNN/">Hamiltonian Neural Network Layer</a></li></ul></li><li><span class="tocitem">Utility Function APIs</span><ul><li><a class="tocitem" href="../../utilities/Collocation/">Smoothed Collocation</a></li><li><a class="tocitem" href="../../utilities/MultipleShooting/">Multiple Shooting Functionality</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Differential Equation Machine Learning Tutorials</a></li><li class="is-active"><a href>Neural ODEs on GPUs</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Neural ODEs on GPUs</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/DiffEqFlux.jl/blob/master/docs/src/examples/GPUs.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Neural-ODEs-on-GPUs"><a class="docs-heading-anchor" href="#Neural-ODEs-on-GPUs">Neural ODEs on GPUs</a><a id="Neural-ODEs-on-GPUs-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-ODEs-on-GPUs" title="Permalink"></a></h1><p>Note that the differential equation solvers will run on the GPU if the initial condition is a GPU array. Thus, for example, we can define a neural ODE manually that runs on the GPU (if no GPU is available, the calculation defaults back to the CPU).</p><p>For a detailed discussion on how GPUs need to be setup refer to <a href="https://lux.csail.mit.edu/stable/manual/gpu_management">Lux Docs</a>.</p><pre><code class="language-julia hljs">using OrdinaryDiffEq, Lux, LuxCUDA, SciMLSensitivity, ComponentArrays, Random
+rng = Random.default_rng()
+
+const cdev = cpu_device()
+const gdev = gpu_device()
+
+model = Chain(Dense(2, 50, tanh), Dense(50, 2))
+ps, st = Lux.setup(rng, model)
+ps = ps |&gt; ComponentArray |&gt; gdev
+st = st |&gt; gdev
+dudt(u, p, t) = model(u, p, st)[1]
+
+# Simulation interval and intermediary points
+tspan = (0.0f0, 10.0f0)
+tsteps = 0.0f0:1.0f-1:10.0f0
+
+u0 = Float32[2.0; 0.0] |&gt; gdev
+prob_gpu = ODEProblem(dudt, u0, tspan, ps)
+
+# Runs on a GPU
+sol_gpu = solve(prob_gpu, Tsit5(); saveat = tsteps)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Success
+Interpolation: 1st order linear
+t: 101-element Vector{Float32}:
+  0.0
+  0.1
+  0.2
+  0.3
+  0.4
+  0.5
+  0.6
+  0.7
+  0.8
+  0.9
+  ⋮
+  9.2
+  9.3
+  9.4
+  9.5
+  9.6
+  9.7
+  9.8
+  9.9
+ 10.0
+u: 101-element Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}:
+ Float32[2.0, 0.0]
+ Float32[2.0042355, 0.006674006]
+ Float32[2.0086718, 0.0134985475]
+ Float32[2.0133133, 0.02047738]
+ Float32[2.0181642, 0.027614184]
+ Float32[2.0232291, 0.03491279]
+ Float32[2.028513, 0.042377084]
+ Float32[2.03402, 0.050011005]
+ Float32[2.0397553, 0.05781877]
+ Float32[2.0457234, 0.065804556]
+ ⋮
+ Float32[3.9090886, 1.9051385]
+ Float32[3.9530132, 1.9485055]
+ Float32[3.9974523, 1.9924939]
+ Float32[4.0423975, 2.0371013]
+ Float32[4.087845, 2.082329]
+ Float32[4.133788, 2.1281767]
+ Float32[4.1802187, 2.1746423]
+ Float32[4.227133, 2.221727]
+ Float32[4.274522, 2.2694278]</code></pre><p>Or we could directly use the neural ODE layer function, like:</p><pre><code class="language-julia hljs">using DiffEqFlux: NeuralODE
+prob_neuralode_gpu = NeuralODE(model, tspan, Tsit5(); saveat = tsteps)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NeuralODE(
+    model = Chain(
+        layer_1 = Dense(2 =&gt; 50, tanh_fast),  <span class="sgr90"># 150 parameters</span>
+        layer_2 = Dense(50 =&gt; 2),       <span class="sgr90"># 102 parameters</span>
+    ),
+) <span class="sgr90">        # Total: </span>252 parameters,
+<span class="sgr90">          #        plus </span>0 states.</code></pre><p>If one is using <code>Lux.Chain</code>, then the computation takes place on the GPU with <code>f(x,p,st)</code> if <code>x</code>, <code>p</code> and <code>st</code> are on the GPU. This commonly looks like:</p><pre><code class="language-julia hljs">dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
+
+u0 = Float32[2.0; 0.0] |&gt; gdev
+p, st = Lux.setup(rng, dudt2) |&gt; gdev
+
+dudt2_(u, p, t) = first(dudt2(u, p, st))
+
+# Simulation interval and intermediary points
+tspan = (0.0f0, 10.0f0)
+tsteps = 0.0f0:1.0f-1:10.0f0
+
+prob_gpu = ODEProblem(dudt2_, u0, tspan, p)
+
+# Runs on a GPU
+sol_gpu = solve(prob_gpu, Tsit5(); saveat = tsteps)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Success
+Interpolation: 1st order linear
+t: 101-element Vector{Float32}:
+  0.0
+  0.1
+  0.2
+  0.3
+  0.4
+  0.5
+  0.6
+  0.7
+  0.8
+  0.9
+  ⋮
+  9.2
+  9.3
+  9.4
+  9.5
+  9.6
+  9.7
+  9.8
+  9.9
+ 10.0
+u: 101-element Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}:
+ Float32[2.0, 0.0]
+ Float32[2.102157, 0.1376699]
+ Float32[2.2027538, 0.2765405]
+ Float32[2.3012023, 0.41556308]
+ Float32[2.3972652, 0.5541139]
+ Float32[2.4910512, 0.69186443]
+ Float32[2.5830219, 0.82869744]
+ Float32[2.6740065, 0.9646374]
+ Float32[2.7652025, 1.0998235]
+ Float32[2.85813, 1.2345028]
+ ⋮
+ Float32[16.166304, 11.474257]
+ Float32[16.331224, 11.594812]
+ Float32[16.49614, 11.715366]
+ Float32[16.66107, 11.835928]
+ Float32[16.825987, 11.95648]
+ Float32[16.990908, 12.077035]
+ Float32[17.155846, 12.197603]
+ Float32[17.32075, 12.318146]
+ Float32[17.48569, 12.438717]</code></pre><p>or via the NeuralODE struct:</p><pre><code class="language-julia hljs">prob_neuralode_gpu = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
+prob_neuralode_gpu(u0, p, st)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(SciMLBase.ODESolution{Float32, 2, Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}, Nothing, Nothing, Vector{Float32}, Vector{Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}}, SciMLBase.ODEProblem{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}, Tuple{Float32, Float32}, false, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{weight::CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}, bias::CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}}, layer_3::@NamedTuple{weight::CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}, bias::CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}}}, SciMLBase.ODEFunction{false, SciMLBase.FullSpecialize, DiffEqFlux.var&quot;#dudt#24&quot;{Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}}, LinearAlgebra.UniformScaling{Bool}, Nothing, typeof(DiffEqFlux.basic_tgrad), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, SymbolicIndexingInterface.SymbolCache{Nothing, Nothing, Nothing}}, Base.Pairs{Symbol, Union{}, Tuple{}, @NamedTuple{}}, SciMLBase.StandardODEProblem}, OrdinaryDiffEq.Tsit5{typeof(OrdinaryDiffEq.trivial_limiter!), typeof(OrdinaryDiffEq.trivial_limiter!), Static.False}, OrdinaryDiffEq.InterpolationData{SciMLBase.ODEFunction{false, SciMLBase.FullSpecialize, DiffEqFlux.var&quot;#dudt#24&quot;{Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}}, LinearAlgebra.UniformScaling{Bool}, Nothing, typeof(DiffEqFlux.basic_tgrad), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, SymbolicIndexingInterface.SymbolCache{Nothing, Nothing, Nothing}}, Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}, Vector{Float32}, Vector{Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}}, OrdinaryDiffEq.Tsit5ConstantCache, Nothing}, SciMLBase.DEStats, Nothing}(CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}[Float32[2.0, 0.0], Float32[2.102157, 0.1376699], Float32[2.2027538, 0.2765405], Float32[2.3012023, 0.41556308], Float32[2.3972652, 0.5541139], Float32[2.4910512, 0.69186443], Float32[2.5830219, 0.82869744], Float32[2.6740065, 0.9646374], Float32[2.7652025, 1.0998235], Float32[2.85813, 1.2345028]  …  Float32[16.00138, 11.3537], Float32[16.166304, 11.474257], Float32[16.331224, 11.594812], Float32[16.49614, 11.715366], Float32[16.66107, 11.835928], Float32[16.825987, 11.95648], Float32[16.990908, 12.077035], Float32[17.155846, 12.197603], Float32[17.32075, 12.318146], Float32[17.48569, 12.438717]], nothing, nothing, Float32[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9  …  9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 10.0], Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}[[Float32[2.0, 0.0]]], SciMLBase.ODEProblem{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}, Tuple{Float32, Float32}, false, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{weight::CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}, bias::CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}}, layer_3::@NamedTuple{weight::CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}, bias::CUDA.CuArray{Float32, 2, CUDA.Mem.DeviceBuffer}}}, SciMLBase.ODEFunction{false, SciMLBase.FullSpecialize, DiffEqFlux.var&quot;#dudt#24&quot;{Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}}, LinearAlgebra.UniformScaling{Bool}, Nothing, typeof(DiffEqFlux.basic_tgrad), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, SymbolicIndexingInterface.SymbolCache{Nothing, Nothing, Nothing}}, Base.Pairs{Symbol, Union{}, Tuple{}, @NamedTuple{}}, SciMLBase.StandardODEProblem}(SciMLBase.ODEFunction{false, SciMLBase.FullSpecialize, DiffEqFlux.var&quot;#dudt#24&quot;{Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}}, LinearAlgebra.UniformScaling{Bool}, Nothing, typeof(DiffEqFlux.basic_tgrad), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, SymbolicIndexingInterface.SymbolCache{Nothing, Nothing, Nothing}}(DiffEqFlux.var&quot;#dudt#24&quot;{Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}}(Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}(Chain(), nothing, (layer_1 = NamedTuple(), layer_2 = NamedTuple(), layer_3 = NamedTuple()))), LinearAlgebra.UniformScaling{Bool}(true), nothing, DiffEqFlux.basic_tgrad, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, SciMLBase.DEFAULT_OBSERVED, nothing, SymbolicIndexingInterface.SymbolCache{Nothing, Nothing, Nothing}(nothing, nothing, nothing)), Float32[2.0, 0.0], (0.0f0, 10.0f0), (layer_1 = NamedTuple(), layer_2 = (weight = Float32[-0.29676253 0.052065823; -0.21517673 -0.13733752; … ; -0.018780224 -0.071686044; 0.12537444 0.13809523], bias = Float32[0.0; 0.0; … ; 0.0; 0.0;;]), layer_3 = (weight = Float32[0.1596009 0.13599233 … 0.08800718 0.2192485; -0.08145795 -0.21738958 … 0.24813993 -0.24785015], bias = Float32[0.0; 0.0;;])), Base.Pairs{Symbol, Union{}, Tuple{}, @NamedTuple{}}(), SciMLBase.StandardODEProblem()), Tsit5(; stage_limiter! = trivial_limiter!, step_limiter! = trivial_limiter!, thread = static(false),), OrdinaryDiffEq.InterpolationData{SciMLBase.ODEFunction{false, SciMLBase.FullSpecialize, DiffEqFlux.var&quot;#dudt#24&quot;{Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}}, LinearAlgebra.UniformScaling{Bool}, Nothing, typeof(DiffEqFlux.basic_tgrad), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, SymbolicIndexingInterface.SymbolCache{Nothing, Nothing, Nothing}}, Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}, Vector{Float32}, Vector{Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}}, OrdinaryDiffEq.Tsit5ConstantCache, Nothing}(SciMLBase.ODEFunction{false, SciMLBase.FullSpecialize, DiffEqFlux.var&quot;#dudt#24&quot;{Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}}, LinearAlgebra.UniformScaling{Bool}, Nothing, typeof(DiffEqFlux.basic_tgrad), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, SymbolicIndexingInterface.SymbolCache{Nothing, Nothing, Nothing}}(DiffEqFlux.var&quot;#dudt#24&quot;{Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}}(Lux.Experimental.StatefulLuxLayer{Chain{@NamedTuple{layer_1::WrappedFunction{Main.var&quot;#1#2&quot;}, layer_2::Dense{true, typeof(tanh_fast), typeof(glorot_uniform), typeof(zeros32)}, layer_3::Dense{true, typeof(identity), typeof(glorot_uniform), typeof(zeros32)}}, Nothing}, Nothing, @NamedTuple{layer_1::@NamedTuple{}, layer_2::@NamedTuple{}, layer_3::@NamedTuple{}}}(Chain(), nothing, (layer_1 = NamedTuple(), layer_2 = NamedTuple(), layer_3 = NamedTuple()))), LinearAlgebra.UniformScaling{Bool}(true), nothing, DiffEqFlux.basic_tgrad, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, SciMLBase.DEFAULT_OBSERVED, nothing, SymbolicIndexingInterface.SymbolCache{Nothing, Nothing, Nothing}(nothing, nothing, nothing)), CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}[Float32[2.0, 0.0], Float32[2.102157, 0.1376699], Float32[2.2027538, 0.2765405], Float32[2.3012023, 0.41556308], Float32[2.3972652, 0.5541139], Float32[2.4910512, 0.69186443], Float32[2.5830219, 0.82869744], Float32[2.6740065, 0.9646374], Float32[2.7652025, 1.0998235], Float32[2.85813, 1.2345028]  …  Float32[16.00138, 11.3537], Float32[16.166304, 11.474257], Float32[16.331224, 11.594812], Float32[16.49614, 11.715366], Float32[16.66107, 11.835928], Float32[16.825987, 11.95648], Float32[16.990908, 12.077035], Float32[17.155846, 12.197603], Float32[17.32075, 12.318146], Float32[17.48569, 12.438717]], Float32[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9  …  9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 10.0], Vector{CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}}[[Float32[2.0, 0.0]]], false, OrdinaryDiffEq.Tsit5ConstantCache(), nothing), false, 0, SciMLBase.DEStats(105, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0.0), nothing, SciMLBase.ReturnCode.Success), (layer_1 = NamedTuple(), layer_2 = NamedTuple(), layer_3 = NamedTuple()))</code></pre><h2 id="Neural-ODE-Example"><a class="docs-heading-anchor" href="#Neural-ODE-Example">Neural ODE Example</a><a id="Neural-ODE-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Neural-ODE-Example" title="Permalink"></a></h2><p>Here is the full neural ODE example. Note that we use the <code>gpu_device</code> function so that the same code works on CPUs and GPUs, dependent on <code>using LuxCUDA</code>.</p><pre><code class="language-julia hljs">using Lux, Optimization, OptimizationOptimisers, Zygote, OrdinaryDiffEq,
+    Plots, LuxCUDA, SciMLSensitivity, Random, ComponentArrays
+import DiffEqFlux: NeuralODE
+
+CUDA.allowscalar(false) # Makes sure no slow operations are occurring
+
+#rng for Lux.setup
+rng = Random.default_rng()
+# Generate Data
+u0 = Float32[2.0; 0.0]
+datasize = 30
+tspan = (0.0f0, 1.5f0)
+tsteps = range(tspan[1], tspan[2]; length = datasize)
+function trueODEfunc(du, u, p, t)
+    true_A = [-0.1 2.0; -2.0 -0.1]
+    du .= ((u .^ 3)&#39;true_A)&#39;
+end
+prob_trueode = ODEProblem(trueODEfunc, u0, tspan)
+# Make the data into a GPU-based array if the user has a GPU
+ode_data = solve(prob_trueode, Tsit5(); saveat = tsteps)
+ode_data = Array(ode_data) |&gt; gdev
+
+dudt2 = Chain(x -&gt; x .^ 3, Dense(2, 50, tanh), Dense(50, 2))
+u0 = Float32[2.0; 0.0] |&gt; gdev
+p, st = Lux.setup(rng, dudt2)
+p = p |&gt; ComponentArray |&gt; gdev
+st = st |&gt; gdev
+
+prob_neuralode = NeuralODE(dudt2, tspan, Tsit5(); saveat = tsteps)
+
+predict_neuralode(p) = reduce(hcat, first(prob_neuralode(u0, p, st)).u)
+function loss_neuralode(p)
+    pred = predict_neuralode(p)
+    loss = sum(abs2, ode_data .- pred)
+    return loss, pred
+end
+# Callback function to observe training
+list_plots = []
+iter = 0
+callback = function (p, l, pred; doplot = false)
+    global list_plots, iter
+    if iter == 0
+        list_plots = []
+    end
+    iter += 1
+    display(l)
+    # plot current prediction against data
+    plt = scatter(tsteps, Array(ode_data[1, :]); label = &quot;data&quot;)
+    scatter!(plt, tsteps, Array(pred[1, :]); label = &quot;prediction&quot;)
+    push!(list_plots, plt)
+    if doplot
+        display(plot(plt))
+    end
+    return false
+end
+
+adtype = Optimization.AutoZygote()
+optf = Optimization.OptimizationFunction((x, p) -&gt; loss_neuralode(x), adtype)
+optprob = Optimization.OptimizationProblem(optf, p)
+result_neuralode = Optimization.solve(optprob, Adam(0.05); callback, maxiters = 300)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Default
+u: ComponentArrays.ComponentVector{Float32, CUDA.CuArray{Float32, 1, CUDA.Mem.DeviceBuffer}, Tuple{ComponentArrays.Axis{(layer_1 = 1:0, layer_2 = ViewAxis(1:150, Axis(weight = ViewAxis(1:100, ShapedAxis((50, 2), NamedTuple())), bias = ViewAxis(101:150, ShapedAxis((50, 1), NamedTuple())))), layer_3 = ViewAxis(151:252, Axis(weight = ViewAxis(1:100, ShapedAxis((2, 50), NamedTuple())), bias = ViewAxis(101:102, ShapedAxis((2, 1), NamedTuple())))))}}}(layer_1 = Float32[], layer_2 = (weight = Float32[0.28875035 1.2782872; 0.25517452 -0.26926684; … ; -0.2255222 -1.2960565; 0.5523096 0.32448778], bias = Float32[0.22190511; 0.15850423; … ; 0.83878404; -0.3648131;;]), layer_3 = (weight = Float32[-0.37863514 0.3605846 … 0.28304008 0.087289244; 0.12498318 0.8195205 … -0.5905303 0.3046761], bias = Float32[-0.556671; -0.19346887;;]))</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../neural_ode/">« Neural Ordinary Differential Equations</a><a class="docs-footer-nextpage" href="../mnist_neural_ode/">GPU-based MNIST Neural ODE Classifier »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Saturday 6 January 2024 05:04">Saturday 6 January 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
