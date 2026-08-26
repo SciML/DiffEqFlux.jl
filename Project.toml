@@ -49,6 +49,7 @@ LuxCore = "1.5.2"
 LuxLib = "1.12.1"
 NNlib = "0.9.34"
 OneHotArrays = "0.2.10"
+Optim = "2"
 Optimisers = "0.4.7"
 Optimization = "5.5.1"
 OptimizationOptimJL = "0.4.14"
@@ -88,6 +89,7 @@ Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 NNlib = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"
 OneHotArrays = "0b1bfda6-eb8a-41d2-88d8-f5af5cad476f"
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 Optimisers = "3bd65402-5787-11e9-1adc-39752487f4e2"
 Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 OptimizationOptimJL = "36348300-93cb-4f02-beb5-3c3902f8871e"
@@ -108,4 +110,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "DistributionsAD", "ForwardDiff", "Flux", "NNlib", "OneHotArrays", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "OrdinaryDiffEqBDF", "OrdinaryDiffEqFIRK", "OrdinaryDiffEqRosenbrock", "OrdinaryDiffEqSDIRK", "OrdinaryDiffEqStabilizedRK", "Printf", "Random", "SafeTestsets", "SciMLTesting", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
+test = ["Aqua", "BenchmarkTools", "ComponentArrays", "DataInterpolations", "DelayDiffEq", "DiffEqCallbacks", "Distances", "Distributed", "DistributionsAD", "ForwardDiff", "Flux", "NNlib", "OneHotArrays", "Optim", "Optimisers", "Optimization", "OptimizationOptimJL", "OptimizationOptimisers", "OrdinaryDiffEq", "OrdinaryDiffEqBDF", "OrdinaryDiffEqFIRK", "OrdinaryDiffEqRosenbrock", "OrdinaryDiffEqSDIRK", "OrdinaryDiffEqStabilizedRK", "Printf", "Random", "SafeTestsets", "SciMLTesting", "Statistics", "StochasticDiffEq", "Test", "Zygote"]
