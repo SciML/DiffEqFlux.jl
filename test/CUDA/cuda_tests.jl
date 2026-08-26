@@ -15,6 +15,8 @@ else
     const gdev = gpu_device()
     const cdev = cpu_device()
 
+    final_state((sol, _)) = last(sol.u)
+
     @testset "Neural DE CUDA" begin
         mp = Float32[0.1, 0.1] |> gdev
         x = Float32[2.0; 0.0] |> gdev
@@ -49,7 +51,7 @@ else
                         ndims(u0) == 2 &&
                         kwargs.sensealg isa TrackerAdjoint
                     @test begin
-                        grads = Zygote.gradient(sum ∘ last ∘ first ∘ node, u0, pd, st)
+                        grads = Zygote.gradient(sum ∘ final_state ∘ node, u0, pd, st)
                         CUDA.@allowscalar begin
                             !iszero(grads[1]) && !iszero(grads[2])
                         end
@@ -62,7 +64,7 @@ else
                     pd = ComponentArray(pd) |> gdev
                     st = st |> gdev
                     @test begin
-                        grads = Zygote.gradient(sum ∘ last ∘ first ∘ anode, u0, pd, st)
+                        grads = Zygote.gradient(sum ∘ final_state ∘ anode, u0, pd, st)
                         CUDA.@allowscalar begin
                             !iszero(grads[1]) && !iszero(grads[2])
                         end
@@ -87,7 +89,7 @@ else
             st = st |> gdev
 
             @test_broken begin
-                grads = Zygote.gradient(sum ∘ last ∘ first ∘ sode, u0, pd, st)
+                grads = Zygote.gradient(sum ∘ final_state ∘ sode, u0, pd, st)
                 CUDA.@allowscalar begin
                     !iszero(grads[1]) && !iszero(grads[2]) && !iszero(grads[2][end])
                 end
