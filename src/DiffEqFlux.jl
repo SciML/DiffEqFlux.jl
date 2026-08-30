@@ -33,7 +33,7 @@ const CRC = ChainRulesCore
 #   * the layer contract (`setup`, `apply`, ...) from LuxCore,
 #   * the `Auto*` differentiation selectors from ADTypes,
 #   * the `Layers`/`Basis` model zoo modules from Boltz.
-using Lux: Conv, FlattenLayer, GroupNorm, MaxPool, MeanPool, Training,
+using Lux: Conv, FlattenLayer, GroupNorm, MaxPool, MeanPool, SamePad, Training,
     WrappedFunction, f32, f64
 using LuxCore: apply, initialparameters, initialstates, parameterlength, setup,
     statelength, testmode, trainmode
@@ -74,7 +74,7 @@ export TrackerVJP, ZygoteVJP, EnzymeVJP, ReverseDiffVJP
 
 # Reexported neural-network construction surface; approved via `reexports_allow` in
 # test/QA/qa_tests.jl and documented in docs/src/reexports.md.
-export Lux, Chain, Dense, Conv, MaxPool, MeanPool, FlattenLayer, GroupNorm,
+export Lux, Chain, Dense, Conv, MaxPool, MeanPool, FlattenLayer, GroupNorm, SamePad,
     WrappedFunction, StatefulLuxLayer, FromFluxAdaptor, Training, f32, f64
 export LuxCore, AbstractLuxLayer, AbstractLuxContainerLayer, AbstractLuxWrapperLayer,
     setup, apply, initialparameters, initialstates, parameterlength, statelength,

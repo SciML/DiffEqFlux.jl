@@ -22,7 +22,8 @@ The `Lux` module itself is re-exported (so `Lux.setup`, `Lux.Chain`, ... work), 
 with the layers used by this documentation:
 
   - Containers and basic layers: `Chain`, `Dense`, `WrappedFunction`
-  - Convolutional and pooling layers: `Conv`, `MaxPool`, `MeanPool`, `FlattenLayer`
+  - Convolutional and pooling layers: `Conv`, `MaxPool`, `MeanPool`, `FlattenLayer`,
+    `SamePad`
   - Normalization: `GroupNorm`
   - Stateful wrapper: `StatefulLuxLayer`
   - Flux interop: `FromFluxAdaptor`
