@@ -72,14 +72,14 @@ function multiple_shoot(
     # Multiple shooting predictions
     sols = [
         solve(
-                remake(
-                    prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
-                    u0 = ode_data[griddims..., first(rg)]
-                ),
-                solver;
-                saveat = tsteps[rg],
-                kwargs...
-            ) for rg in ranges
+            remake(
+                prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
+                u0 = ode_data[griddims..., first(rg)]
+            ),
+            solver;
+            saveat = tsteps[rg],
+            kwargs...
+        ) for rg in ranges
     ]
     group_predictions = Array.(sols)
 
