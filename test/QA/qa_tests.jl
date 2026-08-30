@@ -15,7 +15,7 @@ const REEXPORTS = (
     :TrackerVJP, :ZygoteAdjoint, :ZygoteVJP,
     # Lux: network construction.
     :Chain, :Conv, :Dense, :FlattenLayer, :FromFluxAdaptor, :GroupNorm, :Lux, :MaxPool,
-    :MeanPool, :SamePad, :StatefulLuxLayer, :Training, :WrappedFunction, :f32, :f64,
+    :MeanPool, :StatefulLuxLayer, :Training, :WrappedFunction, :f32, :f64,
     # LuxCore: the layer contract.
     :AbstractLuxContainerLayer, :AbstractLuxLayer, :AbstractLuxWrapperLayer, :LuxCore,
     :apply, :initialparameters, :initialstates, :parameterlength, :setup, :statelength,
