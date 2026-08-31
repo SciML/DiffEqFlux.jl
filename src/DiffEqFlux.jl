@@ -35,6 +35,14 @@ const CRC = ChainRulesCore
 #   * the `Layers`/`Basis` model zoo modules from Boltz.
 using Lux: Conv, FlattenLayer, GroupNorm, MaxPool, MeanPool, SamePad, Training,
     WrappedFunction, f32, f64
+
+"""
+    SamePad()
+
+Lux padding mode that computes convolutional or pooling padding from the kernel size and
+dilation. Reexported from Lux.
+"""
+SamePad
 using LuxCore: apply, initialparameters, initialstates, parameterlength, setup,
     statelength, testmode, trainmode
 using ADTypes: AbstractADType, AutoChainRules, AutoDiffractor, AutoEnzyme,
