@@ -3,12 +3,19 @@ versions = ["lts", "1"]
 
 [BasicNeuralDE]
 versions = ["lts", "1"]
+runner = "ubuntu-24.04"
+timeout = 240
 
 [AdvancedNeuralDE]
 versions = ["lts", "1"]
+runner = "ubuntu-24.04"
+timeout = 360
 
 [Newton]
 versions = ["lts", "1"]
 
 [QA]
+versions = ["lts", "1"]
+
+[PublicInterface]
 versions = ["lts", "1"]
