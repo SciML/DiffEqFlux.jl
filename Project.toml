@@ -27,7 +27,7 @@ DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 DiffEqFluxDataInterpolationsExt = "DataInterpolations"
 
 [compat]
-ADTypes = "1.22"
+ADTypes = "1.22.3"
 Aqua = "0.8.16"
 BenchmarkTools = "1.5.0"
 Boltz = "1.7"
