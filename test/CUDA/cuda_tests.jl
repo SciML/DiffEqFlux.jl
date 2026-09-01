@@ -79,13 +79,14 @@ else
             # CuVector seems broken on CI but I can't reproduce the failure locally
 
             sode = NeuralDSDE(
-                dudt, diffusion, tspan, solver; saveat = 0.0f0:0.01f0:0.1f0, dt = 0.01f0
+                dudt, diffusion, tspan, solver;
+                saveat = 0.0f0:0.01f0:0.1f0, dt = 0.01f0, seed = UInt64(0x5eed)
             )
             pd, st = Lux.setup(rng, sode)
             pd = ComponentArray(pd) |> gdev
             st = st |> gdev
 
-            @test_broken begin
+            @test begin
                 grads = Zygote.gradient(sum ∘ final_state ∘ sode, u0, pd, st)
                 CUDA.@allowscalar begin
                     !iszero(grads[1]) && !iszero(grads[2]) && !iszero(grads[2][end])
