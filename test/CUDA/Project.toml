@@ -1,6 +1,7 @@
 [deps]
 ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 DiffEqFlux = "aae7a2af-3d4f-5e19-a356-7da93b79d9d0"
+DiffEqNoiseProcess = "77a26b50-5914-5dd7-bc55-306e6241c503"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
 LuxCUDA = "d0bbae9a-e099-4d5b-a835-1c6931763bda"
@@ -11,6 +12,9 @@ StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 StochasticDiffEq = "789caeaf-c7a9-5a7d-9973-96adeb23e2a0"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
+[sources]
+DiffEqNoiseProcess = {rev = "8fbbcb12d5547c2d9dd563cdfee4c13d52e1067c", url = "https://github.com/ChrisRackauckas-Claude/DiffEqNoiseProcess.jl.git"}
 
 [compat]
 SciMLTesting = "2.4"
