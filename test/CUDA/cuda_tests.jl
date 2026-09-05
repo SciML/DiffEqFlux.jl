@@ -47,15 +47,12 @@ else
                     pd, st = Lux.setup(rng, node)
                     pd = ComponentArray(pd) |> gdev
                     st = st |> gdev
-                    broken = hasfield(typeof(kwargs), :sensealg) &&
-                        ndims(u0) == 2 &&
-                        kwargs.sensealg isa TrackerAdjoint
                     @test begin
                         grads = Zygote.gradient(sum ∘ final_state ∘ node, u0, pd, st)
                         CUDA.@allowscalar begin
                             !iszero(grads[1]) && !iszero(grads[2])
                         end
-                    end broken = broken
+                    end
 
                     anode = AugmentedNDELayer(
                         NeuralODE(aug_dudt, tspan, Tsit5(); kwargs...), 2
@@ -68,7 +65,7 @@ else
                         CUDA.@allowscalar begin
                             !iszero(grads[1]) && !iszero(grads[2])
                         end
-                    end broken = broken
+                    end
                 end
             end
         end
