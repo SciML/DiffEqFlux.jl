@@ -651,10 +651,12 @@ References:
     kwargs
 end
 
-function ODERNN(model, cell, args...;
+function ODERNN(
+        model, cell, args...;
         ordering = Lux.BatchLastIndex(),
         return_sequence::Bool = false,
-        kwargs...)
+        kwargs...
+    )
     !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     !(cell isa AbstractLuxLayer) && (cell = FromFluxAdaptor()(cell))
     return ODERNN(model, cell, static(return_sequence), ordering, args, kwargs)
@@ -674,10 +676,12 @@ function (odernn::ODERNN)((x, ts)::Tuple{<:AbstractArray, <:AbstractVector}, ps,
     ff = ODEFunction{false}(dudt; tgrad = basic_tgrad)
     tspan = (first(ts), last(ts))
     prob = ODEProblem{false}(ff, h0, tspan, ps.model)
-    sol = solve(prob, odernn.args...;
+    sol = solve(
+        prob, odernn.args...;
         saveat = ts,
         sensealg = InterpolatingAdjoint(; autojacvec = ZygoteVJP()),
-        odernn.kwargs...)
+        odernn.kwargs...
+    )
 
     # Process sequence with RNN cell, using ODE solutions as hidden states
     carry = init_carry
