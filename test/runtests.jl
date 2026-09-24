@@ -1,18 +1,36 @@
-using ReTestItems, InteractiveUtils, Hwloc
-using DiffEqFlux
+using SafeTestsets, Test
+using SciMLTesting
 
-@info sprint(versioninfo)
-
-const GROUP = lowercase(get(ENV, "GROUP", "all"))
-
-const RETESTITEMS_NWORKERS = parse(
-    Int, get(ENV, "RETESTITEMS_NWORKERS", string(min(Hwloc.num_physical_cores(), 16))))
-const RETESTITEMS_NWORKER_THREADS = parse(Int,
-    get(ENV, "RETESTITEMS_NWORKER_THREADS",
-        string(max(Hwloc.num_virtual_cores() ÷ RETESTITEMS_NWORKERS, 1))))
-
-@info "Running tests for group: $GROUP with $RETESTITEMS_NWORKERS workers"
-
-ReTestItems.runtests(DiffEqFlux; tags = (GROUP == "all" ? nothing : [Symbol(GROUP)]),
-    nworkers = RETESTITEMS_NWORKERS,
-    nworker_threads = RETESTITEMS_NWORKER_THREADS, testitem_timeout = 3600)
+run_tests(;
+    core = () -> nothing,
+    groups = Dict(
+        "BasicNeuralDE" => function ()
+            @safetestset "Neural DE" include("BasicNeuralDE/neural_de_tests.jl")
+            @safetestset "Neural DAE" include("BasicNeuralDE/neural_dae_tests.jl")
+            @safetestset "Neural ODE MM" include("BasicNeuralDE/neural_ode_mm_tests.jl")
+            return @safetestset "Multiple Shooting" include("BasicNeuralDE/multiple_shoot_tests.jl")
+        end,
+        "AdvancedNeuralDE" => function ()
+            @safetestset "CNF" include("AdvancedNeuralDE/cnf_tests.jl")
+            return @safetestset "Second Order ODE" include("AdvancedNeuralDE/second_order_ode_tests.jl")
+        end,
+        "Newton" => function ()
+            return @safetestset "Newton Neural ODE" include("Newton/newton_neural_ode_tests.jl")
+        end,
+        "Layers" => function ()
+            @safetestset "Collocation" include("Layers/collocation_tests.jl")
+            return @safetestset "Stiff Nested AD" include("Layers/stiff_nested_ad_tests.jl")
+        end,
+        "PublicInterface" => function ()
+            return @safetestset "Public interfaces" include("public_interface.jl")
+        end,
+        "CUDA" => (;
+            env = joinpath(@__DIR__, "CUDA"),
+            body = joinpath(@__DIR__, "CUDA", "cuda_tests.jl"),
+        ),
+    ),
+    qa = function ()
+        return @safetestset "QA" include("QA/qa_tests.jl")
+    end,
+    all = ["BasicNeuralDE", "AdvancedNeuralDE", "Newton", "Layers", "PublicInterface"],
+)

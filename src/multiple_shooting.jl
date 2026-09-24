@@ -9,7 +9,7 @@ Neural Network divides the interval into smaller intervals and solves for them s
 The default continuity term is 100, implying any losses arising from the non-continuity
 of 2 different groups will be scaled by 100.
 
-Arguments:
+# Arguments
 
   - `p`: The parameters of the Neural Network to be trained.
   - `ode_data`: Original Data to be modelled.
@@ -28,14 +28,37 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 
+# Returns
+
+  - `loss`: Total data-fitting and continuity-penalty loss. Returns `Inf` if any
+    group solve does not have a successful retcode.
+  - `group_predictions`: Array of predictions, one entry per shooting group.
+
+# Examples
+
+```julia
+using DiffEqFlux, OrdinaryDiffEq, SciMLBase
+
+f(u, p, t) = p .* u
+prob = ODEProblem(f, [1.0], (0.0, 1.0), [1.0])
+tsteps = range(0, 1; length = 6)
+ode_data = reduce(hcat, ([exp(t)] for t in tsteps))
+loss_function(u, û) = sum(abs2, u .- û)
+
+loss, predictions = multiple_shoot(
+    [1.0], ode_data, tsteps, prob, loss_function, Tsit5(), 3; abstol = 1e-8)
+```
+
 !!! note
 
     The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
     whenever the last point of any group doesn't coincide with the first point of next group.
 """
-function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
+function multiple_shoot(
+        p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
         continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
-        group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
+        group_size::Integer; continuity_term::Real = 100, kwargs...
+    ) where {F, C}
     datasize = size(ode_data, ndims(ode_data))
     griddims = ntuple(_ -> Colon(), ndims(ode_data) - 1)
 
@@ -47,12 +70,17 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
     ranges = group_ranges(datasize, group_size)
 
     # Multiple shooting predictions
-    sols = [solve(
-                remake(prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
-                    u0 = ode_data[griddims..., first(rg)]),
-                solver;
-                saveat = tsteps[rg],
-                kwargs...) for rg in ranges]
+    sols = [
+        solve(
+            remake(
+                prob; p, tspan = (tsteps[first(rg)], tsteps[last(rg)]),
+                u0 = ode_data[griddims..., first(rg)]
+            ),
+            solver;
+            saveat = tsteps[rg],
+            kwargs...
+        ) for rg in ranges
+    ]
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations failed
@@ -76,10 +104,14 @@ function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
     return loss, group_predictions
 end
 
-function multiple_shoot(p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
-        solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer; kwargs...) where {F}
-    return multiple_shoot(p, ode_data, tsteps, prob, loss_function,
-        _default_continuity_loss, solver, group_size; kwargs...)
+function multiple_shoot(
+        p, ode_data, tsteps, prob::ODEProblem, loss_function::F,
+        solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer; kwargs...
+    ) where {F}
+    return multiple_shoot(
+        p, ode_data, tsteps, prob, loss_function,
+        _default_continuity_loss, solver, group_size; kwargs...
+    )
 end
 
 """
@@ -93,7 +125,7 @@ Neural Network divides the interval into smaller intervals and solves for them s
 The default continuity term is 100, implying any losses arising from the non-continuity
 of 2 different groups will be scaled by 100.
 
-Arguments:
+# Arguments
 
   - `p`: The parameters of the Neural Network to be trained.
   - `ode_data`: Original Data to be modelled.
@@ -112,17 +144,42 @@ Arguments:
     [Local Sensitivity Analysis](https://docs.sciml.ai/SciMLSensitivity/stable/) and
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/) documentation for more details.
 
+# Returns
+
+  - `loss`: Total data-fitting and continuity-penalty loss. Returns `Inf` if any
+    ensemble group solve reports non-convergence.
+  - `group_predictions`: Array of ensemble predictions, one entry per shooting group.
+
+# Examples
+
+```julia
+using DiffEqFlux, OrdinaryDiffEq, SciMLBase
+
+f(u, p, t) = p .* u
+prob = ODEProblem(f, [1.0], (0.0, 1.0), [1.0])
+ensembleprob = EnsembleProblem(prob)
+tsteps = range(0, 1; length = 6)
+ode_data = reshape([exp(t) for t in tsteps], 1, :, 1)
+loss_function(u, û) = sum(abs2, u .- û)
+
+loss, predictions = multiple_shoot(
+    [1.0], ode_data, tsteps, ensembleprob, EnsembleSerial(),
+    loss_function, Tsit5(), 3; trajectories = 1, abstol = 1e-8)
+```
+
 !!! note
 
     The parameter 'continuity_term' should be a relatively big number to enforce a large penalty
     whenever the last point of any group doesn't coincide with the first point of next group.
 """
-function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
+function multiple_shoot(
+        p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         ensemblealg::SciMLBase.BasicEnsembleAlgorithm, loss_function::F,
         continuity_loss::C, solver::SciMLBase.AbstractODEAlgorithm,
-        group_size::Integer; continuity_term::Real = 100, kwargs...) where {F, C}
+        group_size::Integer; continuity_term::Real = 100, kwargs...
+    ) where {F, C}
     ntraj = size(ode_data, ndims(ode_data))
-    datasize = size(ode_data, ndims(ode_data)-1)
+    datasize = size(ode_data, ndims(ode_data) - 1)
     griddims = ntuple(_ -> Colon(), ndims(ode_data) - 2)
     prob = ensembleprob.prob
 
@@ -130,7 +187,7 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         throw(DomainError(group_size, "group_size can't be < 2 or > number of data points"))
     end
 
-    @assert ndims(ode_data)>=3 "ode_data must have at least three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
+    @assert ndims(ode_data) >= 3 "ode_data must have at least three dimension: `size(ode_data) = (problem_dimension,length(tsteps),trajectories)"
     @assert datasize == length(tsteps)
     @assert ntraj == kwargs[:trajectories]
 
@@ -141,15 +198,20 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
     sols = map(
         rg -> begin
             newprob = remake(prob; p = p, tspan = (tsteps[first(rg)], tsteps[last(rg)]))
-            function prob_func(prob, i, repeat)
-                remake(prob; u0 = ode_data[griddims..., first(rg), i])
+            function prob_func(prob, ctx)
+                return remake(prob; u0 = ode_data[griddims..., first(rg), ctx.sim_id])
             end
             newensembleprob = EnsembleProblem(
-                newprob, prob_func, ensembleprob.output_func, ensembleprob.reduction,
-                ensembleprob.u_init, ensembleprob.safetycopy)
+                newprob; prob_func,
+                output_func = ensembleprob.output_func,
+                reduction = ensembleprob.reduction,
+                u_init = ensembleprob.u_init,
+                safetycopy = ensembleprob.safetycopy
+            )
             solve(newensembleprob, solver, ensemblealg; saveat = tsteps[rg], kwargs...)
         end,
-        ranges)
+        ranges
+    )
     group_predictions = Array.(sols)
 
     # Abort and return infinite loss if one of the integrations did not converge?
@@ -176,12 +238,16 @@ function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
     return loss, group_predictions
 end
 
-function multiple_shoot(p, ode_data, tsteps, ensembleprob::EnsembleProblem,
+function multiple_shoot(
+        p, ode_data, tsteps, ensembleprob::EnsembleProblem,
         ensemblealg::SciMLBase.BasicEnsembleAlgorithm, loss_function::F,
         solver::SciMLBase.AbstractODEAlgorithm, group_size::Integer;
-        continuity_term::Real = 100, kwargs...) where {F}
-    return multiple_shoot(p, ode_data, tsteps, ensembleprob, ensemblealg, loss_function,
-        _default_continuity_loss, solver, group_size; continuity_term, kwargs...)
+        continuity_term::Real = 100, kwargs...
+    ) where {F}
+    return multiple_shoot(
+        p, ode_data, tsteps, ensembleprob, ensemblealg, loss_function,
+        _default_continuity_loss, solver, group_size; continuity_term, kwargs...
+    )
 end
 
 """
@@ -191,12 +257,17 @@ Get ranges that partition data of length `datasize` in groups of `groupsize` obs
 If the data isn't perfectly dividable by `groupsize`, the last group contains
 the reminding observations.
 
-Arguments:
+# Arguments
 
   - `datasize`: amount of data points to be partitioned.
   - `groupsize`: maximum amount of observations in each group.
 
-Example:
+# Returns
+
+A vector of overlapping `UnitRange{Int}` values. Adjacent ranges share one index so
+the last prediction from group `k` can be compared to the first point in group `k + 1`.
+
+# Examples
 
 ```julia-repl
 julia> group_ranges(10, 5)
@@ -207,8 +278,12 @@ julia> group_ranges(10, 5)
 ```
 """
 function group_ranges(datasize::Integer, groupsize::Integer)
-    2 ≤ groupsize ≤ datasize || throw(DomainError(groupsize,
-        "datasize must be positive and groupsize must to be within [2, datasize]"))
+    2 ≤ groupsize ≤ datasize || throw(
+        DomainError(
+            groupsize,
+            "datasize must be positive and groupsize must to be within [2, datasize]"
+        )
+    )
     return [i:min(datasize, i + groupsize - 1) for i in 1:(groupsize - 1):(datasize - 1)]
 end
 

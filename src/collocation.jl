@@ -1,16 +1,239 @@
+"""
+    CollocationKernel
+
+Abstract interface for kernels used by [`collocate_data`](@ref) when estimating
+smoothed state and derivative values from sampled time-series data.
+
+# Interface
+
+Concrete kernels are immutable marker types with zero fields. A kernel implementation
+must provide `DiffEqFlux.calckernel(kernel, t)` for an offset `t`, returning the
+kernel weight at that offset with the same numeric type as `t` when possible.
+
+Compact-support kernels may implement
+`DiffEqFlux.calckernel(kernel, t, abs(t))`; the generic two-argument method handles
+the support check and calls the three-argument method only when `abs(t) <= 1`.
+
+# Implementations
+
+The public kernel choices are [`EpanechnikovKernel`](@ref), [`UniformKernel`](@ref),
+[`TriangularKernel`](@ref), [`QuarticKernel`](@ref), [`TriweightKernel`](@ref),
+[`TricubeKernel`](@ref), [`GaussianKernel`](@ref), [`CosineKernel`](@ref),
+[`LogisticKernel`](@ref), [`SigmoidKernel`](@ref), and [`SilvermanKernel`](@ref).
+
+# Examples
+
+```julia
+using DiffEqFlux
+
+kernel = TriangularKernel()
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), kernel)
+```
+"""
 abstract type CollocationKernel end
+
+"""
+    EpanechnikovKernel()
+
+Epanechnikov compact-support smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), EpanechnikovKernel())
+```
+"""
 struct EpanechnikovKernel <: CollocationKernel end
+
+"""
+    UniformKernel()
+
+Uniform compact-support smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with constant weight on `[-1, 1]`.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), UniformKernel())
+```
+"""
 struct UniformKernel <: CollocationKernel end
+
+"""
+    TriangularKernel()
+
+Triangular compact-support smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with linearly decaying weight on `[-1, 1]`.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), TriangularKernel())
+```
+"""
 struct TriangularKernel <: CollocationKernel end
+
+"""
+    QuarticKernel()
+
+Quartic compact-support smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), QuarticKernel())
+```
+"""
 struct QuarticKernel <: CollocationKernel end
+
+"""
+    TriweightKernel()
+
+Triweight compact-support smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), TriweightKernel())
+```
+"""
 struct TriweightKernel <: CollocationKernel end
+
+"""
+    TricubeKernel()
+
+Tricube compact-support smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), TricubeKernel())
+```
+"""
 struct TricubeKernel <: CollocationKernel end
+
+"""
+    GaussianKernel()
+
+Gaussian smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with non-compact Gaussian support.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), GaussianKernel())
+```
+"""
 struct GaussianKernel <: CollocationKernel end
+
+"""
+    CosineKernel()
+
+Cosine compact-support smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with support on `[-1, 1]`.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), CosineKernel())
+```
+"""
 struct CosineKernel <: CollocationKernel end
+
+"""
+    LogisticKernel()
+
+Logistic smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with non-compact logistic support.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), LogisticKernel())
+```
+"""
 struct LogisticKernel <: CollocationKernel end
+
+"""
+    SigmoidKernel()
+
+Sigmoid smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with non-compact sigmoid support.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), SigmoidKernel())
+```
+"""
 struct SigmoidKernel <: CollocationKernel end
+
+"""
+    SilvermanKernel()
+
+Silverman smoothing kernel for [`collocate_data`](@ref).
+
+# Returns
+
+An immutable [`CollocationKernel`](@ref) with non-compact Silverman support.
+
+# Examples
+
+```julia
+du, u = collocate_data(rand(2, 10), range(0, 1; length = 10), SilvermanKernel())
+```
+"""
 struct SilvermanKernel <: CollocationKernel end
 
+"""
+    DiffEqFlux.calckernel(kernel, t)
+
+Evaluate a collocation kernel at the normalized offset `t`. This is the developer
+extension point for custom [`CollocationKernel`](@ref) implementations.
+
+# Rules
+
+  - Implement either the two-argument method for a kernel with non-compact support,
+    or the three-argument method `calckernel(kernel, t, abs_t)` for a kernel supported
+    on `[-1, 1]`.
+  - Return a scalar with a numeric type compatible with `t`.
+  - The generic two-argument method applies the compact-support check before calling
+    the three-argument method.
+"""
 function calckernel(kernel, t::T) where {T}
     abst = abs(t)
     return ifelse(abst > 1, T(0), calckernel(kernel, t, abst))
@@ -48,7 +271,26 @@ end
 Computes a non-parametrically smoothed estimate of `u'` and `u` given the `data`, where each
 column is a snapshot of the timeseries at `tpoints[i]`.
 
-For kernels, the following exist:
+# Arguments
+
+  - `data`: Array of observed state values. For matrix data, each column is one
+    observation at the corresponding entry of `tpoints`.
+  - `tpoints`: Sample times for `data`.
+  - `kernel`: A [`CollocationKernel`](@ref) used for local regression smoothing.
+    Defaults to [`TriangularKernel`](@ref).
+  - `bandwidth`: Smoothing bandwidth. If `nothing`, a rule-of-thumb bandwidth is used.
+  - `tpoints_sample`: Time points where interpolation-based collocation should be sampled.
+  - `interp`: DataInterpolations.jl interpolation constructor used by the extension method.
+  - `args...`: Additional positional arguments forwarded to the interpolation constructor.
+
+# Returns
+
+  - `u′`: Estimated time derivatives at the requested points.
+  - `u`: Smoothed state estimates at the requested points.
+
+# Kernel Choices
+
+The following kernel constructors are provided:
 
   - EpanechnikovKernel
   - UniformKernel
@@ -68,6 +310,16 @@ Additionally, we can use interpolation methods from
 [DataInterpolations.jl](https://github.com/SciML/DataInterpolations.jl) to generate
 data from intermediate timesteps. In this case, pass any of the methods like
 `QuadraticInterpolation` as `interp`, and the timestamps to sample from as `tpoints_sample`.
+
+# Examples
+
+```julia
+using DiffEqFlux
+
+tpoints = range(0, 1; length = 20)
+data = reduce(hcat, ([sin(t), cos(t)] for t in tpoints))
+du, u = collocate_data(data, tpoints, EpanechnikovKernel())
+```
 """
 function collocate_data(data, tpoints, kernel = TriangularKernel(), bandwidth = nothing)
     _one = oneunit(first(data))
@@ -76,7 +328,7 @@ function collocate_data(data, tpoints, kernel = TriangularKernel(), bandwidth = 
     e2 = [_zero; _one; _zero]
     n = length(tpoints)
     bandwidth = bandwidth === nothing ?
-                (n^(-1 / 5)) * (n^(-3 / 35)) * ((log(n))^(-1 / 16)) : bandwidth
+        (n^(-1 / 5)) * (n^(-3 / 35)) * ((log(n))^(-1 / 16)) : bandwidth
 
     Wd = similar(data, n, size(data, 1))
     WT1 = similar(data, n, 2)
@@ -101,8 +353,10 @@ function collocate_data(data, tpoints, kernel = TriangularKernel(), bandwidth = 
     return estimated_derivative, estimated_solution
 end
 
-@views function collocate_data(data::AbstractVector, tpoints::AbstractVector,
-        tpoints_sample::AbstractVector, interp, args...)
+@views function collocate_data(
+        data::AbstractVector, tpoints::AbstractVector,
+        tpoints_sample::AbstractVector, interp, args...
+    )
     du, u = collocate_data(reshape(data, 1, :), tpoints, tpoints_sample, interp, args...)
     return du[1, :], u[1, :]
 end

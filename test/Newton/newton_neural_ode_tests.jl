@@ -1,6 +1,9 @@
-@testitem "Newton Neural ODE" tags=[:newton] begin
-    using ComponentArrays, Zygote, Optimization, OptimizationOptimJL, OrdinaryDiffEq, Random
+using DiffEqFlux, Lux, ComponentArrays, Zygote, Optimization, OptimizationOptimJL,
+    OrdinaryDiffEq, Random, Test
+using Optim: NewtonTrustRegion
+using OrdinaryDiffEqStabilizedRK: ROCK2, ROCK4
 
+@testset "Newton Neural ODE" begin
     Random.seed!(100)
 
     n = 1 # number of ODEs
@@ -30,14 +33,17 @@
     loss_function(θ) = sum(abs2, y .- stnODE(x, ComponentArray(θ, psax))[end])
     l1 = loss_function(psd)
     optf = Optimization.OptimizationFunction(
-        (x, p) -> loss_function(x), Optimization.AutoZygote())
+        (x, p) -> loss_function(x), Optimization.AutoZygote()
+    )
     optprob = Optimization.OptimizationProblem(optf, psd)
 
     res = Optimization.solve(optprob, NewtonTrustRegion(); maxiters = 100, callback = cb)
-    @test loss_function(res.minimizer) < l1
-    res = Optimization.solve(optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
-        maxiters = 100, callback = cb)
-    @test loss_function(res.minimizer) < l1
+    @test loss_function(res.u) < l1
+    res = Optimization.solve(
+        optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
+        maxiters = 100, callback = cb
+    )
+    @test loss_function(res.u) < l1
 
     @info "ROCK2"
     nODE = NeuralODE(NN, tspan, ROCK2(); reltol = 1.0f-4, saveat = [tspan[end]])
@@ -51,12 +57,15 @@
     loss_function(θ) = sum(abs2, y .- stnODE(x, ComponentArray(θ, psax))[end])
     l1 = loss_function(psd)
     optfunc = Optimization.OptimizationFunction(
-        (x, p) -> loss_function(x), Optimization.AutoZygote())
+        (x, p) -> loss_function(x), Optimization.AutoZygote()
+    )
     optprob = Optimization.OptimizationProblem(optfunc, psd)
 
     res = Optimization.solve(optprob, NewtonTrustRegion(); maxiters = 100, callback = cb)
-    @test loss_function(res.minimizer) < l1
-    res = Optimization.solve(optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
-        maxiters = 100, callback = cb)
-    @test loss_function(res.minimizer) < l1
+    @test loss_function(res.u) < l1
+    res = Optimization.solve(
+        optprob, OptimizationOptimJL.Optim.KrylovTrustRegion();
+        maxiters = 100, callback = cb
+    )
+    @test loss_function(res.u) < l1
 end

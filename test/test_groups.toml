@@ -1,0 +1,27 @@
+[Layers]
+versions = ["lts", "1"]
+
+["Layers 32-bit"]
+group = "Layers"
+versions = ["1"]
+os = ["ubuntu-latest"]
+arch = "x86"
+
+[BasicNeuralDE]
+versions = ["lts", "1"]
+runner = "ubuntu-24.04"
+timeout = 240
+
+[AdvancedNeuralDE]
+versions = ["lts", "1"]
+runner = "ubuntu-24.04"
+timeout = 360
+
+[Newton]
+versions = ["lts", "1"]
+
+[QA]
+versions = ["lts", "1"]
+
+[PublicInterface]
+versions = ["lts", "1"]

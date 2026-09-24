@@ -1,3 +1,30 @@
+"""
+    CNFLayer
+
+Abstract interface for continuous normalizing flow layers implemented by DiffEqFlux.
+
+# Interface
+
+Concrete subtypes are Lux wrapper layers and are callable as:
+
+```julia
+(logpx, λ₁, λ₂), new_state = layer(x, ps, st)
+```
+
+where `x` is a batch of samples, `ps` are Lux parameters, and `st` is Lux state. The
+first returned value contains the log density estimate and regularization terms used
+by continuous normalizing flows.
+
+# Rules
+
+  - The wrapped Lux model must be stored in a field named `model`.
+  - The state must contain `regularize` and `monte_carlo` flags.
+  - Solver keyword arguments supplied to the constructor are forwarded to `solve`.
+
+# Implementations
+
+[`FFJORD`](@ref) is the public implementation of this interface.
+"""
 abstract type CNFLayer <: AbstractLuxWrapperLayer{:model} end
 
 """
@@ -19,7 +46,7 @@ high level this corresponds to the following steps:
 After these steps one may use the NN model and the learned θ to predict the density p\\_x
 for new values of x.
 
-Arguments:
+# Arguments
 
   - `model`: A `Flux.Chain` or `Lux.AbstractLuxLayer` neural network that defines the
     dynamics of the model.
@@ -36,7 +63,35 @@ Arguments:
     [Common Solver Arguments](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/)
     documentation for more details.
 
-References:
+# Fields
+
+  - `model`: Lux layer used for the CNF dynamics.
+  - `basedist`: Optional base distribution. If `nothing`, a standard normal base
+    density is used.
+  - `ad`: ADTypes.jl automatic differentiation backend for the Jacobian trace estimate.
+  - `input_dims`: Dimensions of one sample, excluding the batch dimension.
+  - `tspan`: Integration time span.
+  - `args`: Positional solver arguments, usually including the ODE algorithm.
+  - `kwargs`: Keyword solver arguments forwarded to `solve`.
+
+# Returns
+
+A [`CNFLayer`](@ref). Calling the layer as `ffjord(x, ps, st)` returns
+`((logpx, λ₁, λ₂), new_state)`.
+
+# Examples
+
+```julia
+using DiffEqFlux, Lux, Random
+
+rng = Random.default_rng()
+model = Lux.Chain(Lux.Dense(2 => 8, tanh), Lux.Dense(8 => 2))
+ffjord = FFJORD(model, (0.0f0, 1.0f0), (2,))
+ps, st = Lux.setup(rng, ffjord)
+(logpx, λ₁, λ₂), st = ffjord(rand(Float32, 2, 4), ps, st)
+```
+
+# References
 
 [1] Pontryagin, Lev Semenovich. Mathematical theory of optimal processes. CRC press, 1987.
 
@@ -59,12 +114,15 @@ preprint arXiv:1810.01367 (2018).
 end
 
 function LuxCore.initialstates(rng::AbstractRNG, n::FFJORD)
-    return (; model = LuxCore.initialstates(rng, n.model),
-        regularize = false, monte_carlo = true)
+    return (;
+        model = LuxCore.initialstates(rng, n.model),
+        regularize = false, monte_carlo = true,
+    )
 end
 
 function FFJORD(
-        model, tspan, input_dims, args...; ad = nothing, basedist = nothing, kwargs...)
+        model, tspan, input_dims, args...; ad = nothing, basedist = nothing, kwargs...
+    )
     !(model isa AbstractLuxLayer) && (model = FromFluxAdaptor()(model))
     return FFJORD(model, basedist, ad, input_dims, tspan, args, kwargs)
 end
@@ -75,8 +133,10 @@ end
 
 @inline __norm_batched(x) = sqrt.(sum(abs2, x; dims = 1:(ndims(x) - 1)))
 
-function __ffjord(model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing,
-        regularize::Bool = false, monte_carlo::Bool = true) where {T, N}
+function __ffjord(
+        model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothing,
+        regularize::Bool = false, monte_carlo::Bool = true
+    ) where {T, N}
     L = size(u, N - 1)
     z = selectdim(u, N - 1, 1:(L - ifelse(regularize, 3, 1)))
     @set! model.ps = p
@@ -91,17 +151,23 @@ function __ffjord(model::StatefulLuxLayer, u::AbstractArray{T, N}, p, ad = nothi
             trace_jac = dropdims(
                 sum(
                     batched_matmul(
-                        reshape(e, 1, :, size(e, N)), reshape(Je, :, 1, size(Je, N)));
-                    dims = (1, 2));
-                dims = (1, 2))
+                        reshape(e, 1, :, size(e, N)), reshape(Je, :, 1, size(Je, N))
+                    );
+                    dims = (1, 2)
+                );
+                dims = (1, 2)
+            )
         elseif ad isa AutoZygote
             eJ = Lux.vector_jacobian_product(model, AutoZygote(), z, e)
             trace_jac = dropdims(
                 sum(
                     batched_matmul(
-                        reshape(eJ, 1, :, size(eJ, N)), reshape(e, :, 1, size(e, N)));
-                    dims = (1, 2));
-                dims = (1, 2))
+                        reshape(eJ, 1, :, size(eJ, N)), reshape(e, :, 1, size(e, N))
+                    );
+                    dims = (1, 2)
+                );
+                dims = (1, 2)
+            )
         else
             error("`ad` must be `nothing` or `AutoForwardDiff` or `AutoZygote`.")
         end
@@ -136,11 +202,14 @@ function __forward_ffjord(n::FFJORD, x::AbstractArray{T, N}, ps, st) where {T, N
     ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 
     _z = ChainRulesCore.@ignore_derivatives fill!(
-        similar(x, S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
+        similar(x, S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T)
+    )
 
     prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), n.tspan, ps)
-    sol = solve(prob, n.args...; sensealg, n.kwargs...,
-        save_everystep = false, save_start = false, save_end = true)
+    sol = solve(
+        prob, n.args...; sensealg, n.kwargs...,
+        save_everystep = false, save_start = false, save_end = true
+    )
     pred = __get_pred(sol)
     L = size(pred, N - 1)
 
@@ -185,11 +254,14 @@ function __backward_ffjord(::Type{T1}, n::FFJORD, n_samples::Int, ps, st, rng) w
     ffjord(u, p, t) = __ffjord(model, u, p, n.ad, regularize, monte_carlo)
 
     _z = ChainRulesCore.@ignore_derivatives fill!(
-        similar(x, S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T))
+        similar(x, S[1:(N - 2)]..., ifelse(regularize, 3, 1), S[N]), zero(T)
+    )
 
     prob = ODEProblem{false}(ffjord, cat(x, _z; dims = Val(N - 1)), reverse(n.tspan), ps)
-    sol = solve(prob, n.args...; sensealg, n.kwargs...,
-        save_everystep = false, save_start = false, save_end = true)
+    sol = solve(
+        prob, n.args...; sensealg, n.kwargs...,
+        save_everystep = false, save_start = false, save_end = true
+    )
     pred = __get_pred(sol)
     L = size(pred, N - 1)
 
@@ -197,14 +269,39 @@ function __backward_ffjord(::Type{T1}, n::FFJORD, n_samples::Int, ps, st, rng) w
 end
 
 """
-FFJORD can be used as a distribution to generate new samples by `rand` or estimate densities
-by `pdf` or `logpdf` (from `Distributions.jl`).
+    FFJORDDistribution(model, ps, st)
 
-Arguments:
+Wrap an [`FFJORD`](@ref) layer as a `Distributions.jl`
+`ContinuousMultivariateDistribution`.
 
-  - `model`: A FFJORD instance.
-  - `regularize`: Whether we use regularization (default: `false`).
-  - `monte_carlo`: Whether we use monte carlo (default: `true`).
+# Arguments
+
+  - `model`: The [`FFJORD`](@ref) layer used for density evaluation and sampling.
+  - `ps`: Lux parameters for `model`.
+  - `st`: Lux state for `model`, including `regularize` and `monte_carlo`.
+
+# Fields
+
+  - `model`: Stored FFJORD layer.
+  - `ps`: Stored Lux parameters.
+  - `st`: Stored Lux state.
+
+# Returns
+
+A distribution that supports `length`, `eltype`, `logpdf`, `pdf`, and `rand`.
+
+# Examples
+
+```julia
+using DiffEqFlux, Distributions, Lux, Random
+
+rng = Random.default_rng()
+model = Lux.Chain(Lux.Dense(2 => 8, tanh), Lux.Dense(8 => 2))
+ffjord = FFJORD(model, (0.0f0, 1.0f0), (2,))
+ps, st = Lux.setup(rng, ffjord)
+d = FFJORDDistribution(ffjord, ps, st)
+logp = logpdf(d, rand(Float32, 2))
+```
 """
 @concrete struct FFJORDDistribution <: ContinuousMultivariateDistribution
     model <: FFJORD
@@ -222,7 +319,8 @@ function Distributions._logpdf(d::FFJORDDistribution, x::AbstractArray)
     return first(first(__forward_ffjord(d.model, x, d.ps, d.st)))
 end
 function Distributions._rand!(
-        rng::AbstractRNG, d::FFJORDDistribution, x::AbstractArray{<:Real})
+        rng::AbstractRNG, d::FFJORDDistribution, x::AbstractArray{<:Real}
+    )
     copyto!(x, __backward_ffjord(eltype(d), d.model, size(x, ndims(x)), d.ps, d.st, rng))
     return x
 end

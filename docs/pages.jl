@@ -21,6 +21,7 @@ pages = [
         "Continuous Normalizing Flows Layer" => "layers/CNFLayer.md",
         "Neural Differential Equation Layers" => "layers/NeuralDELayers.md",
     ],
+    "Reexported API" => "reexports.md",
     "Utility Function APIs" => Any[
         "Smoothed Collocation" => "utilities/Collocation.md",
         "Multiple Shooting Functionality" => "utilities/MultipleShooting.md"

@@ -16,7 +16,29 @@ accumulate through time, is not as exact as other methods.
     methods, see [JuliaSimModelOptimizer](https://help.juliahub.com/jsmo/stable/manual/collocation/).
 
 ```@docs
+DiffEqFlux.CollocationKernel
+EpanechnikovKernel
+UniformKernel
+TriangularKernel
+QuarticKernel
+TriweightKernel
+TricubeKernel
+GaussianKernel
+CosineKernel
+LogisticKernel
+SigmoidKernel
+SilvermanKernel
 collocate_data
+```
+
+## Developer Interface
+
+Custom kernels extend the following internal developer interface. It is intended for
+packages implementing additional [`CollocationKernel`](@ref DiffEqFlux.CollocationKernel) types, not for ordinary
+collocation calls.
+
+```@docs
+DiffEqFlux.calckernel
 ```
 
 ## Kernel Choice

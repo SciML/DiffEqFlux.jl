@@ -22,7 +22,7 @@ high penalties in case the solver predicts discontinuous values.
 
 The following is a working demo, using Multiple Shooting:
 
-```@example multiple_shooting
+```julia
 using ComponentArrays, Lux, DiffEqFlux, Optimization, OptimizationPolyalgorithms,
       OrdinaryDiffEq, Plots
 using DiffEqFlux: group_ranges
@@ -120,7 +120,7 @@ are overlapping points as well. These are the points we are trying to coincide.
 Here is an output with `group_size = 30` (which is the same as solving on the whole
 interval without splitting also called single shooting).
 
-```@example multiple_shooting
+```julia
 anim = Plots.Animation()
 iter = 0
 group_size = 30

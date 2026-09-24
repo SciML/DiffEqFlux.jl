@@ -6,9 +6,9 @@ ordinary differential equation **NeuralODE** on **GPUs** with **Minibatching**.
 For a step-by-step tutorial see the tutorial on the MNIST Neural ODE Classification Tutorial
 using Fully Connected Layers.
 
-```@example mnist_cnn
-using DiffEqFlux, ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq,
-      Printf, LuxCUDA, Random, MLUtils, OneHotArrays
+```julia
+using DiffEqFlux, Lux, ComponentArrays, CUDA, Zygote, MLDatasets, OrdinaryDiffEq,
+      Printf, Random, MLUtils, OneHotArrays
 using Optimization, OptimizationOptimisers
 using MLDatasets: MNIST
 
