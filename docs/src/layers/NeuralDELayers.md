@@ -15,7 +15,6 @@ NeuralSDE
 NeuralCDDE
 NeuralDAE
 NeuralODEMM
-ODERNN
 AugmentedNDELayer
 ```
 
