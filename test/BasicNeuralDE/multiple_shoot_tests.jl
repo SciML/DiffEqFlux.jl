@@ -145,7 +145,7 @@ using DiffEqFlux: group_ranges
         # In this case, we trigger `retcode = :MaxIters` by setting the solver option `maxiters=1`.
         loss_fail = multiple_shoot(
             p_init, ode_data, tsteps, prob_node, loss_function,
-            Tsit5(), datasize; maxiters = 1, verbose = DEVerbosity(SciMLLogging.None())
+            Tsit5(), datasize; maxiters = 1, verbose = SciMLLogging.None()
         )[1]
         @test loss_fail == Inf
 
