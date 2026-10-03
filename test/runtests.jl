@@ -11,8 +11,10 @@ run_tests(;
             return @safetestset "Multiple Shooting" include("BasicNeuralDE/multiple_shoot_tests.jl")
         end,
         "AdvancedNeuralDE" => function ()
-            @safetestset "CNF" include("AdvancedNeuralDE/cnf_tests.jl")
             return @safetestset "Second Order ODE" include("AdvancedNeuralDE/second_order_ode_tests.jl")
+        end,
+        "CNF" => function ()
+            return @safetestset "CNF" include("AdvancedNeuralDE/cnf_tests.jl")
         end,
         "Newton" => function ()
             return @safetestset "Newton Neural ODE" include("Newton/newton_neural_ode_tests.jl")
