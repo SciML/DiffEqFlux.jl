@@ -23,6 +23,7 @@ jobs:
           - Layers
           - BasicNeuralDE
           - AdvancedNeuralDE
+          - CNF
           - Newton
           - QA
     uses: "SciML/.github/.github/workflows/downgrade.yml@v1"

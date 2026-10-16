@@ -17,6 +17,11 @@ versions = ["lts", "1"]
 runner = "ubuntu-24.04"
 timeout = 360
 
+[CNF]
+versions = ["lts", "1"]
+runner = "ubuntu-24.04"
+timeout = 360
+
 [Newton]
 versions = ["lts", "1"]
 
